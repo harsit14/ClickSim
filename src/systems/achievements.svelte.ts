@@ -1,6 +1,6 @@
 import { ACHIEVEMENTS } from '../content/achievements'
-import { ECHOES } from '../content/echoes'
 import { CHALLENGE_BY_ID } from '../content/challenges'
+import { universeById } from '../content/universes'
 import { game, ratePerSec, endChallenge } from '../engine/game.svelte'
 import { save } from '../core/save'
 import { pushToast } from './toasts.svelte'
@@ -26,7 +26,7 @@ function check() {
     pushToast(def.name, def.flavor, 'radiance +1%')
     playAchievement()
   }
-  for (const echo of ECHOES) {
+  for (const echo of universeById(game.activeUniverse).echoes) {
     if (game.echoes.includes(echo.id)) continue
     if (!echo.when(game)) continue
     game.echoes.push(echo.id)

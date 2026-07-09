@@ -7,7 +7,7 @@
  * long gaps between rows = dead zones; instant runs of rows = walls
  * that collapsed too easily.
  */
-import { GENERATORS } from '../src/content/generators'
+import { DEFAULT_UNIVERSE_ID, universeById } from '../src/content/universes'
 import {
   type EcoState,
   totalRate,
@@ -35,6 +35,7 @@ function fmtT(sec: number): string {
 
 function simulate(profile: Profile) {
   const s: EcoState = {
+    activeUniverse: DEFAULT_UNIVERSE_ID,
     light: 0,
     totalEarned: 0,
     clicks: 0,
@@ -50,6 +51,10 @@ function simulate(profile: Profile) {
     remembrances: 0,
     curiosities: [],
     keeperFedUntil: 0,
+    beacons: [],
+    darkBetween: 0,
+    wayfinder: [],
+    vesselParts: [],
   }
   const events: string[] = []
   const firstBought = new Set<string>()
@@ -67,7 +72,7 @@ function simulate(profile: Profile) {
       let bestPayback = Infinity
       let bestBuy: (() => string) | null = null
 
-      for (const g of GENERATORS) {
+      for (const g of universeById(s.activeUniverse).generators) {
         const owned = s.owned[g.id] ?? 0
         const cost = costOf(g, owned)
         if (cost > s.light) continue

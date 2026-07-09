@@ -1,5 +1,5 @@
 import { game, ratePerSec } from '../engine/game.svelte'
-import { GENERATORS } from '../content/generators'
+import { universeById } from '../content/universes'
 import { currentBeatIndex } from '../audio/music'
 
 interface Particle {
@@ -507,7 +507,7 @@ export class World {
 
     // your empire, glimmering in the dark (fading as it falls inward)
     const collapseFade = 1 - this.collapseProgress(now)
-    for (const g of GENERATORS) {
+    for (const g of universeById(game.activeUniverse).generators) {
       const owned = game.owned[g.id] ?? 0
       if (owned <= 0) continue
       const ownedScale = 1 + Math.min(0.7, Math.log10(owned + 1) * 0.2)

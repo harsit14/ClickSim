@@ -1,13 +1,13 @@
 <script lang="ts">
   import { game } from '../engine/game.svelte'
-  import { LUMEN_LINES } from '../content/lumen'
+  import { universeById } from '../content/universes'
 
   let current = $state<string | null>(null)
   let timer: ReturnType<typeof setTimeout> | undefined
 
   $effect(() => {
     if (current) return
-    const line = LUMEN_LINES.find((l) => !game.seen.includes(l.id) && l.when(game))
+    const line = universeById(game.activeUniverse).lumen.find((l) => !game.seen.includes(l.id) && l.when(game))
     if (!line) return
     game.seen.push(line.id)
     current = line.text

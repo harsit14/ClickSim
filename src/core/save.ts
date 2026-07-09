@@ -1,20 +1,22 @@
 import { game, ratePerSec, type BuyAmount, type RunSnapshot } from '../engine/game.svelte'
 import { UI_UNLOCKS } from '../content/ui-unlocks'
 import { perkBonus } from '../content/constellation'
+import { DEFAULT_UNIVERSE_ID } from '../content/universes'
 
 const KEY = 'ember.save'
 const SESSION_KEY = 'ember.session'
 const PRESENCE_KEY = 'ember.presence'
-const CURRENT_VERSION = 8
+const CURRENT_VERSION = 9
 const BASE_OFFLINE_EFFICIENCY = 0.5
 const BASE_OFFLINE_CAP_HOURS = 2
 const ACTIVE_SESSION_GRACE_MS = 90_000
 const MIN_OFFLINE_MS = 60_000
 const PRESENCE_INTERVAL_MS = 5_000
 
-interface SaveDataV8 {
-  version: 8
+interface SaveDataV9 {
+  version: 9
   savedAt: number
+  activeUniverse: string
   light: number
   totalEarned: number
   clicks: number
@@ -56,6 +58,10 @@ interface SaveDataV8 {
   snailLastGiftAt: number
   crits: number
   bestCrit: number
+  beacons: string[]
+  darkBetween: number
+  wayfinder: string[]
+  vesselParts: string[]
 }
 
 /** Step-by-step upgrades from each older version to the next. Never delete these. */
@@ -126,9 +132,18 @@ const MIGRATIONS: Record<number, (d: any) => any> = {
     crits: d.crits ?? 0,
     bestCrit: d.bestCrit ?? 0,
   }),
+  8: (d) => ({
+    ...d,
+    version: 9,
+    activeUniverse: d.activeUniverse ?? DEFAULT_UNIVERSE_ID,
+    beacons: d.beacons ?? [],
+    darkBetween: d.darkBetween ?? 0,
+    wayfinder: d.wayfinder ?? [],
+    vesselParts: d.vesselParts ?? [],
+  }),
 }
 
-function migrate(data: any): SaveDataV8 | null {
+function migrate(data: any): SaveDataV9 | null {
   if (!data || typeof data.version !== 'number') return null
   let d = data
   while (d.version < CURRENT_VERSION) {
@@ -136,7 +151,7 @@ function migrate(data: any): SaveDataV8 | null {
     if (!step) return null
     d = step(d)
   }
-  return d.version === CURRENT_VERSION ? (d as SaveDataV8) : null
+  return d.version === CURRENT_VERSION ? (d as SaveDataV9) : null
 }
 
 function copyRunSnapshot(snapshot: RunSnapshot | null | undefined): RunSnapshot | null {
@@ -150,10 +165,11 @@ function copyRunSnapshot(snapshot: RunSnapshot | null | undefined): RunSnapshot 
   }
 }
 
-function snapshot(): SaveDataV8 {
+function snapshot(): SaveDataV9 {
   return {
-    version: 8,
+    version: 9,
     savedAt: Date.now(),
+    activeUniverse: game.activeUniverse,
     light: game.light,
     totalEarned: game.totalEarned,
     clicks: game.clicks,
@@ -195,10 +211,15 @@ function snapshot(): SaveDataV8 {
     snailLastGiftAt: game.snailLastGiftAt,
     crits: game.crits,
     bestCrit: game.bestCrit,
+    beacons: [...game.beacons],
+    darkBetween: game.darkBetween,
+    wayfinder: [...game.wayfinder],
+    vesselParts: [...game.vesselParts],
   }
 }
 
-function apply(d: SaveDataV8) {
+function apply(d: SaveDataV9) {
+  game.activeUniverse = d.activeUniverse ?? DEFAULT_UNIVERSE_ID
   game.light = d.light ?? 0
   game.totalEarned = d.totalEarned ?? 0
   game.clicks = d.clicks ?? 0
@@ -234,6 +255,10 @@ function apply(d: SaveDataV8) {
   game.snailLastGiftAt = d.snailLastGiftAt ?? 0
   game.crits = d.crits ?? 0
   game.bestCrit = d.bestCrit ?? 0
+  game.beacons = d.beacons ?? []
+  game.darkBetween = d.darkBetween ?? 0
+  game.wayfinder = d.wayfinder ?? []
+  game.vesselParts = d.vesselParts ?? []
   game.challengesDone = d.challengesDone ?? []
   game.autoKindler = d.autoKindler ?? true
   game.autoStoker = d.autoStoker ?? true
@@ -298,7 +323,7 @@ export function load(): number {
     return 0
   }
   if (!raw) return 0
-  let data: SaveDataV8 | null
+  let data: SaveDataV9 | null
   try {
     data = migrate(JSON.parse(raw))
   } catch {

@@ -11,6 +11,7 @@ import {
   keeperMealCost,
   snailGift,
 } from '../content/curiosities'
+import { DEFAULT_UNIVERSE_ID } from '../content/universes'
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
 import {
   type EcoState,
@@ -84,6 +85,14 @@ export interface GameState extends EcoState {
   crits: number
   /** largest single critical click */
   bestCrit: number
+  /** universes finished strongly enough to shine across worlds */
+  beacons: string[]
+  /** layer-3 meta-currency, earned between universes */
+  darkBetween: number
+  /** multiverse-level perks */
+  wayfinder: string[]
+  /** completed visible Vessel construction parts */
+  vesselParts: string[]
 }
 
 /** The Question becomes available once its moment has been witnessed. */
@@ -134,6 +143,7 @@ export function performRemembrance(): boolean {
 }
 
 export const game: GameState = $state({
+  activeUniverse: DEFAULT_UNIVERSE_ID,
   light: 0,
   totalEarned: 0,
   clicks: 0,
@@ -175,6 +185,10 @@ export const game: GameState = $state({
   snailLastGiftAt: 0,
   crits: 0,
   bestCrit: 0,
+  beacons: [],
+  darkBetween: 0,
+  wayfinder: [],
+  vesselParts: [],
 })
 
 const CLICK_RATE_WINDOW_MS = 3_000
@@ -414,7 +428,7 @@ export function buyGenerator(def: GeneratorDef): number {
 }
 
 export function buyUpgrade(id: string): boolean {
-  const def = upgradeById(id)
+  const def = upgradeById(game, id)
   if (!def || game.upgrades.includes(id)) return false
   if (!upgradeUnlocked(game, def) || game.light < def.cost) return false
   game.light -= def.cost
@@ -444,6 +458,7 @@ export function tick(dtSeconds: number) {
 }
 
 export function wipe() {
+  game.activeUniverse = DEFAULT_UNIVERSE_ID
   game.light = 0
   game.totalEarned = 0
   game.clicks = 0
@@ -483,4 +498,8 @@ export function wipe() {
   game.snailLastGiftAt = 0
   game.crits = 0
   game.bestCrit = 0
+  game.beacons = []
+  game.darkBetween = 0
+  game.wayfinder = []
+  game.vesselParts = []
 }

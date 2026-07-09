@@ -1,13 +1,16 @@
-import { GENERATORS, type GeneratorDef } from '../content/generators'
-import { UPGRADES, type UpgradeDef, type Effect } from '../content/upgrades'
+import type { GeneratorDef } from '../content/generators'
+import type { UpgradeDef, Effect } from '../content/upgrades'
 import { NODE_BY_ID } from '../content/constellation'
 import { CHALLENGE_BY_ID, type ChallengeMods } from '../content/challenges'
 import { DEEP_EFFECTS } from '../content/deep'
 import { KEEPER_BONUS } from '../content/curiosities'
+import { universeById } from '../content/universes'
 
 /** The purely economic slice of game state — everything production math needs.
  *  Kept free of Svelte so the headless balance simulator can drive it. */
 export interface EcoState {
+  /** active content pack */
+  activeUniverse: string
   light: number
   totalEarned: number
   clicks: number
@@ -33,6 +36,14 @@ export interface EcoState {
   curiosities: string[]
   /** wall-clock ms until the Hearthkeeper helps; 0 means sulking */
   keeperFedUntil: number
+  /** universes finished strongly enough to shine across worlds */
+  beacons: string[]
+  /** layer-3 meta-currency, earned between universes */
+  darkBetween: number
+  /** multiverse-level perks */
+  wayfinder: string[]
+  /** completed visible Vessel construction parts */
+  vesselParts: string[]
 }
 
 const NO_MODS: ChallengeMods = {}
@@ -41,16 +52,15 @@ export function challengeMods(s: EcoState): ChallengeMods {
   return (s.challenge && CHALLENGE_BY_ID.get(s.challenge)?.mods) || NO_MODS
 }
 
-const UPGRADE_BY_ID = new Map(UPGRADES.map((u) => [u.id, u]))
 const BASE_CLICK_RATE_SHARE = 0.05
 
-export function upgradeById(id: string): UpgradeDef | undefined {
-  return UPGRADE_BY_ID.get(id)
+export function upgradeById(s: Pick<EcoState, 'activeUniverse'>, id: string): UpgradeDef | undefined {
+  return universeById(s.activeUniverse).upgradeById.get(id)
 }
 
 function* ownedEffects(s: EcoState): Generator<Effect> {
   for (const id of s.upgrades) {
-    const u = UPGRADE_BY_ID.get(id)
+    const u = upgradeById(s, id)
     if (u) yield* u.effects
   }
   for (const id of s.constellation) {
@@ -82,6 +92,7 @@ export function globalMult(s: EcoState, now = Date.now()): number {
   let m = 1 + 0.01 * s.achievements.length // Radiance
   m *= 1 + 0.02 * s.stardustTotal // stardust, kept across every rebirth
   m *= Math.pow(2, s.remembrances) // memory glow — the universe remembers being bright
+  m *= Math.pow(3, s.beacons.length) // Beacons will be earned by future Crossings.
   if (s.curiosities.includes('hearthkeeper') && s.keeperFedUntil > now) m *= KEEPER_BONUS
   if (s.ending === 'warden') m *= 1.25
   else if (s.ending === 'companion') m *= 1.3
@@ -106,7 +117,7 @@ export function totalRate(s: EcoState): number {
   const mods = challengeMods(s)
   if (mods.gensDisabled) return 0
   let sum = 0
-  for (const g of GENERATORS) {
+  for (const g of universeById(s.activeUniverse).generators) {
     const owned = s.owned[g.id] ?? 0
     if (owned > 0 && !genDisabled(s, g)) sum += unitRate(s, g) * owned
   }
@@ -192,7 +203,7 @@ export function upgradeUnlocked(s: EcoState, u: UpgradeDef): boolean {
 
 /** Unlocked, not-yet-owned upgrades, cheapest first. */
 export function availableUpgrades(s: EcoState): UpgradeDef[] {
-  return UPGRADES.filter((u) => !s.upgrades.includes(u.id) && upgradeUnlocked(s, u)).sort(
+  return universeById(s.activeUniverse).upgrades.filter((u) => !s.upgrades.includes(u.id) && upgradeUnlocked(s, u)).sort(
     (a, b) => a.cost - b.cost,
   )
 }

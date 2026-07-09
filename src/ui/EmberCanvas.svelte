@@ -2,7 +2,8 @@
   import { onMount } from 'svelte'
   import { World } from '../render/world'
   import { setWorldRef } from '../render/world-ref'
-  import { GENERATORS, shownAt } from '../content/generators'
+  import { shownAt } from '../content/generators'
+  import { universeById } from '../content/universes'
   import { clickEmber, hasUi, game, buyGenerator } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { playClick, playBuy } from '../audio/sfx'
@@ -40,7 +41,7 @@
     if (target && (target.tagName === 'BUTTON' || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
     // 1–9 buy the nth generator in the shop
     if (e.key >= '1' && e.key <= '9' && hasUi('shop')) {
-      const shown = GENERATORS.filter((g) => game.totalEarned >= shownAt(g))
+      const shown = universeById(game.activeUniverse).generators.filter((g) => game.totalEarned >= shownAt(g))
       const def = shown[Number(e.key) - 1]
       if (def && buyGenerator(def) > 0) playBuy()
       return

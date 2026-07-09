@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ACHIEVEMENTS } from '../content/achievements'
-  import { GENERATORS } from '../content/generators'
+  import { universeById } from '../content/universes'
   import { genRate } from '../engine/compute'
   import {
     game,
@@ -30,7 +30,7 @@
     })),
   )
   const rows = $derived(
-    GENERATORS.filter((g) => (game.owned[g.id] ?? 0) > 0).map((g) => ({
+    universeById(game.activeUniverse).generators.filter((g) => (game.owned[g.id] ?? 0) > 0).map((g) => ({
       g,
       owned: game.owned[g.id] ?? 0,
       rate: genRate(game, g),

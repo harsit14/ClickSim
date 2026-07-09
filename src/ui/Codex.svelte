@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { ECHOES } from '../content/echoes'
   import { ENDING_CHOICES } from '../content/endings'
+  import { universeById } from '../content/universes'
   import { game } from '../engine/game.svelte'
 
   let { onclose, onremember }: { onclose: () => void; onremember: () => void } = $props()
   let openId = $state<string | null>(null)
   let rememberArmed = $state(false)
 
-  const reading = $derived(ECHOES.find((e) => e.id === openId) ?? null)
+  const echoes = $derived(universeById(game.activeUniverse).echoes)
+  const reading = $derived(echoes.find((e) => e.id === openId) ?? null)
   const found = $derived(game.echoes.length)
   const answer = $derived(ENDING_CHOICES.find((c) => c.id === game.ending) ?? null)
   const readingAnswer = $derived(openId === 'the-answer' && answer !== null)
@@ -16,7 +17,7 @@
 <section class="codex">
   <header>
     <h2>Codex of Echoes</h2>
-    <span class="count">{found} / {ECHOES.length} recovered</span>
+    <span class="count">{found} / {echoes.length} recovered</span>
     <button class="close" onclick={onclose}>✕</button>
   </header>
 
@@ -63,7 +64,7 @@
           </button>
         </li>
       {/if}
-      {#each ECHOES as echo (echo.id)}
+      {#each echoes as echo (echo.id)}
         {@const owned = game.echoes.includes(echo.id)}
         {#if owned}
           <li>

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { GENERATORS, shownAt, teasedAt, type GeneratorDef } from '../content/generators'
+  import { shownAt, teasedAt, type GeneratorDef } from '../content/generators'
+  import { universeById } from '../content/universes'
   import { unitRate, bulkCost, maxAffordable, costMultOf, costScaleOf, genDisabled } from '../engine/compute'
   import { game, hasUi, buyGenerator, type BuyAmount } from '../engine/game.svelte'
   import { format } from '../core/format'
@@ -10,9 +11,10 @@
   let collapsed = $state(false)
 
   const visible = $derived(hasUi('shop'))
-  const shown = $derived(GENERATORS.filter((g) => game.totalEarned >= shownAt(g)))
+  const generators = $derived(universeById(game.activeUniverse).generators)
+  const shown = $derived(generators.filter((g) => game.totalEarned >= shownAt(g)))
   const teased = $derived(
-    GENERATORS.find((g) => game.totalEarned < shownAt(g) && game.totalEarned >= teasedAt(g)),
+    generators.find((g) => game.totalEarned < shownAt(g) && game.totalEarned >= teasedAt(g)),
   )
 
   function purchase(g: GeneratorDef): { count: number; cost: number } {

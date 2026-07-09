@@ -1,6 +1,6 @@
 <script lang="ts">
   import { QUESTION_LINES, ENDING_CHOICES, ENDING_BONUS, type Ending } from '../content/endings'
-  import { ECHOES } from '../content/echoes'
+  import { universeById } from '../content/universes'
   import { game, chooseEnding } from '../engine/game.svelte'
   import { save } from '../core/save'
   import { stopMusic, startMusic } from '../audio/music'
@@ -15,7 +15,7 @@
   let epilogue = $state<string[]>([])
   let epilogueIdx = $state(0)
 
-  const allEchoes = $derived(game.echoes.length >= ECHOES.length)
+  const allEchoes = $derived(game.echoes.length >= universeById(game.activeUniverse).echoes.length)
   const isFinal = $derived(lineIdx === QUESTION_LINES.length - 1)
 
   function advance() {

@@ -1,4 +1,4 @@
-import { GENERATORS } from '../content/generators'
+import { universeById } from '../content/universes'
 import {
   availableUpgrades,
   costOf,
@@ -26,7 +26,7 @@ function autoKindle() {
   let bestId: string | null = null
   let bestCost = 0
   const scale = costScaleOf(game)
-  for (const g of GENERATORS) {
+  for (const g of universeById(game.activeUniverse).generators) {
     if (genDisabled(game, g)) continue
     const owned = game.owned[g.id] ?? 0
     const cost = costOf(g, owned, costMultOf(game, g), scale)
