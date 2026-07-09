@@ -88,6 +88,9 @@
         <dt>remembrances</dt><dd>{game.remembrances}</dd>
         <dt>memory glow</dt><dd>×{Math.pow(2, game.remembrances)}</dd>
       {/if}
+      {#if game.vesselParts.length > 0}
+        <dt>vessel parts</dt><dd>{game.vesselParts.length} / 5</dd>
+      {/if}
       {#if game.supernovae > 0}
         <dt>supernovae</dt><dd>{game.supernovae}</dd>
         <dt>stardust glow</dt><dd>+{game.stardustTotal * 2}%</dd>

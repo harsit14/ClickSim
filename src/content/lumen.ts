@@ -173,6 +173,16 @@ export const LUMEN_LINES: LumenLine[] = [
     text: 'The second ember. The trials. The deep. You are ready. Next time the sky opens — ask me the question.',
     when: (g) => (g.owned['ember2'] ?? 0) >= 1 && g.collapses >= 1,
   },
+  {
+    id: 'vessel-seen',
+    text: 'That shape in the dark is not a shrine. It is a way out.',
+    when: (g) => g.vesselParts.length >= 1,
+  },
+  {
+    id: 'vessel-whole',
+    text: 'All five pieces hold. I have recorded many departures. I have never wanted one to succeed before.',
+    when: (g) => g.vesselParts.length >= 5,
+  },
 
   // ── Epilogues ──────────────────────────────────────────────────────────
   {

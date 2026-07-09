@@ -12,6 +12,14 @@ import {
   snailGift,
 } from '../content/curiosities'
 import { DEFAULT_UNIVERSE_ID } from '../content/universes'
+import {
+  VESSEL_PART_BY_ID,
+  vesselComplete as computeVesselComplete,
+  vesselHasReadyPart as computeVesselHasReadyPart,
+  vesselPartReady,
+  vesselRevealed as computeVesselRevealed,
+  type VesselPartId,
+} from '../content/vessel'
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
 import {
   type EcoState,
@@ -214,6 +222,9 @@ export const critChance = () => computeCritChance(game)
 export const critMult = () => computeCritMult(game)
 export const hasUi = (id: string) => game.ui.includes(id)
 export const hasCuriosity = (id: string) => game.curiosities.includes(id)
+export const vesselRevealed = () => computeVesselRevealed(game)
+export const vesselComplete = () => computeVesselComplete(game)
+export const vesselHasReadyPart = () => computeVesselHasReadyPart(game)
 
 export function earn(amount: number) {
   game.light += amount
@@ -358,6 +369,20 @@ export function collectSnailGift(): number {
   earn(amount)
   game.snailLastGiftAt = Date.now()
   return amount
+}
+
+// ── The Vessel (prestige layer 3 scaffold) ──────────────────────────────
+export function buildVesselPart(id: VesselPartId): boolean {
+  if (game.challenge || game.vesselParts.includes(id)) return false
+  const part = VESSEL_PART_BY_ID.get(id)
+  if (!part || !vesselPartReady(game, part)) return false
+  if (part.consumes) {
+    const owned = game.owned[part.consumes.gen] ?? 0
+    if (owned < part.consumes.count) return false
+    game.owned[part.consumes.gen] = owned - part.consumes.count
+  }
+  game.vesselParts.push(id)
+  return true
 }
 
 // ── Challenge trials ─────────────────────────────────────────────────────

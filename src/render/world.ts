@@ -1,5 +1,6 @@
 import { game, ratePerSec } from '../engine/game.svelte'
 import { universeById } from '../content/universes'
+import { VESSEL_PARTS, vesselPartComplete, vesselProgress, vesselRevealed } from '../content/vessel'
 import { currentBeatIndex } from '../audio/music'
 
 interface Particle {
@@ -212,6 +213,119 @@ export class World {
 
   private hasCuriosity(id: string): boolean {
     return game.curiosities.includes(id)
+  }
+
+  private drawVessel(now: number, fade: number) {
+    if (!vesselRevealed(game)) return
+    const { ctx, width, height } = this
+    const x = width * 0.15
+    const y = height * 0.5
+    const scale = Math.max(0.72, Math.min(1.15, width / 1200))
+    const complete = (id: Parameters<typeof vesselPartComplete>[1]) => vesselPartComplete(game, id)
+    const shimmer = 0.65 + 0.35 * Math.sin(now / 1200)
+
+    ctx.save()
+    ctx.globalAlpha = fade
+    ctx.translate(x, y)
+    ctx.scale(scale, scale)
+
+    ctx.strokeStyle = 'rgba(170, 220, 255, 0.12)'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(-62, 34)
+    ctx.quadraticCurveTo(0, 64, 74, 28)
+    ctx.moveTo(-20, 34)
+    ctx.lineTo(-20, -58)
+    ctx.moveTo(24, 30)
+    ctx.lineTo(24, -44)
+    ctx.stroke()
+
+    if (complete('hull-hearths')) {
+      ctx.strokeStyle = `rgba(255, 190, 110, ${0.38 + shimmer * 0.12})`
+      ctx.lineWidth = 3
+      ctx.beginPath()
+      ctx.moveTo(-70, 22)
+      ctx.quadraticCurveTo(-18, 70, 78, 24)
+      ctx.quadraticCurveTo(22, 48, -48, 39)
+      ctx.stroke()
+    } else {
+      const hull = vesselProgress(game, VESSEL_PARTS[0])
+      ctx.strokeStyle = `rgba(255, 190, 110, ${0.08 + hull * 0.18})`
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(-70, 22)
+      ctx.quadraticCurveTo(-18, 70, 78, 24)
+      ctx.stroke()
+    }
+
+    if (complete('sails-constellation')) {
+      ctx.fillStyle = `rgba(170, 220, 255, ${0.12 + shimmer * 0.05})`
+      ctx.strokeStyle = 'rgba(205, 238, 255, 0.32)'
+      ctx.beginPath()
+      ctx.moveTo(-18, -56)
+      ctx.lineTo(-18, 20)
+      ctx.lineTo(-76, 14)
+      ctx.closePath()
+      ctx.fill()
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(26, -42)
+      ctx.lineTo(26, 22)
+      ctx.lineTo(73, 15)
+      ctx.closePath()
+      ctx.fill()
+      ctx.stroke()
+    }
+
+    if (complete('keel-trials')) {
+      ctx.strokeStyle = 'rgba(255, 130, 90, 0.32)'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(-34, 44)
+      ctx.lineTo(55, 42)
+      ctx.stroke()
+    }
+
+    if (complete('heart-sun')) {
+      const glow = 4 + shimmer * 4
+      const grad = ctx.createRadialGradient(0, 20, 0, 0, 20, 28 + glow)
+      grad.addColorStop(0, 'rgba(255, 245, 190, 0.52)')
+      grad.addColorStop(0.45, 'rgba(255, 190, 80, 0.16)')
+      grad.addColorStop(1, 'rgba(255, 190, 80, 0)')
+      ctx.fillStyle = grad
+      ctx.beginPath()
+      ctx.arc(0, 20, 28 + glow, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = 'rgba(255, 235, 150, 0.7)'
+      ctx.beginPath()
+      ctx.arc(0, 20, 4 + shimmer * 1.5, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    if (complete('archive')) {
+      ctx.strokeStyle = 'rgba(214, 198, 255, 0.36)'
+      ctx.fillStyle = 'rgba(214, 198, 255, 0.08)'
+      ctx.beginPath()
+      ctx.roundRect(45, -2, 20, 24, 3)
+      ctx.fill()
+      ctx.stroke()
+    }
+
+    for (let i = 0; i < VESSEL_PARTS.length; i++) {
+      const part = VESSEL_PARTS[i]
+      const a = -Math.PI * 0.85 + i * 0.42
+      const px = Math.cos(a) * 92
+      const py = Math.sin(a) * 56 + 16
+      const done = vesselPartComplete(game, part.id)
+      ctx.fillStyle = done
+        ? `hsla(${part.hue}, 90%, 72%, ${0.5 + shimmer * 0.18})`
+        : `hsla(${part.hue}, 80%, 65%, ${0.08 + vesselProgress(game, part) * 0.16})`
+      ctx.beginPath()
+      ctx.arc(px, py, done ? 3.2 : 2.2, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    ctx.restore()
   }
 
   private drawCuriosities(now: number, fade: number) {
@@ -522,6 +636,7 @@ export class World {
       }
     }
 
+    this.drawVessel(now, collapseFade)
     this.drawCuriosities(now, collapseFade)
 
     const c = this.center

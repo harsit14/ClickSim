@@ -7,6 +7,7 @@
   import StatsPanel from './ui/StatsPanel.svelte'
   import OptionsPanel from './ui/OptionsPanel.svelte'
   import CuriosityCabinet from './ui/CuriosityCabinet.svelte'
+  import VesselPanel from './ui/VesselPanel.svelte'
   import LumenTicker from './ui/LumenTicker.svelte'
   import WelcomeBack from './ui/WelcomeBack.svelte'
   import FallingStar from './ui/FallingStar.svelte'
@@ -21,7 +22,14 @@
   import QuestionChip from './ui/QuestionChip.svelte'
   import TheQuestion from './ui/TheQuestion.svelte'
   import RemembranceOverlay from './ui/RemembranceOverlay.svelte'
-  import { game, hasUi, performSupernova, supernovaGain } from './engine/game.svelte'
+  import {
+    game,
+    hasUi,
+    performSupernova,
+    supernovaGain,
+    vesselHasReadyPart,
+    vesselRevealed,
+  } from './engine/game.svelte'
   import { clearBuffs } from './systems/buffs.svelte'
   import { combo } from './systems/combo.svelte'
   import { save } from './core/save'
@@ -33,6 +41,7 @@
   let statsOpen = $state(false)
   let optionsOpen = $state(false)
   let curiositiesOpen = $state(false)
+  let vesselOpen = $state(false)
   let observatoryOpen = $state(false)
   let codexOpen = $state(false)
   let deepOpen = $state(false)
@@ -49,9 +58,11 @@
   )
   const deepReady = $derived(game.challenge === null && game.stardustTotal >= 20)
   const curiositiesVisible = $derived(game.curiosities.length > 0 || game.totalEarned >= 250_000)
+  const vesselVisible = $derived(vesselRevealed())
+  const vesselReady = $derived(vesselHasReadyPart())
 
   function closeAll() {
-    statsOpen = optionsOpen = curiositiesOpen = observatoryOpen = codexOpen = deepOpen = false
+    statsOpen = optionsOpen = curiositiesOpen = vesselOpen = observatoryOpen = codexOpen = deepOpen = false
   }
   function toggleStats() {
     const next = !statsOpen
@@ -67,6 +78,11 @@
     const next = !curiositiesOpen
     closeAll()
     curiositiesOpen = next
+  }
+  function toggleVessel() {
+    const next = !vesselOpen
+    closeAll()
+    vesselOpen = next
   }
   function toggleObservatory() {
     const next = !observatoryOpen
@@ -147,6 +163,9 @@
   {#if curiositiesVisible}
     <button class="dock-btn curiosity" class:open={curiositiesOpen} onclick={toggleCuriosities} title="Curiosities">◍</button>
   {/if}
+  {#if vesselVisible}
+    <button class="dock-btn vessel" class:open={vesselOpen} class:ready={vesselReady} onclick={toggleVessel} title="The Vessel">⌁</button>
+  {/if}
   {#if observatoryVisible}
     <button class="dock-btn stardust" class:open={observatoryOpen} class:ready={novaReady} onclick={toggleObservatory} title="The Observatory">✧</button>
   {/if}
@@ -166,6 +185,9 @@
 {/if}
 {#if curiositiesOpen}
   <CuriosityCabinet onclose={() => (curiositiesOpen = false)} />
+{/if}
+{#if vesselOpen}
+  <VesselPanel onclose={() => (vesselOpen = false)} />
 {/if}
 {#if observatoryOpen}
   <Observatory onclose={() => (observatoryOpen = false)} onsupernova={beginSupernova} />
@@ -252,6 +274,12 @@
   .dock-btn.curiosity.open {
     color: #e8d8ff;
     border-color: rgba(210, 170, 255, 0.45);
+  }
+  .dock-btn.vessel:hover,
+  .dock-btn.vessel.open,
+  .dock-btn.vessel.ready {
+    color: #bfeaff;
+    border-color: rgba(140, 220, 255, 0.5);
   }
   @keyframes ready-pulse {
     0%, 100% { box-shadow: 0 0 10px rgba(170, 150, 255, 0.25); }
