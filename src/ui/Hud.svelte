@@ -20,14 +20,9 @@
 
 <style>
   .hud {
-    position: fixed;
-    top: 0.85rem;
-    left: 50%;
-    transform: translateX(-50%);
     text-align: center;
     animation: fade-in 1.6s ease both;
     pointer-events: none;
-    z-index: 7;
   }
   .light {
     font-size: 2.1rem;
@@ -67,8 +62,8 @@
     text-shadow: 0 0 12px rgba(120, 210, 255, 0.35);
   }
   @keyframes fade-in {
-    from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   @keyframes fade-in-plain {
     from { opacity: 0; }

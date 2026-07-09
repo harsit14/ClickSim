@@ -3,11 +3,9 @@
   import { game, endChallenge } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { save } from '../core/save'
-  import { buffState } from '../systems/buffs.svelte'
 
   const trial = $derived(game.challenge ? CHALLENGE_BY_ID.get(game.challenge) : null)
   const progress = $derived(trial ? trial.progress(game) : null)
-  const hasBuffs = $derived(buffState.list.length > 0)
 
   function abandon() {
     if (!confirm('Abandon the trial? Your previous run returns, and no reward is earned.')) return
@@ -17,7 +15,7 @@
 </script>
 
 {#if trial && progress}
-  <div class="banner" class:below-buffs={hasBuffs}>
+  <div class="banner">
     <span class="name">{trial.name}</span>
     <span class="goal">
       {format(Math.min(progress.current, progress.target))} / {format(progress.target)}
@@ -29,10 +27,6 @@
 
 <style>
   .banner {
-    position: fixed;
-    top: 9.4rem;
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -41,15 +35,12 @@
     border: 1px solid rgba(255, 140, 90, 0.4);
     border-radius: 999px;
     box-shadow: 0 0 22px rgba(255, 120, 70, 0.18);
-    z-index: 7;
     animation: banner-in 0.5s ease both;
-  }
-  .banner.below-buffs {
-    top: 11.65rem;
+    pointer-events: auto;
   }
   @keyframes banner-in {
-    from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   .name {
     font-size: 0.82rem;
@@ -91,9 +82,6 @@
       max-width: calc(100vw - 1rem);
       gap: 0.45rem;
       padding-left: 0.7rem;
-    }
-    .banner.below-buffs {
-      top: 11.5rem;
     }
     .bar {
       width: min(5rem, 22vw);

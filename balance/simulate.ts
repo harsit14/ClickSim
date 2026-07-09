@@ -47,6 +47,9 @@ function simulate(profile: Profile) {
     challenge: null,
     challengesDone: [],
     ending: null,
+    remembrances: 0,
+    curiosities: [],
+    keeperFedUntil: 0,
   }
   const events: string[] = []
   const firstBought = new Set<string>()

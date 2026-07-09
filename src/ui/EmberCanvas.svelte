@@ -16,11 +16,11 @@
   function handleClick(x: number, y: number) {
     if (!world) return
     if (hasUi('music') && !isPlaying() && !silenced()) startMusic()
-    const gained = clickEmber(registerClick())
+    const result = clickEmber(registerClick())
     playClick()
     world.clickPulse()
     world.burst(x, y)
-    world.addFloat('+' + format(gained), x, y - 12)
+    world.addFloat(`${result.crit ? 'CRIT ' : '+'}${format(result.amount)}`, x, y - 12)
   }
 
   function onPointerDown(e: PointerEvent) {

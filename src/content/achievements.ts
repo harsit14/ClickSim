@@ -109,6 +109,24 @@ A('trial-1', 'Tested', 'One trial endured.', (g) => g.challengesDone.length >= 1
 A('trial-3', 'Tempered', 'Three trials. The dark is running out of ideas.', (g) => g.challengesDone.length >= 3)
 A('trial-6', 'Unbreakable', 'Every trial, endured. Lumen has stopped setting them.', (g) => g.challengesDone.length >= 6)
 
+// ── Curiosities & chance ────────────────────────────────────────────────
+A('first-crit', 'Found the Fault Line', 'One touch struck the dark exactly wrong.', (g) => g.crits >= 1)
+A('crit-100', 'Hundred Bright Accidents', 'Probability has started looking over its shoulder.', (g) => g.crits >= 100)
+A('curiosity-1', 'Cabinet Key', 'A strange thing agreed to stay.', (g) => g.curiosities.length >= 1)
+A('curiosity-6', 'A Shelf of Impossible Things', 'Six curiosities. The void is getting furnished.', (g) => g.curiosities.length >= 6)
+H('curiosity-all', 'The Cabinet Is Full', 'Every oddity, held in one universe.', (g) => g.curiosities.length >= 12)
+
+// ── Remembrance ─────────────────────────────────────────────────────────
+A('remembered', 'Begin Again, Knowing', 'A whole universe, folded into memory. The first pixel, twice as bright.', (g) =>
+  g.remembrances >= 1)
+A('thrice-lived', 'Thrice-Lived', 'Three lifetimes. Lumen has stopped writing "final entry."', (g) =>
+  g.remembrances >= 3)
+H('all-answers', 'Every Word of It', 'Warden, Hunger, and the one who stayed. You have said them all.', (g) => {
+  const all = new Set(g.pastEndings)
+  if (g.ending) all.add(g.ending)
+  return all.size >= 3
+})
+
 // ── The Answer ──────────────────────────────────────────────────────────
 A('ending-warden', 'The Warden', 'This light is not yours. You keep it lit anyway.', (g) => g.ending === 'warden')
 A('ending-hunger', 'The Hunger', 'Honest, at last, about what you are.', (g) => g.ending === 'hunger')

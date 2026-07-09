@@ -9,52 +9,80 @@
   const available = $derived(hasUi('upgrades') ? availableUpgrades(game) : [])
   const shown = $derived(available.slice(0, SHOWN))
   const overflow = $derived(available.length - shown.length)
-  const hasPrestigeCurrency = $derived(game.stardustTotal > 0 || game.singTotal > 0)
+  let previewId = $state<string | null>(null)
+  const preview = $derived(shown.find((u) => u.id === previewId) ?? null)
 
-  function tryBuy(id: string) {
-    if (buyUpgrade(id)) playBuy()
+  function tryBuy(id: string): boolean {
+    const bought = buyUpgrade(id)
+    if (!bought) return false
+    playBuy()
+    if (previewId === id) previewId = null
+    return true
+  }
+
+  function clearPreviewIfFocusLeaves(event: FocusEvent) {
+    const next = event.relatedTarget
+    if (!(next instanceof Node) || !(event.currentTarget as HTMLElement).contains(next)) {
+      previewId = null
+    }
   }
 </script>
 
 {#if shown.length > 0}
-  <div class="bar" class:with-currencies={hasPrestigeCurrency}>
-    {#each shown as u (u.id)}
-      <button
-        class="up"
-        class:unaffordable={game.light < u.cost}
-        style:--hue={u.hue}
-        onclick={() => tryBuy(u.id)}
-      >
-        <span class="glyph">{u.glyph}</span>
-        <span class="tip">
-          <strong>{u.name}</strong>
-          <em>{u.flavor}</em>
-          <span class="fx">{u.effects.map(describeEffect).join(' · ')}</span>
-          <span class="price">✦ {format(u.cost)}</span>
-        </span>
-      </button>
-    {/each}
-    {#if overflow > 0}
-      <span class="more">+{overflow}</span>
+  <div
+    class="upgrade-stack"
+    role="group"
+    aria-label="Available upgrades"
+    onpointerleave={() => (previewId = null)}
+    onfocusout={clearPreviewIfFocusLeaves}
+  >
+    <div class="bar">
+      {#each shown as u (u.id)}
+        <button
+          class="up"
+          class:previewing={previewId === u.id}
+          class:unaffordable={game.light < u.cost}
+          style:--hue={u.hue}
+          aria-label={`${u.name}: ${u.effects.map(describeEffect).join(', ')}`}
+          aria-describedby={previewId === u.id ? 'upgrade-preview' : undefined}
+          onpointerenter={() => (previewId = u.id)}
+          onpointerdown={() => (previewId = u.id)}
+          onfocus={() => (previewId = u.id)}
+          onclick={() => tryBuy(u.id)}
+        >
+          <span class="glyph">{u.glyph}</span>
+        </button>
+      {/each}
+      {#if overflow > 0}
+        <span class="more">+{overflow}</span>
+      {/if}
+    </div>
+    {#if preview}
+      <div id="upgrade-preview" class="detail" style:--hue={preview.hue}>
+        <strong>{preview.name}</strong>
+        <em>{preview.flavor}</em>
+        <span class="fx">{preview.effects.map(describeEffect).join(' · ')}</span>
+        <span class="price">✦ {format(preview.cost)}</span>
+      </div>
     {/if}
   </div>
 {/if}
 
 <style>
+  .upgrade-stack {
+    width: min(30rem, 96vw);
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+    animation: bar-in 1s ease both;
+    pointer-events: auto;
+  }
   .bar {
-    position: fixed;
-    top: 5.15rem;
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.45rem;
-    max-width: 92vw;
-    animation: bar-in 1s ease both;
-    z-index: 6;
-  }
-  .bar.with-currencies {
-    top: 6.35rem;
+    max-width: 100%;
   }
   @keyframes bar-in {
     from { opacity: 0; }
@@ -78,6 +106,10 @@
     box-shadow: 0 0 20px hsla(var(--hue), 90%, 60%, 0.5);
     transform: translateY(1px);
   }
+  .up.previewing {
+    border-color: hsl(var(--hue), 90%, 74%);
+    box-shadow: 0 0 20px hsla(var(--hue), 90%, 60%, 0.45);
+  }
   .up.unaffordable {
     opacity: 0.4;
     box-shadow: none;
@@ -88,41 +120,39 @@
     font-weight: 700;
     color: hsl(var(--hue), 90%, 72%);
   }
-  .tip {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    left: 50%;
-    transform: translateX(-50%);
-    display: none;
+  .detail {
+    display: flex;
     flex-direction: column;
     gap: 0.2rem;
-    width: 13.5rem;
+    width: min(25rem, 92vw);
     padding: 0.6rem 0.75rem;
     background: rgba(12, 11, 22, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 10px;
     font-size: 0.78rem;
     text-align: left;
-    z-index: 5;
     pointer-events: none;
+    box-shadow: 0 0 26px rgba(8, 7, 18, 0.55);
+    animation: detail-in 0.14s ease both;
   }
-  .up:hover .tip {
-    display: flex;
-  }
-  .tip strong {
+  .detail strong {
     color: var(--text);
   }
-  .tip em {
+  .detail em {
     color: var(--dim);
     font-family: Georgia, serif;
   }
-  .tip .fx {
+  .detail .fx {
     color: hsl(var(--hue), 80%, 70%);
   }
-  .tip .price {
+  .detail .price {
     color: var(--gold);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+  }
+  @keyframes detail-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   .more {
     font-size: 0.8rem;
@@ -130,16 +160,13 @@
   }
   @media (max-width: 720px) {
     .bar {
-      top: 5rem;
       overflow-x: auto;
-      max-width: 96vw;
+      justify-content: flex-start;
+      width: 100%;
       padding-bottom: 0.2rem;
     }
-    .bar.with-currencies {
-      top: 6.25rem;
-    }
-    .tip {
-      display: none !important;
+    .detail {
+      width: min(25rem, 96vw);
     }
   }
 </style>

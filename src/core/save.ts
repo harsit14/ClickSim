@@ -5,15 +5,15 @@ import { perkBonus } from '../content/constellation'
 const KEY = 'ember.save'
 const SESSION_KEY = 'ember.session'
 const PRESENCE_KEY = 'ember.presence'
-const CURRENT_VERSION = 7
+const CURRENT_VERSION = 8
 const BASE_OFFLINE_EFFICIENCY = 0.5
 const BASE_OFFLINE_CAP_HOURS = 2
 const ACTIVE_SESSION_GRACE_MS = 90_000
 const MIN_OFFLINE_MS = 60_000
 const PRESENCE_INTERVAL_MS = 5_000
 
-interface SaveDataV7 {
-  version: 7
+interface SaveDataV8 {
+  version: 8
   savedAt: number
   light: number
   totalEarned: number
@@ -48,7 +48,14 @@ interface SaveDataV7 {
   autoNova: boolean
   autoNovaThreshold: number
   ending: 'warden' | 'hunger' | 'companion' | null
-  theme?: string
+  theme: string
+  remembrances: number
+  pastEndings: Array<'warden' | 'hunger' | 'companion'>
+  curiosities: string[]
+  keeperFedUntil: number
+  snailLastGiftAt: number
+  crits: number
+  bestCrit: number
 }
 
 /** Step-by-step upgrades from each older version to the next. Never delete these. */
@@ -107,9 +114,21 @@ const MIGRATIONS: Record<number, (d: any) => any> = {
     version: 7,
     challengeReturn: null,
   }),
+  7: (d) => ({
+    ...d,
+    version: 8,
+    theme: d.theme ?? 'ember',
+    remembrances: d.remembrances ?? 0,
+    pastEndings: d.pastEndings ?? [],
+    curiosities: d.curiosities ?? [],
+    keeperFedUntil: d.keeperFedUntil ?? 0,
+    snailLastGiftAt: d.snailLastGiftAt ?? 0,
+    crits: d.crits ?? 0,
+    bestCrit: d.bestCrit ?? 0,
+  }),
 }
 
-function migrate(data: any): SaveDataV7 | null {
+function migrate(data: any): SaveDataV8 | null {
   if (!data || typeof data.version !== 'number') return null
   let d = data
   while (d.version < CURRENT_VERSION) {
@@ -117,7 +136,7 @@ function migrate(data: any): SaveDataV7 | null {
     if (!step) return null
     d = step(d)
   }
-  return d.version === CURRENT_VERSION ? (d as SaveDataV7) : null
+  return d.version === CURRENT_VERSION ? (d as SaveDataV8) : null
 }
 
 function copyRunSnapshot(snapshot: RunSnapshot | null | undefined): RunSnapshot | null {
@@ -131,9 +150,9 @@ function copyRunSnapshot(snapshot: RunSnapshot | null | undefined): RunSnapshot 
   }
 }
 
-function snapshot(): SaveDataV7 {
+function snapshot(): SaveDataV8 {
   return {
-    version: 7,
+    version: 8,
     savedAt: Date.now(),
     light: game.light,
     totalEarned: game.totalEarned,
@@ -169,10 +188,17 @@ function snapshot(): SaveDataV7 {
     autoNovaThreshold: game.autoNovaThreshold,
     ending: game.ending,
     theme: game.theme,
+    remembrances: game.remembrances,
+    pastEndings: [...game.pastEndings],
+    curiosities: [...game.curiosities],
+    keeperFedUntil: game.keeperFedUntil,
+    snailLastGiftAt: game.snailLastGiftAt,
+    crits: game.crits,
+    bestCrit: game.bestCrit,
   }
 }
 
-function apply(d: SaveDataV7) {
+function apply(d: SaveDataV8) {
   game.light = d.light ?? 0
   game.totalEarned = d.totalEarned ?? 0
   game.clicks = d.clicks ?? 0
@@ -201,6 +227,13 @@ function apply(d: SaveDataV7) {
   game.challenge = d.challenge ?? null
   game.challengeReturn = copyRunSnapshot(d.challengeReturn)
   game.theme = d.theme ?? 'ember'
+  game.remembrances = d.remembrances ?? 0
+  game.pastEndings = d.pastEndings ?? []
+  game.curiosities = d.curiosities ?? []
+  game.keeperFedUntil = d.keeperFedUntil ?? 0
+  game.snailLastGiftAt = d.snailLastGiftAt ?? 0
+  game.crits = d.crits ?? 0
+  game.bestCrit = d.bestCrit ?? 0
   game.challengesDone = d.challengesDone ?? []
   game.autoKindler = d.autoKindler ?? true
   game.autoStoker = d.autoStoker ?? true
@@ -265,7 +298,7 @@ export function load(): number {
     return 0
   }
   if (!raw) return 0
-  let data: SaveDataV7 | null
+  let data: SaveDataV8 | null
   try {
     data = migrate(JSON.parse(raw))
   } catch {

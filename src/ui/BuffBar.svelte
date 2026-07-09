@@ -25,17 +25,12 @@
 
 <style>
   .buffs {
-    position: fixed;
-    top: 9.4rem;
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
     gap: 0.4rem;
     max-width: min(42rem, 92vw);
     justify-content: center;
     flex-wrap: wrap;
     pointer-events: none;
-    z-index: 7;
   }
   .pill {
     padding: 0.25rem 0.75rem;

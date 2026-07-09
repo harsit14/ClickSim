@@ -3,11 +3,21 @@ import { UI_UNLOCK_BY_ID } from '../content/ui-unlocks'
 import { NODE_BY_ID, nodeAvailable, perkBonus } from '../content/constellation'
 import { CHALLENGE_BY_ID } from '../content/challenges'
 import { DEEP_UPGRADE_BY_ID, SINGULARITY_COST } from '../content/deep'
+import {
+  CURIOSITY_BY_ID,
+  KEEPER_FED_HOURS,
+  SECOND_CURSOR_CPS,
+  SNAIL_CROSSING_SEC,
+  keeperMealCost,
+  snailGift,
+} from '../content/curiosities'
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
 import {
   type EcoState,
   totalRate,
   clickPower as computeClickPower,
+  critChance as computeCritChance,
+  critMult as computeCritMult,
   bulkCost,
   maxAffordable,
   costMultOf,
@@ -25,6 +35,12 @@ export interface RunSnapshot {
   owned: Record<string, number>
   upgrades: string[]
   buyAmount: BuyAmount
+}
+
+export interface ClickResult {
+  amount: number
+  crit: boolean
+  critMult: number
 }
 
 export interface GameState extends EcoState {
@@ -56,6 +72,18 @@ export interface GameState extends EcoState {
   challengeReturn: RunSnapshot | null
   /** vestment (cosmetic accent theme) id */
   theme: string
+  /** every answer ever given, oldest first */
+  pastEndings: Array<'warden' | 'hunger' | 'companion'>
+  /** purchased screen oddities */
+  curiosities: string[]
+  /** Hearthkeeper fed-until wall-clock time, ms */
+  keeperFedUntil: number
+  /** last Lighthouse Snail payout wall-clock time, ms */
+  snailLastGiftAt: number
+  /** critical click count */
+  crits: number
+  /** largest single critical click */
+  bestCrit: number
 }
 
 /** The Question becomes available once its moment has been witnessed. */
@@ -66,6 +94,43 @@ export function questionReady(): boolean {
 export function chooseEnding(id: 'warden' | 'hunger' | 'companion') {
   if (game.ending !== null) return
   game.ending = id
+}
+
+/** Remembrance — NG+. Everything returns to the first dark pixel, except what
+ *  Lumen keeps: the echoes, the record (achievements), and the memory itself,
+ *  which doubles all light each time. The question may be answered again. */
+export function performRemembrance(): boolean {
+  if (game.ending === null) return false
+  game.pastEndings.push(game.ending)
+  game.remembrances += 1
+  // survives: echoes, achievements, pastEndings, theme, volumes,
+  // curiosities, and the record books (allTimeEarned, playtime, starsCaught, bestCombo)
+  game.light = 0
+  game.totalEarned = 0
+  game.clicks = 0
+  game.owned = {}
+  game.upgrades = []
+  game.buyAmount = 1
+  game.ui = [] // the interface is bought again, piece by piece
+  game.seen = [] // the story replays — Lumen remembers, and says so
+  game.stardust = 0
+  game.stardustTotal = 0
+  game.eraEarned = 0
+  game.constellation = []
+  game.supernovae = 0
+  game.singularities = 0
+  game.singTotal = 0
+  game.collapses = 0
+  game.singUpgrades = []
+  game.challenge = null
+  game.challengeReturn = null
+  game.challengesDone = []
+  game.autoKindler = true
+  game.autoStoker = true
+  game.autoNova = false
+  game.autoNovaThreshold = 1
+  game.ending = null
+  return true
 }
 
 export const game: GameState = $state({
@@ -103,6 +168,13 @@ export const game: GameState = $state({
   challengeReturn: null,
   ending: null,
   theme: 'ember',
+  remembrances: 0,
+  pastEndings: [],
+  curiosities: [],
+  keeperFedUntil: 0,
+  snailLastGiftAt: 0,
+  crits: 0,
+  bestCrit: 0,
 })
 
 const CLICK_RATE_WINDOW_MS = 3_000
@@ -124,7 +196,10 @@ export const recentClickRatePerSec = () => {
 }
 export const activeRatePerSec = () => passiveRatePerSec() + recentClickRatePerSec()
 export const clickPower = () => computeClickPower(game, productionBuffMult()) * clickBuffMult()
+export const critChance = () => computeCritChance(game)
+export const critMult = () => computeCritMult(game)
 export const hasUi = (id: string) => game.ui.includes(id)
+export const hasCuriosity = (id: string) => game.curiosities.includes(id)
 
 export function earn(amount: number) {
   game.light += amount
@@ -232,6 +307,45 @@ export function buyDeepUpgrade(id: string): boolean {
   return true
 }
 
+// ── Curiosities ─────────────────────────────────────────────────────────
+export function buyCuriosity(id: string): boolean {
+  const def = CURIOSITY_BY_ID.get(id)
+  if (game.challenge || !def || game.curiosities.includes(id) || game.light < def.cost) return false
+  game.light -= def.cost
+  game.curiosities.push(id)
+  if (id === 'snail') game.snailLastGiftAt = Date.now()
+  return true
+}
+
+export function hearthkeeperFed(now = Date.now()): boolean {
+  return hasCuriosity('hearthkeeper') && game.keeperFedUntil > now
+}
+
+export function feedHearthkeeper(): boolean {
+  if (game.challenge || !hasCuriosity('hearthkeeper')) return false
+  const cost = keeperMealCost(passiveRatePerSec())
+  if (game.light < cost) return false
+  game.light -= cost
+  const now = Date.now()
+  game.keeperFedUntil = Math.max(game.keeperFedUntil, now) + KEEPER_FED_HOURS * 3600_000
+  return true
+}
+
+export function snailProgress(now = Date.now()): number {
+  if (!hasCuriosity('snail')) return 0
+  const lastGiftAt = game.snailLastGiftAt || now
+  return Math.min(1, (now - lastGiftAt) / (SNAIL_CROSSING_SEC * 1000))
+}
+
+export function collectSnailGift(): number {
+  if (game.challenge) return 0
+  if (snailProgress() < 1) return 0
+  const amount = snailGift(passiveRatePerSec())
+  earn(amount)
+  game.snailLastGiftAt = Date.now()
+  return amount
+}
+
 // ── Challenge trials ─────────────────────────────────────────────────────
 export function startChallenge(id: string): boolean {
   if (game.challenge || !CHALLENGE_BY_ID.has(id) || game.challengesDone.includes(id)) return false
@@ -266,13 +380,21 @@ export function buyNode(id: string): boolean {
 }
 
 /** extraMult carries the rhythm-combo multiplier from the UI layer. */
-export function clickEmber(extraMult = 1): number {
-  const power = clickPower() * extraMult
+export function clickEmber(extraMult = 1): ClickResult {
+  const roll = Math.random()
+  const chance = critChance()
+  const crit = roll < chance
+  const mult = crit ? critMult() : 1
+  const power = clickPower() * extraMult * mult
   game.clicks += 1
+  if (crit) {
+    game.crits += 1
+    if (power > game.bestCrit) game.bestCrit = power
+  }
   earn(power)
   clickMeter.samples.push({ at: performance.now(), amount: power })
   pruneClickSamples()
-  return power
+  return { amount: power, crit, critMult: mult }
 }
 
 /** Buys according to the current buy amount. Returns units bought. */
@@ -314,6 +436,11 @@ export function tick(dtSeconds: number) {
   pruneClickSamples()
   const rate = passiveRatePerSec()
   if (rate > 0) earn(rate * dtSeconds)
+  if (hasCuriosity('second-cursor') && !game.challenge) {
+    const ghostLight = clickPower() * SECOND_CURSOR_CPS * dtSeconds
+    earn(ghostLight)
+    clickMeter.samples.push({ at: performance.now(), amount: ghostLight })
+  }
 }
 
 export function wipe() {
@@ -349,4 +476,11 @@ export function wipe() {
   game.autoNovaThreshold = 1
   game.ending = null
   game.theme = 'ember'
+  game.remembrances = 0
+  game.pastEndings = []
+  game.curiosities = []
+  game.keeperFedUntil = 0
+  game.snailLastGiftAt = 0
+  game.crits = 0
+  game.bestCrit = 0
 }

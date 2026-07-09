@@ -13,7 +13,11 @@
   // sky constellation perks: more frequent stars, longer blessings, star pairs
   // (plus the permanent Drought-trial reward)
   const rateScale = () =>
-    1 / (1 + perkBonus(game.constellation, 'starRate') + (game.challengesDone.includes('drought') ? 0.2 : 0))
+    1 /
+    (1 +
+      perkBonus(game.constellation, 'starRate') +
+      (game.challengesDone.includes('drought') ? 0.2 : 0) +
+      (game.curiosities.includes('star-jar') ? 0.05 : 0))
   const durScale = () => 1 + perkBonus(game.constellation, 'starDuration')
   const starsForbidden = () => {
     const c = game.challenge ? CHALLENGE_BY_ID.get(game.challenge) : null

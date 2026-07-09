@@ -210,6 +210,177 @@ export class World {
     return list.slice(0, want)
   }
 
+  private hasCuriosity(id: string): boolean {
+    return game.curiosities.includes(id)
+  }
+
+  private drawCuriosities(now: number, fade: number) {
+    const { ctx, width, height } = this
+    const c = this.center
+
+    if (this.hasCuriosity('aurora')) {
+      const y = height * 0.15
+      const drift = Math.sin(now / 3200) * 18
+      const grad = ctx.createLinearGradient(0, y, width, y + 80)
+      grad.addColorStop(0, 'rgba(65, 255, 210, 0)')
+      grad.addColorStop(0.35, `rgba(85, 255, 210, ${0.12 * fade})`)
+      grad.addColorStop(0.7, `rgba(170, 110, 255, ${0.12 * fade})`)
+      grad.addColorStop(1, 'rgba(85, 170, 255, 0)')
+      ctx.strokeStyle = grad
+      ctx.lineWidth = 18
+      ctx.beginPath()
+      ctx.moveTo(width * -0.05, y + drift)
+      ctx.bezierCurveTo(width * 0.25, y - 60, width * 0.55, y + 90, width * 1.05, y + 15 - drift)
+      ctx.stroke()
+    }
+
+    if (this.hasCuriosity('glass-garden')) {
+      const baseY = height * 0.91
+      for (let i = 0; i < 9; i++) {
+        const x = width * (0.28 + i * 0.055)
+        const h = 18 + ((i * 17) % 29)
+        const tw = 0.65 + 0.35 * Math.sin(now / 900 + i)
+        ctx.fillStyle = `hsla(${250 + i * 7}, 90%, 76%, ${0.18 * tw * fade})`
+        ctx.beginPath()
+        ctx.moveTo(x, baseY)
+        ctx.lineTo(x + 8, baseY - h)
+        ctx.lineTo(x + 16, baseY)
+        ctx.closePath()
+        ctx.fill()
+      }
+    }
+
+    if (this.hasCuriosity('chimes')) {
+      const x = width * 0.18
+      const y = height * 0.2
+      ctx.strokeStyle = `rgba(210, 245, 255, ${0.22 * fade})`
+      ctx.lineWidth = 1
+      for (let i = 0; i < 4; i++) {
+        const sway = Math.sin(now / 1200 + i) * 4
+        ctx.beginPath()
+        ctx.moveTo(x + i * 9, y)
+        ctx.lineTo(x + i * 9 + sway, y + 32 + i * 3)
+        ctx.stroke()
+      }
+    }
+
+    if (this.hasCuriosity('door')) {
+      const x = width * 0.76
+      const y = height * 0.66
+      const open = game.allTimeEarned >= 1e30
+      ctx.fillStyle = open ? `rgba(255, 220, 130, ${0.11 * fade})` : `rgba(255, 210, 120, ${0.04 * fade})`
+      ctx.strokeStyle = `rgba(255, 210, 120, ${0.28 * fade})`
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.roundRect(x, y, 34, 54, 5)
+      ctx.fill()
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.arc(x + 25, y + 29, 2, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(255, 235, 170, ${0.7 * fade})`
+      ctx.fill()
+    }
+
+    if (this.hasCuriosity('star-jar')) {
+      const x = width * 0.2
+      const y = height * 0.73
+      const tw = 0.7 + 0.3 * Math.sin(now / 500)
+      ctx.strokeStyle = `rgba(255, 235, 160, ${0.26 * fade})`
+      ctx.fillStyle = `rgba(255, 235, 160, ${0.06 * fade})`
+      ctx.beginPath()
+      ctx.roundRect(x, y, 26, 36, 7)
+      ctx.fill()
+      ctx.stroke()
+      ctx.fillStyle = `rgba(255, 240, 170, ${0.78 * tw * fade})`
+      ctx.beginPath()
+      ctx.arc(x + 13, y + 18, 3.5 + tw, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    if (this.hasCuriosity('letter')) {
+      const x = width * 0.28
+      const y = height * 0.68
+      ctx.strokeStyle = `rgba(255, 226, 190, ${0.22 * fade})`
+      ctx.fillStyle = `rgba(255, 226, 190, ${0.05 * fade})`
+      ctx.beginPath()
+      ctx.rect(x, y, 38, 24)
+      ctx.fill()
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      ctx.lineTo(x + 19, y + 13)
+      ctx.lineTo(x + 38, y)
+      ctx.stroke()
+    }
+
+    if (this.hasCuriosity('snail')) {
+      const progress =
+        game.snailLastGiftAt > 0 ? Math.min(1, (Date.now() - game.snailLastGiftAt) / (90 * 60 * 1000)) : 0
+      const x = width * (0.09 + progress * 0.82)
+      const y = height * 0.88
+      ctx.fillStyle = `rgba(190, 255, 150, ${0.35 * fade})`
+      ctx.beginPath()
+      ctx.arc(x, y, 7, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = `rgba(255, 240, 150, ${0.45 * fade})`
+      ctx.beginPath()
+      ctx.arc(x + 8, y - 3, 3, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    if (this.hasCuriosity('orrery')) {
+      const x = width * 0.84
+      const y = height * 0.22
+      ctx.strokeStyle = `rgba(255, 215, 130, ${0.2 * fade})`
+      ctx.lineWidth = 1
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath()
+        ctx.ellipse(x, y, 14 + i * 9, 5 + i * 4, now / 5000 + i, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+      ctx.fillStyle = `rgba(255, 230, 150, ${0.5 * fade})`
+      ctx.beginPath()
+      ctx.arc(x, y, 3, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    if (this.hasCuriosity('metronome-heart')) {
+      const beat = 1 + 0.12 * Math.sin(now / 180)
+      ctx.fillStyle = `rgba(255, 110, 180, ${0.26 * fade})`
+      ctx.beginPath()
+      ctx.arc(width * 0.72, height * 0.84, 5 * beat, 0, Math.PI * 2)
+      ctx.arc(width * 0.735, height * 0.84, 5 * beat, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    if (this.hasCuriosity('moth')) {
+      const orbit = this.emberRadius(now) * 2.1
+      const angle = now / 2300
+      const x = c.x + Math.cos(angle) * orbit
+      const y = c.y + Math.sin(angle * 1.2) * orbit * 0.55
+      ctx.fillStyle = `rgba(255, 230, 150, ${0.72 * fade})`
+      ctx.beginPath()
+      ctx.ellipse(x - 3, y, 4, 2, -0.6, 0, Math.PI * 2)
+      ctx.ellipse(x + 3, y, 4, 2, 0.6, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    if (this.hasCuriosity('second-cursor')) {
+      const orbit = this.emberRadius(now) * 1.85
+      const tap = 0.5 + 0.5 * Math.sin(now / 420)
+      const x = c.x + Math.cos(now / 1700) * orbit * 0.7
+      const y = c.y + Math.sin(now / 1700) * orbit * 0.45 + tap * 6
+      ctx.strokeStyle = `rgba(185, 230, 255, ${0.35 * fade})`
+      ctx.lineWidth = 1.4
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      ctx.lineTo(x + 15, y + 22)
+      ctx.lineTo(x + 3, y + 18)
+      ctx.lineTo(x - 3, y + 31)
+      ctx.stroke()
+    }
+  }
+
   start() {
     let last = performance.now()
     const frame = (now: number) => {
@@ -350,6 +521,8 @@ export class World {
         ctx.fill()
       }
     }
+
+    this.drawCuriosities(now, collapseFade)
 
     const c = this.center
     const r = this.emberRadius(now)

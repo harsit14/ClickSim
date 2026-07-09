@@ -3,8 +3,9 @@
   import { ENDING_CHOICES } from '../content/endings'
   import { game } from '../engine/game.svelte'
 
-  let { onclose }: { onclose: () => void } = $props()
+  let { onclose, onremember }: { onclose: () => void; onremember: () => void } = $props()
   let openId = $state<string | null>(null)
+  let rememberArmed = $state(false)
 
   const reading = $derived(ECHOES.find((e) => e.id === openId) ?? null)
   const found = $derived(game.echoes.length)
@@ -27,6 +28,24 @@
       <p class="body">“{answer.line}”
 
 {answer.epilogue.join('\n\n')}</p>
+      <div class="remembrance">
+        {#if !rememberArmed}
+          <p class="rem-pitch">
+            Lumen can fold all of this into memory — every sun, every trial, every grain of stardust —
+            and wake you at the first pixel, twice as bright. The echoes stay. The record stays.
+            The question may be answered again.
+          </p>
+          <button class="rem-btn" onclick={() => (rememberArmed = true)}>Remember it all again</button>
+        {:else}
+          <p class="rem-pitch warn">
+            Everything returns to the dark — light, kindlings, stardust, the Deep. Only memory survives.
+          </p>
+          <div class="rem-confirm">
+            <button class="rem-btn go" onclick={() => { rememberArmed = false; onremember() }}>Close the archive</button>
+            <button class="rem-btn stay" onclick={() => (rememberArmed = false)}>Not yet</button>
+          </div>
+        {/if}
+      </div>
     </article>
   {:else if reading}
     <article class="page">
@@ -178,5 +197,38 @@
     line-height: 1.65;
     color: rgba(230, 226, 245, 0.92);
     white-space: pre-line;
+  }
+  .remembrance {
+    margin-top: 1.1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgba(180, 170, 255, 0.15);
+  }
+  .rem-pitch {
+    margin: 0 0 0.6rem;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: rgba(200, 195, 230, 0.8);
+  }
+  .rem-pitch.warn { color: #ffcf9e; }
+  .rem-confirm { display: flex; gap: 0.5rem; }
+  .rem-btn {
+    padding: 0.4rem 1.1rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 650;
+    color: #14102a;
+    background: linear-gradient(180deg, #efeaff, #b6aaf5);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.08s;
+  }
+  .rem-btn:hover { transform: scale(1.04); }
+  .rem-btn.stay {
+    background: none;
+    color: var(--dim);
+    border: 1px solid rgba(255, 255, 255, 0.15);
   }
 </style>

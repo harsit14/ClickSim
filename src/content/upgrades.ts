@@ -6,12 +6,15 @@ export type Effect =
   | { kind: 'clickMult'; value: number }
   | { kind: 'clickShare'; value: number } // clicks gain this fraction of light/s
   | { kind: 'synergy'; gen: string; per: string; value: number } // gen +value fraction per `per` owned
+  | { kind: 'critChance'; value: number }
+  | { kind: 'critMult'; value: number }
 
 export interface Unlock {
   gen?: string
   count?: number
   totalEarned?: number
   clicks?: number
+  curiosity?: string
 }
 
 export interface UpgradeDef {
@@ -38,6 +41,10 @@ export function describeEffect(e: Effect): string {
       return `clicks gain +${e.value * 100}% of light/s`
     case 'synergy':
       return `${gen(e.gen)} +${(e.value * 100).toFixed(1)}% per ${gen(e.per)}`
+    case 'critChance':
+      return `critical clicks +${(e.value * 100).toFixed(0)}%`
+    case 'critMult':
+      return `critical clicks +×${e.value}`
   }
 }
 
@@ -93,6 +100,137 @@ click('solar-knuckle', 'Solar Knuckle', 'You could crack a mountain. Gently.', 1
 click('gravity-of-attention', 'Gravity of Attention', 'Where you look, light gathers.', 1e9, 3_000, [
   { kind: 'clickShare', value: 0.04 },
 ])
+
+// ── Lucky sparks: small variable-ratio joys ─────────────────────────────
+upgrades.push(
+  {
+    id: 'bright-splinter',
+    name: 'Bright Splinter',
+    flavor: 'Some touches find a fault line in the dark.',
+    cost: 50_000,
+    glyph: '×',
+    hue: 52,
+    unlock: { clicks: 120 },
+    effects: [{ kind: 'critChance', value: 0.02 }],
+  },
+  {
+    id: 'lucky-cinder',
+    name: 'Lucky Cinder',
+    flavor: 'It is not luck. It is the universe flinching.',
+    cost: 20e6,
+    glyph: '×',
+    hue: 58,
+    unlock: { totalEarned: 4e6 },
+    effects: [{ kind: 'critMult', value: 5 }],
+  },
+  {
+    id: 'jarred-fortune',
+    name: 'Jarred Fortune',
+    flavor: 'The little star taps the glass when your hand is near.',
+    cost: 9e12,
+    glyph: '×',
+    hue: 55,
+    unlock: { curiosity: 'star-jar' },
+    effects: [{ kind: 'critChance', value: 0.03 }],
+  },
+)
+
+// ── Curiosity echoes: little rules that prove the oddities are real ─────
+upgrades.push(
+  {
+    id: 'moth-lantern',
+    name: 'Moth Lantern',
+    flavor: 'It circles your hand now, finding the warmest path.',
+    cost: 3e6,
+    glyph: '◍',
+    hue: 40,
+    unlock: { curiosity: 'moth', totalEarned: 1e6 },
+    effects: [{ kind: 'clickShare', value: 0.01 }],
+  },
+  {
+    id: 'chime-resonance',
+    name: 'Chime Resonance',
+    flavor: 'The empty air learns to answer in tune.',
+    cost: 18e6,
+    glyph: '◍',
+    hue: 190,
+    unlock: { curiosity: 'chimes', totalEarned: 5e6 },
+    effects: [
+      { kind: 'globalMult', value: 1.05 },
+      { kind: 'critChance', value: 0.01 },
+    ],
+  },
+  {
+    id: 'keeper-embers',
+    name: 'Keeper Embers',
+    flavor: 'The Hearthkeeper labels the good coals. Incorrectly, but with confidence.',
+    cost: 90e6,
+    glyph: '◍',
+    hue: 18,
+    unlock: { curiosity: 'hearthkeeper', totalEarned: 25e6 },
+    effects: [{ kind: 'globalMult', value: 1.1 }],
+  },
+  {
+    id: 'glass-rootwork',
+    name: 'Glass Rootwork',
+    flavor: 'The garden drinks reflection and returns it as dawn.',
+    cost: 350e6,
+    glyph: '◍',
+    hue: 280,
+    unlock: { curiosity: 'glass-garden', totalEarned: 1e8 },
+    effects: [{ kind: 'globalMult', value: 1.12 }],
+  },
+  {
+    id: 'ghost-practice',
+    name: 'Ghost Practice',
+    flavor: 'The second cursor has been watching your rhythm. It has notes.',
+    cost: 1.5e9,
+    glyph: '◍',
+    hue: 200,
+    unlock: { curiosity: 'second-cursor', totalEarned: 5e8 },
+    effects: [{ kind: 'clickShare', value: 0.02 }],
+  },
+  {
+    id: 'snail-road',
+    name: 'Snail Road',
+    flavor: 'A path so patient that even light slows down to admire it.',
+    cost: 6e9,
+    glyph: '◍',
+    hue: 90,
+    unlock: { curiosity: 'snail', totalEarned: 2e9 },
+    effects: [{ kind: 'globalMult', value: 1.12 }],
+  },
+  {
+    id: 'aurora-spectrum',
+    name: 'Aurora Spectrum',
+    flavor: 'Every color teaches the ember one more way to be bright.',
+    cost: 30e9,
+    glyph: '◍',
+    hue: 160,
+    unlock: { curiosity: 'aurora', totalEarned: 1e10 },
+    effects: [{ kind: 'critChance', value: 0.02 }],
+  },
+  {
+    id: 'door-hinge',
+    name: 'Door Hinge',
+    flavor: 'It still will not open. It does, however, creak meaningfully.',
+    cost: 400e9,
+    glyph: '◍',
+    hue: 50,
+    unlock: { curiosity: 'door', totalEarned: 1e11 },
+    effects: [{ kind: 'critMult', value: 10 }],
+  },
+  {
+    id: 'orrery-route',
+    name: 'Orrery Route',
+    flavor: 'One brass world points to another, and the ember understands distance.',
+    cost: 4e15,
+    glyph: '◍',
+    hue: 45,
+    unlock: { curiosity: 'orrery', totalEarned: 1e15 },
+    effects: [{ kind: 'globalMult', value: 1.35 }],
+  },
+)
 
 // ── Global dawns: ×2 everything at milestones ───────────────────────────
 const dawn = (id: string, name: string, flavor: string, cost: number, totalEarned: number) =>

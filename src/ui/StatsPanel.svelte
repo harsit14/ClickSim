@@ -9,6 +9,8 @@
     activeRatePerSec,
     recentClickRatePerSec,
     clickPower,
+    critChance,
+    critMult,
   } from '../engine/game.svelte'
   import { format } from '../core/format'
 
@@ -73,12 +75,19 @@
         <dt>recent clicks / second</dt><dd>{format(clickRate)}</dd>
       {/if}
       <dt>per click</dt><dd>{format(clickPower())}</dd>
+      <dt>critical clicks</dt><dd>{game.crits}</dd>
+      <dt>crit chance</dt><dd>{Math.round(critChance() * 100)}% ×{critMult()}</dd>
       <dt>clicks</dt><dd>{format(game.clicks)}</dd>
       <dt>upgrades found</dt><dd>{game.upgrades.length}</dd>
+      <dt>curiosities</dt><dd>{game.curiosities.length}</dd>
       <dt>radiance</dt><dd>+{game.achievements.length}%</dd>
       <dt>stars caught</dt><dd>{game.starsCaught}</dd>
       <dt>best combo</dt><dd>{game.bestCombo}</dd>
       <dt>time kindling</dt><dd>{fmtTime(game.playtime)}</dd>
+      {#if game.remembrances > 0}
+        <dt>remembrances</dt><dd>{game.remembrances}</dd>
+        <dt>memory glow</dt><dd>×{Math.pow(2, game.remembrances)}</dd>
+      {/if}
       {#if game.supernovae > 0}
         <dt>supernovae</dt><dd>{game.supernovae}</dd>
         <dt>stardust glow</dt><dd>+{game.stardustTotal * 2}%</dd>

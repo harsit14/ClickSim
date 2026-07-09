@@ -8,7 +8,10 @@ import { pushToast } from './toasts.svelte'
 /** Click within this many seconds of a beat to keep the combo alive.
  *  The Conductor constellation node widens it. */
 const BASE_WINDOW_SEC = 0.13
-const windowSec = () => BASE_WINDOW_SEC + perkBonus(game.constellation, 'comboWindow')
+const windowSec = () =>
+  BASE_WINDOW_SEC +
+  perkBonus(game.constellation, 'comboWindow') +
+  (game.curiosities.includes('metronome-heart') ? 0.02 : 0)
 
 export const combo = $state({ streak: 0, lastRewardAt: 0 })
 

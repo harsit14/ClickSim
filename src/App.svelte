@@ -6,6 +6,7 @@
   import UiChips from './ui/UiChips.svelte'
   import StatsPanel from './ui/StatsPanel.svelte'
   import OptionsPanel from './ui/OptionsPanel.svelte'
+  import CuriosityCabinet from './ui/CuriosityCabinet.svelte'
   import LumenTicker from './ui/LumenTicker.svelte'
   import WelcomeBack from './ui/WelcomeBack.svelte'
   import FallingStar from './ui/FallingStar.svelte'
@@ -19,6 +20,7 @@
   import ChallengeBanner from './ui/ChallengeBanner.svelte'
   import QuestionChip from './ui/QuestionChip.svelte'
   import TheQuestion from './ui/TheQuestion.svelte'
+  import RemembranceOverlay from './ui/RemembranceOverlay.svelte'
   import { game, hasUi, performSupernova, supernovaGain } from './engine/game.svelte'
   import { clearBuffs } from './systems/buffs.svelte'
   import { combo } from './systems/combo.svelte'
@@ -30,11 +32,13 @@
 
   let statsOpen = $state(false)
   let optionsOpen = $state(false)
+  let curiositiesOpen = $state(false)
   let observatoryOpen = $state(false)
   let codexOpen = $state(false)
   let deepOpen = $state(false)
   let cutsceneActive = $state(false)
   let questionOpen = $state(false)
+  let remembering = $state(false)
 
   const novaReady = $derived(supernovaGain() >= 1)
   const observatoryVisible = $derived(
@@ -44,9 +48,10 @@
     game.singTotal > 0 || game.collapses > 0 || game.stardustTotal >= 15 || game.challenge !== null,
   )
   const deepReady = $derived(game.challenge === null && game.stardustTotal >= 20)
+  const curiositiesVisible = $derived(game.curiosities.length > 0 || game.totalEarned >= 250_000)
 
   function closeAll() {
-    statsOpen = optionsOpen = observatoryOpen = codexOpen = deepOpen = false
+    statsOpen = optionsOpen = curiositiesOpen = observatoryOpen = codexOpen = deepOpen = false
   }
   function toggleStats() {
     const next = !statsOpen
@@ -57,6 +62,11 @@
     const next = !optionsOpen
     closeAll()
     optionsOpen = next
+  }
+  function toggleCuriosities() {
+    const next = !curiositiesOpen
+    closeAll()
+    curiositiesOpen = next
   }
   function toggleObservatory() {
     const next = !observatoryOpen
@@ -113,10 +123,12 @@
 </script>
 
 <EmberCanvas />
-<Hud />
-<BuffBar />
-<ChallengeBanner />
-<UpgradeBar />
+<section class="top-stack" aria-label="Run status and upgrades">
+  <Hud />
+  <BuffBar />
+  <ChallengeBanner />
+  <UpgradeBar />
+</section>
 <ShopPanel />
 <UiChips />
 <ComboMeter />
@@ -131,6 +143,9 @@
   {/if}
   {#if hasUi('options')}
     <button class="dock-btn" class:open={optionsOpen} onclick={toggleOptions} title="A way to choose">⚙</button>
+  {/if}
+  {#if curiositiesVisible}
+    <button class="dock-btn curiosity" class:open={curiositiesOpen} onclick={toggleCuriosities} title="Curiosities">◍</button>
   {/if}
   {#if observatoryVisible}
     <button class="dock-btn stardust" class:open={observatoryOpen} class:ready={novaReady} onclick={toggleObservatory} title="The Observatory">✧</button>
@@ -149,11 +164,17 @@
 {#if optionsOpen}
   <OptionsPanel onclose={() => (optionsOpen = false)} />
 {/if}
+{#if curiositiesOpen}
+  <CuriosityCabinet onclose={() => (curiositiesOpen = false)} />
+{/if}
 {#if observatoryOpen}
   <Observatory onclose={() => (observatoryOpen = false)} onsupernova={beginSupernova} />
 {/if}
 {#if codexOpen}
-  <Codex onclose={() => (codexOpen = false)} />
+  <Codex
+    onclose={() => (codexOpen = false)}
+    onremember={() => { closeAll(); remembering = true }}
+  />
 {/if}
 {#if deepOpen}
   <TheDeep onclose={() => (deepOpen = false)} />
@@ -165,8 +186,24 @@
 {#if questionOpen}
   <TheQuestion onclose={() => (questionOpen = false)} />
 {/if}
+{#if remembering}
+  <RemembranceOverlay onfinished={() => (remembering = false)} />
+{/if}
 
 <style>
+  .top-stack {
+    position: fixed;
+    top: clamp(0.55rem, 1.7vh, 0.9rem);
+    left: 50%;
+    width: min(34rem, calc(100vw - 1rem));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 8;
+  }
   .dock {
     position: fixed;
     bottom: 0.9rem;
@@ -210,6 +247,11 @@
   .dock-btn.deep.ready {
     color: #bfeaff;
     border-color: rgba(140, 220, 255, 0.5);
+  }
+  .dock-btn.curiosity:hover,
+  .dock-btn.curiosity.open {
+    color: #e8d8ff;
+    border-color: rgba(210, 170, 255, 0.45);
   }
   @keyframes ready-pulse {
     0%, 100% { box-shadow: 0 0 10px rgba(170, 150, 255, 0.25); }

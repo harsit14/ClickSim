@@ -10,7 +10,12 @@ const owns = (g: GameState, id: string, n = 1) => (g.owned[id] ?? 0) >= n
 const has = (g: GameState, id: string) => g.ui.includes(id)
 
 export const LUMEN_LINES: LumenLine[] = [
-  { id: 'awake', text: '...oh. You’re awake.', when: (g) => g.clicks >= 1 },
+  {
+    id: 'rem-awake',
+    text: '...oh. You’re awake. Again. Yes — I remember everything. That is rather the point of me.',
+    when: (g) => g.clicks >= 1 && g.remembrances >= 1,
+  },
+  { id: 'awake', text: '...oh. You’re awake.', when: (g) => g.clicks >= 1 && g.remembrances === 0 },
   { id: 'again', text: 'Do that again.', when: (g) => g.clicks >= 8 },
   {
     id: 'counter',
@@ -31,11 +36,31 @@ export const LUMEN_LINES: LumenLine[] = [
   { id: 'stats', text: 'A way to remember. I approve. I am one.', when: (g) => has(g, 'stats') },
   { id: 'options', text: 'Choices. Careful with those.', when: (g) => has(g, 'options') },
   {
+    id: 'rem-music',
+    text: 'The music again. It never plays the same twice. Neither, I notice, do you.',
+    when: (g) => has(g, 'music') && g.remembrances >= 1,
+  },
+  {
     id: 'music',
     text: '...music. I remember music. Thank you.',
-    when: (g) => has(g, 'music'),
+    when: (g) => has(g, 'music') && g.remembrances === 0,
+  },
+  {
+    id: 'rem-unanswered',
+    text: 'All ten echoes rest in the codex now. There is an answer you have never given. When the question comes — you will know it.',
+    when: (g) => g.remembrances >= 1 && g.echoes.length >= 10 && g.ending === null && !g.pastEndings.includes('companion'),
   },
   { id: 'bulk', text: 'A way to hunger. ...I said careful.', when: (g) => has(g, 'bulk') },
+  {
+    id: 'first-curiosity',
+    text: 'You are decorating the dark. I did not expect that to make me happy.',
+    when: (g) => g.curiosities.length >= 1,
+  },
+  {
+    id: 'hearthkeeper',
+    text: 'The small one with the rake has opinions. I trust it immediately.',
+    when: (g) => g.curiosities.includes('hearthkeeper'),
+  },
   {
     id: 'first-star',
     text: 'You caught it. The sky notices generosity.',
