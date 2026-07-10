@@ -1002,25 +1002,24 @@ export class World {
     ctx.fillStyle = vg
     ctx.fillRect(0, 0, width, height)
 
-    // Legacy worlds retain their dot field. Approved V2 worlds are rendered
-    // exclusively from explicit presentation descriptors in ManifestWorldLayer.
+    // The ambient field gives progression a shared sense of depth. V2 worlds
+    // add a composed universe atmosphere in ManifestWorldLayer instead of
+    // replacing this field with a grid of contract primitives.
     const collapseFade = 1 - this.collapseProgress(now)
     const reduced = this.motionScale() < 1
     const authoredManifestWorld = universeV2ById(game.activeUniverse) !== null
-    if (!authoredManifestWorld) {
-      for (const g of universeById(game.activeUniverse).generators) {
-        const owned = game.owned[g.id] ?? 0
-        if (owned <= 0) continue
-        const ownedScale = 1 + Math.min(0.7, Math.log10(owned + 1) * 0.2)
-        const tierScale = 1 + Math.min(0.25, g.tier * 0.012)
-        for (const gl of this.glimmersFor(g.id, owned, g.hue, g.tier)) {
-          const tw = reduced ? 0.72 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now / 700 + gl.phase))
-          const size = gl.size * ownedScale * tierScale
-          ctx.beginPath()
-          ctx.fillStyle = `hsla(${gl.hue}, 90%, 70%, ${0.31 * tw * collapseFade})`
-          ctx.arc(gl.x * width, gl.y * height, size * tw + 0.4, 0, Math.PI * 2)
-          ctx.fill()
-        }
+    for (const g of universeById(game.activeUniverse).generators) {
+      const owned = game.owned[g.id] ?? 0
+      if (owned <= 0) continue
+      const ownedScale = 1 + Math.min(0.7, Math.log10(owned + 1) * 0.2)
+      const tierScale = 1 + Math.min(0.25, g.tier * 0.012)
+      for (const gl of this.glimmersFor(g.id, owned, g.hue, g.tier)) {
+        const tw = reduced ? 0.72 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now / 700 + gl.phase))
+        const size = gl.size * ownedScale * tierScale
+        ctx.beginPath()
+        ctx.fillStyle = `hsla(${gl.hue}, 90%, 70%, ${0.22 * tw * collapseFade})`
+        ctx.arc(gl.x * width, gl.y * height, size * tw + 0.4, 0, Math.PI * 2)
+        ctx.fill()
       }
     }
 

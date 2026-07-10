@@ -1,10 +1,13 @@
 import type { DurationFormatter, UiTextParameter, UiTextResolver } from './ui-text'
 
 const COPY: Readonly<Record<string, string>> = {
-  'goal-lens.title': 'Goal Lens',
+  'goal-lens.title': 'Ember Compass',
   'goal-lens.turn-off': 'Turn off',
-  'goal-lens.turn-off-label': 'Turn off the Goal Lens',
-  'goal-lens.collapsed-active-rhythm': 'Collapsed while rhythm play is active.',
+  'goal-lens.turn-off-label': 'Turn off the Ember Compass',
+  'goal-lens.open-label': 'Open the Ember Compass',
+  'goal-lens.close-label': 'Close the Ember Compass',
+  'goal-lens.chart-label': 'Three bearings',
+  'goal-lens.collapsed-active-rhythm': 'Following your rhythm.',
   'goal-lens.no-recommendation': 'No useful recommendation is available yet.',
   'goal-lens.goal-unavailable': 'Goal {id}',
   'goal-lens.pin': 'Pin',
@@ -85,6 +88,15 @@ const COPY: Readonly<Record<string, string>> = {
 }
 
 const TIDEFALL_COPY: Readonly<Record<string, string>> = {
+  'goal-lens.title': 'Current Chart',
+  'goal-lens.turn-off-label': 'Turn off the Current Chart',
+  'goal-lens.open-label': 'Open the Current Chart',
+  'goal-lens.close-label': 'Close the Current Chart',
+  'goal-lens.chart-label': 'Three bearings',
+  'goal-lens.collapsed-active-rhythm': 'Holding your course.',
+  'goal-lens.slot.now': 'Next current',
+  'goal-lens.slot.soon': 'On the horizon',
+  'goal-lens.slot.pinned': 'Held course',
   'goal-lens.reason.supernova': 'Draw this tide into lasting Moon Salt.',
   'goal-lens.supernova': 'Preview the Undertow',
   'prompt.supernova.title': 'Preview the Undertow before committing',

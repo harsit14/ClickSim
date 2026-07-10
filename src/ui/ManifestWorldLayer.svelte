@@ -7,17 +7,11 @@
     type ManifestRenderPreferences,
     type ManifestViewport,
   } from '../render/manifest-layout'
-  import {
-    heartPresentationStateKey,
-    objectPresentationStateKey,
-    type ObjectPresentation,
-    type PresentationState,
-  } from '../render/presentation-contract'
+  import { heartPresentationStateKey } from '../render/presentation-contract'
   import {
     presentationWorldStateAt,
     universePresentationById,
   } from '../render/presentation-registry'
-  import PresentationShape from './PresentationShape.svelte'
 
   interface Props {
     pack: UniversePackV2
@@ -27,6 +21,20 @@
     litBeaconUniverseIds?: readonly string[]
     activeOmenIds?: readonly string[]
   }
+
+  const EMBER_STARS = [
+    ['16%', '34%', '0.72'], ['24%', '70%', '0.42'], ['35%', '23%', '0.5'],
+    ['66%', '24%', '0.46'], ['76%', '68%', '0.66'], ['84%', '39%', '0.38'],
+    ['43%', '79%', '0.32'], ['58%', '76%', '0.28'],
+  ] as const
+  const TIDE_BUBBLES = [
+    ['19%', '42%', '0.56'], ['23%', '48%', '0.32'], ['27%', '38%', '0.24'],
+    ['74%', '62%', '0.28'], ['78%', '54%', '0.48'], ['82%', '66%', '0.22'],
+  ] as const
+  const TIDE_FISH = [
+    ['18%', '59%', '0.62'], ['23%', '63%', '0.42'], ['28%', '57%', '0.32'],
+    ['71%', '40%', '0.38'], ['76%', '44%', '0.56'], ['81%', '39%', '0.3'],
+  ] as const
 
   let {
     pack,
@@ -60,7 +68,6 @@
       ? owned[object.sourceId] ?? 0
       : objectVisible(object) ? 1 : 0,
   ])))
-
   const plan = $derived(planManifestLayout({
     visual: pack.visual,
     heart: pack.heart,
@@ -74,6 +81,7 @@
   }))
   const heartState = $derived(presentation?.heart.states[heartPresentationStateKey(plan.heart.state)] ?? null)
   const worldState = $derived(presentationWorldStateAt(pack.id, now))
+  const sceneStrength = $derived(Math.min(1, 0.3 + plan.objects.length / 12))
 
   function measure() {
     viewport = {
@@ -96,14 +104,6 @@
     return countLabel(count)
   }
 
-  function descriptorFor(object: ManifestObjectRenderPlan): ObjectPresentation | null {
-    return presentation?.objects[object.objectId] ?? null
-  }
-
-  function visualStateFor(object: ManifestObjectRenderPlan): PresentationState | null {
-    return descriptorFor(object)?.states[objectPresentationStateKey(object.state)] ?? null
-  }
-
   onMount(() => {
     measure()
     const timer = setInterval(() => (now = Date.now()), 500)
@@ -115,35 +115,59 @@
 
 <section
   class="manifest-world"
+  class:emberlight={pack.id === 'emberlight'}
+  class:tidefall={pack.id === 'tidefall'}
+  class:motion-paused={preferences.reducedMotion}
   aria-label={`${pack.identity.shortName} authored world`}
   data-universe-v2={pack.id}
   data-layout-diagnostics={plan.diagnostics.length}
   data-visible-objects={plan.objects.length}
   data-presentation-ready={presentation !== null}
   data-world-state={worldState?.key ?? 'none'}
+  style={`--scene-strength:${sceneStrength}`}
 >
-  <h2 class="sr-only">Visible {pack.identity.shortName} world objects</h2>
+  <h2 class="sr-only">Visible {pack.identity.shortName} world</h2>
 
   {#if presentation}
+    <div class="scene-composition" aria-hidden="true">
+      <div class="scene-vignette"></div>
+      {#if pack.id === 'emberlight'}
+        <div class="ember-haze"></div>
+        <div class="ember-corona"></div>
+        <div class="ember-orbit orbit-one"></div>
+        <div class="ember-orbit orbit-two"></div>
+        <div class="ember-orbit orbit-three"></div>
+        <div class="ember-constellation">
+          {#each EMBER_STARS as star}
+            <i style={`--x:${star[0]};--y:${star[1]};--spark:${star[2]}`}></i>
+          {/each}
+        </div>
+      {:else}
+        <div class="tide-depth"></div>
+        <div class="tide-current current-one"></div>
+        <div class="tide-current current-two"></div>
+        <div class="tide-current current-three"></div>
+        <div class="tide-caustic"></div>
+        <div class="tide-bubbles">
+          {#each TIDE_BUBBLES as bubble}
+            <i style={`--x:${bubble[0]};--y:${bubble[1]};--bubble:${bubble[2]}`}></i>
+          {/each}
+        </div>
+        <div class="tide-shoal">
+          {#each TIDE_FISH as fish}
+            <i style={`--x:${fish[0]};--y:${fish[1]};--fish:${fish[2]}`}></i>
+          {/each}
+        </div>
+      {/if}
+    </div>
+
     {#if worldState}
-      <div
-        class="world-state-geometry"
-        data-depth={worldState.descriptor.depth}
-        data-state-key={worldState.key}
-        data-occlusion={worldState.descriptor.occlusion}
-      >
-        <PresentationShape state={worldState.descriptor} palette={presentation.palette} />
-      </div>
-      <div class="world-state-indicator" role="status" aria-label={worldState.label}>
-        <span class="phase-mark" data-state-key={worldState.key} aria-hidden="true"></span>
-        <strong>{worldState.label}</strong>
-      </div>
+      <p class="sr-only" role="status">{worldState.label}</p>
     {/if}
 
     {#if heartState}
       <figure
         class="manifest-heart"
-        class:motion-paused={preferences.reducedMotion}
         data-depth={presentation.heart.depth}
         data-heart-id={presentation.heart.id}
         data-state-source={plan.heart.state.source}
@@ -152,38 +176,22 @@
         style={`left:${plan.heart.rect.x}px;top:${plan.heart.rect.y}px;width:${plan.heart.rect.width}px;height:${plan.heart.rect.height}px`}
         aria-hidden="true"
       >
-        <PresentationShape state={heartState} palette={presentation.palette} />
+        <span class="heart-frame"><i></i></span>
       </figure>
     {/if}
 
-    {#each plan.objects as object (object.objectId)}
-      {@const ownedCount = owned[object.sourceId] ?? 0}
-      {@const descriptor = descriptorFor(object)}
-      {@const visualState = visualStateFor(object)}
-      {#if descriptor && visualState}
-        <figure
-          class="manifest-object"
-          class:motion-paused={object.motionPaused}
+    <ul class="sr-only" aria-label={`${pack.identity.shortName} visible landmarks`}>
+      {#each plan.objects as object (object.objectId)}
+        {@const ownedCount = owned[object.sourceId] ?? 0}
+        <li
           data-object-id={object.objectId}
           data-source-id={object.sourceId}
-          data-zone={object.screenZone}
-          data-depth={descriptor.depth}
-          data-motion={object.state.motion.kind}
-          data-ownership-state={object.state.ownershipThreshold ?? 'base'}
           data-state-source={object.state.source}
-          data-geometry={visualState.geometryLabel}
-          data-occlusion={descriptor.occlusion}
-          style={`left:${object.rect.x}px;top:${object.rect.y}px;width:${object.rect.width}px;height:${object.rect.height}px;opacity:${object.opacity}`}
-          aria-label={`${object.state.label}; ${statusLabel(object, ownedCount)}; ${object.state.silhouette}`}
         >
-          <PresentationShape state={visualState} palette={presentation.palette} />
-          <figcaption aria-hidden="true">
-            <strong>{object.state.label}</strong>
-            <span>{statusLabel(object, ownedCount)}</span>
-          </figcaption>
-        </figure>
-      {/if}
-    {/each}
+          {object.state.label}; {statusLabel(object, ownedCount)}; {object.state.silhouette}
+        </li>
+      {/each}
+    </ul>
   {:else}
     <p class="sr-only" role="status">No authored presentation is registered for {pack.identity.shortName}.</p>
   {/if}
@@ -204,93 +212,196 @@
     overflow: hidden;
     pointer-events: none;
   }
-  .world-state-geometry {
+  .scene-composition,
+  .scene-vignette,
+  .ember-constellation,
+  .tide-bubbles,
+  .tide-shoal {
     position: absolute;
-    inset: 12% 6% 7%;
-    z-index: 0;
-    opacity: 0.78;
-    transform-origin: 50% 70%;
-    animation: world-state-breathe 8s ease-in-out infinite;
+    inset: 0;
   }
-  .world-state-indicator {
-    position: fixed;
-    left: 1rem;
-    bottom: 1rem;
+  .scene-composition {
+    opacity: calc(0.58 + var(--scene-strength) * 0.28);
+  }
+  .scene-vignette {
     z-index: 4;
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.34rem 0.55rem;
-    color: color-mix(in srgb, var(--gold) 82%, white);
-    background: color-mix(in srgb, var(--panel) 86%, transparent);
-    border: 1px solid color-mix(in srgb, var(--gold) 42%, transparent);
-    border-radius: 0.4rem;
-    font-size: 0.65rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    background: radial-gradient(ellipse at 50% 53%, transparent 0 28%, rgba(2, 4, 10, 0.12) 58%, rgba(1, 2, 7, 0.7) 100%);
   }
-  .phase-mark {
-    position: relative;
-    width: 1.3rem;
-    height: 0.85rem;
-    border: 2px solid currentColor;
-  }
-  .phase-mark[data-state-key='rising'] { border-width: 0 2px 2px 0; transform: rotate(-135deg) scale(0.62); }
-  .phase-mark[data-state-key='high'] { border-width: 2px 2px 0; border-radius: 50% 50% 0 0; }
-  .phase-mark[data-state-key='falling'] { border-width: 0 2px 2px 0; transform: rotate(45deg) scale(0.62); }
-  .phase-mark[data-state-key='low'] { border-width: 0 2px 2px; border-radius: 0 0 50% 50%; }
-  .manifest-heart,
-  .manifest-object {
-    --object-shadow: color-mix(in srgb, var(--amber) 46%, transparent);
+
+  /* Emberlight: one solar system, not a field of disconnected tokens. */
+  .ember-haze,
+  .ember-corona,
+  .ember-orbit {
     position: absolute;
+    left: 50%;
+    top: 53%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .ember-haze {
+    width: min(76vw, 68rem);
+    aspect-ratio: 1.45;
+    background:
+      radial-gradient(ellipse at center, color-mix(in srgb, var(--amber) 11%, transparent) 0 12%, transparent 54%),
+      radial-gradient(ellipse at center, color-mix(in srgb, var(--gold) 6%, transparent) 0 2%, transparent 68%);
+    filter: blur(18px);
+  }
+  .ember-corona {
+    width: min(34vw, 28rem);
+    aspect-ratio: 1;
+    background: repeating-conic-gradient(from 8deg, color-mix(in srgb, var(--gold) 12%, transparent) 0 1deg, transparent 1deg 18deg);
+    -webkit-mask: radial-gradient(circle, transparent 0 28%, #000 45%, transparent 72%);
+    mask: radial-gradient(circle, transparent 0 28%, #000 45%, transparent 72%);
+    animation: corona-turn 70s linear infinite;
+  }
+  .ember-orbit {
+    border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+    box-shadow: inset 0 0 2rem color-mix(in srgb, var(--amber) 3%, transparent);
+  }
+  .orbit-one { width: min(32vw, 29rem); aspect-ratio: 1.85; transform: translate(-50%, -50%) rotate(-9deg); }
+  .orbit-two { width: min(55vw, 52rem); aspect-ratio: 2.15; opacity: 0.52; transform: translate(-50%, -50%) rotate(6deg); }
+  .orbit-three { width: min(76vw, 72rem); aspect-ratio: 2.55; opacity: 0.22; transform: translate(-50%, -50%) rotate(-4deg); }
+  .ember-constellation i {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: calc(0.22rem + var(--spark) * 0.26rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--gold) 86%, white);
+    box-shadow:
+      0 0 calc(0.4rem + var(--spark) * 0.9rem) color-mix(in srgb, var(--amber) 58%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--gold) 20%, transparent);
+    opacity: calc(0.25 + var(--spark));
+    animation: ember-signal 5.8s ease-in-out infinite alternate;
+  }
+
+  /* Tidefall: layered currents share a horizon and the landmarks form two shoals. */
+  .tide-depth {
+    position: absolute;
+    inset: 8% 0 0;
+    background:
+      radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--amber) 12%, transparent) 0 5%, transparent 42%),
+      linear-gradient(180deg, transparent 0 28%, color-mix(in srgb, var(--panel) 16%, transparent) 58%, color-mix(in srgb, var(--bg) 35%, transparent) 100%);
+  }
+  .tide-current {
+    position: absolute;
+    left: -12vw;
+    width: 124vw;
+    border-radius: 50%;
+    border-top: 1px solid color-mix(in srgb, var(--gold) 34%, transparent);
+    box-shadow: 0 -1.2rem 2.8rem color-mix(in srgb, var(--amber) 4%, transparent);
+    transform-origin: center;
+    animation: current-drift 14s ease-in-out infinite alternate;
+  }
+  .current-one { top: 39%; height: 24%; transform: rotate(-2deg); }
+  .current-two { top: 51%; height: 18%; opacity: 0.54; transform: rotate(2deg); animation-delay: -4s; }
+  .current-three { top: 67%; height: 16%; opacity: 0.24; transform: rotate(-1deg); animation-delay: -8s; }
+  .tide-caustic {
+    position: absolute;
+    left: 50%;
+    top: 53%;
+    width: min(68vw, 64rem);
+    aspect-ratio: 2.5;
+    border: 1px solid color-mix(in srgb, var(--gold) 22%, transparent);
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: inset 0 0 4rem color-mix(in srgb, var(--amber) 4%, transparent);
+  }
+  .tide-bubbles i {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: calc(0.28rem + var(--bubble) * 0.8rem);
+    aspect-ratio: 1;
+    border: 1px solid color-mix(in srgb, var(--gold) 48%, transparent);
+    border-radius: 50%;
+    opacity: calc(0.18 + var(--bubble));
+    animation: bubble-rise 9s ease-in-out infinite alternate;
+  }
+  .tide-shoal i {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: calc(0.8rem + var(--fish) * 1.4rem);
+    height: calc(0.24rem + var(--fish) * 0.34rem);
+    border-radius: 70% 46% 46% 70%;
+    background: color-mix(in srgb, var(--gold) 46%, transparent);
+    opacity: calc(0.16 + var(--fish) * 0.42);
+    animation: shoal-drift 11s ease-in-out infinite alternate;
+  }
+  .tide-shoal i::after {
+    content: '';
+    position: absolute;
+    right: -32%;
+    top: 50%;
+    width: 42%;
+    height: 150%;
+    background: inherit;
+    clip-path: polygon(0 50%, 100% 0, 100% 100%);
+    transform: translateY(-50%);
+  }
+  .tide-shoal i:nth-child(-n + 3) { transform: scaleX(-1); }
+
+  .manifest-heart {
+    position: absolute;
+    z-index: 3;
+    margin: 0;
     display: grid;
     place-items: center;
-    margin: 0;
-    filter: drop-shadow(0 0 9px var(--object-shadow));
-    transition: opacity 180ms ease, filter 180ms ease;
     transform-origin: center;
   }
-  [data-depth='back'] { z-index: 1; }
-  [data-depth='middle'] { z-index: 2; }
-  [data-depth='front'] { z-index: 3; }
-  .manifest-heart {
-    z-index: 3;
-    filter: drop-shadow(0 0 1.1rem color-mix(in srgb, var(--gold) 62%, transparent));
-    animation: heart-breathe 3.4s ease-in-out infinite;
-  }
-  [data-motion='orbital'] { animation: authored-orbit 12s linear infinite; }
-  [data-motion='growth'] { animation: authored-grow 5.6s ease-in-out infinite; }
-  [data-motion='optical'] { animation: authored-optical 6s ease-in-out infinite; }
-  [data-motion='atmospheric'] { animation: authored-atmosphere 9.6s ease-in-out infinite; }
-  [data-motion='tidal'] { animation: authored-tide 7.5s ease-in-out infinite; }
-  [data-motion='waveform'] { animation: authored-wave 3.8s steps(3, end) infinite; }
-  [data-ownership-state='50'],
-  [data-ownership-state='100'] { filter: drop-shadow(0 0 13px color-mix(in srgb, var(--gold) 48%, transparent)); }
-  figcaption {
+  .heart-frame,
+  .heart-frame::before,
+  .heart-frame::after,
+  .heart-frame i {
     position: absolute;
-    top: calc(100% + 0.15rem);
-    left: 50%;
-    width: max-content;
-    max-width: 10rem;
-    padding: 0.2rem 0.35rem;
-    color: var(--text);
-    background: color-mix(in srgb, var(--panel) 86%, transparent);
-    border: 1px solid color-mix(in srgb, var(--gold) 25%, transparent);
-    border-radius: 0.3rem;
-    opacity: 0;
-    transform: translateX(-50%);
-    transition: opacity 160ms ease;
-    text-align: center;
-    font-size: 0.58rem;
-    line-height: 1.2;
+    border-radius: 50%;
   }
-  figcaption strong,
-  figcaption span { display: block; }
-  figcaption span { color: var(--dim); }
-  [data-ownership-state='100'] figcaption,
-  [data-zone='horizon'][data-ownership-state='50'] figcaption { opacity: 0.85; }
+  .heart-frame { inset: -28%; }
+  .heart-frame::before,
+  .heart-frame::after { content: ''; }
+  .emberlight .heart-frame {
+    border: 1px solid color-mix(in srgb, var(--gold) 38%, transparent);
+    box-shadow: 0 0 2.8rem color-mix(in srgb, var(--amber) 13%, transparent);
+    animation: heart-orbit 16s linear infinite;
+  }
+  .emberlight .heart-frame::before {
+    inset: 17%;
+    border: 1px solid color-mix(in srgb, var(--amber) 52%, transparent);
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+  }
+  .emberlight .heart-frame::after {
+    inset: -22% 10%;
+    border-top: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold) 13%, transparent);
+    transform: rotate(-16deg);
+  }
+  .tidefall .heart-frame {
+    inset: -20% -46%;
+    border: 1px solid color-mix(in srgb, var(--gold) 32%, transparent);
+    border-left-color: transparent;
+    border-right-color: transparent;
+    box-shadow: inset 0 0 2.5rem color-mix(in srgb, var(--amber) 8%, transparent);
+    animation: heart-current 7s ease-in-out infinite alternate;
+  }
+  .tidefall .heart-frame::before {
+    inset: 20% 28%;
+    border-top: 1px solid color-mix(in srgb, var(--gold) 58%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold) 22%, transparent);
+  }
+  .tidefall .heart-frame::after {
+    inset: -24% 12%;
+    border: 1px solid color-mix(in srgb, var(--amber) 18%, transparent);
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+  }
+
   .motion-paused,
-  .motion-paused :global(*) { animation-play-state: paused !important; }
+  .motion-paused * { animation-play-state: paused !important; }
   .sr-only {
     position: absolute;
     width: 1px;
@@ -302,25 +413,24 @@
     white-space: nowrap;
     border: 0;
   }
-  @keyframes heart-breathe {
-    0%, 100% { transform: scale(0.96); }
-    50% { transform: scale(1.035); }
-  }
-  @keyframes authored-orbit { to { transform: rotate(360deg); } }
-  @keyframes authored-grow { 0%, 100% { transform: scaleY(0.9); } 50% { transform: scaleY(1.05); } }
-  @keyframes authored-optical { 0%, 100% { opacity: 0.62; } 50% { opacity: 1; } }
-  @keyframes authored-atmosphere { 0%, 100% { transform: translate(-2%, 1%); } 50% { transform: translate(2%, -1%); } }
-  @keyframes authored-tide { 0%, 100% { transform: translateY(3%) scaleY(0.94); } 50% { transform: translateY(-3%) scaleY(1.04); } }
-  @keyframes authored-wave { 0%, 100% { opacity: 0.64; } 50% { opacity: 1; } }
-  @keyframes world-state-breathe { 0%, 100% { transform: scaleY(0.94); } 50% { transform: scaleY(1.03); } }
-  :global(html[data-contrast='high']) .world-state-indicator {
-    color: #fff;
-    background: #000;
-    border-width: 2px;
-  }
+  @keyframes corona-turn { to { transform: translate(-50%, -50%) rotate(360deg); } }
+  @keyframes ember-signal { to { opacity: 0.28; transform: scale(0.72); } }
+  @keyframes heart-orbit { to { transform: rotate(360deg); } }
+  @keyframes current-drift { to { transform: translateY(-1.5%) rotate(1deg) scaleX(1.02); } }
+  @keyframes bubble-rise { to { transform: translateY(-1.6rem); opacity: 0.16; } }
+  @keyframes shoal-drift { to { margin-left: 1.4rem; opacity: 0.2; } }
+  @keyframes heart-current { to { transform: scaleX(1.04) scaleY(0.94); opacity: 0.62; } }
+  :global(html[data-visual-quality='low']) .orbit-three,
+  :global(html[data-visual-quality='low']) .current-three,
+  :global(html[data-visual-quality='low']) .ember-constellation i:nth-child(n + 5),
+  :global(html[data-visual-quality='low']) .tide-bubbles i:nth-child(n + 4),
+  :global(html[data-visual-quality='low']) .tide-shoal i:nth-child(n + 4) { display: none; }
+  :global(html[data-contrast='high']) .ember-orbit,
+  :global(html[data-contrast='high']) .tide-current,
+  :global(html[data-contrast='high']) .tide-caustic,
+  :global(html[data-contrast='high']) .heart-frame { border-color: rgba(255, 255, 255, 0.64); }
   @media (prefers-reduced-motion: reduce) {
-    .manifest-heart,
-    .manifest-object,
-    .world-state-geometry { animation: none !important; transition: none; }
+    .manifest-world,
+    .manifest-world * { animation: none !important; transition: none !important; }
   }
 </style>

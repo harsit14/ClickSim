@@ -350,6 +350,7 @@
     <section class="cohesion-stack" aria-label="Optional guidance">
       <GoalLens
         id="universe-goal-lens"
+        universeId={activePack.id}
         goals={goalLensInput}
         presentationMode={goalPresentation}
         resolveText={resolveActiveUiText}
@@ -359,6 +360,7 @@
       />
       <ContextualPrompts
         id="universe-contextual-prompt"
+        universeId={activePack.id}
         candidates={contextualPrompts}
         state={promptState}
         resolveText={resolveActiveUiText}
@@ -485,7 +487,7 @@
     position: fixed;
     top: clamp(7.2rem, 17vh, 9.2rem);
     left: 1rem;
-    width: min(34rem, calc(100vw - 19rem));
+    width: min(22rem, calc(100vw - 20rem));
     display: grid;
     gap: 0.5rem;
     transform: none;
