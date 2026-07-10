@@ -43,6 +43,7 @@
   import { save } from './core/save'
   import { isPlaying, setMusicMode, setStems, startMusic } from './audio/music'
   import { THEME_BY_ID, themeVarsForUniverse } from './content/themes'
+  import { progressionIdentity } from './content/universe-progression'
   import { universeById, universeV2ById } from './content/universes'
   import { acquireGamePause } from './core/pause.svelte'
   import { worldRef } from './render/world-ref'
@@ -81,6 +82,8 @@
   let averagedRhythm = $state(false)
   let promptState = $state<ContextualPromptState>({ enabled: true, dismissedIds: [] })
   let resumeMusicAfterNova = false
+  const comparativeBlind = import.meta.env.DEV
+    && new URLSearchParams(window.location.search).get('f2-blind') === '1'
 
   const novaReady = $derived(!isZeroAmount(supernovaGain()))
   const observatoryVisible = $derived(
@@ -93,6 +96,8 @@
   const curiositiesVisible = $derived(game.curiosities.length > 0 || gteAmount(game.totalEarned, amountFromNumber(250_000)))
   const activePack = $derived(universeById(game.activeUniverse))
   const activeV2Pack = $derived(universeV2ById(game.activeUniverse))
+  const observatoryIdentity = $derived(progressionIdentity(activePack.id).observatory)
+  const epochMatterGlyph = $derived(activeV2Pack?.economy.localPrestige.rewardCurrency.glyph ?? '✧')
   const effectiveQuality = $derived(resolveVisualQuality(game.visualQuality, {
     width: window.innerWidth,
     devicePixelRatio: window.devicePixelRatio || 1,
@@ -316,8 +321,8 @@
 
 <svelte:window onkeydown={onGlobalKeydown} />
 
-<div class="game-shell" inert={modalActive} aria-hidden={modalActive}>
-  <EmberCanvas {averagedRhythm} />
+<div class="game-shell" class:comparative-blind={comparativeBlind} inert={modalActive} aria-hidden={modalActive}>
+  <EmberCanvas {averagedRhythm} {comparativeBlind} />
   {#if activeV2Pack}
     <ManifestWorldLayer
       pack={activeV2Pack}
@@ -387,7 +392,7 @@
       <button class="dock-btn vessel" class:open={vesselOpen} class:ready={vesselReady} onclick={toggleVessel} title="The Vessel · V" aria-label="The Vessel" aria-keyshortcuts="V">⌁</button>
     {/if}
     {#if observatoryVisible}
-      <button class="dock-btn stardust" class:open={observatoryOpen} class:ready={novaReady} onclick={toggleObservatory} title="The Observatory · S" aria-label="The Observatory" aria-keyshortcuts="S">✧</button>
+      <button class="dock-btn stardust" class:open={observatoryOpen} class:ready={novaReady} onclick={toggleObservatory} title={`${observatoryIdentity.title} · S`} aria-label={observatoryIdentity.title} aria-keyshortcuts="S">{epochMatterGlyph}</button>
     {/if}
     {#if deepVisible}
       <button class="dock-btn deep" class:open={deepOpen} class:ready={deepReady} onclick={toggleDeep} title="The Deep · D" aria-label="The Deep" aria-keyshortcuts="D">◉</button>
@@ -571,5 +576,18 @@
       padding-right: 0.2rem;
       scrollbar-width: none;
     }
+  }
+  .game-shell.comparative-blind > :global(.keyboard-focus),
+  .game-shell.comparative-blind > :global(.ceremony-layer),
+  .game-shell.comparative-blind > :global(.sr-live),
+  .game-shell.comparative-blind > :global(.top-stack),
+  .game-shell.comparative-blind > :global(.cohesion-stack),
+  .game-shell.comparative-blind > :global(.shop),
+  .game-shell.comparative-blind > :global(.lumen),
+  .game-shell.comparative-blind > :global(.falling-star),
+  .game-shell.comparative-blind > :global(.dock),
+  .game-shell.comparative-blind :global(.manifest-world figcaption),
+  .game-shell.comparative-blind :global(.world-state-indicator) {
+    display: none !important;
   }
 </style>

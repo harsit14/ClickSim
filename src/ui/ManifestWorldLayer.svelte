@@ -40,6 +40,7 @@
   let now = $state(Date.now())
 
   const presentation = $derived(universePresentationById(pack.id))
+  const manifestByObjectId = $derived(new Map(pack.visual.objects.map((object) => [object.id, object])))
   const archiveIdSet = $derived(new Set(unlockedArchiveIds))
   const activeOmenIdSet = $derived(new Set(activeOmenIds))
   const beaconLit = $derived(litBeaconUniverseIds.includes(pack.id))
@@ -84,6 +85,15 @@
   function countLabel(count: number): string {
     if (count === 1) return '1 owned'
     return `${count.toLocaleString()} owned`
+  }
+
+  function statusLabel(object: ManifestObjectRenderPlan, count: number): string {
+    const sourceKind = manifestByObjectId.get(object.objectId)?.sourceKind
+    if (sourceKind === 'archive') return 'Archive record collected'
+    if (sourceKind === 'beacon') return 'Beacon lit'
+    if (sourceKind === 'omen') return 'Omen active'
+    if (sourceKind === 'story') return 'World landmark formed'
+    return countLabel(count)
   }
 
   function descriptorFor(object: ManifestObjectRenderPlan): ObjectPresentation | null {
@@ -164,12 +174,12 @@
           data-geometry={visualState.geometryLabel}
           data-occlusion={descriptor.occlusion}
           style={`left:${object.rect.x}px;top:${object.rect.y}px;width:${object.rect.width}px;height:${object.rect.height}px;opacity:${object.opacity}`}
-          aria-label={`${object.state.label}; ${countLabel(ownedCount)}; ${object.state.silhouette}`}
+          aria-label={`${object.state.label}; ${statusLabel(object, ownedCount)}; ${object.state.silhouette}`}
         >
           <PresentationShape state={visualState} palette={presentation.palette} />
           <figcaption aria-hidden="true">
             <strong>{object.state.label}</strong>
-            <span>{countLabel(ownedCount)}</span>
+            <span>{statusLabel(object, ownedCount)}</span>
           </figcaption>
         </figure>
       {/if}

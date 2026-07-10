@@ -14,7 +14,10 @@
   import { resolveVisualQuality } from '../core/preferences'
   import { amountFromNumber, gteAmount } from '../core/numeric/amount'
 
-  let { averagedRhythm = false }: { averagedRhythm?: boolean } = $props()
+  let {
+    averagedRhythm = false,
+    comparativeBlind = false,
+  }: { averagedRhythm?: boolean; comparativeBlind?: boolean } = $props()
 
   let canvas: HTMLCanvasElement
   let world: World | undefined
@@ -52,7 +55,7 @@
     playClick(universeById(game.activeUniverse).audio.click)
     world.clickPulse()
     world.burst(x, y)
-    world.addFloat(`${result.crit ? 'CRIT ' : '+'}${format(result.amount)}`, x, y - 12)
+    if (!comparativeBlind) world.addFloat(`${result.crit ? 'CRIT ' : '+'}${format(result.amount)}`, x, y - 12)
   }
 
   function quasarBeatIndex() {
@@ -70,7 +73,7 @@
     if (beat === lastQuasarBeat) return
     lastQuasarBeat = beat
     const result = clickEmber(1)
-    world.quasarTap(`${result.crit ? 'CRIT ' : ''}+${format(result.amount)}`, result.crit, now)
+    if (!comparativeBlind) world.quasarTap(`${result.crit ? 'CRIT ' : ''}+${format(result.amount)}`, result.crit, now)
   }
 
   function onPointerDown(e: PointerEvent) {

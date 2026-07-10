@@ -2,12 +2,15 @@
   import { onMount } from 'svelte'
   import { game, activeRatePerSec, hasUi, recentClickRatePerSec } from '../engine/game.svelte'
   import { universeRateMult } from '../engine/compute'
-  import { universeById } from '../content/universes'
+  import { universeById, universeV2ById } from '../content/universes'
   import { format } from '../core/format'
   import { isZeroAmount } from '../core/numeric/amount'
 
   let now = $state(Date.now())
   const pack = $derived(universeById(game.activeUniverse))
+  const epochMatter = $derived(universeV2ById(game.activeUniverse)?.economy.localPrestige.rewardCurrency)
+  const epochMatterGlyph = $derived(epochMatter?.glyph ?? '✧')
+  const epochMatterName = $derived(epochMatter?.localName ?? 'Stardust')
   const rate = $derived(activeRatePerSec(now))
   const clickRate = $derived(recentClickRatePerSec())
   const tide = $derived(universeRateMult(game, now))
@@ -37,7 +40,9 @@
       </div>
     {/if}
     {#if !isZeroAmount(game.stardustTotal) || !isZeroAmount(game.singTotal)}
-      <div class="dust">✧ {format(game.stardust)}{#if !isZeroAmount(game.singTotal)}&nbsp;&nbsp;<span class="sing">◉ {format(game.singularities)}</span>{/if}</div>
+      <div class="dust" aria-label={`${format(game.stardust)} ${epochMatterName}`}>
+        {epochMatterGlyph} {format(game.stardust)}{#if !isZeroAmount(game.singTotal)}&nbsp;&nbsp;<span class="sing">◉ {format(game.singularities)}</span>{/if}
+      </div>
     {/if}
   </div>
 {/if}
