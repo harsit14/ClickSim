@@ -3,11 +3,20 @@ import { TIDEFALL } from './tidefall'
 
 export type {
   UniversePack,
+  UniversePackV2,
+  UniverseId,
   UniversePalette,
   UniverseTwist,
   UniversePowerUp,
   UniverseEventIdentity,
   UniverseAudioIdentity,
+  WorldObjectManifest,
+  UniverseLawHooks,
+  SemanticFeedbackEvent,
+  UniverseAudioDef,
+  AudioCueDef,
+  AudioBusDef,
+  UniverseAccessibilityDef,
 } from './types'
 
 export const DEFAULT_UNIVERSE_ID = EMBERLIGHT.id
