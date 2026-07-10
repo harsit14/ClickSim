@@ -1,0 +1,100 @@
+import { amountFromNumber, gteAmount } from '../../../core/numeric/amount'
+import type { EchoDef } from '../../echoes'
+import type { LumenLine } from '../../lumen'
+import type { StorySceneDef } from '../types'
+
+const owns = (owned: Readonly<Record<string, number>>, id: string, count = 1) => (owned[id] ?? 0) >= count
+
+export const CLOCKWORK_LUMEN: LumenLine[] = [
+  { id: 'u4-lumen-awake', text: 'That click was accepted before you made it. I dislike how neatly this place remembers.', when: (game) => game.clicks >= 1 },
+  { id: 'u4-lumen-tooth', text: 'One Tooth. It is refusing to turn until there is somewhere for the work to go.', when: (game) => owns(game.owned, 'u4-tooth') },
+  { id: 'u4-lumen-route', text: 'The line is not decoration. Power entered here and arrived there. The machine insists we inspect the whole sentence.', when: (game) => owns(game.owned, 'u4-cog') },
+  { id: 'u4-lumen-heart', text: 'An escapement is a promise to release only what can be used. Hearts could learn from that.', when: (game) => owns(game.owned, 'u4-escapement') },
+  { id: 'u4-lumen-automaton', text: 'It repairs the tool that repairs it. Please do not call that comforting.', when: (game) => owns(game.owned, 'u4-clockmaker-automaton') },
+  { id: 'u4-lumen-signal', text: 'The Maintenance Signal is not an Omen. It filed a schedule and arrived exactly when threatened.', when: (game) => game.starsCaught >= 1 },
+  { id: 'u4-lumen-ledger', text: 'A Patent Ledger is an archive that believes every discovery should have an owner. The final pages disagree.', when: (game) => game.curiosities.length >= 1 },
+  { id: 'u4-lumen-rewinding', text: 'Everything returned to zero except the perfected interval. The Mainspring is carrying time, not ashes.', when: (game) => game.supernovae >= 1 },
+  { id: 'u4-lumen-calendar', text: 'Every day is engraved. One remains blank. They preserved uncertainty as if it were oxygen.', when: (game) => owns(game.owned, 'u4-last-calendar') },
+  { id: 'u4-lumen-regulator', text: 'The Great Regulator can predict the next motion. It cannot predict why you chose to restore it.', when: (game) => owns(game.owned, 'u4-great-regulator') },
+]
+
+export const CLOCKWORK_ECHOES: EchoDef[] = [
+  {
+    id: 'u4-echo-first-tooth',
+    title: 'Acceptance Test 1A',
+    provenance: 'stamped into the first Tooth beneath the Escapement Heart',
+    text: 'Apply one deliberate impulse. Confirm that the tooth engages, the escapement advances, and torque reaches the marked output. If any part moves without transmitting work, reject the assembly. A handwritten amendment adds: if the impulse comes from outside the prediction, do not reject it. Ask what it wants.',
+    when: (game) => owns(game.owned, 'u4-tooth'),
+  },
+  {
+    id: 'u4-echo-socket-ordinance',
+    title: 'Socket Ordinance',
+    provenance: 'municipal code posted beside an empty route board',
+    text: 'One input. One output. The limit was not imposed because the city lacked splitters, but because a machine deserves to know which neighbor depends upon it. Later laws permit two sockets, conditional gates, and scheduled changes. None permit an invisible dependency.',
+    when: (game) => owns(game.owned, 'u4-escapement'),
+  },
+  {
+    id: 'u4-echo-first-shift',
+    title: 'The First Shift',
+    provenance: 'six punched cards tied with blue machinist thread',
+    text: 'Tooth to Cog. Cog to Ratchet. Ratchet to Escapement. Escapement to Mainspring. Mainspring to Flywheel. The recommended route is deliberately modest. The instructor wrote: certainty should reduce fear before it increases ambition.',
+    when: (game) => owns(game.owned, 'u4-flywheel'),
+  },
+  {
+    id: 'u4-echo-governors-minute',
+    title: 'Minutes of the Governors',
+    provenance: 'a labor meeting recorded as cam geometry',
+    text: 'The city could make every train faster. The workers voted instead for legible bottlenecks, maintenance intervals, and a bell no engine controlled. The dissenting Governor asked whether efficiency that consumed its keepers could still be called production. The motion passed without objection.',
+    when: (game) => owns(game.owned, 'u4-governor'),
+  },
+  {
+    id: 'u4-echo-noon',
+    title: 'Noon Alignment',
+    provenance: 'an Orrery forecast whose final mark is still approaching',
+    text: 'At the civic meridian, three rings align: power, cadence, efficiency. The event is written years in advance and rewards only the route displayed before it. No hidden die chooses the fortunate train. Preparation is the entire ceremony.',
+    when: (game) => owns(game.owned, 'u4-orrery'),
+  },
+  {
+    id: 'u4-echo-prophecy-margin',
+    title: 'Margin of a Punched Prophecy',
+    provenance: 'recovered from the Prediction Mill output tray',
+    text: 'The holes correctly predict rainfall, repairs, births, departures, and the hour one reader will reach this sentence. Along the unpunched edge, that reader wrote: knowing what I do next does not tell the machine why I consented. The Mill preserved the note as an unresolved variable.',
+    when: (game) => owns(game.owned, 'u4-prediction-mill'),
+  },
+  {
+    id: 'u4-echo-rewinding',
+    title: 'Rewinding Procedure',
+    provenance: 'engraved inside a Mainspring barrel',
+    text: 'Release the city in reverse musical order. Return every World mechanism and ordinary refinement to zero. Retain the Patent Ledger, completed trials, story, and all deeper state. Lock one perfected interval into a Mainspring. Preview every loss. Require consent. A reset performed without inspection is classified as damage.',
+    when: (game) => game.supernovae >= 1,
+  },
+  {
+    id: 'u4-echo-stopped-city',
+    title: 'The Day the City Stopped',
+    provenance: 'eighteen civic clocks halted on the same indexed tooth',
+    text: 'The Causal Engine predicted a visitor that carried forward every law it consumed. The city could not defeat a learner made from solved systems. It chose to stop transmitting time. Without change, it hoped to become invisible. Every citizen received the same forecast. The surviving records do not say everyone agreed.',
+    when: (game) => gteAmount(game.allTimeEarned, amountFromNumber(1e12)),
+  },
+  {
+    id: 'u4-echo-blank-date',
+    title: 'The Blank Date',
+    provenance: 'the final leaf of the Last Calendar',
+    text: 'All probable futures are engraved around one empty square. The registrar explains that a perfectly predicted city needs one place where a choice may be recorded after it is made. Lumen tests the paper. The blank is not damage. It has been protected more carefully than every written day.',
+    when: (game) => owns(game.owned, 'u4-last-calendar'),
+  },
+  {
+    id: 'u4-echo-vulnerable-again',
+    title: 'Vulnerable Again',
+    provenance: 'written by the Great Regulator one interval after restoration',
+    text: 'TIME RESUMED. MAINTENANCE FORECASTS VALID. EXTERNAL OBSERVER MAY NOW DETECT CAUSAL ACTIVITY. The machine prints the warning, pauses, and adds a line absent from every prior plan: CONTINUE. Someone has taught the city that certainty and freedom are not opposites until one is used to erase the other.',
+    when: (game) => owns(game.owned, 'u4-great-regulator'),
+  },
+]
+
+export const CLOCKWORK_STORY_SCENES: readonly StorySceneDef[] = [
+  { id: 'u4-scene-arrival-unwound-city', kind: 'arrival', skippableAfterFirstView: true, replayable: true },
+  { id: 'u4-scene-rewinding', kind: 'epoch', skippableAfterFirstView: true, replayable: true },
+  { id: 'u4-scene-causal-vault', kind: 'deep', skippableAfterFirstView: true, replayable: true },
+  { id: 'u4-scene-regulator-beacon', kind: 'beacon', skippableAfterFirstView: true, replayable: true },
+  { id: 'u4-scene-stopped-city-record', kind: 'transmission', skippableAfterFirstView: true, replayable: true },
+]
