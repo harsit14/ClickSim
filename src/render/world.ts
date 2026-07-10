@@ -227,15 +227,19 @@ export class World {
   }
 
   private glimmersFor(id: string, owned: number, hue: number, tier: number): Glimmer[] {
-    let list = this.glimmers.get(id)
+    // Generator ids are intentionally shared between universe packs. Cache by
+    // universe and hue so a Crossing cannot leave Emberlight colors attached
+    // to Tidefall's kindlings (or vice versa).
+    const cacheKey = `${game.activeUniverse}:${id}:${hue}`
+    let list = this.glimmers.get(cacheKey)
     if (!list) {
       list = []
-      this.glimmers.set(id, list)
+      this.glimmers.set(cacheKey, list)
     }
     const want = Math.min(owned, 36)
     if (list.length < want) {
       let hash = 0
-      for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) | 0
+      for (const ch of cacheKey) hash = (hash * 31 + ch.charCodeAt(0)) | 0
       const rand = mulberry32(hash + list.length * 7919)
       // low tiers settle near the ground, middle tiers hang mid-void, stars fill the sky
       const [yMin, yMax] = tier <= 6 ? [0.62, 0.95] : tier <= 12 ? [0.3, 0.58] : [0.04, 0.26]
