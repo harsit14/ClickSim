@@ -179,9 +179,13 @@ function makeUpgrades(spec: FutureUniverseSpec, generators: readonly GeneratorDe
   ] as const
   for (const generator of generators) {
     for (const refinement of refinements) {
+      const repeatedPrefix = generator.name.toLocaleLowerCase().startsWith(`${refinement.adjective.toLocaleLowerCase()} `)
+      const adjective = repeatedPrefix
+        ? refinement.at === 25 ? 'Braided' : refinement.at === 50 ? 'Sustained' : 'Articulated'
+        : refinement.adjective
       upgrades.push({
         id: `${generator.id}-${refinement.at}`,
-        name: `${refinement.adjective} ${generator.name}`,
+        name: `${adjective} ${generator.name}`,
         flavor: `${generator.name} adopts a visible ${spec.primaryVerb} discipline without losing its identity.`,
         cost: Math.round(generator.baseCost * refinement.scale),
         glyph: refinement.glyph,

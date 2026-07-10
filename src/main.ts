@@ -9,6 +9,7 @@ import { setMasterVolume } from './audio/sfx'
 import { setMusicVolume } from './audio/music'
 import { startAchievementWatcher } from './systems/achievements.svelte'
 import { startAutomation } from './systems/automation.svelte'
+import { registerOfflineWorker } from './core/offline'
 
 if (import.meta.env.DEV) {
   const scenario = createDevScenario(new URLSearchParams(window.location.search).get('scenario'))
@@ -36,6 +37,7 @@ startLoop()
 startAutosave()
 startAchievementWatcher()
 startAutomation()
+registerOfflineWorker()
 
 mount(App, {
   target: document.getElementById('app')!,

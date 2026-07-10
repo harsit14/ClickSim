@@ -30,8 +30,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Verify release gate
+        run: npm run verify
+
+      - name: Verify long-horizon balance
+        run: npm run sim
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
