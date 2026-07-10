@@ -19,7 +19,7 @@ test('Emberlight crosses the temporary bridge as one complete validated V2 pack'
   assert.equal(EMBERLIGHT_V2.omens.length, 4)
   assert.equal(EMBERLIGHT_V2.archive.records.length, 12)
   assert.equal(EMBERLIGHT_V2.archive.shelves.length, 3)
-  assert.equal(EMBERLIGHT_V2.visual.objects.length, 35)
+  assert.equal(EMBERLIGHT_V2.visual.objects.length, 38)
   assert.deepEqual(validateUniversePackV2(EMBERLIGHT_V2), { valid: true, issues: [] })
   assert.deepEqual(validateUniverseAudioDef(EMBERLIGHT_V2.audio), [])
 
@@ -87,7 +87,12 @@ test('the bridge fails closed on identity, referenced content, and accessibility
 })
 
 test('real Emberlight manifests remain bounded and Heart-clear across gate viewports and fallbacks', () => {
-  const visibleObjectIds = EMBERLIGHT_V2.visual.objects.map(({ id }) => id)
+  const densityResultIds = new Set(
+    EMBERLIGHT_V2.visual.densityMerges.map(({ resultObjectId }) => resultObjectId),
+  )
+  const visibleObjectIds = EMBERLIGHT_V2.visual.objects
+    .filter(({ id }) => !densityResultIds.has(id))
+    .map(({ id }) => id)
   for (const count of [1, 10, 25, 50, 100]) {
     const ownershipBySourceId = Object.fromEntries(
       EMBERLIGHT_V2.economy.generators.map(({ id }) => [id, count]),

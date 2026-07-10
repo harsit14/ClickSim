@@ -2,7 +2,7 @@ import { ECHOES } from '../echoes'
 import { GENERATORS, GENERATOR_BY_ID } from '../generators'
 import { LUMEN_LINES } from '../lumen'
 import { UPGRADES } from '../upgrades'
-import { EMBERLIGHT_CABINET } from '../curiosities'
+import { EMBERLIGHT_ASTRAL_CABINET } from './emberlight/archive'
 import type { UniversePack } from './types'
 
 export const EMBERLIGHT: UniversePack = {
@@ -11,7 +11,7 @@ export const EMBERLIGHT: UniversePack = {
   shortName: 'Emberlight',
   currency: 'Light',
   currencyGlyph: '✦',
-  centralObject: 'Ember',
+  centralObject: 'Last Ember',
   achievementPower: 'Radiance',
   description: 'The first warm universe, rebuilt from one ember.',
   generators: GENERATORS,
@@ -31,7 +31,7 @@ export const EMBERLIGHT: UniversePack = {
       { id: 'fury', label: 'Fury', glyph: '×777', hue: 5, weight: 10, clickMult: 777, durationSec: 13, toast: 'The ember answers with impossible force.' },
     ],
   },
-  cabinet: EMBERLIGHT_CABINET,
+  cabinet: EMBERLIGHT_ASTRAL_CABINET,
   twist: {
     id: 'baseline',
     name: 'Baseline',

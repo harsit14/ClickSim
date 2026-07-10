@@ -1,12 +1,16 @@
 import { CHALLENGES } from '../challenges'
-import { CURIOSITIES, CURIOSITY_SHELVES } from '../curiosities'
+import {
+  EMBERLIGHT_AUDIO_DEF,
+  EMBERLIGHT_AUDIO_EVENT_MAP,
+} from '../../audio/emberlight/identity'
 import { EMBERLIGHT } from './emberlight'
+import { EMBERLIGHT_ASTRAL_CABINET } from './emberlight/archive'
+import { EMBERLIGHT_DOCTRINE_VISUALS } from '../../render/emberlight/doctrines'
 import { adaptLegacyUniversePack, type UniversePackV2Supplement } from './legacy-v2-adapter'
 import type {
   ArchiveRecordDef,
   AtLeastFour,
-  AudioBusDef,
-  AudioCueDef,
+  DensityMergeRule,
   EighteenTuple,
   FourTuple,
   MotionGrammar,
@@ -41,51 +45,6 @@ function state(
 ): VisualState {
   return { label, silhouette, material, motion: objectMotion, countPresentation }
 }
-
-const AUDIO_BUSES: readonly AudioBusDef[] = [
-  { id: 'master', parent: null, defaultGain: 0.82, userControllable: true, muteBehavior: 'suppress-audio-only' },
-  { id: 'music', parent: 'master', defaultGain: 0.64, userControllable: true, muteBehavior: 'suppress-audio-only' },
-  { id: 'ambient', parent: 'master', defaultGain: 0.42, userControllable: true, muteBehavior: 'suppress-audio-only' },
-  { id: 'interface', parent: 'master', defaultGain: 0.56, userControllable: true, muteBehavior: 'suppress-audio-only' },
-  { id: 'touch', parent: 'master', defaultGain: 0.58, userControllable: true, muteBehavior: 'suppress-audio-only' },
-  { id: 'purchase', parent: 'master', defaultGain: 0.56, userControllable: true, muteBehavior: 'suppress-audio-only' },
-  { id: 'omen', parent: 'master', defaultGain: 0.62, userControllable: true, muteBehavior: 'suppress-audio-only' },
-  { id: 'story', parent: 'master', defaultGain: 0.58, userControllable: true, muteBehavior: 'suppress-audio-only' },
-  { id: 'ceremony', parent: 'master', defaultGain: 0.7, userControllable: true, muteBehavior: 'suppress-audio-only' },
-]
-
-const cue = (
-  id: string,
-  bus: AudioCueDef['bus'],
-  family: string,
-  synthesisKey: string,
-  priority: AudioCueDef['priority'],
-  mutedFallback: AudioCueDef['mutedFallback'],
-  minimumIntervalMs: number,
-  targetPeakDb: number,
-): AudioCueDef => ({
-  id,
-  bus,
-  family,
-  synthesisKey,
-  targetPeakDb,
-  maximumPeakDb: -3,
-  minimumIntervalMs,
-  maximumConcurrentInstances: priority === 'ambient' ? 1 : 2,
-  priority,
-  muteGroup: `emberlight-${bus}`,
-  mutedFallback,
-})
-
-const AUDIO_CUES: readonly AudioCueDef[] = [
-  cue('ember-touch', 'touch', 'woody-plasma', 'ember-touch-impact', 'normal', 'none', 45, -15),
-  cue('ember-purchase', 'purchase', 'forged-interval', 'ember-purchase-interval', 'normal', 'visual', 90, -13),
-  cue('ember-critical', 'touch', 'magnetic-accent', 'ember-critical-tail', 'important', 'visual', 120, -10),
-  cue('ember-omen', 'omen', 'falling-sky-call', 'ember-omen-descent', 'important', 'visual-and-caption', 600, -9),
-  cue('ember-supernova', 'ceremony', 'subtractive-cadence', 'ember-supernova-cadence', 'ceremony', 'visual-and-caption', 2_000, -7),
-  cue('ember-archive', 'story', 'spectral-record', 'ember-archive-resolve', 'important', 'caption', 500, -12),
-  cue('ember-beacon', 'ceremony', 'answered-light', 'ember-beacon-light', 'ceremony', 'visual-and-caption', 2_000, -7),
-]
 
 interface KindlingVisualSpec {
   readonly sourceId: string
@@ -275,7 +234,7 @@ function kindlingObject(spec: KindlingVisualSpec): WorldObjectManifest {
       : spec.salience === 'interactive'
         ? 'hold'
         : 'dim',
-    audioCue: 'ember-purchase',
+    audioCue: EMBERLIGHT_AUDIO_EVENT_MAP.purchase,
   }
 }
 
@@ -283,7 +242,7 @@ const KINDLING_OBJECTS = KINDLING_SPECS.map(kindlingObject) as unknown as Eighte
 
 interface StandaloneObjectSpec {
   readonly id: string
-  readonly sourceKind: 'archive' | 'omen' | 'beacon'
+  readonly sourceKind: 'archive' | 'omen' | 'story' | 'beacon'
   readonly sourceId: string
   readonly phenomenon: string
   readonly purpose: string
@@ -329,25 +288,25 @@ function standaloneObject(spec: StandaloneObjectSpec): WorldObjectManifest {
 const ARCHIVE_OBJECT_SPECS: TwelveTuple<StandaloneObjectSpec> = [
   { id: 'ember-archive-moth', sourceKind: 'archive', sourceId: 'moth', phenomenon: 'A White Dwarf refusing final darkness', purpose: 'Records compressed persistence and lends clicks a gravitational accent', screenZone: 'far', salience: 'supporting', material: ['degenerate white plasma', 'gravity lens'], silhouette: 'a tiny white star inside a broad lensing ring', objectMotion: motion('orbital', 'The remnant traces a close stable orbit', 8_000), audioCue: 'ember-archive', loreRecord: 'moth' },
   { id: 'ember-archive-chimes', sourceKind: 'archive', sourceId: 'chimes', phenomenon: 'A Magnetar ringing the dark', purpose: 'Makes magnetic rhythm distortion and critical resonance visible', screenZone: 'far', salience: 'interactive', material: ['neutron crust', 'magnetic field lines'], silhouette: 'a compact star crossed by four rigid field arcs', objectMotion: motion('waveform', 'Field arcs pulse in a measured glass-like rhythm', 3_333), audioCue: 'ember-archive', loreRecord: 'chimes' },
-  { id: 'ember-archive-hearthkeeper', sourceKind: 'archive', sourceId: 'hearthkeeper', phenomenon: 'A fuelable Protostar awaiting ignition', purpose: 'Shows the archive incubation bonus and its remaining warmth', screenZone: 'near', salience: 'interactive', material: ['infrared cloud', 'fuel-bright core'], silhouette: 'a soft cloud around an unopened stellar seed', objectMotion: motion('growth', 'The core brightens locally as stored fuel remains', 5_400), audioCue: 'ember-archive', loreRecord: 'hearthkeeper' },
-  { id: 'ember-archive-glass-garden', sourceKind: 'archive', sourceId: 'glass-garden', phenomenon: 'An Emission Nebula flowering around unborn suns', purpose: 'Makes the archive collection alter the world edge', screenZone: 'horizon', salience: 'ambient', material: ['hydrogen emission', 'dark dust pillar'], silhouette: 'a wide scalloped cloud divided by a black pillar', objectMotion: motion('atmospheric', 'Gas folds expand without crossing the Heart', 12_000), audioCue: 'ember-archive', loreRecord: 'glass-garden' },
+  { id: 'ember-archive-hearthkeeper', sourceKind: 'archive', sourceId: 'hearthkeeper', phenomenon: 'A fuelable Protostellar Nursery awaiting ignition', purpose: 'Shows the archive incubation bonus and its remaining warmth', screenZone: 'near', salience: 'interactive', material: ['infrared cloud', 'fuel-bright core'], silhouette: 'a soft cloud around several unopened stellar seeds', objectMotion: motion('growth', 'The nursery brightens locally as stored fuel remains', 5_400), audioCue: 'ember-archive', loreRecord: 'hearthkeeper' },
+  { id: 'ember-archive-glass-garden', sourceKind: 'archive', sourceId: 'glass-garden', phenomenon: 'An Aurora World forecasting the sky through light', purpose: 'Makes Omen weather readable at the world edge without relying on color', screenZone: 'horizon', salience: 'ambient', material: ['magnetized atmosphere', 'spectral curtain'], silhouette: 'a crescent world beneath three folded auroral curtains', objectMotion: motion('atmospheric', 'Curtains fold locally without crossing the Heart', 12_000), audioCue: 'ember-archive', loreRecord: 'glass-garden' },
   { id: 'ember-archive-second-cursor', sourceKind: 'archive', sourceId: 'second-cursor', phenomenon: 'A Quasar sending a second clean pulse', purpose: 'Names the archive source of the automatic rhythmic touch', screenZone: 'horizon', salience: 'interactive', material: ['accretion disk', 'relativistic jet'], silhouette: 'a narrow bipolar jet piercing a dark disk', objectMotion: motion('optical', 'The jet resolves once per musical beat', 833), audioCue: 'ember-archive', loreRecord: 'second-cursor' },
-  { id: 'ember-archive-snail', sourceKind: 'archive', sourceId: 'snail', phenomenon: 'A Long-Period Comet keeping an enormous promise', purpose: 'Shows the predictable stored-production return path', screenZone: 'horizon', salience: 'supporting', material: ['ancient ice', 'ion tail'], silhouette: 'a small nucleus with a long bent double tail', objectMotion: motion('orbital', 'The authored return arc remains slow and predictable', 24_000), audioCue: 'ember-archive', loreRecord: 'snail' },
-  { id: 'ember-archive-aurora', sourceKind: 'archive', sourceId: 'aurora', phenomenon: 'A Supernova Remnant still carrying its last decision', purpose: 'Makes an expanding archival event visible without creating urgency', screenZone: 'horizon', salience: 'ambient', material: ['shock-front ribbon', 'stellar ejecta'], silhouette: 'a broken expanding shell with an empty center', objectMotion: motion('atmospheric', 'The shell expands and fades in a repeatable authored loop', 16_000), audioCue: 'ember-archive', loreRecord: 'aurora' },
+  { id: 'ember-archive-snail', sourceKind: 'archive', sourceId: 'snail', phenomenon: 'A Rogue Planet keeping warmth without a sun', purpose: 'Shows the predictable stored-production return path', screenZone: 'horizon', salience: 'supporting', material: ['ancient ice', 'subsurface ember glow'], silhouette: 'a dark wandering world split by one warm tectonic seam', objectMotion: motion('orbital', 'The complete unbound passage remains slow and predictable', 24_000), audioCue: 'ember-archive', loreRecord: 'snail' },
+  { id: 'ember-archive-aurora', sourceKind: 'archive', sourceId: 'aurora', phenomenon: 'A Supermassive Black Hole organizing a galactic civilization', purpose: 'Makes galaxy-scale archive resonance visible without creating urgency', screenZone: 'horizon', salience: 'ambient', material: ['galactic accretion disk', 'lensed star field'], silhouette: 'a broad dark core crossed by a barred disk and two lensing arcs', objectMotion: motion('optical', 'Galaxy lights shear slowly around the fixed horizon', 16_000), audioCue: 'ember-archive', loreRecord: 'aurora' },
   { id: 'ember-archive-door', sourceKind: 'archive', sourceId: 'door', phenomenon: 'A Black Hole whose horizon has become readable', purpose: 'Names stored production and the route mystery at the event horizon', screenZone: 'far', salience: 'milestone', material: ['event-horizon shadow', 'hot accretion crescent'], silhouette: 'a black center wrapped by one bright asymmetric crescent', objectMotion: motion('optical', 'Background light lenses around the fixed horizon', 10_000), audioCue: 'ember-archive', loreRecord: 'door' },
-  { id: 'ember-archive-star-jar', sourceKind: 'archive', sourceId: 'star-jar', phenomenon: 'A Neutron Star preserving every touch as density', purpose: 'Shows the archive source of increased Omen attraction', screenZone: 'far', salience: 'supporting', material: ['neutron crust', 'blue-white polar cap'], silhouette: 'a compact oval with two short polar cones', objectMotion: motion('waveform', 'Polar cones pulse without sweeping the screen', 2_400), audioCue: 'ember-archive', loreRecord: 'star-jar' },
-  { id: 'ember-archive-metronome-heart', sourceKind: 'archive', sourceId: 'metronome-heart', phenomenon: 'A Pulsar keeping time before the score existed', purpose: 'Shows the widened rhythm window with shape and phase', screenZone: 'far', salience: 'interactive', material: ['radio beam', 'neutron core'], silhouette: 'a tilted lighthouse axis through a compact star', objectMotion: motion('waveform', 'Two opposed beams mark the timing window', 1_667), audioCue: 'ember-archive', loreRecord: 'metronome-heart' },
+  { id: 'ember-archive-star-jar', sourceKind: 'archive', sourceId: 'star-jar', phenomenon: 'A Cosmic Microwave Fragment preserving the oldest light', purpose: 'Shows the archive source of increased Omen attraction', screenZone: 'far', salience: 'supporting', material: ['microwave afterglow', 'primordial temperature grid'], silhouette: 'an uneven square sky-fragment with one ember-shaped cold gap', objectMotion: motion('waveform', 'A bounded noise pattern resolves around the fixed cold gap', 2_400), audioCue: 'ember-archive', loreRecord: 'star-jar' },
+  { id: 'ember-archive-metronome-heart', sourceKind: 'archive', sourceId: 'metronome-heart', phenomenon: 'A Gravitational-Wave Knot keeping three histories in phase', purpose: 'Shows the widened rhythm window with shape and phase', screenZone: 'far', salience: 'interactive', material: ['spacetime braid', 'lensing ripple'], silhouette: 'three interlocked wave loops around an empty crossing', objectMotion: motion('waveform', 'Three loops tighten in numbered timing phases', 1_667), audioCue: 'ember-archive', loreRecord: 'metronome-heart' },
   { id: 'ember-archive-letter', sourceKind: 'archive', sourceId: 'letter', phenomenon: 'A Red Giant carrying a final transmission', purpose: 'Makes the readable archival message a persistent world source', screenZone: 'horizon', salience: 'milestone', material: ['red stellar atmosphere', 'spectral message bands'], silhouette: 'a swollen star crossed by three spectral bands', objectMotion: motion('waveform', 'Atmospheric bands breathe around a stable readable signal', 7_500), audioCue: 'ember-archive', loreRecord: 'letter' },
-  { id: 'ember-archive-orrery', sourceKind: 'archive', sourceId: 'orrery', phenomenon: 'A Supermassive Black Hole mapping other skies', purpose: 'Anchors the completed Archive and reveals the multiverse route', screenZone: 'horizon', salience: 'milestone', material: ['galactic accretion disk', 'gravitational lens'], silhouette: 'a broad dark eye holding multiple lensed sky fragments', objectMotion: motion('optical', 'Lensed fragments align into a map without random motion', 18_000), audioCue: 'ember-archive', loreRecord: 'orrery' },
+  { id: 'ember-archive-orrery', sourceKind: 'archive', sourceId: 'orrery', phenomenon: 'The Orrery of the Local Sky mapping every restored scale', purpose: 'Anchors the completed Astral Cabinet and reveals the multiverse route', screenZone: 'horizon', salience: 'milestone', material: ['engraved dark brass', 'spectral orbit bands'], silhouette: 'five nested open orbit arms linking nursery, stars, galaxies, web, and Beacon', objectMotion: motion('mechanical', 'Orbit arms align into a map without random motion', 18_000), audioCue: 'ember-archive', loreRecord: 'orrery' },
 ]
 
 const ARCHIVE_OBJECTS = ARCHIVE_OBJECT_SPECS.map(standaloneObject) as unknown as TwelveTuple<WorldObjectManifest>
 
 const OMEN_OBJECTS = [
-  standaloneObject({ id: 'ember-omen-falling-star', sourceKind: 'omen', sourceId: 'falling-star', phenomenon: 'A Falling Star crossing the reachable sky', purpose: 'Offers an optional production frenzy without loss on a miss', screenZone: 'heart', salience: 'interactive', material: ['meteor plasma', 'gold dust tail'], silhouette: 'a sharp descending point with a tapered tail', objectMotion: motion('authored', 'A readable diagonal path approaches but never obstructs the Heart', 4_500), audioCue: 'ember-omen' }),
-  standaloneObject({ id: 'ember-omen-pulsar-sweep', sourceKind: 'omen', sourceId: 'pulsar-sweep', phenomenon: 'A Pulsar Sweep opening three timed touch windows', purpose: 'Offers an optional three-window rhythm expression', screenZone: 'far', salience: 'interactive', material: ['radio beam', 'magnetic blue plasma'], silhouette: 'a rotating three-notch beam around a compact core', objectMotion: motion('waveform', 'Three shaped beam windows cross a fixed local arc', 3_000), audioCue: 'ember-omen' }),
-  standaloneObject({ id: 'ember-omen-comet-return', sourceKind: 'omen', sourceId: 'comet-return', phenomenon: 'A Comet returning with production stored along its route', purpose: 'Offers a predictable delayed return rather than a disappearing reward', screenZone: 'horizon', salience: 'supporting', material: ['old ice', 'double ion tail'], silhouette: 'a long curved orbit ending in a bright returning nucleus', objectMotion: motion('orbital', 'The complete return path remains visible and predictable', 20_000), audioCue: 'ember-omen' }),
-  standaloneObject({ id: 'ember-omen-microlensing', sourceKind: 'omen', sourceId: 'microlensing-event', phenomenon: 'A Microlensing Event briefly aligning hidden structure', purpose: 'Reveals occluded records and marks the most efficient Kindling', screenZone: 'far', salience: 'interactive', material: ['lensing arc', 'spectral bloom'], silhouette: 'two bright arcs closing around an off-center star', objectMotion: motion('optical', 'Arcs converge, hold, and separate on an authored cycle', 5_500), audioCue: 'ember-omen' }),
+  standaloneObject({ id: 'ember-omen-falling-star', sourceKind: 'omen', sourceId: 'falling-star', phenomenon: 'A Falling Star crossing the reachable sky', purpose: 'Offers an optional production frenzy without loss on a miss', screenZone: 'heart', salience: 'interactive', material: ['meteor plasma', 'gold dust tail'], silhouette: 'a sharp descending point with a tapered tail', objectMotion: motion('authored', 'A readable diagonal path approaches but never obstructs the Heart', 4_500), audioCue: EMBERLIGHT_AUDIO_EVENT_MAP.omens['falling-star'] }),
+  standaloneObject({ id: 'ember-omen-pulsar-sweep', sourceKind: 'omen', sourceId: 'pulsar-sweep', phenomenon: 'A Pulsar Sweep opening three timed touch windows', purpose: 'Offers an optional three-window rhythm expression', screenZone: 'far', salience: 'interactive', material: ['radio beam', 'magnetic blue plasma'], silhouette: 'a rotating three-notch beam around a compact core', objectMotion: motion('waveform', 'Three shaped beam windows cross a fixed local arc', 3_000), audioCue: EMBERLIGHT_AUDIO_EVENT_MAP.omens['pulsar-sweep'] }),
+  standaloneObject({ id: 'ember-omen-comet-return', sourceKind: 'omen', sourceId: 'comet-return', phenomenon: 'A Comet returning with production stored along its route', purpose: 'Offers a predictable delayed return rather than a disappearing reward', screenZone: 'horizon', salience: 'supporting', material: ['old ice', 'double ion tail'], silhouette: 'a long curved orbit ending in a bright returning nucleus', objectMotion: motion('orbital', 'The complete return path remains visible and predictable', 20_000), audioCue: EMBERLIGHT_AUDIO_EVENT_MAP.omens['comet-return'] }),
+  standaloneObject({ id: 'ember-omen-microlensing', sourceKind: 'omen', sourceId: 'microlensing-event', phenomenon: 'A Microlensing Event briefly aligning hidden structure', purpose: 'Reveals occluded records and marks the most efficient Kindling', screenZone: 'far', salience: 'interactive', material: ['lensing arc', 'spectral bloom'], silhouette: 'two bright arcs closing around an off-center star', objectMotion: motion('optical', 'Arcs converge, hold, and separate on an authored cycle', 5_500), audioCue: EMBERLIGHT_AUDIO_EVENT_MAP.omens['microlensing-event'] }),
 ] as const satisfies AtLeastFour<WorldObjectManifest>
 
 const OMENS: AtLeastFour<OmenDef> = [
@@ -357,7 +316,70 @@ const OMENS: AtLeastFour<OmenDef> = [
   { id: 'microlensing-event', name: 'Microlensing Event', description: 'A brief alignment reveals hidden records and emphasizes the most efficient Kindling.', spawn: { mode: 'random', baseChance: 0.012, pityThreshold: 70, oddsVisibleAfterDiscovery: true }, rewards: [{ id: 'microlensing-efficiency', description: 'The currently identified efficient Kindling receives the displayed temporary emphasis.', exclusivePermanentPower: false, effects: [] }], object: OMEN_OBJECTS[3], accessibilityLabel: 'Microlensing Event Omen, lens shape and text reveal the selected Kindling without relying on color' },
 ]
 
-const ARCHIVE_RECORDS = CURIOSITIES.map((item, index): ArchiveRecordDef => ({
+const DENSITY_LANDMARKS = [
+  standaloneObject({
+    id: 'ember-density-stellar-nursery',
+    sourceKind: 'story',
+    sourceId: 'emberlight-arrival',
+    phenomenon: 'The Foundational Nursery organizing early Kindlings into one living district',
+    purpose: 'Compresses dense Spark-through-Star-Seed ownership into legible authored infrastructure',
+    screenZone: 'near',
+    salience: 'milestone',
+    material: ['banked ember avenues', 'ionized nursery canopy'],
+    silhouette: 'a low branching city beneath eight unequal stellar seed towers',
+    objectMotion: motion('authored', 'District routes brighten in sequence without scattering copies', 8_000),
+    audioCue: EMBERLIGHT_AUDIO_EVENT_MAP.purchase,
+  }),
+  standaloneObject({
+    id: 'ember-density-stellar-civilization',
+    sourceKind: 'story',
+    sourceId: 'emberlight-supernova-scene',
+    phenomenon: 'The Ecliptic Commonwealth organizing mature stars into one navigable sky',
+    purpose: 'Compresses dense Protostar-through-Constellation ownership into a named stellar civilization',
+    screenZone: 'far',
+    salience: 'milestone',
+    material: ['granulated photospheres', 'shared lensing routes'],
+    silhouette: 'four unequal stellar districts linked around one open navigation center',
+    objectMotion: motion('orbital', 'Districts keep one slow common ecliptic while local paths remain fixed', 14_000),
+    audioCue: EMBERLIGHT_AUDIO_EVENT_MAP.archive,
+  }),
+  standaloneObject({
+    id: 'ember-density-cosmic-hierarchy',
+    sourceKind: 'story',
+    sourceId: 'emberlight-beacon-scene',
+    phenomenon: 'The Known Sky resolving nebulae, galaxies, web, Loom, and Second Ember into one hierarchy',
+    purpose: 'Compresses dense cosmic Kindlings into a readable completed-universe landmark',
+    screenZone: 'horizon',
+    salience: 'milestone',
+    material: ['dust-laned galaxies', 'branching cosmic filament', 'white-gold answer light'],
+    silhouette: 'a barred galaxy nested inside a branching web that terminates at an answering ember',
+    objectMotion: motion('optical', 'Lensing travels only along the hierarchy from nursery to Answering Star', 18_000),
+    audioCue: EMBERLIGHT_AUDIO_EVENT_MAP.beacon,
+  }),
+] as const
+
+const DENSITY_MERGES: readonly DensityMergeRule[] = [
+  {
+    sourceIds: KINDLING_OBJECTS.slice(0, 8).map(({ id }) => id),
+    threshold: 100,
+    resultObjectId: DENSITY_LANDMARKS[0].id,
+    description: 'Foundational Kindlings become the Foundational Nursery instead of repeated glimmers.',
+  },
+  {
+    sourceIds: KINDLING_OBJECTS.slice(8, 12).map(({ id }) => id),
+    threshold: 100,
+    resultObjectId: DENSITY_LANDMARKS[1].id,
+    description: 'Mature stellar Kindlings become the named Ecliptic Commonwealth.',
+  },
+  {
+    sourceIds: KINDLING_OBJECTS.slice(12).map(({ id }) => id),
+    threshold: 100,
+    resultObjectId: DENSITY_LANDMARKS[2].id,
+    description: 'Cosmic-scale Kindlings become one legible hierarchy ending at the Second Ember.',
+  },
+]
+
+const ARCHIVE_RECORDS = EMBERLIGHT_ASTRAL_CABINET.items.map((item, index): ArchiveRecordDef => ({
   id: item.id,
   name: item.name,
   observation: item.flavor,
@@ -402,10 +424,10 @@ const BEACON_OBJECT = standaloneObject({
   material: ['white-gold stellar core', 'Wayfinder lens'],
   silhouette: 'a stellar Heart inside an open four-point navigation frame',
   objectMotion: motion('optical', 'One steady beam points toward the next reachable world', 12_000),
-  audioCue: 'ember-beacon',
+  audioCue: EMBERLIGHT_AUDIO_EVENT_MAP.beacon,
 })
 
-const ARCHIVE_SHELVES = CURIOSITY_SHELVES.map((shelf) => ({
+const ARCHIVE_SHELVES = EMBERLIGHT_ASTRAL_CABINET.shelves.map((shelf) => ({
   id: shelf.id,
   name: shelf.name,
   recordIds: [...shelf.ids] as unknown as FourTuple<string>,
@@ -439,10 +461,10 @@ export const EMBERLIGHT_V2_SUPPLEMENT: UniversePackV2Supplement = {
       scope: 'world',
     },
     doctrines: [
-      { id: 'ember-doctrine-forge', name: 'The Forge', description: 'Favors stable passive production and high-tier infrastructure.', favoredMotivations: ['restorer', 'optimizer'], effects: [], visualSignature: 'an anvil-shaped stellar foundry beneath the Heart' },
-      { id: 'ember-doctrine-hand', name: 'The Hand', description: 'Favors touch share, critical mass, and rhythm timing.', favoredMotivations: ['performer', 'optimizer'], effects: [], visualSignature: 'a five-point magnetic touch trace around the Heart' },
-      { id: 'ember-doctrine-sky', name: 'The Sky', description: 'Favors Omens, rare phenomena, and active chaining.', favoredMotivations: ['performer', 'archivist'], effects: [], visualSignature: 'three descending spectral paths across the far field' },
-      { id: 'ember-doctrine-root', name: 'The Root', description: 'Favors patient returns, head starts, and lower-tier resonance.', favoredMotivations: ['restorer', 'archivist'], effects: [], visualSignature: 'banked cosmic filaments joining the nursery to the Heart' },
+      { id: 'ember-doctrine-forge', name: 'The Forge', description: 'Favors stable passive production and high-tier infrastructure.', favoredMotivations: ['restorer', 'optimizer'], effects: [], visualSignature: EMBERLIGHT_DOCTRINE_VISUALS.forge.visualSignature },
+      { id: 'ember-doctrine-hand', name: 'The Hand', description: 'Favors touch share, critical mass, and rhythm timing.', favoredMotivations: ['performer', 'optimizer'], effects: [], visualSignature: EMBERLIGHT_DOCTRINE_VISUALS.hand.visualSignature },
+      { id: 'ember-doctrine-sky', name: 'The Sky', description: 'Favors Omens, rare phenomena, and active chaining.', favoredMotivations: ['performer', 'archivist'], effects: [], visualSignature: EMBERLIGHT_DOCTRINE_VISUALS.sky.visualSignature },
+      { id: 'ember-doctrine-root', name: 'The Root', description: 'Favors patient returns, head starts, and lower-tier resonance.', favoredMotivations: ['restorer', 'archivist'], effects: [], visualSignature: EMBERLIGHT_DOCTRINE_VISUALS.root.visualSignature },
     ],
     localPrestige: {
       id: 'emberlight-supernova',
@@ -476,7 +498,7 @@ export const EMBERLIGHT_V2_SUPPLEMENT: UniversePackV2Supplement = {
     touchMotion: motion('authored', 'The core compresses, brightens, and returns with a bounded overshoot', 350),
     reducedMotionState: state('Last Ember; touch shown by local contrast', 'an irregular ember core with a stepped corona', ['incandescent plasma', 'banked ash'], still('A local contrast step marks input and timing without scale travel'), 'single'),
     lowQualityState: state('Last Ember; simplified focus target', 'a high-contrast broken five-point ember', ['incandescent plasma'], still('The stable silhouette and full hit target remain visible'), 'single'),
-    touchCue: 'ember-touch',
+    touchCue: EMBERLIGHT_AUDIO_EVENT_MAP.click,
     focusLabel: 'Last Ember, Heart of Emberlight; kindle Light',
   },
   physics: {
@@ -501,25 +523,7 @@ export const EMBERLIGHT_V2_SUPPLEMENT: UniversePackV2Supplement = {
       { id: 'emberlight-last-gardeners', kind: 'transmission', skippableAfterFirstView: true, replayable: true },
     ],
   },
-  audio: {
-    tempoBpm: 72,
-    meter: '4/4',
-    buses: AUDIO_BUSES,
-    cues: AUDIO_CUES,
-    clickMaterialCue: 'ember-touch',
-    purchaseIntervalCue: 'ember-purchase',
-    criticalAccentCue: 'ember-critical',
-    omenCallCue: 'ember-omen',
-    prestigeCadenceCue: 'ember-supernova',
-    stems: [
-      { id: 'ember-stem-mallets', kindlingFamily: 'spark-through-forge', bus: 'music', description: 'Warm mallets voice the nursery and early craft tiers.' },
-      { id: 'ember-stem-forge', kindlingFamily: 'beacon-through-starseed', bus: 'music', description: 'Forge percussion enters with civilizational infrastructure.' },
-      { id: 'ember-stem-strings', kindlingFamily: 'protostar-through-constellation', bus: 'music', description: 'Strings widen as mature stars establish an ecliptic.' },
-      { id: 'ember-stem-choir', kindlingFamily: 'nebula-through-second-ember', bus: 'music', description: 'Choir resolves the cosmic hierarchy and subtracts before Supernova.' },
-    ],
-    silenceState: 'One intentional beat of silence preserves timing through a visible corona contraction and caption.',
-    fatiguePolicy: 'Bound pitch variation, rate-limit repeated material cues, duck touch under Omens, and retain at least one decibel of master headroom.',
-  },
+  audio: EMBERLIGHT_AUDIO_DEF,
   visual: {
     materials: ['incandescent plasma', 'ionized filament', 'dust lane', 'accretion disk', 'gravitational lens', 'spectral bloom'],
     primarySilhouettes: ['broken starburst', 'crescent accretion disk', 'bipolar jet', 'irregular nebula cloud', 'barred spiral galaxy', 'branching cosmic filament'],
@@ -530,8 +534,14 @@ export const EMBERLIGHT_V2_SUPPLEMENT: UniversePackV2Supplement = {
       far: { purpose: 'Mature stars, archive phenomena, and galaxies form a legible ecliptic.', maximumInteractiveObjects: 3, motionFrequency: 'medium' },
       horizon: { purpose: 'Cosmic structure, the Deep, and the final Beacon define the restored universe.', maximumInteractiveObjects: 2, motionFrequency: 'low' },
     },
-    objects: [...KINDLING_OBJECTS, ...OMEN_OBJECTS, ...ARCHIVE_OBJECTS, BEACON_OBJECT],
-    densityMerges: [],
+    objects: [
+      ...KINDLING_OBJECTS,
+      ...OMEN_OBJECTS,
+      ...ARCHIVE_OBJECTS,
+      ...DENSITY_LANDMARKS,
+      BEACON_OBJECT,
+    ],
+    densityMerges: DENSITY_MERGES,
     attentionBudget: {
       primaryTargets: 1,
       secondaryInteractiveObjects: 3,
@@ -561,20 +571,29 @@ export const EMBERLIGHT_V2_SUPPLEMENT: UniversePackV2Supplement = {
       'emberlight-last-ember',
       'emberlight-goal-lens',
       ...KINDLING_OBJECTS.map((object) => object.id),
-      'emberlight-archive',
-      'emberlight-beacon',
+      ...OMEN_OBJECTS.map((object) => object.id),
+      ...ARCHIVE_OBJECTS.map((object) => object.id),
+      ...DENSITY_LANDMARKS.map((object) => object.id),
+      BEACON_OBJECT.id,
     ],
     announcements: [
       { messageKey: 'emberlight.announcement.purchase', politeness: 'polite', dedupeKey: 'emberlight-purchase', minimumIntervalMs: 700 },
-      { messageKey: 'emberlight.announcement.omen', politeness: 'assertive', dedupeKey: 'emberlight-omen', minimumIntervalMs: 1_000 },
+      { messageKey: 'emberlight.announcement.falling-star', politeness: 'assertive', dedupeKey: 'emberlight-falling-star', minimumIntervalMs: 1_000 },
+      { messageKey: 'emberlight.announcement.pulsar-sweep', politeness: 'assertive', dedupeKey: 'emberlight-pulsar-sweep', minimumIntervalMs: 1_000 },
+      { messageKey: 'emberlight.announcement.comet-return', politeness: 'polite', dedupeKey: 'emberlight-comet-return', minimumIntervalMs: 1_000 },
+      { messageKey: 'emberlight.announcement.microlensing', politeness: 'polite', dedupeKey: 'emberlight-microlensing', minimumIntervalMs: 1_000 },
       { messageKey: 'emberlight.announcement.archive', politeness: 'polite', dedupeKey: 'emberlight-archive', minimumIntervalMs: 1_000 },
       { messageKey: 'emberlight.announcement.supernova', politeness: 'polite', dedupeKey: 'emberlight-supernova', minimumIntervalMs: 3_000 },
     ],
     nonColorSignals: [
       { stateId: 'emberlight-rhythm-on-beat', text: 'On beat', shape: 'three concentric notches', pattern: 'short-short-long', highContrastTreatment: 'white notched ring on black' },
       { stateId: 'emberlight-critical', text: 'Critical kindle', shape: 'five-point burst', pattern: 'solid center with broken rays', highContrastTreatment: 'double white burst outline' },
-      { stateId: 'emberlight-omen-ready', text: 'Omen reachable', shape: 'descending chevron path', pattern: 'three spaced chevrons', highContrastTreatment: 'white chevrons with black inset' },
+      { stateId: 'emberlight-falling-star-ready', text: 'Falling Star reachable', shape: 'descending chevron path', pattern: 'three spaced chevrons', highContrastTreatment: 'white chevrons with black inset' },
+      { stateId: 'emberlight-pulsar-window', text: 'Pulsar window one, two, or three', shape: 'numbered notched sector', pattern: 'one, two, or three solid notches', highContrastTreatment: 'white numbered sector on black' },
+      { stateId: 'emberlight-comet-return', text: 'Comet return route and remaining time', shape: 'open curved route ending in diamond', pattern: 'dashed outbound and solid inbound route', highContrastTreatment: 'white route with labeled return endpoint' },
+      { stateId: 'emberlight-microlensing', text: 'Microlensing target aligned', shape: 'paired arcs around off-center star', pattern: 'double arc and target label', highContrastTreatment: 'white double arc with black target inset' },
       { stateId: 'emberlight-owned', text: 'Owned Kindling state', shape: 'threshold badge', pattern: 'one, ten, twenty-five, fifty, or one hundred marks', highContrastTreatment: 'number and silhouette shown together' },
+      { stateId: 'emberlight-supernova-phase', text: 'Supernova phase and retained state', shape: 'five-phase corona changing into Stardust facets', pattern: 'numbered phase notches and retained labels', highContrastTreatment: 'white phase geometry with black facet numerals' },
     ],
     timing: {
       visualCue: 'A notched ring closes around the Last Ember on the beat.',
@@ -585,7 +604,15 @@ export const EMBERLIGHT_V2_SUPPLEMENT: UniversePackV2Supplement = {
     },
     muted: {
       fullGameplayEquivalent: true,
-      captions: ['Omen approach and remaining path', 'Rhythm timing band', 'Archive discovery', 'Supernova cadence and completion'],
+      captions: [
+        'Falling Star approach, path, and remaining reach time',
+        'Pulsar Sweep window number and timing band',
+        'Comet Return route and remaining schedule',
+        'Microlensing selected Kindling and alignment duration',
+        'Rhythm timing band and critical state',
+        'Astral Cabinet discovery name, implication, and effect',
+        'Supernova phase, silent beat progress, retained categories, and completion',
+      ],
     },
     reducedMotion: {
       fullGameplayEquivalent: true,
