@@ -123,6 +123,7 @@ export interface ManifestLayoutInput {
 }
 
 const THRESHOLDS = [1, 10, 25, 50, 100] as const satisfies readonly OwnershipThreshold[]
+const HEART_CLEARANCE_EPSILON = 1e-6
 
 export function ownershipThresholdForCount(count: number): OwnershipThreshold | null {
   if (!Number.isFinite(count) || count < 1) return null
@@ -343,8 +344,11 @@ export function auditManifestRenderPlan(plan: ManifestRenderPlan): readonly Layo
         message: `${object.objectId} extends outside its ${object.screenZone} zone.`,
       })
     }
-    const requiredDistance = object.minimumHeartDistance * plan.heart.radius
-    if (pointToRectDistance(plan.heart.centerX, plan.heart.centerY, object.rect) < requiredDistance) {
+    const requiredDistance = (1 + object.minimumHeartDistance) * plan.heart.radius
+    if (
+      pointToRectDistance(plan.heart.centerX, plan.heart.centerY, object.rect)
+        + HEART_CLEARANCE_EPSILON < requiredDistance
+    ) {
       violations.push({
         code: 'heart-obstruction',
         objectIds: [object.objectId],
@@ -461,7 +465,8 @@ export function planManifestLayout(input: ManifestLayoutInput): ManifestRenderPl
       }
       if (
         pointToRectDistance(heart.centerX, heart.centerY, rect)
-          < decision.object.minimumHeartDistance * heart.radius
+          + HEART_CLEARANCE_EPSILON
+          < (1 + decision.object.minimumHeartDistance) * heart.radius
       ) {
         continue
       }

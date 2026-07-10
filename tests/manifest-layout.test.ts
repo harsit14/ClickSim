@@ -223,6 +223,45 @@ test('layout audit detects Heart obstruction and viewport overflow in machine fi
   assert.ok(codes.has('viewport-overflow'))
 })
 
+test('Heart clearance is measured outward from the hit-target boundary', () => {
+  const plan = planManifestLayout(input(denseObjects().slice(0, 12), { width: 1280, height: 720 }))
+  const heartZoneObject = plan.objects.find((entry) => entry.screenZone === 'heart')
+  assert.ok(heartZoneObject)
+  const requiredCenterToRectDistance = (
+    1 + heartZoneObject.minimumHeartDistance
+  ) * plan.heart.radius
+  const boundaryObject = {
+    ...heartZoneObject,
+    rect: {
+      ...heartZoneObject.rect,
+      x: plan.heart.centerX + requiredCenterToRectDistance,
+      y: plan.heart.centerY - heartZoneObject.rect.height / 2,
+    },
+  }
+  const boundaryPlan: ManifestRenderPlan = {
+    ...plan,
+    objects: [boundaryObject],
+    hidden: [],
+    diagnostics: [],
+  }
+  assert.equal(
+    auditManifestRenderPlan(boundaryPlan).some((entry) => entry.code === 'heart-obstruction'),
+    false,
+  )
+
+  const insidePlan: ManifestRenderPlan = {
+    ...boundaryPlan,
+    objects: [{
+      ...boundaryObject,
+      rect: { ...boundaryObject.rect, x: boundaryObject.rect.x - 0.01 },
+    }],
+  }
+  assert.equal(
+    auditManifestRenderPlan(insidePlan).some((entry) => entry.code === 'heart-obstruction'),
+    true,
+  )
+})
+
 test('ownership transitions resolve all five frozen thresholds and both fallbacks', () => {
   const generator = object('generator-object', 'near', 'supporting', 'generator')
   const cases = [
