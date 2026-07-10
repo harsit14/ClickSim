@@ -13,6 +13,15 @@ import {
 } from '../src/content/wayfinder'
 import { totalRate, universeRateMult, type EcoState } from '../src/engine/compute'
 import { beatDurationSec, setMusicMode } from '../src/audio/music'
+import { CONSTELLATION } from '../src/content/constellation'
+import { DEEP_UPGRADES } from '../src/content/deep'
+import { VESSEL_PARTS } from '../src/content/vessel'
+import {
+  constellationNodeCopy,
+  deepUpgradeCopy,
+  progressionIdentity,
+  vesselPartCopy,
+} from '../src/content/universe-progression'
 
 function tideState(): EcoState {
   return {
@@ -71,6 +80,26 @@ test('achievements and vestments adopt the active universe identity', () => {
   const tidefallAccents = THEMES.map((theme) => themeVarsForUniverse(theme, 'tidefall')['--amber'])
   assert.equal(new Set(tidefallAccents).size, THEMES.length)
   assert.ok(THEMES.every((theme) => themeVarsForUniverse(theme, 'tidefall')['--amber'] !== theme.vars['--amber']))
+})
+
+test('Vessel and prestige layers use Tidefall-specific fiction without changing stable ids', () => {
+  const heart = VESSEL_PARTS.find((part) => part.id === 'heart-sun')!
+  const tideHeart = vesselPartCopy(heart, 'tidefall')
+  assert.equal(heart.consumes?.gen, 'sun')
+  assert.match(tideHeart.name, /Drowned Beacon/)
+  assert.doesNotMatch(`${tideHeart.name} ${tideHeart.requirement} ${tideHeart.action}`, /\bSuns?\b/)
+
+  assert.equal(progressionIdentity('emberlight').observatory.title, 'The Observatory')
+  assert.equal(progressionIdentity('tidefall').observatory.title, 'The Moonless Chart')
+  assert.equal(progressionIdentity('tidefall').deep.title, 'The Hadal Archive')
+  assert.notEqual(
+    constellationNodeCopy(CONSTELLATION[0], 'tidefall').name,
+    constellationNodeCopy(CONSTELLATION[0], 'emberlight').name,
+  )
+  assert.notEqual(
+    deepUpgradeCopy(DEEP_UPGRADES[0], 'tidefall').name,
+    deepUpgradeCopy(DEEP_UPGRADES[0], 'emberlight').name,
+  )
 })
 
 test('the living tide averages around one and reaches its stated extrema', () => {

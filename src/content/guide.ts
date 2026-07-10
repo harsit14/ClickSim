@@ -204,7 +204,8 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
           'The Corona is the expensive capstone reached through developed Forge and Hand paths.',
         ],
         paragraphs: [
-          'Once every node is owned, the Eternal Observatory appears. Its repeatable Stardust works provide an endless production sink and increased Stardust yield until the next Deep Collapse.',
+          'The same permanent choices are interpreted by each universe rather than copied verbatim. Emberlight draws a stellar Constellation in the Observatory; Tidefall sounds a Current Chart in the Moonless Chart, with local node names, lore, layout, and Moonfall ritual.',
+          'Once every node is owned, a repeatable Stardust market appears. Emberlight calls it the Eternal Observatory; Tidefall calls it the Returning Ocean. Both provide an endless production sink and increased Stardust yield until the next layer-two collapse.',
         ],
       },
     ],
@@ -221,6 +222,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Deep Collapse',
         paragraphs: [
           'Every twenty Stardust gathered in the current era produces one base Singularity, modified by later repeatable works. A Deep Collapse resets the run, Stardust, constellation, and temporary Stardust works. Singularities and everything purchased with them persist through future Deep Collapses.',
+          'Emberlight presents this layer as the cold abstract Deep. Tidefall descends into the Hadal Archive, where the same permanent mechanics become Pressure Laws, Hadal Descents, a Current Atlas, and Pressure Trials with their own names and lore.',
         ],
       },
       {
@@ -272,7 +274,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Building the Vessel',
         paragraphs: [
           'The Vessel appears after sufficiently vast progress. Its five parts ask for mastery of different systems rather than one additional currency wall. Completed parts remain recorded while you finish the others.',
-          'One part consumes one hundred tier-ten generators when assembled. The interface states the sacrifice before it happens. The final Archive part requires choosing an answer to The Question.',
+          'One part consumes one hundred tier-ten generators when assembled. The interface states the sacrifice using the active universe’s material: Suns in Emberlight or Drowned Beacons in Tidefall. The final Archive part requires choosing an answer to The Question.',
         ],
       },
       {

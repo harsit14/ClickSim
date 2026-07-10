@@ -28,6 +28,12 @@
     workRank,
     type DeepWorkId,
   } from '../content/repeatables'
+  import {
+    challengeCopy,
+    deepUpgradeCopy,
+    deepWorkCopy,
+    progressionIdentity,
+  } from '../content/universe-progression'
 
   let { onclose }: { onclose: () => void } = $props()
   let armed = $state(false)
@@ -37,10 +43,13 @@
 
   const gain = $derived(deepCollapseGain())
   const pack = $derived(universeById(game.activeUniverse))
+  const identity = $derived(progressionIdentity(pack.id).deep)
+  const tidefall = $derived(pack.id === 'tidefall')
   const marketComplete = $derived(deepMarketComplete())
+  const depthProgress = $derived(Math.min(100, Math.round((game.singUpgrades.length / DEEP_UPGRADES.length) * 55 + (game.challengesDone.length / CHALLENGES.length) * 45)))
   const trialCircles = $derived([
-    { name: 'The First Circle', note: 'the laws that break a young universe', trials: CHALLENGES.slice(0, 6) },
-    { name: 'The Inner Horizon', note: 'compound laws for a universe that remembers', trials: CHALLENGES.slice(6) },
+    { name: identity.circleNames[0], note: identity.circleNotes[0], trials: CHALLENGES.slice(0, 6) },
+    { name: identity.circleNames[1], note: identity.circleNotes[1], trials: CHALLENGES.slice(6) },
   ])
   const localize = (text: string) => {
     let localized = text
@@ -51,6 +60,7 @@
     for (const generator of pack.generators) localized = localized.replaceAll(`{${generator.id}}`, generator.name)
     return localized
   }
+  const warningText = () => localize(identity.warningText).replace('stardust', `✧${game.stardustTotal} stardust`)
 
   function collapse() {
     armed = false
@@ -61,7 +71,7 @@
     combo.lastRewardAt = 0
     playSupernova()
     save()
-    pushToast('The Deep opens', `◉ ${gained} — an era, folded into your hand.`, 'collapse')
+    pushToast(identity.toastTitle, `◉ ${gained} — ${identity.toastBody}.`, 'collapse')
   }
 
   function tryBuy(id: string) {
@@ -91,43 +101,53 @@
   }
 </script>
 
-<section class="deep">
+<section class="deep" class:tidefall>
   <header>
-    <h2>The Deep</h2>
+    <div class="title-block">
+      <span>{identity.overline}</span>
+      <h2>{identity.title}</h2>
+    </div>
     <span class="balance">◉ {game.singularities} <em>singularit{game.singularities === 1 ? 'y' : 'ies'}</em></span>
-    <button bind:this={closeButton} class="close" aria-label="close the Deep" onclick={onclose}>✕</button>
+    <button bind:this={closeButton} class="close" aria-label={`close ${identity.title}`} onclick={onclose}>✕</button>
   </header>
+
+  {#if tidefall}
+    <div class="depth-profile" aria-label={`${depthProgress}% of the Hadal Archive mapped`}>
+      <span>surface memory</span>
+      <span class="depth-line"><i style:left={`${depthProgress}%`}></i></span>
+      <span>hadal memory</span>
+      <strong>{depthProgress}% sounded</strong>
+    </div>
+  {/if}
 
   <div class="fold" class:ready={gain >= 1}>
     {#if game.challenge}
-      <p class="fold-text">A trial is underway. The deep waits.</p>
+      <p class="fold-text">{identity.trialWait}</p>
     {:else if gain < 1}
       <p class="fold-text">
-        Gather stardust; the deep takes eras whole.
+        {identity.gatherText}
         <em>◉1 per ✧{SINGULARITY_COST} gathered this era — ✧{game.stardustTotal} so far</em>
       </p>
     {:else if !armed}
-      <p class="fold-text">Fold the era. Stardust, constellation, everything — for ◉.</p>
-      <button class="fold-btn" onclick={() => (armed = true)}>Deep Collapse &nbsp;·&nbsp; gain ◉{format(gain)}</button>
+      <p class="fold-text">{identity.readyText}</p>
+      <button class="fold-btn" onclick={() => (armed = true)}>{identity.collapseName} &nbsp;·&nbsp; gain ◉{format(gain)}</button>
     {:else}
-      <p class="fold-text warn">
-        Your ✧{game.stardustTotal} stardust, every constellation star, and the era's {pack.currency.toLowerCase()} are all taken.
-        Singularities — and everything they buy — are forever.
-      </p>
+      <p class="fold-text warn">{warningText()}</p>
       <div class="confirm">
-        <button class="fold-btn go" onclick={collapse}>Fold it all</button>
+        <button class="fold-btn go" onclick={collapse}>{identity.goText}</button>
         <button class="fold-btn stay" onclick={() => (armed = false)}>Not yet</button>
       </div>
     {/if}
   </div>
 
-  <h3>Singularity works</h3>
+  <h3>{identity.worksTitle}</h3>
   <div class="shop">
     {#each DEEP_UPGRADES as u (u.id)}
+      {@const copy = deepUpgradeCopy(u, pack.id)}
       {@const owned = game.singUpgrades.includes(u.id)}
       <div class="item" class:owned>
         <div class="item-head">
-          <strong>{u.name}</strong>
+          <strong>{copy.name}</strong>
           {#if owned}
             {#if u.id === 'auto-kindler'}
               <label class="toggle"><input type="checkbox" bind:checked={game.autoKindler} /> on</label>
@@ -147,8 +167,8 @@
             </button>
           {/if}
         </div>
-        <em>{u.flavor}</em>
-        <span class="desc">{localize(u.desc)}</span>
+        <em>{copy.flavor}</em>
+        <span class="desc">{localize(copy.effect ?? u.desc)}</span>
       </div>
     {/each}
   </div>
@@ -156,34 +176,35 @@
   <section class="recursive" class:locked={!marketComplete} aria-label="Repeatable Singularity works">
     <div class="recursive-head">
       <div>
-        <span>beyond the finished market</span>
-        <h3>The Recursive Works</h3>
+        <span>{identity.recursiveEyebrow}</span>
+        <h3>{identity.recursiveTitle}</h3>
       </div>
       {#if marketComplete}<strong>◉ survives collapse</strong>{/if}
     </div>
     {#if marketComplete}
-      <p>Singularities can be compressed repeatedly. These ranks survive every Deep Collapse and end only with Remembrance.</p>
+      <p>{identity.recursiveIntro}</p>
       <div class="recursive-grid">
         {#each DEEP_WORKS as work (work.id)}
+          {@const copy = deepWorkCopy(work, pack.id)}
           {@const rank = workRank(game.deepWorks, work.id)}
           {@const cost = workCost(work, rank)}
           <article class="recursive-work">
             <span class="work-glyph">{work.glyph}</span>
             <div class="work-copy">
               <small>rank {rank}</small>
-              <strong>{work.name}</strong>
-              <em>{work.flavor}</em>
-              <span>{work.effect}</span>
+              <strong>{copy.name}</strong>
+              <em>{copy.flavor}</em>
+              <span>{copy.effect ?? work.effect}</span>
               <b>{workStatus(work.id)}</b>
             </div>
             <button disabled={!Number.isFinite(cost) || game.singularities < cost} onclick={() => tryBuyWork(work.id)}>
-              {Number.isFinite(cost) ? `compress · ◉ ${cost}` : 'mastered'}
+              {Number.isFinite(cost) ? `${identity.workVerb} · ◉ ${cost}` : 'mastered'}
             </button>
           </article>
         {/each}
       </div>
     {:else}
-      <p>Acquire every Singularity work first. Once the market is complete, the Deep begins offering ranks instead of endings.</p>
+      <p>{identity.recursiveEmpty}</p>
     {/if}
   </section>
 
@@ -191,8 +212,8 @@
 
   <div class="trial-title">
     <div>
-      <h3>Trials of the Deep</h3>
-      <span>rules rehearsed until they become power</span>
+      <h3>{identity.trialsTitle}</h3>
+      <span>{identity.trialsNote}</span>
     </div>
     <strong>{game.challengesDone.length} / {CHALLENGES.length}</strong>
   </div>
@@ -208,12 +229,13 @@
     </div>
     <div class="trials">
       {#each circle.trials as c (c.id)}
+        {@const copy = challengeCopy(c, pack.id)}
         {@const done = game.challengesDone.includes(c.id)}
         {@const active = game.challenge === c.id}
         {@const unlocked = challengeUnlocked(game.challengesDone, c)}
         <div class="trial" class:done class:active class:locked={!unlocked}>
           <div class="trial-head">
-            <strong>{c.name}</strong>
+            <strong>{copy.name}</strong>
             {#if done}
               <span class="held">endured</span>
             {:else if active}
@@ -224,7 +246,7 @@
               <span class="sealed">after {c.unlockAfter} trials</span>
             {/if}
           </div>
-          <em>{c.flavor}</em>
+          <em>{copy.flavor}</em>
           <span class="desc">{localize(c.rules)} · goal: {localize(c.goalText)}</span>
           <span class="reward">reward: {localize(c.rewardDesc)}</span>
         </div>
@@ -259,6 +281,16 @@
     align-items: center;
     gap: 1rem;
     margin-bottom: 0.8rem;
+  }
+  .title-block { flex: 1; min-width: 0; }
+  .title-block > span {
+    display: block;
+    margin-bottom: 0.16rem;
+    font-size: 0.52rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #657f8c;
   }
   h2 {
     margin: 0;
@@ -296,6 +328,22 @@
     font-size: 0.95rem;
     cursor: pointer;
   }
+
+  .depth-profile {
+    display: grid;
+    grid-template-columns: auto minmax(8rem, 1fr) auto;
+    align-items: center;
+    gap: 0.65rem;
+    margin: -0.15rem 0 0.75rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid rgba(88, 222, 216, 0.14);
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(74, 202, 205, 0.055), rgba(51, 65, 143, 0.055));
+  }
+  .depth-profile > span { font-size: 0.54rem; letter-spacing: 0.09em; text-transform: uppercase; color: rgba(142, 211, 216, 0.62); }
+  .depth-profile > strong { grid-column: 1 / -1; justify-self: center; margin-top: -0.18rem; font-size: 0.58rem; font-weight: 650; color: #a8e9e3; }
+  .depth-line { position: relative; height: 2px; background: linear-gradient(90deg, #61d9d2, #356a93 48%, #392d68); border-radius: 999px; }
+  .depth-line i { position: absolute; top: 50%; width: 0.48rem; height: 0.48rem; transform: translate(-50%, -50%); border: 1px solid #c9fff7; border-radius: 50%; background: #31557d; box-shadow: 0 0 10px rgba(88, 222, 216, 0.58); }
 
   .fold {
     padding: 0.7rem 0.9rem;
@@ -497,6 +545,45 @@
   .work-copy b { margin-top: 0.1rem; font-size: 0.58rem; font-weight: 650; color: #9fe3ff; }
   .recursive-work button { grid-column: 1 / -1; justify-self: start; padding: 0.3rem 0.72rem; font: inherit; font-size: 0.64rem; font-weight: 750; color: #06131c; background: linear-gradient(180deg, #d6f3ff, #80c9eb); border: 0; border-radius: 999px; cursor: pointer; }
   .recursive-work button:disabled { opacity: 0.38; cursor: default; }
+  .deep.tidefall {
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(71, 206, 205, 0.13), transparent 30%),
+      radial-gradient(ellipse at 50% 64%, rgba(51, 48, 117, 0.14), transparent 47%),
+      linear-gradient(180deg, rgba(3, 23, 33, 0.98), rgba(2, 8, 20, 0.985) 54%, rgba(5, 4, 16, 0.99));
+    border-color: rgba(88, 222, 216, 0.2);
+    box-shadow: 0 25px 90px rgba(0, 5, 15, 0.68), inset 0 1px rgba(185, 255, 242, 0.035);
+  }
+  .tidefall .title-block > span { color: rgba(88, 222, 216, 0.6); }
+  .tidefall h2 { color: #c9fff7; }
+  .tidefall h3 { color: rgba(157, 220, 221, 0.72); }
+  .tidefall .balance { color: #b9fff2; text-shadow: 0 0 16px rgba(88, 222, 216, 0.45); }
+  .tidefall .fold { border-color: rgba(88, 222, 216, 0.18); background: linear-gradient(180deg, rgba(52, 169, 172, 0.065), rgba(46, 46, 108, 0.055)); }
+  .tidefall .fold.ready { border-color: rgba(119, 239, 225, 0.42); box-shadow: inset 0 0 34px rgba(58, 183, 178, 0.1); }
+  .tidefall .fold-btn,
+  .tidefall .buy,
+  .tidefall .recursive-work button { color: #03161b; background: linear-gradient(180deg, #d1fff7, #58ded8); box-shadow: 0 0 22px rgba(88, 222, 216, 0.17); }
+  .tidefall .fold-btn.stay { color: var(--dim); background: none; box-shadow: none; }
+  .tidefall .item,
+  .tidefall .trial { position: relative; overflow: hidden; background: linear-gradient(120deg, rgba(40, 126, 139, 0.045), rgba(25, 20, 59, 0.05)); border-color: rgba(113, 191, 200, 0.11); }
+  .tidefall .item::before,
+  .tidefall .trial::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 2px; background: linear-gradient(180deg, rgba(88, 222, 216, 0.08), rgba(81, 80, 174, 0.25), rgba(88, 222, 216, 0.08)); }
+  .tidefall .item.owned { border-color: rgba(88, 222, 216, 0.3); }
+  .tidefall .trial.done { border-color: rgba(121, 231, 214, 0.34); }
+  .tidefall .trial.active { border-color: rgba(129, 143, 255, 0.48); box-shadow: 0 0 18px rgba(77, 78, 177, 0.14); }
+  .tidefall .desc { color: #a6d6d7; }
+  .tidefall .held { color: rgba(185, 255, 242, 0.78); }
+  .tidefall .trial-progress i.done { background: linear-gradient(90deg, #58ded8, #777fe8); box-shadow: 0 0 7px rgba(88, 222, 216, 0.4); }
+  .tidefall .circle-head h4 { color: #a8e9e3; }
+  .tidefall .recursive { border-color: rgba(88, 222, 216, 0.2); background: linear-gradient(145deg, rgba(36, 139, 150, 0.075), rgba(48, 37, 105, 0.09)); }
+  .tidefall .recursive-head span,
+  .tidefall .work-copy small { color: #58ded8; }
+  .tidefall .recursive h3,
+  .tidefall .work-copy strong { color: #d8fffb; }
+  .tidefall .recursive-work { border-color: rgba(88, 222, 216, 0.14); background: linear-gradient(150deg, rgba(1, 20, 28, 0.5), rgba(10, 7, 28, 0.45)); }
+  .tidefall .work-glyph { color: #b9fff2; border-color: rgba(88, 222, 216, 0.22); }
+  .tidefall .work-copy span { color: #a9d9d5; }
+  .tidefall .work-copy b,
+  .tidefall .recursive-head > strong { color: #b9fff2; }
   @media (max-width: 720px) {
     .shop, .trials, .recursive-grid { grid-template-columns: 1fr; }
   }

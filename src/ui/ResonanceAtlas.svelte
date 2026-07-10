@@ -12,6 +12,7 @@
   }
 
   const pack = $derived(universeById(game.activeUniverse))
+  const tidefall = $derived(pack.id === 'tidefall')
   const resonances = $derived(
     pack.upgrades.flatMap((upgrade): Resonance[] =>
       upgrade.effects
@@ -41,16 +42,16 @@
   }
 </script>
 
-<section class="atlas" aria-labelledby="resonance-title">
+<section class="atlas" class:tidefall aria-labelledby="resonance-title">
   <header>
     <div>
-      <span>the economy beneath the economy</span>
-      <h3 id="resonance-title">Resonance Atlas</h3>
+      <span>{tidefall ? 'the current beneath every current' : 'the economy beneath the economy'}</span>
+      <h3 id="resonance-title">{tidefall ? 'Current Atlas' : 'Resonance Atlas'}</h3>
     </div>
     <strong>{ownedCount}/{resonances.length} links awake</strong>
   </header>
   <p>
-    Kindlings do not work alone. Each line makes one source stronger for every unit owned at its other end.
+    {tidefall ? 'No current travels alone. Each sounding makes one source stronger for every glow feeding it upstream.' : 'Kindlings do not work alone. Each line makes one source stronger for every unit owned at its other end.'}
     {#if resonanceScale > 1}<b> Small Vessels doubles every live resonance.</b>{/if}
   </p>
 
@@ -190,6 +191,16 @@
   .formula { color: #8bcde6; }
   .live { color: #ffd98a; font-weight: 650; }
   .price { color: #7797a7; }
+  .atlas.tidefall { border-color: rgba(88, 222, 216, 0.2); background: radial-gradient(ellipse at 50% 0%, rgba(51, 181, 184, 0.1), transparent 46%), rgba(2, 15, 24, 0.54); }
+  .tidefall header span { color: rgba(88, 222, 216, 0.58); }
+  .tidefall h3 { color: #c9fff7; }
+  .tidefall header strong { color: #b9fff2; }
+  .tidefall .chart { background: radial-gradient(ellipse at 50% 50%, rgba(54, 156, 166, 0.08), transparent 62%), rgba(0, 8, 16, 0.62); }
+  .tidefall .guide { stroke: rgba(88, 222, 216, 0.05); }
+  .tidefall .link.owned { stroke: #8dfff0; filter: drop-shadow(0 0 4px rgba(88, 222, 216, 0.7)); }
+  .tidefall .legend .owned::before { border-color: #8dfff0; }
+  .tidefall article.owned { border-color: rgba(88, 222, 216, 0.28); background: rgba(42, 160, 163, 0.045); }
+  .tidefall .live { color: #b9fff2; }
   @media (max-width: 620px) {
     .links { grid-template-columns: 1fr; }
     header { align-items: start; }

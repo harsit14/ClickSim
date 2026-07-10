@@ -9,6 +9,7 @@
     vesselStage,
     type VesselPartDef,
   } from '../content/vessel'
+  import { vesselPartCopy } from '../content/universe-progression'
   import { UNIVERSES, universeById, type UniversePack } from '../content/universes'
   import { WAYFINDER_NODES, wayfinderNodeAvailable } from '../content/wayfinder'
   import {
@@ -43,7 +44,7 @@
     if (vesselComplete()) playCollect()
     else playBuy()
     save()
-    pushToast(part.name, 'The Vessel takes shape in the dark.', 'vessel')
+    pushToast(vesselPartCopy(part, activePack.id).name, 'The Vessel takes shape in the dark.', 'vessel')
   }
 
   function beaconProgress(pack: UniversePack): number {
@@ -89,14 +90,15 @@
 
   <div class="parts">
     {#each VESSEL_PARTS as part (part.id)}
+      {@const copy = vesselPartCopy(part, activePack.id)}
       {@const complete = vesselPartComplete(game, part.id)}
       {@const ready = vesselPartReady(game, part)}
       <article class="part" class:complete class:ready style:--hue={part.hue}>
         <span class="sigil">{complete ? '◆' : ready ? '✦' : '·'}</span>
         <div class="copy">
-          <strong>{part.name}</strong>
-          <em>{part.flavor}</em>
-          <span>{part.requirement}</span>
+          <strong>{copy.name}</strong>
+          <em>{copy.flavor}</em>
+          <span>{copy.requirement}</span>
           <span class="meter" aria-hidden="true">
             <span style:width={`${vesselProgress(game, part) * 100}%`}></span>
           </span>
@@ -105,7 +107,7 @@
           <span>{complete ? 'set' : progressText(part)}</span>
           {#if !complete}
             <button disabled={!ready || game.challenge !== null} onclick={() => tryBuild(part)}>
-              {part.action}
+              {copy.action}
             </button>
           {/if}
         </div>

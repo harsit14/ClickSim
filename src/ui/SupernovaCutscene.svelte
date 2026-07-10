@@ -3,6 +3,8 @@
   import { worldRef } from '../render/world-ref'
   import { stopMusic } from '../audio/music'
   import { playSupernova } from '../audio/sfx'
+  import { game } from '../engine/game.svelte'
+  import { progressionIdentity } from '../content/universe-progression'
 
   let {
     doReset,
@@ -14,6 +16,8 @@
   let gained = $state(0)
   let scene: HTMLDivElement
   let againButton = $state<HTMLButtonElement>()
+  const tidefall = $derived(game.activeUniverse === 'tidefall')
+  const ritualName = $derived(progressionIdentity(game.activeUniverse).observatory.collapseName)
 
   $effect(() => {
     if (phase !== 'after') return
@@ -49,9 +53,10 @@
 <div
   bind:this={scene}
   class="scene {phase}"
+  class:tidefall
   role="dialog"
   aria-modal="true"
-  aria-label="Supernova"
+  aria-label={ritualName}
   tabindex="-1"
 >
   <div class="dark"></div>
@@ -69,9 +74,9 @@
         >✧</span>
       {/each}
       <div class="result">
-        <p class="whisper">the dark kept nothing</p>
+        <p class="whisper">{tidefall ? 'the tide returned as memory' : 'the dark kept nothing'}</p>
         <p class="dust">✧ {gained} stardust</p>
-        <button bind:this={againButton} class="again" onclick={onfinished}>begin again</button>
+        <button bind:this={againButton} class="again" onclick={onfinished}>{tidefall ? 'begin at low tide' : 'begin again'}</button>
       </div>
     </div>
   {/if}
@@ -109,6 +114,10 @@
     opacity: 0;
     transition: opacity 2.4s ease-in;
   }
+  .scene.tidefall .flash {
+    background:
+      radial-gradient(circle at 50% 48%, #f3ffff 0, #b9fff2 24%, rgba(88, 222, 216, 0.86) 43%, rgba(48, 133, 196, 0.58) 64%, transparent 86%);
+  }
 
   .aftermath {
     position: absolute;
@@ -121,6 +130,10 @@
     color: #d8d2ff;
     text-shadow: 0 0 12px rgba(170, 150, 255, 0.9);
     animation: fall linear both;
+  }
+  .tidefall .mote {
+    color: #b9fff2;
+    text-shadow: 0 0 12px rgba(88, 222, 216, 0.95);
   }
   @keyframes fall {
     from { transform: translateY(0) rotate(0deg); opacity: 1; }
@@ -164,4 +177,7 @@
     transition: transform 0.08s;
   }
   .again:hover { transform: scale(1.05); }
+  .tidefall .whisper { color: rgba(185, 255, 242, 0.76); }
+  .tidefall .dust { color: #d8fffb; text-shadow: 0 0 34px rgba(88, 222, 216, 0.82); }
+  .tidefall .again { color: #03161b; background: linear-gradient(180deg, #d8fffb, #58ded8); }
 </style>

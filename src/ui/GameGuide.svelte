@@ -8,6 +8,15 @@
   import { STARDUST_WORKS, DEEP_WORKS } from '../content/repeatables'
   import { CHALLENGES } from '../content/challenges'
   import { VESSEL_PARTS } from '../content/vessel'
+  import {
+    challengeCopy,
+    constellationNodeCopy,
+    deepUpgradeCopy,
+    deepWorkCopy,
+    progressionIdentity,
+    stardustWorkCopy,
+    vesselPartCopy,
+  } from '../content/universe-progression'
   import { WAYFINDER_NODES } from '../content/wayfinder'
   import { THEMES, themeVarsForUniverse } from '../content/themes'
   import { ACHIEVEMENTS } from '../content/achievements'
@@ -56,10 +65,33 @@
       'active-play': UNIVERSES.flatMap((universe) => universe.events.powerUps.flatMap((power) => [power.label, power.toast])),
       universes: UNIVERSES.flatMap((universe) => [universe.name, universe.description, universe.twist.name, universe.twist.description]),
       cabinet: UNIVERSES.flatMap((universe) => universe.cabinet.items.flatMap((item) => [item.name, item.classification, item.flavor, item.record])),
-      supernova: CONSTELLATION.flatMap((node) => [node.name, node.flavor, ...node.perks.map((perk) => perk.desc)]),
-      deep: [...DEEP_UPGRADES, ...STARDUST_WORKS, ...DEEP_WORKS].flatMap((item) => [item.name, item.flavor, 'desc' in item ? item.desc : item.effect]),
-      trials: CHALLENGES.flatMap((trial) => [trial.name, trial.flavor, trial.rules, trial.rewardDesc]),
-      multiverse: [...VESSEL_PARTS.flatMap((part) => [part.name, part.requirement, part.flavor]), ...WAYFINDER_NODES.flatMap((node) => [node.name, node.effect, node.flavor])],
+      supernova: UNIVERSES.flatMap((universe) => [
+        progressionIdentity(universe.id).observatory.title,
+        ...CONSTELLATION.flatMap((node) => {
+          const copy = constellationNodeCopy(node, universe.id)
+          return [copy.name, copy.flavor, ...node.perks.map((perk) => perk.desc)]
+        }),
+        ...STARDUST_WORKS.flatMap((work) => {
+          const copy = stardustWorkCopy(work, universe.id)
+          return [copy.name, copy.flavor, copy.effect ?? work.effect]
+        }),
+      ]),
+      deep: UNIVERSES.flatMap((universe) => [
+        progressionIdentity(universe.id).deep.title,
+        ...DEEP_UPGRADES.flatMap((upgrade) => {
+          const copy = deepUpgradeCopy(upgrade, universe.id)
+          return [copy.name, copy.flavor, copy.effect ?? upgrade.desc]
+        }),
+        ...DEEP_WORKS.flatMap((work) => {
+          const copy = deepWorkCopy(work, universe.id)
+          return [copy.name, copy.flavor, copy.effect ?? work.effect]
+        }),
+      ]),
+      trials: UNIVERSES.flatMap((universe) => CHALLENGES.flatMap((trial) => {
+        const copy = challengeCopy(trial, universe.id)
+        return [copy.name, copy.flavor, trial.rules, trial.rewardDesc]
+      })),
+      multiverse: [...UNIVERSES.flatMap((universe) => VESSEL_PARTS.flatMap((part) => Object.values(vesselPartCopy(part, universe.id)))), ...WAYFINDER_NODES.flatMap((node) => [node.name, node.effect, node.flavor])],
       story: ENDING_CHOICES.flatMap((ending) => [ending.label, ending.doctrine, ending.line]),
       progress: THEMES.flatMap((theme) => [theme.name, theme.flavor, theme.unlockText]),
     }
@@ -81,6 +113,15 @@
     if (power.clickMult && power.clickMult !== 1) parts.push(`clicks ×${power.clickMult}`)
     if (power.durationSec) parts.push(`${power.durationSec}s base duration`)
     return parts.join(' · ')
+  }
+
+  function localize(text: string): string {
+    let localized = text
+      .replaceAll('✦', pack.currencyGlyph)
+      .replaceAll('light', pack.currency.toLowerCase())
+      .replaceAll('falling stars', `${pack.events.noun}s`)
+    for (const generator of pack.generators) localized = localized.replaceAll(`{${generator.id}}`, generator.name)
+    return localized
   }
 
   function onKeydown(event: KeyboardEvent) {
@@ -249,24 +290,25 @@
               </section>
             {:else if chapter.id === 'supernova'}
               <section class="reference">
-                <div class="reference-title"><span>Observatory reference</span><h4>Constellation nodes</h4></div>
+                <div class="reference-title"><span>{progressionIdentity(pack.id).observatory.title} reference</span><h4>{progressionIdentity(pack.id).observatory.mapTitle} nodes</h4></div>
                 <div class="node-list">
                   {#each CONSTELLATION as node (node.id)}
-                    <article class:owned={game.constellation.includes(node.id)}><span>{node.cost}✧</span><div><small>{node.branch}</small><strong>{node.name}</strong><p>{[...node.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())), ...node.perks.map((perk) => perk.desc)].join(' · ')}</p></div></article>
+                    {@const copy = constellationNodeCopy(node, pack.id)}
+                    <article class:owned={game.constellation.includes(node.id)}><span>{node.cost}✧</span><div><small>{node.branch}</small><strong>{copy.name}</strong><p>{[...node.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())), ...node.perks.map((perk) => localize(perk.desc))].join(' · ')}</p></div></article>
                   {/each}
                 </div>
                 <div class="works-row">
-                  {#each STARDUST_WORKS as work (work.id)}<article><span>{work.glyph}</span><div><strong>{work.name}</strong><p>{work.effect}</p><small>starts at ✧{work.baseCost} · cost growth ×{work.costGrowth}</small></div></article>{/each}
+                  {#each STARDUST_WORKS as work (work.id)}{@const copy = stardustWorkCopy(work, pack.id)}<article><span>{work.glyph}</span><div><strong>{copy.name}</strong><p>{copy.effect ?? work.effect}</p><small>starts at ✧{work.baseCost} · cost growth ×{work.costGrowth}</small></div></article>{/each}
                 </div>
               </section>
             {:else if chapter.id === 'deep'}
               <section class="reference">
-                <div class="reference-title"><span>Singularity market</span><h4>Fixed and recursive works</h4></div>
+                <div class="reference-title"><span>{progressionIdentity(pack.id).deep.title}</span><h4>{progressionIdentity(pack.id).deep.worksTitle} and recursive works</h4></div>
                 <div class="deep-list">
-                  {#each DEEP_UPGRADES as upgrade (upgrade.id)}<article class:owned={game.singUpgrades.includes(upgrade.id)}><span>◉{upgrade.cost}</span><div><strong>{upgrade.name}</strong><em>{upgrade.flavor}</em><p>{upgrade.desc}</p></div></article>{/each}
+                  {#each DEEP_UPGRADES as upgrade (upgrade.id)}{@const copy = deepUpgradeCopy(upgrade, pack.id)}<article class:owned={game.singUpgrades.includes(upgrade.id)}><span>◉{upgrade.cost}</span><div><strong>{copy.name}</strong><em>{copy.flavor}</em><p>{localize(copy.effect ?? upgrade.desc)}</p></div></article>{/each}
                 </div>
                 <div class="works-row">
-                  {#each DEEP_WORKS as work (work.id)}<article><span>{work.glyph}</span><div><strong>{work.name}</strong><p>{work.effect}</p><small>starts at ◉{work.baseCost} · cost growth ×{work.costGrowth}</small></div></article>{/each}
+                  {#each DEEP_WORKS as work (work.id)}{@const copy = deepWorkCopy(work, pack.id)}<article><span>{work.glyph}</span><div><strong>{copy.name}</strong><p>{copy.effect ?? work.effect}</p><small>starts at ◉{work.baseCost} · cost growth ×{work.costGrowth}</small></div></article>{/each}
                 </div>
               </section>
             {:else if chapter.id === 'trials'}
@@ -274,8 +316,9 @@
                 <div class="reference-title"><span>{game.challengesDone.length}/12 endured</span><h4>Complete trial ledger</h4></div>
                 <div class="trial-guide">
                   {#each CHALLENGES as trial, index (trial.id)}
+                    {@const copy = challengeCopy(trial, pack.id)}
                     <article class:done={game.challengesDone.includes(trial.id)} class:locked={game.challengesDone.length < (trial.unlockAfter ?? 0)}>
-                      <span>{String(index + 1).padStart(2, '0')}</span><div><small>{index < 6 ? 'first circle' : 'inner horizon'}</small><strong>{trial.name}</strong><em>{trial.flavor}</em><p>{trial.rules} <b>Goal:</b> {trial.goalText.replaceAll('✦', pack.currencyGlyph).replaceAll('{sun}', pack.generatorById.get('sun')!.name).replaceAll('{ember2}', pack.generatorById.get('ember2')!.name)}</p><mark>{trial.rewardDesc.replaceAll('light', pack.currency.toLowerCase())}</mark></div>
+                      <span>{String(index + 1).padStart(2, '0')}</span><div><small>{index < 6 ? progressionIdentity(pack.id).deep.circleNames[0] : progressionIdentity(pack.id).deep.circleNames[1]}</small><strong>{copy.name}</strong><em>{copy.flavor}</em><p>{localize(trial.rules)} <b>Goal:</b> {localize(trial.goalText)}</p><mark>{localize(trial.rewardDesc)}</mark></div>
                     </article>
                   {/each}
                 </div>
@@ -284,7 +327,7 @@
               <section class="reference">
                 <div class="reference-title"><span>departure checklist</span><h4>Vessel parts</h4></div>
                 <div class="vessel-list">
-                  {#each VESSEL_PARTS as part, index (part.id)}<article class:owned={game.vesselParts.includes(part.id)}><span>{index + 1}</span><div><strong>{part.name}</strong><em>{part.flavor}</em><p>{part.requirement}</p></div></article>{/each}
+                  {#each VESSEL_PARTS as part, index (part.id)}{@const copy = vesselPartCopy(part, pack.id)}<article class:owned={game.vesselParts.includes(part.id)}><span>{index + 1}</span><div><strong>{copy.name}</strong><em>{copy.flavor}</em><p>{copy.requirement}</p></div></article>{/each}
                 </div>
                 <div class="reference-title sub"><span>Dark Between market</span><h4>Wayfinder laws</h4></div>
                 <div class="wayfinder-list">
