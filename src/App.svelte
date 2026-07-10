@@ -31,6 +31,7 @@
   import PurchaseCeremonyLayer from './ui/PurchaseCeremonyLayer.svelte'
   import UniverseLawPanel from './ui/UniverseLawPanel.svelte'
   import EndgameHub from './ui/EndgameHub.svelte'
+  import DevPlaytestPanel from './ui/DevPlaytestPanel.svelte'
   import {
     game,
     hasUi,
@@ -90,6 +91,8 @@
   let resumeMusicAfterNova = false
   const comparativeBlind = import.meta.env.DEV
     && new URLSearchParams(window.location.search).get('f2-blind') === '1'
+  const playtestMode = import.meta.env.DEV
+    && new URLSearchParams(window.location.search).get('playtest') === '1'
 
   const novaReady = $derived(!isZeroAmount(supernovaGain()))
   const observatoryVisible = $derived(
@@ -361,7 +364,7 @@
     />
   {/if}
   <PurchaseCeremonyLayer />
-  <section class="top-stack" aria-label="Run status and upgrades">
+  <section class="top-stack" class:future-law={activePack.id === 'prismata' || activePack.id === 'tempest' || activePack.id === 'canticle'} aria-label="Run status and upgrades">
     <Hud />
     <BuffBar />
     <ChallengeBanner />
@@ -499,6 +502,9 @@
 {#if crossingPrelude && crossingTarget}
   <CrossingPrelude destination={crossingTarget} onfinished={finishCrossing} />
 {/if}
+{#if playtestMode}
+  <DevPlaytestPanel />
+{/if}
 
 <style>
   .game-shell {
@@ -517,6 +523,9 @@
     transform: translateX(-50%);
     pointer-events: none;
     z-index: 8;
+  }
+  .top-stack.future-law {
+    width: min(44rem, calc(100vw - 18rem));
   }
   .cohesion-stack {
     position: fixed;

@@ -130,6 +130,11 @@ function snapshot(): SaveDataV23 {
       unlockedConvergences: [...game.unlockedConvergences],
       gardenEnding: game.gardenEnding,
       gardenSceneSeen: game.gardenSceneSeen,
+      successionRelays: { ...game.successionRelays },
+      lumenShards: game.lumenShards,
+      lumenShardClaims: [...game.lumenShardClaims],
+      lumenPurchases: [...game.lumenPurchases],
+      lumenDistillations: { ...game.lumenDistillations },
     },
   }
 }
@@ -223,6 +228,11 @@ function apply(d: SaveDataV23) {
   game.unlockedConvergences = [...d.endgame.unlockedConvergences]
   game.gardenEnding = d.endgame.gardenEnding
   game.gardenSceneSeen = d.endgame.gardenSceneSeen
+  game.successionRelays = { ...d.endgame.successionRelays }
+  game.lumenShards = d.endgame.lumenShards
+  game.lumenShardClaims = [...d.endgame.lumenShardClaims]
+  game.lumenPurchases = [...d.endgame.lumenPurchases]
+  game.lumenDistillations = { ...d.endgame.lumenDistillations }
 }
 
 function parseStored(raw: string | null): SaveDataV23 | null {

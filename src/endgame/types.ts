@@ -66,6 +66,16 @@ export interface EndgameState {
   unlockedConvergences: string[]
   gardenEnding: GardenEnding | null
   gardenSceneSeen: boolean
+  /** Permanent predecessor-to-successor production investments. */
+  successionRelays: Record<string, number>
+  /** Very rare shared currency earned across completed universes. */
+  lumenShards: number
+  /** One-time Beacon and Atlas sources already credited. */
+  lumenShardClaims: string[]
+  /** Persistent lore, vestment, and utility purchases. */
+  lumenPurchases: string[]
+  /** Expensive local Deep-currency conversions, capped per universe. */
+  lumenDistillations: Record<string, number>
 }
 
 export function emptyEndgameState(): EndgameState {
@@ -80,5 +90,10 @@ export function emptyEndgameState(): EndgameState {
     unlockedConvergences: [],
     gardenEnding: null,
     gardenSceneSeen: false,
+    successionRelays: {},
+    lumenShards: 0,
+    lumenShardClaims: [],
+    lumenPurchases: [],
+    lumenDistillations: {},
   }
 }

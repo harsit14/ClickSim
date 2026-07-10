@@ -12,6 +12,12 @@ import { verdanceGeneratorCohortStatus } from '../content/universes/verdance/run
 import { f4ClickMultiplier, f4RateMultiplier } from '../content/universes/f4-runtime'
 import { wayfinderProductionMult, wayfinderTideAmplitude } from '../content/wayfinder'
 import { deepProductionMult, stardustProductionMult } from '../content/repeatables'
+import {
+  lumenVaultProductionMultiplier,
+  successionRelayForTarget,
+  successionRelayMultiplier,
+  successionRelayRank,
+} from '../content/legacy-exchange'
 import type { EconomyAmount, UniverseId } from '../content/universes/types'
 import {
   ONE_AMOUNT,
@@ -85,6 +91,10 @@ export interface EcoState {
   darkBetween: EconomyAmount
   /** multiverse-level perks */
   wayfinder: string[]
+  /** predecessor-to-successor permanent production investments */
+  successionRelays?: Readonly<Record<string, number>>
+  /** persistent shared-vault purchases */
+  lumenPurchases?: readonly string[]
   /** completed visible Vessel construction parts */
   vesselParts: string[]
   /** Amount-valued state for universe-specific production laws. */
@@ -224,6 +234,11 @@ export function globalMult(s: EcoState, now = Date.now()): EconomyAmount {
   multiplier = multiplyAmounts(multiplier, powAmount(amountFromNumber(2), s.remembrances))
   multiplier = multiplyAmounts(multiplier, powAmount(amountFromNumber(3), s.beacons.length))
   multiplier = multiplyAmountByNumber(multiplier, wayfinderProductionMult(s.wayfinder))
+  multiplier = multiplyAmountByNumber(
+    multiplier,
+    successionRelayMultiplier(s.activeUniverse, s.successionRelays, s.lumenPurchases),
+  )
+  multiplier = multiplyAmountByNumber(multiplier, lumenVaultProductionMultiplier(s.lumenPurchases))
   multiplier = multiplyAmountByNumber(multiplier, stardustProductionMult(s.stardustWorks))
   multiplier = multiplyAmountByNumber(multiplier, deepProductionMult(s.deepWorks))
   multiplier = multiplyAmountByNumber(multiplier, curiosityProductionMult(s.curiosities, universe.cabinet))
@@ -366,6 +381,18 @@ function globalFormulaTerms(s: EcoState, now: number, prefix: string): FormulaNo
       `${s.beacons.length} beacons`,
     ),
     formulaTerm(`${prefix}:wayfinder`, 'between', 'wayfinder-production', 'Wayfinder laws', formulaScalar('multiplier', wayfinderProductionMult(s.wayfinder))),
+    formulaTerm(
+      `${prefix}:succession-relay`,
+      'between',
+      successionRelayForTarget(s.activeUniverse)?.id ?? 'no-succession-relay',
+      'Succession Relay',
+      formulaScalar('multiplier', successionRelayMultiplier(s.activeUniverse, s.successionRelays, s.lumenPurchases)),
+      universe.id,
+      successionRelayForTarget(s.activeUniverse)
+        ? `${successionRelayRank(s.successionRelays ?? {}, successionRelayForTarget(s.activeUniverse)!.id)} predecessor ranks`
+        : 'first universe has no predecessor',
+    ),
+    formulaTerm(`${prefix}:lumen-vault`, 'between', 'lumen-vault', 'Lumen Vault', formulaScalar('multiplier', lumenVaultProductionMultiplier(s.lumenPurchases))),
     formulaTerm(`${prefix}:epoch-works`, 'epoch', 'stardust-works', 'Epoch works', formulaScalar('multiplier', stardustProductionMult(s.stardustWorks)), universe.id),
     formulaTerm(`${prefix}:deep-works`, 'deep', 'deep-works', 'Deep works', formulaScalar('multiplier', deepProductionMult(s.deepWorks))),
     formulaTerm(`${prefix}:archive`, 'archive', universe.cabinet.id, universe.cabinet.title, formulaScalar('multiplier', curiosityProductionMult(s.curiosities, universe.cabinet)), universe.id),

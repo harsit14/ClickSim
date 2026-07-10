@@ -17,11 +17,17 @@ universe ended—and what may exist beyond it.
 - Every universe has its own five-part Vessel. A Beacon and universe crossing remain
   locked until that world's Vessel is activated; completing an earlier Vessel cannot
   bypass a later world.
+- Completed worlds now keep a useful endgame economy: each can spend its own local
+  Singularities on a permanent Succession Relay that strengthens only the immediately
+  following universe.
+- Lumen Shards form a rare persistent seven-world currency, earned through first-time
+  Beacons, first Atlas completions, and capped high-cost local distillation. The Lumen
+  Vault spends them on authored lore, exclusive vestments, and permanent utilities.
 - Save writer version 23 with migration support for every historical release, parked
   universe runs, per-universe Vessels, atomic backups, and rollback recovery.
 - Desktop release hardening is complete. Mobile-specific interface work is intentionally
   deferred.
-- The complete project gate currently passes 298 automated tests, TypeScript checks,
+- The complete project gate currently passes 314 automated tests, TypeScript checks,
   content proofreading, production builds, bundle budgets, and offline inspection.
 
 ## Highlights
@@ -32,6 +38,10 @@ universe ended—and what may exist beyond it.
 - **Seven genuinely different worlds** — stable resonance, a living tide, aging
   cohorts, deterministic clockwork routing, spectral recipes, bounded storm discharge,
   and musical measures with strategic rests.
+- **Three distinct late-world instruments** — Prismata uses a spatial refraction
+  chamber, Tempest exposes a charged convective storm field, and Canticle arranges its
+  sixteen-beat score around a visible nodal figure instead of sharing one control-bench
+  layout.
 - **Living playfields** — every purchase changes the world through authored objects,
   ownership states, motion, and audio. Decorative and interactive objects preserve the
   Heart's click area and the readable status zone.
@@ -55,6 +65,12 @@ universe ended—and what may exist beyond it.
   automation, repeatable works, and twelve trials.
 - **The Crossing and Garden** — completed local Vessels carry restored worlds into the
   Dark Between. Seven Beacons open the authored Garden conclusion and continuing play.
+- **The Concordance** — six visible Succession Relays turn completed-world Deep surplus
+  into production for the next universe without allowing skips. Every universe also
+  has three expensive opportunities to distill a shared Lumen Shard.
+- **The Lumen Vault** — rare currency persists through every reset and crossing, opening
+  four hidden archive passages, three exclusive visual vestments, and two permanent
+  multiverse utilities.
 - **Chronicle, builds, and Atlas routes** — dated milestones, named Beacons, law
   loadouts, shareable configuration codes, deterministic route records, and permanent
   Convergences.
@@ -78,6 +94,19 @@ npm run dev
 ```
 
 The development server is available at `http://localhost:5173` by default.
+
+For an isolated manual playtest build with deterministic universe presets and live
+currency/progression cheats, open:
+
+```text
+http://localhost:5173/?playtest=1&scenario=endgame
+```
+
+The development-only console can load all seven universes, the opening, first crossing,
+Question, Garden, repeatable markets, reset-ready states, and funded Concordance/Vault
+testing. Press `F10` to show or hide
+it. “Ready” cheats prepare the real in-game milestone but leave its normal button and
+ceremony for the playtester to trigger. The console is excluded from production mode.
 
 Production commands:
 

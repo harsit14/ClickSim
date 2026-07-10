@@ -142,6 +142,66 @@ export const THEMES: ThemeDef[] = [
       canticle: { '--amber': '#cc7f91', '--gold': '#f5cad0', '--panel': 'rgba(39, 21, 31, 0.88)' },
     },
   },
+  {
+    id: 'aurora-archive',
+    name: 'Aurora Archive',
+    flavor: 'A cool page-edge moving like weather over old glass.',
+    unlockText: 'purchase from the Lumen Vault',
+    unlocked: (g) => g.lumenPurchases?.includes('skin-aurora-archive') ?? false,
+    vars: {
+      '--amber': '#58e0bd',
+      '--gold': '#d4fff1',
+      '--panel': 'rgba(8, 30, 31, 0.84)',
+    },
+    universeVars: {
+      tidefall: { '--amber': '#51d6cf', '--gold': '#d2fffa', '--panel': 'rgba(6, 28, 38, 0.86)' },
+      verdance: { '--amber': '#69d48a', '--gold': '#dcffc5', '--panel': 'rgba(8, 32, 20, 0.86)' },
+      clockwork: { '--amber': '#73c8ae', '--gold': '#ddfff2', '--panel': 'rgba(10, 29, 28, 0.88)' },
+      prismata: { '--amber': '#63cbd7', '--gold': '#d9fbff', '--panel': 'rgba(8, 25, 36, 0.88)' },
+      tempest: { '--amber': '#4acfd0', '--gold': '#d3ffff', '--panel': 'rgba(6, 27, 38, 0.88)' },
+      canticle: { '--amber': '#70d4b8', '--gold': '#e2fff6', '--panel': 'rgba(11, 27, 30, 0.88)' },
+    },
+  },
+  {
+    id: 'eclipse-gold',
+    name: 'Eclipse Gold',
+    flavor: 'The bright edge of something choosing not to consume the Sun.',
+    unlockText: 'purchase from the Lumen Vault',
+    unlocked: (g) => g.lumenPurchases?.includes('skin-eclipse-gold') ?? false,
+    vars: {
+      '--amber': '#d69b38',
+      '--gold': '#fff0ad',
+      '--panel': 'rgba(18, 15, 12, 0.88)',
+    },
+    universeVars: {
+      tidefall: { '--amber': '#cfad4c', '--gold': '#fff2b8', '--panel': 'rgba(19, 20, 20, 0.89)' },
+      verdance: { '--amber': '#c99d42', '--gold': '#f6e7a3', '--panel': 'rgba(21, 21, 14, 0.89)' },
+      clockwork: { '--amber': '#dda349', '--gold': '#ffedb0', '--panel': 'rgba(22, 18, 14, 0.9)' },
+      prismata: { '--amber': '#c49358', '--gold': '#fce7bd', '--panel': 'rgba(23, 17, 22, 0.9)' },
+      tempest: { '--amber': '#caa65a', '--gold': '#fff0c2', '--panel': 'rgba(19, 20, 23, 0.9)' },
+      canticle: { '--amber': '#cf9460', '--gold': '#ffe4bd', '--panel': 'rgba(24, 17, 21, 0.9)' },
+    },
+  },
+  {
+    id: 'chorusglass',
+    name: 'Chorusglass',
+    flavor: 'Several voices remain visible in one polished surface.',
+    unlockText: 'purchase from the Lumen Vault',
+    unlocked: (g) => g.lumenPurchases?.includes('skin-chorusglass') ?? false,
+    vars: {
+      '--amber': '#e291c5',
+      '--gold': '#f7e6ff',
+      '--panel': 'rgba(28, 16, 35, 0.86)',
+    },
+    universeVars: {
+      tidefall: { '--amber': '#bd8dd8', '--gold': '#efe4ff', '--panel': 'rgba(21, 17, 38, 0.88)' },
+      verdance: { '--amber': '#c589bd', '--gold': '#f5e1f2', '--panel': 'rgba(28, 18, 32, 0.88)' },
+      clockwork: { '--amber': '#c896b0', '--gold': '#f7e5ec', '--panel': 'rgba(30, 20, 30, 0.89)' },
+      prismata: { '--amber': '#d38fdd', '--gold': '#f9e4ff', '--panel': 'rgba(27, 16, 39, 0.89)' },
+      tempest: { '--amber': '#c08dcc', '--gold': '#f0e3fa', '--panel': 'rgba(22, 18, 38, 0.89)' },
+      canticle: { '--amber': '#e09abe', '--gold': '#ffe7f3', '--panel': 'rgba(33, 18, 34, 0.89)' },
+    },
+  },
 ]
 
 export const THEME_BY_ID = new Map(THEMES.map((t) => [t.id, t]))

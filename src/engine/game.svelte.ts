@@ -34,6 +34,14 @@ import {
   type StardustWorkId,
 } from '../content/repeatables'
 import {
+  LUMEN_VAULT_ITEM_BY_ID,
+  MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE,
+  SUCCESSION_RELAY_BY_ID,
+  lumenDistillationCost,
+  successionRelayCost,
+  successionRelayRank,
+} from '../content/legacy-exchange'
+import {
   WAYFINDER_BY_ID,
   wayfinderNodeAvailable,
   wayfinderStartingKindlings,
@@ -170,7 +178,11 @@ export interface ClickResult {
   critMult: number
 }
 
-export interface GameState extends EcoState, Omit<EndgameState, 'activeAtlasRoute' | 'lawLoadouts' | 'activeLawLoadoutId'> {
+export interface GameState extends EcoState, Omit<EndgameState,
+  'activeAtlasRoute' | 'lawLoadouts' | 'activeLawLoadoutId' | 'successionRelays' | 'lumenPurchases'
+> {
+  successionRelays: Record<string, number>
+  lumenPurchases: string[]
   activeAtlasRoute: ActiveAtlasRoute | null
   lawLoadouts: LawLoadout[]
   activeLawLoadoutId: string | null
@@ -513,6 +525,7 @@ export function igniteCurrentBeacon(): EconomyAmount {
   const nextDarkBetween = prepareBalanceAward(game.darkBetween, reward)
   game.beacons.push(pack.id)
   game.darkBetween = nextDarkBetween
+  claimLumenShard(`beacon-${pack.id}`)
   addChronicleMilestone('beacon', `${game.beaconNames[pack.id] || pack.name} lit its Beacon.`)
   syncConvergences()
   return reward
@@ -536,6 +549,52 @@ export function buyWayfinder(id: WayfinderId): boolean {
   if (!node || !wayfinderNodeAvailable(game.wayfinder, node) || !gteAmount(game.darkBetween, cost)) return false
   game.darkBetween = subtractAmounts(game.darkBetween, cost)
   game.wayfinder.push(id)
+  return true
+}
+
+function claimLumenShard(claimId: string): boolean {
+  if (game.lumenShardClaims.includes(claimId)) return false
+  game.lumenShardClaims.push(claimId)
+  game.lumenShards += 1
+  return true
+}
+
+/** A completed universe may strengthen only the universe immediately after it. */
+export function buySuccessionRelay(id: string): boolean {
+  const relay = SUCCESSION_RELAY_BY_ID.get(id)
+  if (
+    !relay
+    || game.activeAtlasRoute !== null
+    || relay.sourceUniverseId !== game.activeUniverse
+    || !game.beacons.includes(relay.sourceUniverseId)
+  ) return false
+  const rank = successionRelayRank(game.successionRelays, relay.id)
+  const cost = successionRelayCost(rank)
+  if (!cost || !gteAmount(game.singularities, cost)) return false
+  game.singularities = subtractAmounts(game.singularities, cost)
+  game.successionRelays = { ...game.successionRelays, [relay.id]: rank + 1 }
+  return true
+}
+
+/** Converts an extreme amount of one completed world's local Deep currency into a shared shard. */
+export function distillLumenShard(): boolean {
+  if (game.activeAtlasRoute || !game.beacons.includes(game.activeUniverse)) return false
+  const count = Math.max(0, Math.floor(game.lumenDistillations[game.activeUniverse] ?? 0))
+  if (count >= MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE) return false
+  const cost = lumenDistillationCost(count)
+  if (!cost || !gteAmount(game.singularities, cost)) return false
+  game.singularities = subtractAmounts(game.singularities, cost)
+  game.lumenDistillations = { ...game.lumenDistillations, [game.activeUniverse]: count + 1 }
+  game.lumenShards += 1
+  return true
+}
+
+export function buyLumenVaultItem(id: string): boolean {
+  const item = LUMEN_VAULT_ITEM_BY_ID.get(id)
+  if (!item || game.lumenPurchases.includes(id) || game.lumenShards < item.cost) return false
+  game.lumenShards -= item.cost
+  game.lumenPurchases.push(id)
+  if (item.themeId) game.theme = item.themeId
   return true
 }
 
@@ -643,6 +702,7 @@ export function completeAtlasRoute(now = Date.now()): boolean {
   game.atlasCompletions.push(completion)
   game.atlasCompletions = game.atlasCompletions.slice(-256)
   game.chronicleBests = updateChronicleBest(game.chronicleBests, completion)
+  claimLumenShard(`atlas-${route.universeId}`)
   addChronicleMilestone('atlas-route', `Completed ${route.title} in ${completion.durationMs}ms.`, route.universeId, now)
   return true
 }

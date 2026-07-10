@@ -2,6 +2,13 @@ import { ACHIEVEMENTS } from '../content/achievements'
 import { CHALLENGES } from '../content/challenges'
 import { CONSTELLATION } from '../content/constellation'
 import { DEEP_UPGRADES } from '../content/deep'
+import {
+  LUMEN_VAULT_ITEMS,
+  MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE,
+  MAX_SUCCESSION_RELAY_RANK,
+  SUCCESSION_RELAYS,
+  lumenClaimIds,
+} from '../content/legacy-exchange'
 import { THEMES } from '../content/themes'
 import { UI_UNLOCKS } from '../content/ui-unlocks'
 import { DEFAULT_UNIVERSE_ID, UNIVERSES, universeById } from '../content/universes'
@@ -412,6 +419,9 @@ const chronicleMilestones = new Set([
 ])
 const gardenEndings = new Set<GardenEnding>(['warden', 'hunger', 'companion', 'continue'])
 const convergenceIds = new Set(CONVERGENCES.map((entry) => entry.id))
+const successionRelayIds = new Set(SUCCESSION_RELAYS.map((entry) => entry.id))
+const lumenVaultItemIds = new Set(LUMEN_VAULT_ITEMS.map((entry) => entry.id))
+const lumenShardClaimIds = new Set(lumenClaimIds())
 
 function numberValue(value: unknown, fallback: number, min = 0, max = Number.MAX_VALUE): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
@@ -548,6 +558,23 @@ function sanitizeEndgameState(value: unknown): EndgameState {
     }
   }
 
+  const successionRelays = Object.fromEntries(
+    Object.entries(rankRecord(source.successionRelays, successionRelayIds))
+      .map(([id, rank]) => [id, Math.min(MAX_SUCCESSION_RELAY_RANK, rank)]),
+  )
+  const lumenDistillations: Record<string, number> = {}
+  if (source.lumenDistillations && typeof source.lumenDistillations === 'object' && !Array.isArray(source.lumenDistillations)) {
+    for (const universe of UNIVERSES) {
+      const count = integerValue(
+        (source.lumenDistillations as Record<string, unknown>)[universe.id],
+        0,
+        0,
+        MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE,
+      )
+      if (count > 0) lumenDistillations[universe.id] = count
+    }
+  }
+
   return {
     chronicleEvents,
     beaconNames,
@@ -564,6 +591,11 @@ function sanitizeEndgameState(value: unknown): EndgameState {
       ? source.gardenEnding as GardenEnding
       : null,
     gardenSceneSeen: booleanValue(source.gardenSceneSeen, false),
+    successionRelays,
+    lumenShards: integerValue(source.lumenShards, 0, 0, 1_000_000),
+    lumenShardClaims: knownStrings(source.lumenShardClaims, lumenShardClaimIds, lumenShardClaimIds.size),
+    lumenPurchases: knownStrings(source.lumenPurchases, lumenVaultItemIds, lumenVaultItemIds.size),
+    lumenDistillations,
   }
 }
 
@@ -1100,6 +1132,8 @@ export function convertSaveV13ToV22(value: SaveDataV13): SaveDataV22 {
   endgame.unlockedConvergences = CONVERGENCES
     .filter((convergence) => value.beacons.length >= convergence.requiredBeacons)
     .map((convergence) => convergence.id)
+  endgame.lumenShardClaims = value.beacons.map((id) => `beacon-${id}`)
+  endgame.lumenShards = endgame.lumenShardClaims.length
   return { ...value, version: 22, endgame }
 }
 
@@ -1110,6 +1144,16 @@ function sanitizeSaveV22(data: unknown): SaveDataV22 | null {
   const numeric = sanitizeSaveV13({ ...source, version: NUMERIC_SAVE_VERSION })
   if (!numeric) return null
   const endgame = sanitizeEndgameState(source.endgame)
+  const rawEndgame = source.endgame && typeof source.endgame === 'object' && !Array.isArray(source.endgame)
+    ? source.endgame as Record<string, unknown>
+    : null
+  if (!rawEndgame || !Object.hasOwn(rawEndgame, 'lumenShardClaims')) {
+    endgame.lumenShardClaims = [
+      ...numeric.beacons.map((id) => `beacon-${id}`),
+      ...new Set(endgame.atlasCompletions.map(({ universeId }) => `atlas-${universeId}`)),
+    ]
+    endgame.lumenShards = endgame.lumenShardClaims.length
+  }
   endgame.unlockedConvergences = [...new Set([
     ...endgame.unlockedConvergences,
     ...CONVERGENCES

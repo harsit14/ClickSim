@@ -5,12 +5,28 @@
   import { UNIVERSES, universeV2ById, type UniverseId } from '../content/universes'
   import { WAYFINDER_NODES } from '../content/wayfinder'
   import {
+    LUMEN_SHARD_GLYPH,
+    LUMEN_SHARD_NAME,
+    LUMEN_VAULT_ITEMS,
+    MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE,
+    SUCCESSION_RELAYS,
+    lumenDistillationCost,
+    successionRelayCost,
+    successionRelayMultiplier,
+    successionRelayRank,
+  } from '../content/legacy-exchange'
+  import { format } from '../core/format'
+  import { gteAmount } from '../core/numeric/amount'
+  import {
     abandonAtlasRoute,
     activateLawLoadout,
     atlasRouteReady,
     beginAtlasRoute,
+    buyLumenVaultItem,
+    buySuccessionRelay,
     chooseGardenEnding,
     completeAtlasRoute,
+    distillLumenShard,
     game,
     markGardenSceneSeen,
     saveLawLoadout,
@@ -41,7 +57,7 @@
 
   let { onclose }: { onclose: () => void } = $props()
 
-  type Tab = 'chronicle' | 'loadouts' | 'atlas' | 'garden'
+  type Tab = 'chronicle' | 'exchange' | 'loadouts' | 'atlas' | 'garden'
   let tab = $state<Tab>(game.activeAtlasRoute ? 'atlas' : game.beacons.length >= 7 ? 'garden' : game.beacons.length >= 3 ? 'atlas' : 'chronicle')
   let seed = $state(7129)
   let loadoutName = $state('New law set')
@@ -52,6 +68,7 @@
   let selectedWayfinder = $state<string[]>([])
   let importCode = $state('')
   let loadoutMessage = $state('')
+  let exchangeMessage = $state('')
   let beaconDrafts = $state<Record<string, string>>({ ...game.beaconNames })
   let dialog: HTMLDivElement
 
@@ -71,6 +88,8 @@
   const closures = $derived(availableGardenClosures(game.beacons, game.pastEndings, game.ending))
   const credits = $derived(game.gardenEnding ? gardenCredits(game.gardenEnding) : [])
   const answers = $derived(livedAnswers(game.pastEndings, game.ending))
+  const activeDistillations = $derived(Math.max(0, Math.floor(game.lumenDistillations[game.activeUniverse] ?? 0)))
+  const activeDistillationCost = $derived(lumenDistillationCost(activeDistillations))
 
   function selectTab(next: Tab) {
     tab = next
@@ -78,6 +97,36 @@
 
   function commitBeaconName(universeId: string) {
     if (setBeaconName(universeId, beaconDrafts[universeId] ?? '')) save()
+  }
+
+  function investInRelay(id: string) {
+    if (!buySuccessionRelay(id)) {
+      exchangeMessage = 'That relay can only be fed while standing in its completed source universe.'
+      return
+    }
+    exchangeMessage = 'The next universe grows stronger. The source world keeps the relay permanently.'
+    save()
+  }
+
+  function distillShard() {
+    if (!distillLumenShard()) {
+      exchangeMessage = 'This world cannot distill another shard yet.'
+      return
+    }
+    exchangeMessage = `One ${LUMEN_SHARD_NAME} joined the shared Vault.`
+    save()
+  }
+
+  function purchaseVaultItem(id: string) {
+    const item = LUMEN_VAULT_ITEMS.find((entry) => entry.id === id)
+    if (!item || !buyLumenVaultItem(id)) {
+      exchangeMessage = 'That archive piece is already owned or needs more Lumen Shards.'
+      return
+    }
+    exchangeMessage = item.kind === 'skin'
+      ? `${item.name} unlocked and equipped. It remains selectable in Options.`
+      : `${item.name} is now part of the permanent archive.`
+    save()
   }
 
   function toggleWayfinder(id: string) {
@@ -181,6 +230,7 @@
 
   <nav class="tabs" aria-label="Legacy sections">
     <button class:active={tab === 'chronicle'} onclick={() => selectTab('chronicle')}>Chronicle</button>
+    <button class:active={tab === 'exchange'} disabled={game.beacons.length < 1} onclick={() => selectTab('exchange')}>Concordance</button>
     <button class:active={tab === 'loadouts'} onclick={() => selectTab('loadouts')}>Law loadouts</button>
     <button class:active={tab === 'atlas'} disabled={game.beacons.length < 3} onclick={() => selectTab('atlas')}>Atlas</button>
     <button class:active={tab === 'garden'} disabled={!gardenUnlocked(game.beacons)} onclick={() => selectTab('garden')}>Garden</button>
@@ -239,6 +289,75 @@
             {/each}
           </section>
         {/if}
+      </section>
+
+    {:else if tab === 'exchange'}
+      <section class="page exchange" aria-labelledby="exchange-title">
+        <div class="section-head exchange-head">
+          <div><span>completed worlds nourish what follows</span><h3 id="exchange-title">The Concordance</h3></div>
+          <div class="shard-balance" aria-label={`${game.lumenShards} Lumen Shards`}>
+            <i>{LUMEN_SHARD_GLYPH}</i><strong>{game.lumenShards}</strong><span>Lumen Shards</span>
+          </div>
+        </div>
+
+        <section class="relay-system" aria-labelledby="relay-title">
+          <div class="exchange-intro">
+            <div><span>succession relays</span><h4 id="relay-title">One world reaches only its immediate successor.</h4></div>
+            <p>After a Beacon is lit, spend that completed world's local Singularities here. Relays persist across pruning and crossing, but never skip a universe.</p>
+          </div>
+          <div class="relay-chain" aria-label="Universe succession chain">
+            {#each UNIVERSES as universe, index (universe.id)}
+              <span class:current={universe.id === game.activeUniverse} class:complete={game.beacons.includes(universe.id)}>{universe.currencyGlyph}<small>{universe.name}</small></span>
+              {#if index < UNIVERSES.length - 1}<b aria-hidden="true">→</b>{/if}
+            {/each}
+          </div>
+          <div class="relay-grid">
+            {#each SUCCESSION_RELAYS as relay (relay.id)}
+              {@const source = UNIVERSES.find((world) => world.id === relay.sourceUniverseId)}
+              {@const target = UNIVERSES.find((world) => world.id === relay.targetUniverseId)}
+              {@const rank = successionRelayRank(game.successionRelays, relay.id)}
+              {@const cost = successionRelayCost(rank)}
+              {@const canFeed = game.activeAtlasRoute === null && relay.sourceUniverseId === game.activeUniverse && game.beacons.includes(relay.sourceUniverseId) && cost !== null && gteAmount(game.singularities, cost)}
+              <article class="relay-card" class:current-source={relay.sourceUniverseId === game.activeUniverse}>
+                <div class="relay-route"><i>{source?.currencyGlyph}</i><span>feeds</span><i>{target?.currencyGlyph}</i></div>
+                <span>{source?.name} → {target?.name}</span>
+                <h5>{relay.name}</h5>
+                <p>{relay.description}</p>
+                <div class="relay-yield"><strong>rank {rank}</strong><em>×{successionRelayMultiplier(relay.targetUniverseId, game.successionRelays, game.lumenPurchases).toFixed(2)} {target?.name} production</em></div>
+                <button disabled={!canFeed} onclick={() => investInRelay(relay.id)}>
+                  {cost === null ? 'Relay mastered' : game.activeAtlasRoute ? 'Unavailable on an Atlas route' : relay.sourceUniverseId !== game.activeUniverse ? `Visit ${source?.name}` : !game.beacons.includes(relay.sourceUniverseId) ? 'Light its Beacon first' : `Feed relay · ◉ ${format(cost)}`}
+                </button>
+              </article>
+            {/each}
+          </div>
+        </section>
+
+        <section class="distillery" aria-labelledby="distillery-title">
+          <div class="distill-sigil" aria-hidden="true"><span>◉</span><b>→</b><i>{LUMEN_SHARD_GLYPH}</i></div>
+          <div><span>rare conversion · {UNIVERSES.find((world) => world.id === game.activeUniverse)?.name}</span><h4 id="distillery-title">Lumen Distillery</h4><p>Each completed universe can compress its own Deep surplus into at most {MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE} shared shards. Costs rise tenfold.</p></div>
+          <div class="distill-action"><strong>{activeDistillations}/{MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE} distilled here</strong><button disabled={game.activeAtlasRoute !== null || !game.beacons.includes(game.activeUniverse) || activeDistillationCost === null || !gteAmount(game.singularities, activeDistillationCost)} onclick={distillShard}>{activeDistillationCost === null ? 'World exhausted' : game.activeAtlasRoute ? 'Unavailable on an Atlas route' : `Distill · ◉ ${format(activeDistillationCost)}`}</button></div>
+        </section>
+
+        <section class="vault" aria-labelledby="vault-title">
+          <div class="vault-door">
+            <span>persists between every universe</span>
+            <h4 id="vault-title">The Lumen Vault</h4>
+            <p>First-time Beacons and first Atlas completions also leave one shard. Nothing purchased here is pruned or left behind.</p>
+          </div>
+          <div class="vault-grid">
+            {#each LUMEN_VAULT_ITEMS as item (item.id)}
+              {@const owned = game.lumenPurchases.includes(item.id)}
+              <article class:owned class={`kind-${item.kind}`}>
+                <div><i>{item.glyph}</i><span>{item.kind}</span></div>
+                <h5>{item.name}</h5>
+                <p>{item.description}</p>
+                {#if owned && item.lore}<blockquote>{item.lore}</blockquote>{/if}
+                <button disabled={owned || game.lumenShards < item.cost} onclick={() => purchaseVaultItem(item.id)}>{owned ? 'Archived' : `${LUMEN_SHARD_GLYPH} ${item.cost} · unlock`}</button>
+              </article>
+            {/each}
+          </div>
+        </section>
+        {#if exchangeMessage}<p class="exchange-message" role="status">{exchangeMessage}</p>{/if}
       </section>
 
     {:else if tab === 'loadouts'}
@@ -440,4 +559,23 @@
   .garden-links { display: grid; grid-template-columns: repeat(4,1fr); gap: .4rem; margin-top: .7rem; } .garden-links div { padding: .6rem; border-left: 2px solid color-mix(in srgb,var(--amber) 36%,transparent); background: rgba(255,255,255,.02); } .garden-links span, .garden-links p { display: block; margin-top: .2rem; color: var(--dim); font-size: .64rem; }
   .closures { display: grid; grid-template-columns: repeat(4,1fr); gap: .55rem; margin-top: 1rem; } .closures > div, .continue-hint { grid-column: 1/-1; } .closures article { display: flex; flex-direction: column; gap: .55rem; padding: .85rem; border: 1px solid color-mix(in srgb,var(--amber) 20%,transparent); border-radius: .8rem; } .closures article p { color: var(--dim); font-size: .72rem; line-height: 1.45; } .closures article em { flex: 1; font: italic .78rem Georgia,serif; } .continue-hint { color: var(--dim); font: italic .8rem Georgia,serif; }
   .credits { max-width: 46rem; margin: 1.2rem auto; padding: 1.4rem; text-align: center; background: radial-gradient(circle, color-mix(in srgb,var(--amber) 10%,transparent), transparent 65%); border-block: 1px solid color-mix(in srgb,var(--amber) 20%,transparent); } .credits p { margin: .65rem 0; color: var(--dim); font: italic .85rem Georgia,serif; }
+  .exchange { --vault-line: color-mix(in srgb, var(--amber) 28%, transparent); }
+  .exchange-head { align-items: center; }
+  .shard-balance { display: grid; grid-template-columns: auto auto; column-gap: .55rem; align-items: center; min-width: 9.5rem; padding: .65rem .9rem; background: radial-gradient(circle at 18% 50%, color-mix(in srgb,var(--amber) 20%,transparent), transparent 46%), rgba(0,0,0,.22); border: 1px solid var(--vault-line); border-radius: 4rem; }
+  .shard-balance i { grid-row: 1 / 3; font-size: 1.75rem; font-style: normal; text-shadow: 0 0 1.2rem var(--amber); } .shard-balance strong { font-size: 1.15rem; line-height: 1; } .shard-balance span { font-size: .55rem; color: var(--dim); letter-spacing: .1em; text-transform: uppercase; }
+  .relay-system { padding: 1rem; background: linear-gradient(145deg, color-mix(in srgb,var(--amber) 7%,transparent), transparent 38%), rgba(0,0,0,.18); border: 1px solid var(--vault-line); border-radius: 1rem; }
+  .exchange-intro { display: flex; align-items: end; justify-content: space-between; gap: 2rem; } .exchange-intro h4, .distillery h4, .vault-door h4 { margin-top: .18rem; font: italic 1.08rem Georgia,serif; } .exchange-intro p { max-width: 38rem; color: var(--dim); font-size: .72rem; line-height: 1.5; }
+  .relay-chain { display: grid; grid-template-columns: repeat(13,auto); align-items: center; justify-content: center; gap: .34rem; margin: 1rem 0; padding: .7rem; background: rgba(0,0,0,.24); border-block: 1px solid rgba(255,255,255,.05); }
+  .relay-chain > span { display: grid; place-items: center; width: 3.35rem; height: 3.35rem; color: var(--dim); border: 1px solid rgba(255,255,255,.08); border-radius: 50%; font-size: 1rem; } .relay-chain > span small { max-width: 4rem; font-size: .45rem; letter-spacing: .04em; white-space: nowrap; } .relay-chain > span.complete { color: var(--gold); border-color: var(--vault-line); box-shadow: 0 0 1rem color-mix(in srgb,var(--amber) 9%,transparent); } .relay-chain > span.current { outline: 1px solid var(--amber); outline-offset: 3px; } .relay-chain b { color: color-mix(in srgb,var(--amber) 52%,transparent); font-weight: 400; }
+  .relay-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; }
+  .relay-card { display: flex; flex-direction: column; min-height: 13rem; padding: .8rem; background: rgba(1,4,9,.34); border: 1px solid rgba(255,255,255,.065); border-radius: .75rem; } .relay-card.current-source { border-color: color-mix(in srgb,var(--amber) 48%,transparent); box-shadow: inset 0 2px color-mix(in srgb,var(--amber) 45%,transparent); } .relay-card h5 { margin: .18rem 0 .32rem; font: 700 .92rem Georgia,serif; } .relay-card p { flex: 1; color: var(--dim); font-size: .68rem; line-height: 1.45; }
+  .relay-route { display: flex; align-items: center; gap: .4rem; align-self: flex-end; } .relay-route i { display: grid; place-items: center; width: 1.45rem; height: 1.45rem; color: var(--amber); background: color-mix(in srgb,var(--amber) 8%,transparent); border: 1px solid var(--vault-line); border-radius: 50%; font-style: normal; } .relay-route span { color: var(--dim); font-size: .5rem; letter-spacing: .1em; text-transform: uppercase; }
+  .relay-yield { display: flex; justify-content: space-between; gap: .4rem; margin: .7rem 0 .45rem; padding-top: .5rem; border-top: 1px solid rgba(255,255,255,.05); } .relay-yield strong { color: var(--amber); font-size: .65rem; text-transform: uppercase; } .relay-yield em { color: var(--gold); font-size: .64rem; font-style: normal; }
+  .relay-card button, .vault-grid button, .distill-action button { width: 100%; font-size: .68rem; }
+  .distillery { display: grid; grid-template-columns: auto 1fr 13rem; align-items: center; gap: 1rem; margin-top: .75rem; padding: 1rem; background: radial-gradient(circle at 10% 50%, color-mix(in srgb,var(--amber) 13%,transparent), transparent 22%), rgba(0,0,0,.2); border: 1px solid var(--vault-line); border-radius: 1rem; } .distillery p, .vault-door p { margin-top: .28rem; color: var(--dim); font-size: .7rem; line-height: 1.45; } .distill-sigil { display: flex; align-items: center; gap: .45rem; font-size: 1.2rem; } .distill-sigil i { color: var(--gold); font-size: 1.7rem; font-style: normal; text-shadow: 0 0 1rem var(--amber); } .distill-sigil b { color: var(--dim); font-size: .8rem; } .distill-action strong { display: block; margin-bottom: .45rem; color: var(--dim); font-size: .62rem; text-align: center; text-transform: uppercase; letter-spacing: .08em; }
+  .vault { margin-top: .75rem; padding: 1rem; background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb,var(--amber) 11%,transparent), transparent 35%), rgba(0,0,0,.25); border: 1px solid var(--vault-line); border-radius: 1rem; }
+  .vault-door { max-width: 42rem; margin: 0 auto 1rem; text-align: center; } .vault-door > span { color: var(--dim); font-size: .58rem; letter-spacing: .16em; text-transform: uppercase; }
+  .vault-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; } .vault-grid article { display: flex; flex-direction: column; min-height: 10.5rem; padding: .85rem; background: linear-gradient(145deg, rgba(255,255,255,.025), transparent 45%); border: 1px solid rgba(255,255,255,.07); border-radius: .75rem; } .vault-grid article.owned { border-color: var(--vault-line); } .vault-grid article > div { display: flex; justify-content: space-between; align-items: center; } .vault-grid article i { font-size: 1.4rem; font-style: normal; text-shadow: 0 0 1rem color-mix(in srgb,var(--amber) 55%,transparent); } .vault-grid article h5 { margin: .35rem 0; font: 700 .9rem Georgia,serif; } .vault-grid article p { flex: 1; color: var(--dim); font-size: .68rem; line-height: 1.45; } .vault-grid article blockquote { margin: .55rem 0; padding: .55rem; color: var(--gold); background: color-mix(in srgb,var(--amber) 5%,transparent); font: italic .67rem/1.45 Georgia,serif; } .vault-grid .kind-lore { box-shadow: inset 3px 0 color-mix(in srgb,var(--amber) 28%,transparent); } .vault-grid .kind-skin { box-shadow: inset 3px 0 color-mix(in srgb,#d9a7ff 34%,transparent); } .vault-grid .kind-utility { box-shadow: inset 3px 0 color-mix(in srgb,#88efff 32%,transparent); }
+  .exchange-message { position: sticky; bottom: .5rem; margin: .8rem auto 0; width: fit-content; padding: .6rem 1rem; color: var(--gold); background: color-mix(in srgb,var(--panel) 96%,black); border: 1px solid var(--amber); border-radius: 2rem; box-shadow: 0 .5rem 2rem rgba(0,0,0,.6); font-size: .72rem; }
+  @media (max-width: 980px) { .relay-grid, .vault-grid { grid-template-columns: repeat(2,1fr); } .relay-chain { overflow-x: auto; justify-content: start; } .distillery { grid-template-columns: auto 1fr; } .distill-action { grid-column: 1 / -1; } }
 </style>
