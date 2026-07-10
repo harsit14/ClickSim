@@ -23,7 +23,9 @@ export interface WorldObjectValidationOptions {
 }
 
 const STABLE_ID = /^[a-z0-9][a-z0-9-]{0,63}$/
-const CANONICAL_AMOUNT = /^(?:0|[1-9](?:\.[0-9]{1,14})?e(?:0|-?[1-9][0-9]*))$/
+const CANONICAL_AMOUNT = /^([1-9])(?:\.([0-9]{1,14}))?e(0|-?[1-9][0-9]*)$/
+const MIN_AMOUNT_EXPONENT = -2_147_483_648
+const MAX_AMOUNT_EXPONENT = 2_147_483_647
 const UNIVERSE_IDS = new Set([
   'emberlight',
   'tidefall',
@@ -50,6 +52,15 @@ const MOTION_KINDS = new Set([
 const COUNT_PRESENTATIONS = new Set(['single', 'group', 'infrastructure', 'hidden'])
 const PANEL_PRIORITIES = new Set(['hide', 'dim', 'hold', 'normal', 'emphasize'])
 const OWNERSHIP_THRESHOLDS = ['1', '10', '25', '50', '100'] as const
+const VISUAL_ZONE_IDS = ['heart', 'near', 'far', 'horizon'] as const
+const MOTION_FREQUENCIES = new Set(['low', 'medium', 'high'])
+const ATTENTION_BUDGET = {
+  primaryTargets: 1,
+  secondaryInteractiveObjects: 3,
+  temporaryRewardEffects: 2,
+  storySubtitles: 1,
+  majorPanels: 1,
+} as const
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -355,13 +366,34 @@ function validateContentAmount(
   issues: ManifestValidationIssue[],
 ): void {
   if (typeof value === 'number') {
-    if (!Number.isFinite(value) || value < 0) {
+    if (!Number.isFinite(value) || value < 0 || Object.is(value, -0)) {
       add(issues, path, 'amount.invalid-number', 'Content amount numbers must be finite and nonnegative.')
     }
     return
   }
-  if (typeof value !== 'string' || !CANONICAL_AMOUNT.test(value)) {
-    add(issues, path, 'amount.invalid-string', 'Expected a finite number or canonical scientific amount string.')
+  if (value === '0') return
+  if (typeof value !== 'string') {
+    add(issues, path, 'amount.invalid-string', 'Expected a finite number or minimal canonical scientific amount string.')
+    return
+  }
+  const match = CANONICAL_AMOUNT.exec(value)
+  if (!match || match[2]?.endsWith('0')) {
+    add(
+      issues,
+      path,
+      'amount.noncanonical-string',
+      'Expected minimal canonical scientific form with no plus sign, leading exponent zeroes, or trailing fractional zeroes.',
+    )
+    return
+  }
+  const exponent = Number(match[3])
+  if (exponent < MIN_AMOUNT_EXPONENT || exponent > MAX_AMOUNT_EXPONENT) {
+    add(
+      issues,
+      path,
+      'amount.exponent-out-of-range',
+      'Scientific amount exponent must fit the signed 32-bit range -2147483648 through 2147483647.',
+    )
   }
 }
 
@@ -461,6 +493,17 @@ export function validateUniversePackV2(pack: unknown): ManifestValidationResult 
     }
   }
 
+  if (!isRecord(pack.physics)) {
+    add(issues, 'physics', 'physics.missing', 'Expected a pure universe physics contract.')
+  } else if (typeof pack.physics.randomAllowed !== 'boolean') {
+    add(
+      issues,
+      'physics.randomAllowed',
+      'physics.random-policy-invalid',
+      'Physics must explicitly declare randomAllowed as a boolean.',
+    )
+  }
+
   const economy = isRecord(pack.economy) ? pack.economy : {}
   if (!isRecord(pack.economy)) add(issues, 'economy', 'economy.missing', 'Expected a complete economy definition.')
   const generators = validateCardinality(economy.generators, 18, 'economy.generators', issues)
@@ -548,6 +591,106 @@ export function validateUniversePackV2(pack: unknown): ManifestValidationResult 
   if (!isRecord(pack.visual)) add(issues, 'visual', 'visual.missing', 'Expected a universe visual manifest.')
   validateStringList(visual.materials, 'visual.materials', issues)
   validateStringList(visual.primarySilhouettes, 'visual.primarySilhouettes', issues)
+  if (!Array.isArray(visual.motionGrammar) || visual.motionGrammar.length === 0) {
+    add(issues, 'visual.motionGrammar', 'visual.motion-grammar-missing', 'Expected at least one frozen motion grammar value.')
+  } else {
+    const seenMotion = new Set<string>()
+    visual.motionGrammar.forEach((kind, index) => {
+      if (typeof kind !== 'string' || !MOTION_KINDS.has(kind)) {
+        add(
+          issues,
+          `visual.motionGrammar[${index}]`,
+          'visual.motion-grammar-invalid',
+          'Motion grammar value is not part of the frozen MotionKind union.',
+        )
+      } else if (seenMotion.has(kind)) {
+        add(
+          issues,
+          `visual.motionGrammar[${index}]`,
+          'visual.motion-grammar-duplicate',
+          `Duplicate motion grammar value "${kind}".`,
+        )
+      } else {
+        seenMotion.add(kind)
+      }
+    })
+  }
+
+  if (!isRecord(visual.zones)) {
+    add(issues, 'visual.zones', 'visual.zones-missing', 'Expected definitions for all four frozen screen zones.')
+  } else {
+    for (const zoneId of VISUAL_ZONE_IDS) {
+      const zone = visual.zones[zoneId]
+      const path = `visual.zones.${zoneId}`
+      if (!isRecord(zone)) {
+        add(issues, path, 'visual.zone-missing', `Missing ${zoneId} screen-zone definition.`)
+        continue
+      }
+      requireMeaning(zone, 'purpose', path, issues)
+      if (
+        !Number.isFinite(zone.maximumInteractiveObjects)
+        || (zone.maximumInteractiveObjects as number) < 0
+      ) {
+        add(
+          issues,
+          `${path}.maximumInteractiveObjects`,
+          'visual.zone-interactive-count-invalid',
+          'Maximum interactive objects must be finite and nonnegative.',
+        )
+      }
+      if (
+        typeof zone.motionFrequency !== 'string'
+        || !MOTION_FREQUENCIES.has(zone.motionFrequency)
+      ) {
+        add(
+          issues,
+          `${path}.motionFrequency`,
+          'visual.zone-motion-frequency-invalid',
+          'Motion frequency must be low, medium, or high.',
+        )
+      }
+    }
+    for (const zoneId of Object.keys(visual.zones)) {
+      if (!VISUAL_ZONE_IDS.includes(zoneId as typeof VISUAL_ZONE_IDS[number])) {
+        add(
+          issues,
+          `visual.zones.${zoneId}`,
+          'visual.zone-unknown',
+          'Only heart, near, far, and horizon screen zones are allowed.',
+        )
+      }
+    }
+  }
+
+  if (!isRecord(visual.attentionBudget)) {
+    add(
+      issues,
+      'visual.attentionBudget',
+      'visual.attention-budget-missing',
+      'Expected the exact frozen attention budget.',
+    )
+  } else {
+    for (const [field, expected] of Object.entries(ATTENTION_BUDGET)) {
+      if (visual.attentionBudget[field] !== expected) {
+        add(
+          issues,
+          `visual.attentionBudget.${field}`,
+          'visual.attention-budget-invalid',
+          `Expected frozen attention budget value ${expected}, received ${String(visual.attentionBudget[field])}.`,
+        )
+      }
+    }
+    for (const field of Object.keys(visual.attentionBudget)) {
+      if (!(field in ATTENTION_BUDGET)) {
+        add(
+          issues,
+          `visual.attentionBudget.${field}`,
+          'visual.attention-budget-unknown',
+          'Attention budget may only contain the five frozen budget fields.',
+        )
+      }
+    }
+  }
   const visualObjects = Array.isArray(visual.objects) ? visual.objects : []
   if (!Array.isArray(visual.objects)) add(issues, 'visual.objects', 'visual.objects-missing', 'Expected a canonical world object list.')
   const visualObjectIds = collectIds(visualObjects, 'visual.objects', issues)
@@ -662,6 +805,23 @@ export function validateUniversePackV2(pack: unknown): ManifestValidationResult 
     if (isRecord(beacon.requirement)) {
       const requirement = beacon.requirement
       const kind = requirement.sourceKind
+      if (!['generator', 'archive', 'trial', 'story', 'composite'].includes(String(kind))) {
+        add(
+          issues,
+          'beacon.requirement.sourceKind',
+          'beacon.requirement-source-kind-invalid',
+          'Beacon requirement source kind is not part of the frozen grammar.',
+        )
+      }
+      validateStableId(requirement.sourceId, 'beacon.requirement.sourceId', issues)
+      if (!Number.isFinite(requirement.target) || (requirement.target as number) <= 0) {
+        add(
+          issues,
+          'beacon.requirement.target',
+          'beacon.requirement-target-invalid',
+          'Beacon requirement target must be finite and greater than zero.',
+        )
+      }
       const requirementIds = kind === 'generator'
         ? generatorIds
         : kind === 'archive'
@@ -682,6 +842,14 @@ export function validateUniversePackV2(pack: unknown): ManifestValidationResult 
     } else {
       add(issues, 'beacon.requirement', 'beacon.requirement-missing', 'Expected an explicit Beacon requirement.')
     }
+    if (!Number.isSafeInteger(beacon.darkBetweenReward) || (beacon.darkBetweenReward as number) < 0) {
+      add(
+        issues,
+        'beacon.darkBetweenReward',
+        'beacon.reward-invalid',
+        'Dark Between reward must be a nonnegative safe integer.',
+      )
+    }
   }
 
   const audio = isRecord(pack.audio) ? pack.audio : {}
@@ -696,7 +864,17 @@ export function validateUniversePackV2(pack: unknown): ManifestValidationResult 
     validateStringList(heart.material, 'heart.material', issues)
     validateMotion(heart.idleMotion, 'heart.idleMotion', issues)
     validateMotion(heart.touchMotion, 'heart.touchMotion', issues)
-    validateVisualState(heart.reducedMotionState, 'heart.reducedMotionState', issues)
+    if (validateVisualState(heart.reducedMotionState, 'heart.reducedMotionState', issues)) {
+      const reduced = heart.reducedMotionState
+      if (isRecord(reduced) && isRecord(reduced.motion) && reduced.motion.preservesTimingInformation !== true) {
+        add(
+          issues,
+          'heart.reducedMotionState.motion.preservesTimingInformation',
+          'fallback.timing-lost',
+          'Heart reduced-motion fallback must preserve timing information.',
+        )
+      }
+    }
     validateVisualState(heart.lowQualityState, 'heart.lowQualityState', issues)
     if (typeof heart.touchCue !== 'string' || !cueIds.has(heart.touchCue)) {
       add(issues, 'heart.touchCue', 'audio.reference-missing', `Heart touch cue "${String(heart.touchCue)}" is not declared.`)

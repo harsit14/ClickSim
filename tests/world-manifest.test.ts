@@ -365,3 +365,77 @@ test('rejects divergent inline objects and unknown shelf references actionably',
     /omens\[0\]\.object: Object "object-omen-1" differs/,
   )
 })
+
+test('enforces canonical ContentAmount strings and signed-32-bit exponents', () => {
+  const pack = validPack() as unknown as Record<string, any>
+  pack.economy.generators[0].baseCost = '1.0e3'
+  pack.economy.generators[1].baseRate = '1e2147483648'
+  pack.economy.generators[2].baseCost = '1.25e2147483647'
+  pack.economy.generators[3].baseRate = '1e-2147483648'
+
+  const result = validateUniversePackV2(pack)
+  assert.ok(result.issues.some((entry) => (
+    entry.path === 'economy.generators[0].baseCost'
+      && entry.code === 'amount.noncanonical-string'
+  )))
+  assert.ok(result.issues.some((entry) => (
+    entry.path === 'economy.generators[1].baseRate'
+      && entry.code === 'amount.exponent-out-of-range'
+  )))
+  assert.equal(
+    result.issues.some((entry) => entry.path === 'economy.generators[2].baseCost'),
+    false,
+  )
+  assert.equal(
+    result.issues.some((entry) => entry.path === 'economy.generators[3].baseRate'),
+    false,
+  )
+})
+
+test('validates physics policy and the complete frozen visual composition contract', () => {
+  const pack = validPack() as unknown as Record<string, any>
+  pack.physics.randomAllowed = 'sometimes'
+  pack.visual.motionGrammar = ['orbital', 'teleport']
+  delete pack.visual.zones.heart
+  pack.visual.zones.near.purpose = ''
+  pack.visual.zones.far.maximumInteractiveObjects = Number.POSITIVE_INFINITY
+  pack.visual.zones.horizon.motionFrequency = 'rapid'
+  pack.visual.zones.elsewhere = {
+    purpose: 'Unknown zone',
+    maximumInteractiveObjects: 0,
+    motionFrequency: 'low',
+  }
+  pack.visual.attentionBudget.primaryTargets = 2
+  pack.visual.attentionBudget.extraTargets = 1
+
+  const paths = new Set(validateUniversePackV2(pack).issues.map((entry) => entry.path))
+  assert.ok(paths.has('physics.randomAllowed'))
+  assert.ok(paths.has('visual.motionGrammar[1]'))
+  assert.ok(paths.has('visual.zones.heart'))
+  assert.ok(paths.has('visual.zones.near.purpose'))
+  assert.ok(paths.has('visual.zones.far.maximumInteractiveObjects'))
+  assert.ok(paths.has('visual.zones.horizon.motionFrequency'))
+  assert.ok(paths.has('visual.zones.elsewhere'))
+  assert.ok(paths.has('visual.attentionBudget.primaryTargets'))
+  assert.ok(paths.has('visual.attentionBudget.extraTargets'))
+})
+
+test('requires Heart timing equivalence and safe positive Beacon values', () => {
+  const pack = validPack() as unknown as Record<string, any>
+  pack.heart.reducedMotionState.motion.preservesTimingInformation = false
+  pack.beacon.requirement.target = 0
+  pack.beacon.darkBetweenReward = 1.5
+
+  const issues = validateUniversePackV2(pack).issues
+  assert.ok(issues.some((entry) => (
+    entry.path === 'heart.reducedMotionState.motion.preservesTimingInformation'
+      && entry.code === 'fallback.timing-lost'
+  )))
+  assert.ok(issues.some((entry) => (
+    entry.path === 'beacon.requirement.target'
+      && entry.code === 'beacon.requirement-target-invalid'
+  )))
+  assert.ok(issues.some((entry) => (
+    entry.path === 'beacon.darkBetweenReward' && entry.code === 'beacon.reward-invalid'
+  )))
+})
