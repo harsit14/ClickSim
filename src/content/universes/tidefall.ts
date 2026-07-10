@@ -5,6 +5,7 @@ import type { Effect, UpgradeDef } from '../upgrades'
 import type { UniversePack } from './types'
 import { TIDEFALL_CABINET } from '../curiosities'
 import { amountFromNumber, gteAmount } from '../../core/numeric/amount'
+import { tidefallTideMultiplier } from './tidefall/tide-state'
 
 const G = (
   tier: number,
@@ -215,9 +216,7 @@ export const TIDEFALL_ECHOES: EchoDef[] = [
   },
 ]
 
-const TIDE_PERIOD_MS = 90_000
-export const tidefallRateMultiplier = (timeMs: number) =>
-  1 + 0.4 * Math.sin((timeMs / TIDE_PERIOD_MS) * Math.PI * 2)
+export const tidefallRateMultiplier = tidefallTideMultiplier
 
 export const TIDEFALL: UniversePack = {
   id: 'tidefall',
@@ -225,7 +224,7 @@ export const TIDEFALL: UniversePack = {
   shortName: 'Tidefall',
   currency: 'Glow',
   currencyGlyph: '≈',
-  centralObject: 'Tidewell',
+  centralObject: 'Tideheart',
   achievementPower: 'Resonance',
   description: 'A moonless ocean where production rises and falls on a visible ninety-second tide.',
   generators: TIDEFALL_GENERATORS,
