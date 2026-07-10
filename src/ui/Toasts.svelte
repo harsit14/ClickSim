@@ -1,9 +1,11 @@
 <script lang="ts">
   import { toastState } from '../systems/toasts.svelte'
+
+  let { clearOfShop = false }: { clearOfShop?: boolean } = $props()
 </script>
 
 {#if toastState.list.length > 0}
-  <div class="toasts" role="status" aria-live="polite" aria-atomic="true">
+  <div class="toasts" class:shop-clear={clearOfShop} role="status" aria-live="polite" aria-atomic="true">
     {#each toastState.list as t (t.key)}
       <div class="toast">
         {#if t.tag}<span class="tag">{t.tag}</span>{/if}
@@ -25,6 +27,10 @@
     width: 16rem;
     z-index: 9;
     pointer-events: none;
+  }
+  .toasts.shop-clear {
+    top: 9rem;
+    right: 19rem;
   }
   .toast {
     padding: 0.65rem 0.85rem;

@@ -390,7 +390,7 @@
   <ComboMeter />
   <LumenTicker />
   <FallingStar />
-  <Toasts />
+  <Toasts clearOfShop={hasUi('shop') && !utilityPanelOpen} />
   <WelcomeBack amount={offlineGain} />
 
   <nav class="dock" aria-label="Game sections">
