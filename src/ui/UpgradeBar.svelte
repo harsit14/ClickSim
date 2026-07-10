@@ -45,7 +45,7 @@
           class:previewing={previewId === u.id}
           class:unaffordable={game.light < u.cost}
           style:--hue={u.hue}
-          aria-label={`${u.name}: ${u.effects.map((effect) => describeEffect(effect, pack.generatorById)).join(', ')}`}
+          aria-label={`${u.name}: ${u.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())).join(', ')}`}
           aria-describedby={previewId === u.id ? 'upgrade-preview' : undefined}
           onpointerenter={() => (previewId = u.id)}
           onpointerdown={() => (previewId = u.id)}
@@ -63,7 +63,7 @@
       <div id="upgrade-preview" class="detail" style:--hue={preview.hue}>
         <strong>{preview.name}</strong>
         <em>{preview.flavor}</em>
-        <span class="fx">{preview.effects.map((effect) => describeEffect(effect, pack.generatorById)).join(' · ')}</span>
+        <span class="fx">{preview.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())).join(' · ')}</span>
         <span class="price">{pack.currencyGlyph} {format(preview.cost)}</span>
       </div>
     {/if}

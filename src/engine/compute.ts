@@ -4,7 +4,6 @@ import { NODE_BY_ID } from '../content/constellation'
 import { CHALLENGE_BY_ID, type ChallengeMods } from '../content/challenges'
 import { DEEP_EFFECTS } from '../content/deep'
 import {
-  PROTOSTAR_BONUS,
   curiosityClickMult,
   curiosityProductionMult,
 } from '../content/curiosities'
@@ -87,6 +86,15 @@ function* ownedEffects(s: EcoState): Generator<Effect> {
   }
 }
 
+/** Permanent multiplier applied to the bonus portion of every generator resonance. */
+export function synergyBonusMult(s: EcoState): number {
+  let mult = 1
+  for (const effect of ownedEffects(s)) {
+    if (effect.kind === 'synergyMult') mult *= effect.value
+  }
+  return mult
+}
+
 /** Production of one unit of a generator, before the global multiplier. */
 export function unitRate(s: EcoState, def: GeneratorDef): number {
   let mult = 1
@@ -95,10 +103,11 @@ export function unitRate(s: EcoState, def: GeneratorDef): number {
     if (e.kind === 'genMult' && e.gen === def.id) mult *= e.value
     else if (e.kind === 'synergy' && e.gen === def.id) synergy += e.value * (s.owned[e.per] ?? 0)
   }
-  return def.baseRate * mult * (1 + synergy)
+  return def.baseRate * mult * (1 + synergy * synergyBonusMult(s))
 }
 
 export function globalMult(s: EcoState, now = Date.now()): number {
+  const universe = universeById(s.activeUniverse)
   let m = 1 + 0.01 * s.achievements.length // Radiance
   m *= 1 + 0.02 * s.stardustTotal // stardust, kept across every rebirth
   m *= Math.pow(2, s.remembrances) // memory glow — the universe remembers being bright
@@ -106,8 +115,10 @@ export function globalMult(s: EcoState, now = Date.now()): number {
   m *= wayfinderProductionMult(s.wayfinder)
   m *= stardustProductionMult(s.stardustWorks)
   m *= deepProductionMult(s.deepWorks)
-  m *= curiosityProductionMult(s.curiosities)
-  if (s.curiosities.includes('hearthkeeper') && s.keeperFedUntil > now) m *= PROTOSTAR_BONUS
+  m *= curiosityProductionMult(s.curiosities, universe.cabinet)
+  if (s.curiosities.includes('hearthkeeper') && s.keeperFedUntil > now) {
+    m *= universe.cabinet.fuelProductionMult
+  }
   if (s.ending === 'warden') m *= 1.25
   else if (s.ending === 'companion') m *= 1.3
   for (const e of ownedEffects(s)) if (e.kind === 'globalMult') m *= e.value
@@ -124,11 +135,32 @@ export function universeRateMult(s: EcoState, now = Date.now()): number {
 export function genDisabled(s: EcoState, def: GeneratorDef): boolean {
   const mods = challengeMods(s)
   if (mods.gensDisabled) return true
-  return mods.maxTier !== undefined && def.tier > mods.maxTier
+  if (mods.maxTier !== undefined && def.tier > mods.maxTier) return true
+  if (mods.disabledTierParity === 'odd' && def.tier % 2 === 1) return true
+  if (mods.disabledTierParity === 'even' && def.tier % 2 === 0) return true
+  if (mods.highestTierOnly) {
+    const highest = universeById(s.activeUniverse).generators.reduce(
+      (tier, generator) => (s.owned[generator.id] ?? 0) > 0 ? Math.max(tier, generator.tier) : tier,
+      0,
+    )
+    if (highest > 0 && def.tier !== highest) return true
+  }
+  return false
+}
+
+/** Restrictions that prevent purchasing, separate from production-only silencing. */
+export function genPurchaseDisabled(s: EcoState, def: GeneratorDef): boolean {
+  const mods = challengeMods(s)
+  if (mods.gensDisabled) return true
+  if (mods.maxTier !== undefined && def.tier > mods.maxTier) return true
+  if (mods.disabledTierParity === 'odd' && def.tier % 2 === 1) return true
+  if (mods.disabledTierParity === 'even' && def.tier % 2 === 0) return true
+  return mods.maxOwnedPerGen !== undefined && (s.owned[def.id] ?? 0) >= mods.maxOwnedPerGen
 }
 
 export function genRate(s: EcoState, def: GeneratorDef): number {
-  const owned = s.owned[def.id] ?? 0
+  const cap = challengeMods(s).maxOwnedPerGen ?? Number.POSITIVE_INFINITY
+  const owned = Math.min(s.owned[def.id] ?? 0, cap)
   if (owned === 0 || genDisabled(s, def)) return 0
   return unitRate(s, def) * owned * globalMult(s) * universeRateMult(s) * (challengeMods(s).globalScale ?? 1)
 }
@@ -138,13 +170,13 @@ export function totalRate(s: EcoState, now = Date.now()): number {
   if (mods.gensDisabled) return 0
   let sum = 0
   for (const g of universeById(s.activeUniverse).generators) {
-    const owned = s.owned[g.id] ?? 0
+    const owned = Math.min(s.owned[g.id] ?? 0, mods.maxOwnedPerGen ?? Number.POSITIVE_INFINITY)
     if (owned > 0 && !genDisabled(s, g)) sum += unitRate(s, g) * owned
   }
   return sum * globalMult(s, now) * universeRateMult(s, now) * (mods.globalScale ?? 1)
 }
 
-export function clickPower(s: EcoState, rateMult = 1): number {
+export function clickPower(s: EcoState, rateMult = 1, now = Date.now()): number {
   let mult = 1
   let share = BASE_CLICK_RATE_SHARE
   for (const e of ownedEffects(s)) {
@@ -152,8 +184,9 @@ export function clickPower(s: EcoState, rateMult = 1): number {
     else if (e.kind === 'clickShare') share += e.value
   }
   const hunger = s.ending === 'hunger' ? 2 : 1
-  const ratePower = totalRate(s) * rateMult * share
-  return Math.max(mult, ratePower) * hunger * curiosityClickMult(s.curiosities)
+  const ratePower = totalRate(s, now) * rateMult * share
+  const cabinet = universeById(s.activeUniverse).cabinet
+  return Math.max(mult, ratePower) * hunger * curiosityClickMult(s.curiosities, cabinet) * (challengeMods(s).clickScale ?? 1)
 }
 
 export function critChance(s: EcoState): number {
@@ -223,6 +256,7 @@ export function upgradeUnlocked(s: EcoState, u: UpgradeDef): boolean {
 
 /** Unlocked, not-yet-owned upgrades, cheapest first. */
 export function availableUpgrades(s: EcoState): UpgradeDef[] {
+  if (challengeMods(s).noUpgrades) return []
   return universeById(s.activeUniverse).upgrades.filter((u) => !s.upgrades.includes(u.id) && upgradeUnlocked(s, u)).sort(
     (a, b) => a.cost - b.cost,
   )

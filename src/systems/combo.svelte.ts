@@ -4,6 +4,7 @@ import { perkBonus } from '../content/constellation'
 import { addBuff } from './buffs.svelte'
 import { summonFallingStar } from './falling-stars.svelte'
 import { pushToast } from './toasts.svelte'
+import { universeById } from '../content/universes'
 
 /** Click within this many seconds of a beat to keep the combo alive.
  *  The Conductor constellation node widens it. */
@@ -11,7 +12,9 @@ const BASE_WINDOW_SEC = 0.13
 const windowSec = () =>
   BASE_WINDOW_SEC +
   perkBonus(game.constellation, 'comboWindow') +
-  (game.curiosities.includes('metronome-heart') ? 0.02 : 0)
+  (game.curiosities.includes('metronome-heart')
+    ? universeById(game.activeUniverse).cabinet.beatWindowBonus
+    : 0)
 
 export const combo = $state({ streak: 0, lastRewardAt: 0 })
 
@@ -46,7 +49,12 @@ function rhythmReward() {
   )
 
   if (reward.star && summonFallingStar()) {
-    pushToast('The sky answers', 'Your rhythm pulls a falling star into reach.', 'beat streak')
+    const events = universeById(game.activeUniverse).events
+    pushToast(
+      game.activeUniverse === 'tidefall' ? 'The current answers' : 'The sky answers',
+      `Your rhythm pulls a ${events.noun} into reach.`,
+      'beat streak',
+    )
   }
 }
 

@@ -32,3 +32,39 @@ body {
 #app {
   height: 100%;
 }
+
+:where(button, a, input, textarea, select, summary):focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+html[data-text-scale='large'] {
+  font-size: 112.5%;
+}
+
+@media (max-width: 720px) {
+  html[data-text-scale='large'] {
+    font-size: 106.25%;
+  }
+}
+
+html[data-contrast='high'] {
+  --text: #ffffff !important;
+  --dim: #c9c7d6 !important;
+}
+
+html[data-contrast='high'] button,
+html[data-contrast='high'] input,
+html[data-contrast='high'] textarea,
+html[data-contrast='high'] select {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+html[data-motion='reduced'] *,
+html[data-motion='reduced'] *::before,
+html[data-motion='reduced'] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}

@@ -3,7 +3,7 @@
 </script>
 
 {#if toastState.list.length > 0}
-  <div class="toasts">
+  <div class="toasts" role="status" aria-live="polite" aria-atomic="true">
     {#each toastState.list as t (t.key)}
       <div class="toast">
         {#if t.tag}<span class="tag">{t.tag}</span>{/if}

@@ -6,6 +6,7 @@ export type Effect =
   | { kind: 'clickMult'; value: number }
   | { kind: 'clickShare'; value: number } // clicks gain this fraction of light/s
   | { kind: 'synergy'; gen: string; per: string; value: number } // gen +value fraction per `per` owned
+  | { kind: 'synergyMult'; value: number } // multiplies the total bonus from every synergy
   | { kind: 'critChance'; value: number }
   | { kind: 'critMult'; value: number }
 
@@ -28,19 +29,21 @@ export interface UpgradeDef {
   effects: Effect[]
 }
 
-export function describeEffect(e: Effect, generators = GENERATOR_BY_ID): string {
+export function describeEffect(e: Effect, generators = GENERATOR_BY_ID, currency = 'light'): string {
   const gen = (id: string) => generators.get(id)?.name ?? id
   switch (e.kind) {
     case 'genMult':
       return `${gen(e.gen)} production ×${e.value}`
     case 'globalMult':
-      return `all light ×${e.value}`
+      return `all ${currency} ×${e.value}`
     case 'clickMult':
       return `clicks ×${e.value}`
     case 'clickShare':
-      return `clicks gain +${e.value * 100}% of light/s`
+      return `clicks gain +${e.value * 100}% of ${currency}/s`
     case 'synergy':
       return `${gen(e.gen)} +${(e.value * 100).toFixed(1)}% per ${gen(e.per)}`
+    case 'synergyMult':
+      return `all generator resonances ×${e.value}`
     case 'critChance':
       return `critical clicks +${(e.value * 100).toFixed(0)}%`
     case 'critMult':

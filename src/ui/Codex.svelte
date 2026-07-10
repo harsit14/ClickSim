@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { ENDING_CHOICES } from '../content/endings'
   import { universeById } from '../content/universes'
   import { game } from '../engine/game.svelte'
 
   let { onclose, onremember }: { onclose: () => void; onremember: () => void } = $props()
+  let closeButton: HTMLButtonElement
   let openId = $state<string | null>(null)
   let rememberArmed = $state(false)
 
@@ -12,13 +14,15 @@
   const found = $derived(game.echoes.length)
   const answer = $derived(ENDING_CHOICES.find((c) => c.id === game.ending) ?? null)
   const readingAnswer = $derived(openId === 'the-answer' && answer !== null)
+
+  onMount(() => closeButton.focus())
 </script>
 
 <section class="codex">
   <header>
     <h2>Codex of Echoes</h2>
     <span class="count">{found} / {echoes.length} recovered</span>
-    <button class="close" onclick={onclose}>✕</button>
+    <button bind:this={closeButton} class="close" aria-label="close the Codex" onclick={onclose}>✕</button>
   </header>
 
   {#if readingAnswer && answer}

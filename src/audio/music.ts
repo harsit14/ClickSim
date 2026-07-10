@@ -5,10 +5,14 @@
  */
 import { getAudio } from './sfx'
 
-const BPM = 72
-export const BEAT_SEC = 60 / BPM
-const BAR_SEC = BEAT_SEC * 4
 const LOOKAHEAD_SEC = 0.35
+
+export type MusicMode = 'emberlight' | 'tidefall'
+
+const MUSIC_BPM: Record<MusicMode, number> = {
+  emberlight: 72,
+  tidefall: 60,
+}
 
 // C — G/B — Am — F, voiced low and close
 const CHORDS = [
@@ -19,6 +23,16 @@ const CHORDS = [
 ]
 const ROOTS = [130.81, 123.47, 110.0, 87.31]
 const PENTA = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25]
+
+// Dm(add9) — Bbmaj7 — C(add9) — Am7, voiced like bells under water
+const TIDE_CHORDS = [
+  [146.83, 174.61, 220.0, 329.63],
+  [116.54, 146.83, 174.61, 220.0],
+  [130.81, 164.81, 196.0, 293.66],
+  [110.0, 130.81, 164.81, 196.0],
+]
+const TIDE_ROOTS = [73.42, 58.27, 65.41, 55.0]
+const TIDE_SCALE = [293.66, 329.63, 392.0, 440.0, 523.25, 587.33]
 
 export interface StemFlags {
   mallets: boolean
@@ -34,6 +48,23 @@ let nextBar = 0
 let timer: ReturnType<typeof setInterval> | undefined
 let volume = 0.6
 let stems: StemFlags = { mallets: false, bass: false, strings: false, choir: false }
+let musicMode: MusicMode = 'emberlight'
+
+export function beatDurationSec(): number {
+  return 60 / MUSIC_BPM[musicMode]
+}
+
+export function currentMusicMode(): MusicMode {
+  return musicMode
+}
+
+export function setMusicMode(mode: MusicMode) {
+  if (mode === musicMode) return
+  const resume = playing
+  stopMusic()
+  musicMode = mode
+  if (resume) startMusic()
+}
 
 export function setMusicVolume(v: number) {
   volume = Math.max(0, Math.min(1, v))
@@ -75,8 +106,9 @@ export function beatPhaseSec(): number | null {
   if (!a) return null
   const t = a.ctx.currentTime - startAt
   if (t < 0) return null
-  const frac = t % BEAT_SEC
-  return frac > BEAT_SEC / 2 ? frac - BEAT_SEC : frac
+  const beatSec = beatDurationSec()
+  const frac = t % beatSec
+  return frac > beatSec / 2 ? frac - beatSec : frac
 }
 
 export function currentBeatIndex(): number | null {
@@ -84,13 +116,14 @@ export function currentBeatIndex(): number | null {
   const a = getAudio()
   if (!a) return null
   const t = a.ctx.currentTime - startAt
-  return t < 0 ? null : Math.floor(t / BEAT_SEC)
+  return t < 0 ? null : Math.floor(t / beatDurationSec())
 }
 
 function schedule() {
   const a = getAudio()
   if (!a || !playing) return
-  while (startAt + nextBar * BAR_SEC < a.ctx.currentTime + LOOKAHEAD_SEC) {
+  const barSec = beatDurationSec() * 4
+  while (startAt + nextBar * barSec < a.ctx.currentTime + LOOKAHEAD_SEC) {
     scheduleBar(a.ctx, nextBar)
     nextBar++
   }
@@ -155,7 +188,13 @@ function tone(
 }
 
 function scheduleBar(ctx: AudioContext, bar: number) {
-  const t0 = startAt + bar * BAR_SEC
+  if (musicMode === 'tidefall') {
+    scheduleTidefallBar(ctx, bar)
+    return
+  }
+  const beatSec = beatDurationSec()
+  const barSec = beatSec * 4
+  const t0 = startAt + bar * barSec
   const chord = CHORDS[bar % 4]
   const root = ROOTS[bar % 4]
 
@@ -164,14 +203,14 @@ function scheduleBar(ctx: AudioContext, bar: number) {
     for (const det of [-6, 6]) {
       tone(ctx, {
         freq: f, type: 'triangle', at: t0, attack: 0.9, peak: 0.035,
-        decayTo: BAR_SEC + 0.4, detune: det, filterHz: 900,
+        decayTo: barSec + 0.4, detune: det, filterHz: 900,
       })
     }
   }
 
   // heartbeat pulse — the beat grid made audible (stronger on the downbeat)
   for (let b = 0; b < 4; b++) {
-    const at = t0 + b * BEAT_SEC
+    const at = t0 + b * beatSec
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.type = 'sine'
@@ -192,7 +231,7 @@ function scheduleBar(ctx: AudioContext, bar: number) {
       if (rand() < 0.45) continue
       const f = PENTA[Math.floor(rand() * PENTA.length)]
       tone(ctx, {
-        freq: f * 2, type: 'triangle', at: t0 + eighth * (BEAT_SEC / 2),
+        freq: f * 2, type: 'triangle', at: t0 + eighth * (beatSec / 2),
         attack: 0.01, peak: 0.05, decayTo: 0.5, filterHz: 3000,
       })
     }
@@ -202,7 +241,7 @@ function scheduleBar(ctx: AudioContext, bar: number) {
   if (stems.bass) {
     for (const b of [0, 2]) {
       tone(ctx, {
-        freq: root, type: 'sine', at: t0 + b * BEAT_SEC,
+        freq: root, type: 'sine', at: t0 + b * beatSec,
         attack: 0.02, peak: 0.11, decayTo: 1.1,
       })
     }
@@ -213,7 +252,7 @@ function scheduleBar(ctx: AudioContext, bar: number) {
     for (const f of chord) {
       tone(ctx, {
         freq: f * 2, type: 'sawtooth', at: t0, attack: 1.3, peak: 0.014,
-        decayTo: BAR_SEC + 0.5, filterHz: 1300,
+        decayTo: barSec + 0.5, filterHz: 1300,
       })
     }
   }
@@ -223,8 +262,98 @@ function scheduleBar(ctx: AudioContext, bar: number) {
     for (const f of chord) {
       tone(ctx, {
         freq: f * 4, type: 'sine', at: t0, attack: 1.6, peak: 0.012,
-        decayTo: BAR_SEC + 0.6, vibratoHz: 5, vibratoDepth: 4,
+        decayTo: barSec + 0.6, vibratoHz: 5, vibratoDepth: 4,
       })
+    }
+  }
+}
+
+function scheduleTidefallBar(ctx: AudioContext, bar: number) {
+  if (!musicGain) return
+  const beatSec = beatDurationSec()
+  const barSec = beatSec * 4
+  const t0 = startAt + bar * barSec
+  const chord = TIDE_CHORDS[bar % TIDE_CHORDS.length]
+  const root = TIDE_ROOTS[bar % TIDE_ROOTS.length]
+
+  // Submerged pad: slower sine/triangle bloom with a narrow, dark filter.
+  for (const freq of chord) {
+    for (const detune of [-9, 9]) {
+      tone(ctx, {
+        freq,
+        type: detune < 0 ? 'sine' : 'triangle',
+        at: t0,
+        attack: 1.45,
+        peak: 0.026,
+        decayTo: barSec + 0.9,
+        detune,
+        filterHz: 680,
+        vibratoHz: 0.18,
+        vibratoDepth: 1.8,
+      })
+    }
+  }
+
+  // The tide is the pulse here: two long pressure swells instead of a heartbeat.
+  for (const beat of [0, 2]) {
+    const at = t0 + beat * beatSec
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(92, at)
+    osc.frequency.exponentialRampToValueAtTime(38, at + 0.42)
+    gain.gain.setValueAtTime(0.0001, at)
+    gain.gain.exponentialRampToValueAtTime(beat === 0 ? 0.13 : 0.08, at + 0.08)
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.78)
+    osc.connect(gain).connect(musicGain)
+    osc.start(at)
+    osc.stop(at + 0.82)
+  }
+
+  // A tiny surface droplet keeps the combo grid legible without sounding percussive.
+  for (let beat = 0; beat < 4; beat++) {
+    tone(ctx, {
+      freq: 740 + (bar % 2) * 90,
+      type: 'sine',
+      at: t0 + beat * beatSec,
+      attack: 0.006,
+      peak: beat === 0 ? 0.035 : 0.018,
+      decayTo: 0.42,
+      filterHz: 2100,
+    })
+  }
+
+  if (stems.mallets) {
+    const rand = mulberry32(bar * 6151 + 43)
+    for (let eighth = 0; eighth < 8; eighth++) {
+      if (rand() < 0.58) continue
+      const freq = TIDE_SCALE[Math.floor(rand() * TIDE_SCALE.length)]
+      tone(ctx, {
+        freq: freq * 1.5,
+        type: 'sine',
+        at: t0 + eighth * (beatSec / 2),
+        attack: 0.008,
+        peak: 0.038,
+        decayTo: 0.9,
+        vibratoHz: 3.2,
+        vibratoDepth: 2,
+      })
+    }
+  }
+
+  if (stems.bass) {
+    tone(ctx, { freq: root, type: 'triangle', at: t0, attack: 0.18, peak: 0.08, decayTo: barSec, filterHz: 320 })
+  }
+
+  if (stems.strings) {
+    for (const freq of chord.slice(1)) {
+      tone(ctx, { freq: freq * 2, type: 'sine', at: t0 + beatSec, attack: 1.1, peak: 0.018, decayTo: barSec, vibratoHz: 0.32, vibratoDepth: 5 })
+    }
+  }
+
+  if (stems.choir) {
+    for (const freq of chord.slice(1)) {
+      tone(ctx, { freq: freq * 3, type: 'triangle', at: t0, attack: 1.8, peak: 0.009, decayTo: barSec + 0.8, filterHz: 1450, vibratoHz: 4.2, vibratoDepth: 7 })
     }
   }
 }

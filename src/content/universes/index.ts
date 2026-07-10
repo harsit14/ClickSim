@@ -1,7 +1,14 @@
 import { EMBERLIGHT } from './emberlight'
 import { TIDEFALL } from './tidefall'
 
-export type { UniversePack, UniversePalette, UniverseTwist } from './types'
+export type {
+  UniversePack,
+  UniversePalette,
+  UniverseTwist,
+  UniversePowerUp,
+  UniverseEventIdentity,
+  UniverseAudioIdentity,
+} from './types'
 
 export const DEFAULT_UNIVERSE_ID = EMBERLIGHT.id
 export const UNIVERSES = [EMBERLIGHT, TIDEFALL]

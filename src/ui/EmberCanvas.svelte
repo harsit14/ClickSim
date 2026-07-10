@@ -7,7 +7,7 @@
   import { clickEmber, hasUi, game, buyGenerator } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { playClick, playBuy } from '../audio/sfx'
-  import { BEAT_SEC, currentBeatIndex, startMusic, isPlaying } from '../audio/music'
+  import { beatDurationSec, currentBeatIndex, startMusic, isPlaying } from '../audio/music'
   import { registerClick, silenced } from '../systems/combo.svelte'
   import { gamePaused } from '../core/pause.svelte'
 
@@ -21,7 +21,7 @@
     if (!world) return
     if (hasUi('music') && !isPlaying() && !silenced()) startMusic()
     const result = clickEmber(registerClick())
-    playClick()
+    playClick(universeById(game.activeUniverse).audio.click)
     world.clickPulse()
     world.burst(x, y)
     world.addFloat(`${result.crit ? 'CRIT ' : '+'}${format(result.amount)}`, x, y - 12)
@@ -30,7 +30,7 @@
   function quasarBeatIndex() {
     const beat = currentBeatIndex()
     if (beat !== null) return beat
-    return Math.floor(performance.now() / (BEAT_SEC * 1000))
+    return Math.floor(performance.now() / (beatDurationSec() * 1000))
   }
 
   function tickQuasar(now: number) {
@@ -100,9 +100,14 @@
 <canvas
   bind:this={canvas}
   class:hovering
+  role="button"
+  tabindex="0"
+  aria-label={`Kindle the ${universeById(game.activeUniverse).centralObject.toLowerCase()}`}
+  aria-keyshortcuts="Space Enter"
   onpointerdown={onPointerDown}
   onpointermove={onPointerMove}
 ></canvas>
+<div class="keyboard-focus" aria-hidden="true"></div>
 
 <style>
   canvas {
@@ -114,4 +119,7 @@
   canvas.hovering {
     cursor: pointer;
   }
+  canvas:focus-visible { outline: none; }
+  .keyboard-focus { position: fixed; top: 48%; left: 50%; width: clamp(7rem, 18vw, 12rem); aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; border: 2px solid transparent; border-radius: 50%; opacity: 0; z-index: 1; }
+  canvas:focus-visible + .keyboard-focus { opacity: 1; border-color: #fff; box-shadow: 0 0 0 4px rgba(5,7,14,0.88), 0 0 0 6px var(--gold), 0 0 24px color-mix(in srgb, var(--gold) 55%, transparent); }
 </style>

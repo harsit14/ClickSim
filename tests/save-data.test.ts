@@ -5,8 +5,8 @@ import { migrateAndSanitizeSave } from '../src/core/save-data'
 
 test('rejects missing, future, and non-numeric save versions', () => {
   assert.equal(migrateAndSanitizeSave({}), null)
-  assert.equal(migrateAndSanitizeSave({ version: '11' }), null)
-  assert.equal(migrateAndSanitizeSave({ version: 12 }), null)
+  assert.equal(migrateAndSanitizeSave({ version: '12' }), null)
+  assert.equal(migrateAndSanitizeSave({ version: 13 }), null)
 })
 
 test('migrates a legacy v1 save through every version', () => {
@@ -20,13 +20,48 @@ test('migrates a legacy v1 save through every version', () => {
   })
 
   assert.ok(migrated)
-  assert.equal(migrated.version, 11)
+  assert.equal(migrated.version, 12)
   assert.equal(migrated.activeUniverse, 'emberlight')
   assert.deepEqual(migrated.owned, { spark: 4 })
   assert.deepEqual(migrated.ui, ['counter', 'shop', 'upgrades', 'stats', 'options'])
   assert.deepEqual(migrated.vesselParts, [])
   assert.deepEqual(migrated.stardustWorks, {})
   assert.deepEqual(migrated.deepWorks, {})
+  assert.equal(migrated.motionPreference, 'system')
+  assert.equal(migrated.visualQuality, 'auto')
+  assert.equal(migrated.beatVisual, 'subtle')
+  assert.equal(migrated.textScale, 'normal')
+  assert.equal(migrated.highContrast, false)
+})
+
+test('migrates v11 saves into persistent Phase 5 preferences', () => {
+  const migrated = migrateAndSanitizeSave({
+    version: 11,
+    savedAt: 1_000,
+    totalEarned: 10,
+  })
+  assert.ok(migrated)
+  assert.equal(migrated.version, 12)
+  assert.equal(migrated.motionPreference, 'system')
+  assert.equal(migrated.visualQuality, 'auto')
+  assert.equal(migrated.beatVisual, 'subtle')
+  assert.equal(migrated.textScale, 'normal')
+  assert.equal(migrated.highContrast, false)
+
+  const preferences = migrateAndSanitizeSave({
+    version: 12,
+    motionPreference: 'reduced',
+    visualQuality: 'low',
+    beatVisual: 'strong',
+    textScale: 'large',
+    highContrast: true,
+  })
+  assert.ok(preferences)
+  assert.equal(preferences.motionPreference, 'reduced')
+  assert.equal(preferences.visualQuality, 'low')
+  assert.equal(preferences.beatVisual, 'strong')
+  assert.equal(preferences.textScale, 'large')
+  assert.equal(preferences.highContrast, true)
 })
 
 test('sanitizes corrupt values and strips unknown content ids', () => {
@@ -51,6 +86,11 @@ test('sanitizes corrupt values and strips unknown content ids', () => {
     wayfinder: ['safe-id', '../../bad', 'safe-id'],
     stardustWorks: { 'continuing-corona': 3.8, exploit: 99, 'parallax-engine': -4 },
     deepWorks: { 'worldseed-compression': 500, 'recursive-abyss': 2.9, exploit: 5 },
+    motionPreference: 'maximum',
+    visualQuality: 'cinema',
+    beatVisual: 'danger',
+    textScale: 'huge',
+    highContrast: 'yes',
   })
 
   assert.ok(clean)
@@ -69,6 +109,11 @@ test('sanitizes corrupt values and strips unknown content ids', () => {
   assert.deepEqual(clean.wayfinder, ['safe-id'])
   assert.deepEqual(clean.stardustWorks, { 'continuing-corona': 3 })
   assert.deepEqual(clean.deepWorks, { 'worldseed-compression': 100, 'recursive-abyss': 2 })
+  assert.equal(clean.motionPreference, 'system')
+  assert.equal(clean.visualQuality, 'auto')
+  assert.equal(clean.beatVisual, 'subtle')
+  assert.equal(clean.textScale, 'normal')
+  assert.equal(clean.highContrast, false)
 })
 
 test('sanitizes the challenge return snapshot independently', () => {

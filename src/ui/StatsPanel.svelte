@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { ACHIEVEMENTS } from '../content/achievements'
   import { universeById } from '../content/universes'
   import { genRate } from '../engine/compute'
@@ -20,9 +21,13 @@
     stardustYieldMult,
     workRank,
   } from '../content/repeatables'
+  import { renderHealth } from '../core/render-health.svelte'
 
   let { onclose }: { onclose: () => void } = $props()
+  let closeButton: HTMLButtonElement
   let view = $state<'stats' | 'achievements'>('stats')
+
+  onMount(() => closeButton.focus())
 
   const pack = $derived(universeById(game.activeUniverse))
   const rate = $derived(ratePerSec())
@@ -55,10 +60,10 @@
   }
 </script>
 
-<section class="panel">
+<section class="panel" aria-labelledby="stats-title">
   <header>
-    <h2>A Way to Remember</h2>
-    <button class="close" onclick={onclose}>✕</button>
+    <h2 id="stats-title">A Way to Remember</h2>
+    <button bind:this={closeButton} class="close" aria-label="close stats" onclick={onclose}>✕</button>
   </header>
 
   <div class="tabs" role="tablist" aria-label="memory view">
@@ -95,6 +100,10 @@
       <dt>stars caught</dt><dd>{game.starsCaught}</dd>
       <dt>best combo</dt><dd>{game.bestCombo}</dd>
       <dt>time kindling</dt><dd>{fmtTime(game.playtime)}</dd>
+      <dt>render profile</dt><dd>{renderHealth.profile}{renderHealth.degraded ? ' · auto-protected' : ''}</dd>
+      {#if renderHealth.fps > 0}
+        <dt>recent canvas FPS</dt><dd>{renderHealth.fps.toFixed(0)}</dd>
+      {/if}
       {#if game.remembrances > 0}
         <dt>remembrances</dt><dd>{game.remembrances}</dd>
         <dt>memory glow</dt><dd>×{Math.pow(2, game.remembrances)}</dd>
@@ -125,7 +134,7 @@
         <dt>recursive abyss</dt><dd>rank {workRank(game.deepWorks, 'recursive-abyss')} · +{Math.round((singularityYieldMult(game.deepWorks) - 1) * 100)}%</dd>
       {/if}
       {#if game.challengesDone.length > 0}
-        <dt>trials endured</dt><dd>{game.challengesDone.length} / 6</dd>
+        <dt>trials endured</dt><dd>{game.challengesDone.length} / 12</dd>
       {/if}
     </dl>
 

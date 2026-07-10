@@ -23,6 +23,7 @@
   import TheQuestion from './ui/TheQuestion.svelte'
   import RemembranceOverlay from './ui/RemembranceOverlay.svelte'
   import CrossingPrelude from './ui/CrossingPrelude.svelte'
+  import GameGuide from './ui/GameGuide.svelte'
   import {
     game,
     hasUi,
@@ -35,7 +36,7 @@
   import { clearBuffs } from './systems/buffs.svelte'
   import { combo } from './systems/combo.svelte'
   import { save } from './core/save'
-  import { isPlaying, setStems, startMusic } from './audio/music'
+  import { isPlaying, setMusicMode, setStems, startMusic } from './audio/music'
   import { THEME_BY_ID } from './content/themes'
   import { universeById } from './content/universes'
   import { acquireGamePause } from './core/pause.svelte'
@@ -49,6 +50,7 @@
   let observatoryOpen = $state(false)
   let codexOpen = $state(false)
   let deepOpen = $state(false)
+  let guideOpen = $state(false)
   let cutsceneActive = $state(false)
   let questionOpen = $state(false)
   let remembering = $state(false)
@@ -65,12 +67,14 @@
   )
   const deepReady = $derived(game.challenge === null && game.stardustTotal >= 20)
   const curiositiesVisible = $derived(game.curiosities.length > 0 || game.totalEarned >= 250_000)
+  const activePack = $derived(universeById(game.activeUniverse))
   const vesselVisible = $derived(vesselRevealed())
   const vesselReady = $derived(vesselHasReadyPart())
   const utilityPanelOpen = $derived(
-    statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen,
+    statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen || guideOpen,
   )
   const storyModalActive = $derived(cutsceneActive || questionOpen || remembering || crossingPrelude)
+  const modalActive = $derived(storyModalActive || guideOpen)
 
   $effect(() => {
     if (!storyModalActive) return
@@ -78,7 +82,7 @@
   })
 
   function closeAll() {
-    statsOpen = optionsOpen = curiositiesOpen = vesselOpen = observatoryOpen = codexOpen = deepOpen = false
+    statsOpen = optionsOpen = curiositiesOpen = vesselOpen = observatoryOpen = codexOpen = deepOpen = guideOpen = false
   }
   function toggleStats() {
     const next = !statsOpen
@@ -114,6 +118,39 @@
     const next = !deepOpen
     closeAll()
     deepOpen = next
+  }
+  function toggleGuide() {
+    const next = !guideOpen
+    closeAll()
+    guideOpen = next
+  }
+
+  function onGlobalKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape' && utilityPanelOpen) {
+      event.preventDefault()
+      closeAll()
+      return
+    }
+    if (guideOpen || storyModalActive || event.metaKey || event.ctrlKey || event.altKey) return
+    const target = event.target as HTMLElement | null
+    if (target?.matches('input, textarea, select, [contenteditable="true"]')) return
+
+    const key = event.key.toLowerCase()
+    let handled = true
+    if ((key === '?' || key === 'g') && hasUi('counter')) toggleGuide()
+    else if (key === 'i' && hasUi('stats')) toggleStats()
+    else if (key === 'o' && hasUi('options')) toggleOptions()
+    else if (key === 'c' && curiositiesVisible) toggleCuriosities()
+    else if (key === 'v' && vesselVisible) toggleVessel()
+    else if (key === 's' && observatoryVisible) toggleObservatory()
+    else if (key === 'd' && deepVisible) toggleDeep()
+    else if (key === 'e' && game.echoes.length > 0) toggleCodex()
+    else if (key === 'b' && hasUi('bulk')) {
+      const amounts = [1, 10, 100, 'max'] as const
+      game.buyAmount = amounts[(amounts.indexOf(game.buyAmount) + 1) % amounts.length]
+      save()
+    } else handled = false
+    if (handled) event.preventDefault()
   }
 
   function beginSupernova() {
@@ -156,6 +193,12 @@
 
   // vestments: apply the chosen accent theme to the document root
   $effect(() => {
+    setMusicMode(activePack.audio.music)
+    document.documentElement.dataset.motion = game.motionPreference
+    document.documentElement.dataset.textScale = game.textScale
+    document.documentElement.dataset.contrast = game.highContrast ? 'high' : 'standard'
+    document.documentElement.dataset.beatVisual = game.beatVisual
+    document.documentElement.dataset.visualQuality = game.visualQuality
     const theme = THEME_BY_ID.get(game.theme) ?? THEME_BY_ID.get('ember')!
     for (const [key, value] of Object.entries(theme.vars)) {
       document.documentElement.style.setProperty(key, value)
@@ -176,7 +219,9 @@
   })
 </script>
 
-<div class="game-shell" inert={storyModalActive} aria-hidden={storyModalActive}>
+<svelte:window onkeydown={onGlobalKeydown} />
+
+<div class="game-shell" inert={modalActive} aria-hidden={modalActive}>
   <EmberCanvas />
   <section class="top-stack" aria-label="Run status and upgrades">
     <Hud />
@@ -195,26 +240,29 @@
   <WelcomeBack amount={offlineGain} />
 
   <nav class="dock" aria-label="Game sections">
+    {#if hasUi('counter')}
+      <button class="dock-btn guide-button" class:open={guideOpen} onclick={toggleGuide} title="The Field Guide · G" aria-label="The Field Guide" aria-keyshortcuts="G">?</button>
+    {/if}
     {#if hasUi('stats')}
-      <button class="dock-btn" class:open={statsOpen} onclick={toggleStats} title="A way to remember" aria-label="A way to remember">▤</button>
+      <button class="dock-btn" class:open={statsOpen} onclick={toggleStats} title="A way to remember · I" aria-label="A way to remember" aria-keyshortcuts="I">▤</button>
     {/if}
     {#if hasUi('options')}
-      <button class="dock-btn" class:open={optionsOpen} onclick={toggleOptions} title="A way to choose" aria-label="A way to choose">⚙</button>
+      <button class="dock-btn" class:open={optionsOpen} onclick={toggleOptions} title="A way to choose · O" aria-label="A way to choose" aria-keyshortcuts="O">⚙</button>
     {/if}
     {#if curiositiesVisible}
-      <button class="dock-btn curiosity" class:open={curiositiesOpen} onclick={toggleCuriosities} title="The Celestial Cabinet" aria-label="The Celestial Cabinet">◍</button>
+      <button class="dock-btn curiosity" class:open={curiositiesOpen} onclick={toggleCuriosities} title={`${activePack.cabinet.dockTitle} · C`} aria-label={activePack.cabinet.dockTitle} aria-keyshortcuts="C">{activePack.cabinet.dockGlyph}</button>
     {/if}
     {#if vesselVisible}
-      <button class="dock-btn vessel" class:open={vesselOpen} class:ready={vesselReady} onclick={toggleVessel} title="The Vessel" aria-label="The Vessel">⌁</button>
+      <button class="dock-btn vessel" class:open={vesselOpen} class:ready={vesselReady} onclick={toggleVessel} title="The Vessel · V" aria-label="The Vessel" aria-keyshortcuts="V">⌁</button>
     {/if}
     {#if observatoryVisible}
-      <button class="dock-btn stardust" class:open={observatoryOpen} class:ready={novaReady} onclick={toggleObservatory} title="The Observatory" aria-label="The Observatory">✧</button>
+      <button class="dock-btn stardust" class:open={observatoryOpen} class:ready={novaReady} onclick={toggleObservatory} title="The Observatory · S" aria-label="The Observatory" aria-keyshortcuts="S">✧</button>
     {/if}
     {#if deepVisible}
-      <button class="dock-btn deep" class:open={deepOpen} class:ready={deepReady} onclick={toggleDeep} title="The Deep" aria-label="The Deep">◉</button>
+      <button class="dock-btn deep" class:open={deepOpen} class:ready={deepReady} onclick={toggleDeep} title="The Deep · D" aria-label="The Deep" aria-keyshortcuts="D">◉</button>
     {/if}
     {#if game.echoes.length > 0}
-      <button class="dock-btn" class:open={codexOpen} onclick={toggleCodex} title="Codex of Echoes" aria-label="Codex of Echoes">❖</button>
+      <button class="dock-btn" class:open={codexOpen} onclick={toggleCodex} title="Codex of Echoes · E" aria-label="Codex of Echoes" aria-keyshortcuts="E">❖</button>
     {/if}
   </nav>
 
@@ -244,6 +292,9 @@
   {/if}
   <QuestionChip onopen={() => { closeAll(); questionOpen = true }} />
 </div>
+{#if guideOpen}
+  <GameGuide onclose={() => (guideOpen = false)} />
+{/if}
 {#if cutsceneActive}
   <SupernovaCutscene doReset={resetForSupernova} onfinished={afterSupernova} />
 {/if}

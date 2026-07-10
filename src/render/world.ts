@@ -1,6 +1,15 @@
 import { game, ratePerSec } from '../engine/game.svelte'
 import { universeById } from '../content/universes'
 import { currentBeatIndex } from '../audio/music'
+import {
+  motionReduced,
+  RENDER_PROFILES,
+  resolveVisualQuality,
+  type RenderProfile,
+  type RenderQuality,
+  type VisualQuality,
+} from '../core/preferences'
+import { reportRenderHealth } from '../core/render-health.svelte'
 
 interface Particle {
   x: number
@@ -39,8 +48,6 @@ interface Glimmer {
   phase: number
 }
 
-const MAX_PARTICLES = 600
-
 function mulberry32(seed: number) {
   return function () {
     seed |= 0
@@ -50,6 +57,8 @@ function mulberry32(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 }
+
+const QUALITY_ORDER: RenderQuality[] = ['low', 'balanced', 'high']
 
 export class World {
   private canvas: HTMLCanvasElement
@@ -63,8 +72,14 @@ export class World {
   private lastBeat = -1
   private rings: number[] = [] // birth timestamps (ms)
   private collapseStart = 0
-  /** particle intensity scale — honors prefers-reduced-motion */
-  private motion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 0.35 : 1
+  private reducedMotionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)')
+  private profileId = ''
+  private selectedQuality: VisualQuality = game.visualQuality
+  private runtimeQuality: RenderQuality | null = null
+  private sampleStartedAt = 0
+  private sampledFrames = 0
+  private slowSamples = 0
+  private healthySamples = 0
   private raf = 0
   private width = 0
   private height = 0
@@ -77,9 +92,11 @@ export class World {
   }
 
   resize() {
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2)
     this.width = window.innerWidth
     this.height = window.innerHeight
+    const profile = this.currentRenderProfile()
+    this.profileId = profile.id
+    this.dpr = Math.min(window.devicePixelRatio || 1, profile.dprCap)
     this.canvas.width = this.width * this.dpr
     this.canvas.height = this.height * this.dpr
     this.canvas.style.width = this.width + 'px'
@@ -90,12 +107,88 @@ export class World {
     return { x: this.width / 2, y: this.height * 0.48 }
   }
 
+  private currentRenderProfile(): RenderProfile {
+    if (this.selectedQuality !== game.visualQuality) {
+      this.selectedQuality = game.visualQuality
+      this.runtimeQuality = null
+      this.slowSamples = 0
+      this.healthySamples = 0
+    }
+    const base = this.baseRenderQuality()
+    if (game.visualQuality !== 'auto') return RENDER_PROFILES[base]
+    if (!this.runtimeQuality) this.runtimeQuality = base
+    const resolved = QUALITY_ORDER.indexOf(this.runtimeQuality) < QUALITY_ORDER.indexOf(base)
+      ? this.runtimeQuality
+      : base
+    return RENDER_PROFILES[resolved]
+  }
+
+  private baseRenderQuality(): RenderQuality {
+    return resolveVisualQuality(game.visualQuality, {
+      width: window.innerWidth,
+      devicePixelRatio: window.devicePixelRatio || 1,
+      hardwareConcurrency: navigator.hardwareConcurrency || 8,
+    })
+  }
+
+  private samplePerformance(now: number, profile: RenderProfile) {
+    if (document.visibilityState !== 'visible') {
+      this.sampleStartedAt = now
+      this.sampledFrames = 0
+      return
+    }
+    if (this.sampleStartedAt === 0) this.sampleStartedAt = now
+    this.sampledFrames += 1
+    const elapsed = now - this.sampleStartedAt
+    if (elapsed < 2_000) return
+
+    const fps = (this.sampledFrames * 1000) / elapsed
+    if (game.visualQuality === 'auto') {
+      if (fps < profile.fps * 0.72) {
+        this.slowSamples += 1
+        this.healthySamples = 0
+      } else if (fps >= profile.fps * 0.9) {
+        this.healthySamples += 1
+        this.slowSamples = 0
+      } else {
+        this.slowSamples = 0
+        this.healthySamples = 0
+      }
+
+      const currentIndex = QUALITY_ORDER.indexOf(profile.id)
+      const baseIndex = QUALITY_ORDER.indexOf(this.baseRenderQuality())
+      if (this.slowSamples >= 2 && currentIndex > 0) {
+        this.runtimeQuality = QUALITY_ORDER[currentIndex - 1]
+        this.slowSamples = 0
+      } else if (this.healthySamples >= 10 && currentIndex < baseIndex) {
+        this.runtimeQuality = QUALITY_ORDER[currentIndex + 1]
+        this.healthySamples = 0
+      }
+    }
+
+    const current = this.currentRenderProfile()
+    reportRenderHealth({
+      fps,
+      frameTimeMs: fps > 0 ? 1000 / fps : 0,
+      profile: current.id,
+      automatic: game.visualQuality === 'auto',
+      degraded: game.visualQuality === 'auto' && QUALITY_ORDER.indexOf(current.id) < QUALITY_ORDER.indexOf(this.baseRenderQuality()),
+    })
+    this.sampleStartedAt = now
+    this.sampledFrames = 0
+  }
+
+  private motionScale(): number {
+    return motionReduced(game.motionPreference, this.reducedMotionQuery?.matches ?? false) ? 0.25 : 1
+  }
+
   /** Current visual radius of the ember core; grows with everything ever earned. */
   emberRadius(now: number): number {
     const growth = Math.pow(Math.log10(1 + game.totalEarned), 1.2) * 6
     const base = 24 + Math.min(growth, 70)
-    const breath = 1 + 0.028 * Math.sin(now / 900) + 0.012 * Math.sin(now / 233)
-    const squash = 1 + this.pulse * 0.16
+    const motion = this.motionScale()
+    const breath = 1 + (0.028 * Math.sin(now / 900) + 0.012 * Math.sin(now / 233)) * motion
+    const squash = 1 + this.pulse * 0.16 * motion
     const swell = 1 + this.collapseProgress(now) * 1.4
     return base * breath * squash * swell
   }
@@ -121,7 +214,7 @@ export class World {
     this.pulse = Math.max(this.pulse, crit ? 0.55 : 0.28)
     this.addFloat(text, x, y - 8)
 
-    const count = Math.max(2, Math.round((crit ? 8 : 5) * this.motion))
+    const count = Math.max(2, Math.round((crit ? 8 : 5) * this.motionScale()))
     for (let i = 0; i < count; i++) {
       const a = Math.random() * Math.PI * 2
       const speed = 22 + Math.random() * 70
@@ -178,7 +271,7 @@ export class World {
   burst(x: number, y: number) {
     const c = this.center
     const accent = universeById(game.activeUniverse).palette.accentHue
-    const count = Math.max(3, Math.round((9 + Math.floor(Math.random() * 6)) * this.motion))
+    const count = Math.max(3, Math.round((9 + Math.floor(Math.random() * 6)) * this.motionScale()))
     for (let i = 0; i < count; i++) {
       const angle = Math.atan2(y - c.y, x - c.x) + (Math.random() - 0.5) * 2.4
       const speed = 60 + Math.random() * 160
@@ -209,20 +302,23 @@ export class World {
     const nx = dx / len
     const ny = dy / len
     const startRadius = this.emberRadius(performance.now()) * 1.55 + 16
+    const motion = this.motionScale()
     this.floats.push({
       x: c.x + nx * startRadius + (Math.random() - 0.5) * 14,
       y: c.y + ny * startRadius - 8,
-      vx: nx * 16 + (Math.random() - 0.5) * 12,
-      vy: -76 - Math.random() * 18,
+      vx: (nx * 16 + (Math.random() - 0.5) * 12) * motion,
+      vy: (-76 - Math.random() * 18) * motion,
       life: 0,
       maxLife: 1.75,
       text,
     })
-    if (this.floats.length > 40) this.floats.shift()
+    const floatLimit = this.currentRenderProfile().id === 'low' ? 24 : 40
+    if (this.floats.length > floatLimit) this.floats.shift()
   }
 
   private addParticle(p: Particle) {
-    if (this.particles.length >= MAX_PARTICLES) this.particles.shift()
+    const limit = this.currentRenderProfile().maxParticles
+    if (this.particles.length >= limit) this.particles.shift()
     this.particles.push(p)
   }
 
@@ -236,7 +332,7 @@ export class World {
       list = []
       this.glimmers.set(cacheKey, list)
     }
-    const want = Math.min(owned, 36)
+    const want = Math.min(owned, this.currentRenderProfile().maxGlimmersPerTier)
     if (list.length < want) {
       let hash = 0
       for (const ch of cacheKey) hash = (hash * 31 + ch.charCodeAt(0)) | 0
@@ -260,7 +356,193 @@ export class World {
     return game.curiosities.includes(id)
   }
 
+  private drawTidefallCuriosities(now: number, fade: number) {
+    const { ctx, width, height } = this
+    const scale = Math.max(0.72, Math.min(1.05, width / 1360))
+    ctx.save()
+    ctx.globalAlpha = fade
+    ctx.lineCap = 'round'
+
+    // Surface omens: a reflected moon, pressure rings, pearl nursery, and kelp-light.
+    if (this.hasCuriosity('moth')) {
+      const x = width * 0.11
+      const y = height * 0.16
+      ctx.strokeStyle = 'rgba(189, 247, 255, 0.34)'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(x, y, 10, 0.55, Math.PI * 1.45)
+      ctx.stroke()
+      for (let i = 0; i < 3; i++) {
+        ctx.strokeStyle = `rgba(104, 219, 232, ${0.12 - i * 0.025})`
+        ctx.beginPath()
+        ctx.ellipse(x, y + 13 + i * 6, 13 + i * 6, 2 + i, 0, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+    }
+    if (this.hasCuriosity('chimes')) {
+      const x = width * 0.2
+      const y = height * 0.43
+      const pulse = (now / 1500) % 1
+      for (let i = 0; i < 3; i++) {
+        const phase = (pulse + i / 3) % 1
+        ctx.strokeStyle = `rgba(109, 235, 229, ${(1 - phase) * 0.2})`
+        ctx.beginPath()
+        ctx.ellipse(x, y, 8 + phase * 44, 3 + phase * 14, -0.08, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+    }
+    if (this.hasCuriosity('hearthkeeper')) {
+      const x = width * 0.16
+      const y = height * 0.72
+      const fueled = game.keeperFedUntil > Date.now()
+      for (let i = 0; i < 5; i++) {
+        const angle = (i / 5) * Math.PI * 2 + now / 9000
+        const px = x + Math.cos(angle) * 17
+        const py = y + Math.sin(angle) * 7
+        ctx.fillStyle = fueled ? 'rgba(198, 255, 238, 0.75)' : 'rgba(112, 196, 190, 0.42)'
+        ctx.beginPath()
+        ctx.arc(px, py, (2.5 + (i % 2)) * scale, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+    if (this.hasCuriosity('glass-garden')) {
+      const baseX = width * 0.3
+      const baseY = height * 0.9
+      for (let i = 0; i < 6; i++) {
+        const sway = Math.sin(now / 1800 + i) * 8
+        ctx.strokeStyle = `hsla(${155 + i * 8}, 80%, 66%, ${0.1 + (i % 2) * 0.035})`
+        ctx.lineWidth = 1.4 + (i % 3) * 0.5
+        ctx.beginPath()
+        ctx.moveTo(baseX + i * 7, baseY)
+        ctx.bezierCurveTo(baseX + i * 4 - 12, baseY - 28, baseX + i * 8 + sway, baseY - 52, baseX + i * 8 + sway * 0.6, baseY - 76 - i * 3)
+        ctx.stroke()
+      }
+    }
+
+    // Pelagic signals: a sounding beam, migrating silhouette, bloom, and black mouth.
+    if (this.hasCuriosity('second-cursor')) {
+      const x = width * 0.83
+      const y = height * 0.2
+      const ping = 0.45 + 0.35 * Math.sin(now / 210) ** 2
+      const beam = ctx.createLinearGradient(x, y, x - 18, height * 0.72)
+      beam.addColorStop(0, `rgba(188, 250, 255, ${ping})`)
+      beam.addColorStop(1, 'rgba(73, 172, 209, 0)')
+      ctx.strokeStyle = beam
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      ctx.lineTo(x - 18, height * 0.72)
+      ctx.stroke()
+      ctx.strokeStyle = `rgba(119, 231, 239, ${ping * 0.45})`
+      ctx.beginPath()
+      ctx.ellipse(x - 18, height * 0.72, 18 + ping * 8, 5 + ping * 2, 0, 0, Math.PI * 2)
+      ctx.stroke()
+    }
+    if (this.hasCuriosity('snail')) {
+      const cycleMs = universeById(game.activeUniverse).cabinet.returnCycleSec * 1000
+      const progress = game.snailLastGiftAt > 0 ? Math.min(1, (Date.now() - game.snailLastGiftAt) / cycleMs) : 0
+      const x = width * (0.37 + progress * 0.25)
+      const y = height * 0.79 + Math.sin(now / 2600) * 5
+      ctx.strokeStyle = 'rgba(127, 230, 214, 0.22)'
+      ctx.lineWidth = 3 * scale
+      ctx.beginPath()
+      ctx.moveTo(x - 35, y + 4)
+      ctx.bezierCurveTo(x - 15, y - 14, x + 18, y - 12, x + 38, y + 2)
+      ctx.stroke()
+      ctx.fillStyle = 'rgba(177, 255, 238, 0.32)'
+      ctx.beginPath()
+      ctx.arc(x + 37, y + 1, 3.2 * scale, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    if (this.hasCuriosity('aurora')) {
+      const x = width * 0.7
+      const baseY = height * 0.88
+      for (let i = 0; i < 4; i++) {
+        ctx.strokeStyle = `hsla(${172 + i * 24}, 84%, 68%, ${0.11 - i * 0.014})`
+        ctx.lineWidth = 5 - i * 0.8
+        ctx.beginPath()
+        ctx.moveTo(x - 40 - i * 5, baseY)
+        ctx.bezierCurveTo(x - 30, baseY - 28 - i * 8, x + 22, baseY - 42 + i * 3, x + 36 + i * 7, baseY - 82 - i * 6)
+        ctx.stroke()
+      }
+    }
+    if (this.hasCuriosity('door')) {
+      const x = width * 0.82
+      const y = height * 0.68
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(now / 16000)
+      for (let i = 0; i < 4; i++) {
+        ctx.strokeStyle = `rgba(${80 + i * 14}, ${190 + i * 10}, 235, ${0.2 - i * 0.03})`
+        ctx.beginPath()
+        ctx.ellipse(0, 0, 10 + i * 8, 3 + i * 2.2, i * 0.14, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+      ctx.fillStyle = 'rgba(1, 8, 18, 0.96)'
+      ctx.beginPath()
+      ctx.arc(0, 0, 7, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.restore()
+    }
+
+    // Abyssal relics share a low arc, so the screen reads as one ecosystem.
+    const abyssY = height * 0.58
+    if (this.hasCuriosity('star-jar')) {
+      const x = width * 0.58
+      ctx.fillStyle = 'rgba(218, 255, 251, 0.82)'
+      ctx.beginPath()
+      ctx.arc(x, abyssY, 3.4, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.strokeStyle = 'rgba(107, 221, 231, 0.2)'
+      ctx.beginPath()
+      ctx.ellipse(x, abyssY, 13, 4, 0, 0, Math.PI * 2)
+      ctx.stroke()
+    }
+    if (this.hasCuriosity('metronome-heart')) {
+      const x = width * 0.66
+      const pulse = 5 + 4 * Math.sin(now / 250) ** 2
+      ctx.strokeStyle = 'rgba(117, 237, 226, 0.24)'
+      ctx.beginPath()
+      ctx.arc(x, abyssY + 4, 10 + pulse, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(x - 25, abyssY + 4)
+      ctx.lineTo(x + 25, abyssY + 4)
+      ctx.stroke()
+    }
+    if (this.hasCuriosity('letter')) {
+      const x = width * 0.75
+      const glow = ctx.createRadialGradient(x, abyssY, 0, x, abyssY, 18)
+      glow.addColorStop(0, 'rgba(255, 228, 202, 0.8)')
+      glow.addColorStop(0.35, 'rgba(241, 72, 83, 0.42)')
+      glow.addColorStop(1, 'rgba(127, 25, 71, 0)')
+      ctx.fillStyle = glow
+      ctx.beginPath()
+      ctx.arc(x, abyssY, 18, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    if (this.hasCuriosity('orrery')) {
+      const x = width * 0.9
+      const y = height * 0.82
+      ctx.strokeStyle = 'rgba(117, 226, 242, 0.24)'
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath()
+        ctx.ellipse(x, y, 16 + i * 9, 5 + i * 3, -0.25 + i * 0.16, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+      ctx.fillStyle = 'rgba(1, 10, 20, 0.96)'
+      ctx.beginPath()
+      ctx.arc(x, y, 8, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    ctx.restore()
+  }
+
   private drawCuriosities(now: number, fade: number) {
+    if (game.activeUniverse === 'tidefall') {
+      this.drawTidefallCuriosities(now, fade)
+      return
+    }
     const { ctx, width, height } = this
     const c = this.center
     const scale = Math.max(0.76, Math.min(1.08, width / 1360))
@@ -565,10 +847,18 @@ export class World {
   start() {
     let last = performance.now()
     const frame = (now: number) => {
+      const profile = this.currentRenderProfile()
+      if (profile.id !== this.profileId) this.resize()
+      const frameBudget = 1000 / profile.fps
+      if (now - last < frameBudget * 0.82) {
+        this.raf = requestAnimationFrame(frame)
+        return
+      }
       const dt = Math.min((now - last) / 1000, 0.1)
       last = now
       this.update(dt, now)
       this.draw(now)
+      this.samplePerformance(now, profile)
       this.raf = requestAnimationFrame(frame)
     }
     this.raf = requestAnimationFrame(frame)
@@ -611,18 +901,20 @@ export class World {
     }
 
     // beat rings while the music plays
-    const beat = currentBeatIndex()
+    const beat = game.beatVisual === 'off' ? null : currentBeatIndex()
     if (beat !== null && beat !== this.lastBeat) {
       this.lastBeat = beat
       this.rings.push(now)
     }
+    if (game.beatVisual === 'off') this.rings = []
     this.rings = this.rings.filter((born) => now - born < 650)
     this.quasarTaps = this.quasarTaps.filter((tap) => now - tap.born < 760)
 
     // gentle motes rising from the ember while generators work
     const rate = ratePerSec()
     if (rate > 0) {
-      this.driftAcc += dt * Math.min(5, 0.6 + Math.sqrt(rate) * 0.35) * this.motion
+      const profile = this.currentRenderProfile()
+      this.driftAcc += dt * Math.min(5, 0.6 + Math.sqrt(rate) * 0.35) * this.motionScale() * profile.moteScale
       while (this.driftAcc >= 1) {
         this.driftAcc -= 1
         const c = this.center
@@ -690,13 +982,14 @@ export class World {
 
     // your empire, glimmering in the dark (fading as it falls inward)
     const collapseFade = 1 - this.collapseProgress(now)
+    const reduced = this.motionScale() < 1
     for (const g of universeById(game.activeUniverse).generators) {
       const owned = game.owned[g.id] ?? 0
       if (owned <= 0) continue
       const ownedScale = 1 + Math.min(0.7, Math.log10(owned + 1) * 0.2)
       const tierScale = 1 + Math.min(0.25, g.tier * 0.012)
       for (const gl of this.glimmersFor(g.id, owned, g.hue, g.tier)) {
-        const tw = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now / 700 + gl.phase))
+        const tw = reduced ? 0.72 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now / 700 + gl.phase))
         const size = gl.size * ownedScale * tierScale
         ctx.beginPath()
         ctx.fillStyle = `hsla(${gl.hue}, 90%, 70%, ${0.31 * tw * collapseFade})`
@@ -707,7 +1000,7 @@ export class World {
 
     // Vessel construction belongs to its dedicated panel; the playfield stays
     // focused on the central rhythm target.
-    this.drawCuriosities(now, collapseFade)
+    this.drawCuriosities(reduced ? 0 : now, collapseFade)
 
     const c = this.center
     const r = this.emberRadius(now)
@@ -724,7 +1017,7 @@ export class World {
     ctx.fill()
 
     // core
-    const flick = 0.94 + 0.06 * Math.sin(now / 61) * Math.sin(now / 137)
+    const flick = reduced ? 0.98 : 0.94 + 0.06 * Math.sin(now / 61) * Math.sin(now / 137)
     const core = ctx.createRadialGradient(c.x, c.y - r * 0.15, 0, c.x, c.y, r)
     core.addColorStop(0, `rgba(${pal.c0}, ${0.98 * flick})`)
     core.addColorStop(0.35, `rgba(${pal.c1}, ${0.95 * flick})`)
@@ -739,10 +1032,11 @@ export class World {
     for (const born of this.rings) {
       const age = (now - born) / 650
       const accent = universeById(game.activeUniverse).palette.accentHue
+      const strong = game.beatVisual === 'strong'
       ctx.beginPath()
-      ctx.strokeStyle = `hsla(${accent}, 88%, 72%, ${(1 - age) * 0.3})`
-      ctx.lineWidth = 1.5
-      ctx.arc(c.x, c.y, r * (1.18 + age * 1.5), 0, Math.PI * 2)
+      ctx.strokeStyle = `hsla(${accent}, ${strong ? 100 : 88}%, ${strong ? 82 : 72}%, ${(1 - age) * (strong ? 0.68 : 0.3)})`
+      ctx.lineWidth = strong ? 3 : 1.5
+      ctx.arc(c.x, c.y, r * (1.18 + age * (strong ? 1.25 : 1.5)), 0, Math.PI * 2)
       ctx.stroke()
     }
     this.drawQuasarTaps(now, collapseFade)

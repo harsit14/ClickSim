@@ -185,6 +185,7 @@
         <div><dt>{universe.currency.toLowerCase()} remembered</dt><dd>{universe.currencyGlyph} {format(game.allTimeEarned)}</dd></div>
         <div><dt>skies rekindled</dt><dd>{game.supernovae}</dd></div>
         <div><dt>depths crossed</dt><dd>{game.collapses}</dd></div>
+        <div><dt>trials endured</dt><dd>{game.challengesDone.length}/12</dd></div>
         <div><dt>echoes recovered</dt><dd>{game.echoes.length}/{universe.echoes.length}</dd></div>
         <div><dt>phenomena catalogued</dt><dd>{game.curiosities.length}</dd></div>
       </dl>

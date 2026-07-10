@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { CONSTELLATION, nodeAvailable, type StarNode } from '../content/constellation'
   import { describeEffect } from '../content/upgrades'
   import { game, supernovaGain, buyNode, stardustTargetFor } from '../engine/game.svelte'
@@ -23,6 +24,9 @@
 
   let selectedId = $state<string | null>(null)
   let armed = $state(false)
+  let closeButton: HTMLButtonElement
+
+  onMount(() => closeButton.focus())
 
   const gain = $derived(supernovaGain())
   const selected = $derived(CONSTELLATION.find((n) => n.id === selectedId) ?? null)
@@ -58,7 +62,16 @@
   }
 
   function describe(n: StarNode): string[] {
-    return [...n.effects.map((effect) => describeEffect(effect, pack.generatorById)), ...n.perks.map((p) => p.desc)]
+    const localizePerk = (text: string) => text
+      .replaceAll('falling stars', `${pack.events.noun}s`)
+      .replaceAll('star blessings', `${pack.events.noun} blessings`)
+      .replaceAll('caught stars', `caught ${pack.events.noun}s`)
+      .replaceAll('Sparks', pack.generators[0].name)
+      .replaceAll('light', pack.currency.toLowerCase())
+    return [
+      ...n.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())),
+      ...n.perks.map((perk) => localizePerk(perk.desc)),
+    ]
   }
 </script>
 
@@ -66,7 +79,7 @@
   <header>
     <h2>The Observatory</h2>
     <span class="balance">✧ {game.stardust} <em>stardust</em></span>
-    <button class="close" onclick={onclose}>✕</button>
+    <button bind:this={closeButton} class="close" aria-label="close the Observatory" onclick={onclose}>✕</button>
   </header>
 
   <div class="nova" class:ready={gain >= 1}>

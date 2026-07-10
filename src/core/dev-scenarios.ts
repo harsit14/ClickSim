@@ -1,5 +1,5 @@
 import { DEEP_UPGRADES } from '../content/deep'
-import { migrateAndSanitizeSave, type SaveDataV11 } from './save-data'
+import { migrateAndSanitizeSave, type SaveDataV12 } from './save-data'
 
 export type DevScenario = 'midgame' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'markets'
 
@@ -67,12 +67,12 @@ const CONSTELLATION = [
   'corona',
 ]
 
-function emptyScenario(now: number): SaveDataV11 {
-  return migrateAndSanitizeSave({ version: 11, savedAt: now, activeUniverse: 'emberlight' })!
+function emptyScenario(now: number): SaveDataV12 {
+  return migrateAndSanitizeSave({ version: 12, savedAt: now, activeUniverse: 'emberlight' })!
 }
 
 /** Deterministic, dev-only states used for manual and browser regression passes. */
-export function createDevScenario(name: string | null, now = Date.now()): SaveDataV11 | null {
+export function createDevScenario(name: string | null, now = Date.now()): SaveDataV12 | null {
   if (!['midgame', 'endgame', 'question', 'crossing', 'tidefall', 'markets'].includes(name ?? '')) return null
   const base = emptyScenario(now)
 
@@ -113,10 +113,32 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
         protostar: 2,
         sun: 1,
       },
-      upgrades: ['spark-10', 'spark-25', 'wisp-10', 'hearth-10', 'undertow-touch', 'moon-pull'],
+      upgrades: [
+        'spark-10',
+        'spark-25',
+        'wisp-10',
+        'hearth-10',
+        'undertow-touch',
+        'moon-pull',
+        'ripple-memory',
+        'tidepool-circles',
+        'reef-accord',
+        'pearls-follow-wakes',
+      ],
       ui: UI,
       seen: ['tide-arrival', 'tide-droplet', 'tide-turn'],
       echoes: ['tide-moon-ledger'],
+      curiosities: ['moth', 'chimes', 'hearthkeeper', 'glass-garden', 'second-cursor', 'snail', 'aurora', 'door'],
+      keeperFedUntil: now + 3_600_000,
+      snailLastGiftAt: now - 3_600_000,
+      stardust: 20,
+      stardustTotal: 40,
+      supernovae: 3,
+      singularities: 10,
+      singTotal: 10,
+      collapses: 1,
+      singUpgrades: ['deep-resonance'],
+      challengesDone: ['silence', 'entropy', 'bare-hands', 'drought', 'half-light', 'swarm'],
       beacons: ['emberlight'],
       darkBetween: 3,
       vesselParts: ['hull-hearths', 'sails-constellation', 'heart-sun', 'keel-trials', 'archive'],
@@ -155,7 +177,20 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
     singTotal: 20,
     collapses: 3,
     singUpgrades: ['deep-resonance'],
-    challengesDone: ['silence', 'entropy', 'bare-hands', 'drought', 'half-light', 'swarm'],
+    challengesDone: [
+      'silence',
+      'entropy',
+      'bare-hands',
+      'drought',
+      'half-light',
+      'swarm',
+      'glass-ceiling',
+      'ashen-touch',
+      'unwritten',
+      'broken-ladder',
+      'single-voice',
+      'small-vessels',
+    ],
     curiosities: CURIOSITIES,
     keeperFedUntil: now + 3_600_000,
     snailLastGiftAt: now - 5_400_000,

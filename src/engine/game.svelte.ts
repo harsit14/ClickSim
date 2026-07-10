@@ -1,12 +1,9 @@
 import type { GeneratorDef } from '../content/generators'
 import { UI_UNLOCK_BY_ID } from '../content/ui-unlocks'
 import { CONSTELLATION, NODE_BY_ID, nodeAvailable, perkBonus } from '../content/constellation'
-import { CHALLENGE_BY_ID } from '../content/challenges'
+import { CHALLENGE_BY_ID, challengeUnlocked } from '../content/challenges'
 import { DEEP_UPGRADES, DEEP_UPGRADE_BY_ID, SINGULARITY_COST } from '../content/deep'
 import {
-  CURIOSITY_BY_ID,
-  COMET_ORBIT_SEC,
-  PROTOSTAR_FUEL_HOURS,
   cometGift,
   protostarFuelCost,
 } from '../content/curiosities'
@@ -36,6 +33,7 @@ import {
   type VesselPartId,
 } from '../content/vessel'
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
+import type { BeatVisual, MotionPreference, TextScale, VisualQuality } from '../core/preferences'
 import {
   type EcoState,
   totalRate,
@@ -46,7 +44,8 @@ import {
   maxAffordable,
   costMultOf,
   costScaleOf,
-  genDisabled,
+  genPurchaseDisabled,
+  challengeMods,
   upgradeById,
   upgradeUnlocked,
 } from './compute'
@@ -109,6 +108,11 @@ export interface GameState extends EcoState {
   playtime: number
   sfxVolume: number
   musicVolume: number
+  motionPreference: MotionPreference
+  visualQuality: VisualQuality
+  beatVisual: BeatVisual
+  textScale: TextScale
+  highContrast: boolean
   buyAmount: BuyAmount
   starsCaught: number
   bestCombo: number
@@ -225,6 +229,11 @@ export const game: GameState = $state({
   playtime: 0,
   sfxVolume: 0.5,
   musicVolume: 0.6,
+  motionPreference: 'system',
+  visualQuality: 'auto',
+  beatVisual: 'subtle',
+  textScale: 'normal',
+  highContrast: false,
   buyAmount: 1,
   starsCaught: 0,
   bestCombo: 0,
@@ -589,7 +598,7 @@ export function buyDeepWork(id: DeepWorkId): boolean {
 
 // ── Curiosities ─────────────────────────────────────────────────────────
 export function buyCuriosity(id: string): boolean {
-  const def = CURIOSITY_BY_ID.get(id)
+  const def = universeById(game.activeUniverse).cabinet.itemById.get(id)
   if (game.challenge || !def || game.curiosities.includes(id) || game.light < def.cost) return false
   game.light -= def.cost
   game.curiosities.push(id)
@@ -607,20 +616,22 @@ export function fuelProtostar(): boolean {
   if (game.light < cost) return false
   game.light -= cost
   const now = Date.now()
-  game.keeperFedUntil = Math.max(game.keeperFedUntil, now) + PROTOSTAR_FUEL_HOURS * 3600_000
+  const hours = universeById(game.activeUniverse).cabinet.fuelHours
+  game.keeperFedUntil = Math.max(game.keeperFedUntil, now) + hours * 3600_000
   return true
 }
 
 export function cometProgress(now = Date.now()): number {
   if (!hasCuriosity('snail')) return 0
   const lastGiftAt = game.snailLastGiftAt || now
-  return Math.min(1, (now - lastGiftAt) / (COMET_ORBIT_SEC * 1000))
+  const cycle = universeById(game.activeUniverse).cabinet.returnCycleSec
+  return Math.min(1, (now - lastGiftAt) / (cycle * 1000))
 }
 
 export function collectCometReturn(): number {
   if (game.challenge) return 0
   if (cometProgress() < 1) return 0
-  const amount = cometGift(passiveRatePerSec())
+  const amount = cometGift(passiveRatePerSec(), universeById(game.activeUniverse).cabinet.returnRateSeconds)
   earn(amount)
   game.snailLastGiftAt = Date.now()
   return amount
@@ -642,7 +653,9 @@ export function buildVesselPart(id: VesselPartId): boolean {
 
 // ── Challenge trials ─────────────────────────────────────────────────────
 export function startChallenge(id: string): boolean {
-  if (game.challenge || !CHALLENGE_BY_ID.has(id) || game.challengesDone.includes(id)) return false
+  const challenge = CHALLENGE_BY_ID.get(id)
+  if (game.challenge || !challenge || game.challengesDone.includes(id)) return false
+  if (!challengeUnlocked(game.challengesDone, challenge)) return false
   game.challengeReturn = snapshotRun()
   resetRun(false)
   game.challenge = id
@@ -693,12 +706,14 @@ export function clickEmber(extraMult = 1): ClickResult {
 
 /** Buys according to the current buy amount. Returns units bought. */
 export function buyGenerator(def: GeneratorDef): number {
-  if (genDisabled(game, def)) return 0
+  if (genPurchaseDisabled(game, def)) return 0
   const owned = game.owned[def.id] ?? 0
   const mult = costMultOf(game, def)
   const scale = costScaleOf(game)
-  const count =
+  let count =
     game.buyAmount === 'max' ? maxAffordable(def, owned, game.light, mult, scale) : game.buyAmount
+  const cap = challengeMods(game).maxOwnedPerGen
+  if (cap !== undefined) count = Math.min(count, Math.max(0, cap - owned))
   if (count <= 0) return 0
   const cost = bulkCost(def, owned, count, mult, scale)
   if (game.light < cost) return 0
@@ -708,6 +723,7 @@ export function buyGenerator(def: GeneratorDef): number {
 }
 
 export function buyUpgrade(id: string): boolean {
+  if (challengeMods(game).noUpgrades) return false
   const def = upgradeById(game, id)
   if (!def || game.upgrades.includes(id)) return false
   if (!upgradeUnlocked(game, def) || game.light < def.cost) return false

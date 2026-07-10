@@ -10,6 +10,7 @@ import {
   WAYFINDER_NODES,
 } from '../src/content/wayfinder'
 import { totalRate, universeRateMult, type EcoState } from '../src/engine/compute'
+import { beatDurationSec, setMusicMode } from '../src/audio/music'
 
 function tideState(): EcoState {
   return {
@@ -39,12 +40,21 @@ function tideState(): EcoState {
 }
 
 test('Tidefall ships a complete economy with a distinct identity', () => {
+  const emberlight = universeById('emberlight')
   const tidefall = universeById('tidefall')
   assert.equal(tidefall.generators.length, 18)
   assert.ok(tidefall.upgrades.length >= 60)
   assert.equal(tidefall.generators[0].name, 'Droplet')
   assert.equal(tidefall.generators[17].name, 'The Second Wave')
   assert.equal(tidefall.currency, 'Glow')
+  assert.notEqual(tidefall.audio.music, emberlight.audio.music)
+  assert.notEqual(tidefall.audio.click, emberlight.audio.click)
+  assert.notEqual(tidefall.centralObject, emberlight.centralObject)
+  assert.notEqual(tidefall.events.motion, emberlight.events.motion)
+  assert.equal(tidefall.events.noun, 'wandering bubble')
+  assert.equal(tidefall.cabinet.title, 'The Pelagic Archive')
+  const emberPowerUps = new Set(emberlight.events.powerUps.map((power) => power.id))
+  assert.equal(tidefall.events.powerUps.some((power) => emberPowerUps.has(power.id)), false)
 })
 
 test('the living tide averages around one and reaches its stated extrema', () => {
@@ -54,6 +64,14 @@ test('the living tide averages around one and reaches its stated extrema', () =>
 
   const state = tideState()
   assert.ok(totalRate(state, 22_500) > totalRate(state, 67_500))
+})
+
+test('universe music modes carry different rhythm grids', () => {
+  setMusicMode('emberlight')
+  assert.ok(Math.abs(beatDurationSec() - 60 / 72) < 1e-12)
+  setMusicMode('tidefall')
+  assert.equal(beatDurationSec(), 1)
+  setMusicMode('emberlight')
 })
 
 test('Steady Keel narrows Tidefall without changing its midpoint', () => {

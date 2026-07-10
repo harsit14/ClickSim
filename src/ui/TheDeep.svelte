@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { DEEP_UPGRADES, SINGULARITY_COST } from '../content/deep'
-  import { CHALLENGES } from '../content/challenges'
+  import { CHALLENGES, challengeUnlocked } from '../content/challenges'
+  import ResonanceAtlas from './ResonanceAtlas.svelte'
   import {
     game,
     deepCollapseGain,
@@ -29,13 +31,26 @@
 
   let { onclose }: { onclose: () => void } = $props()
   let armed = $state(false)
+  let closeButton: HTMLButtonElement
+
+  onMount(() => closeButton.focus())
 
   const gain = $derived(deepCollapseGain())
   const pack = $derived(universeById(game.activeUniverse))
   const marketComplete = $derived(deepMarketComplete())
-  const localize = (text: string) => text
-    .replaceAll('✦', pack.currencyGlyph)
-    .replaceAll('light', pack.currency.toLowerCase())
+  const trialCircles = $derived([
+    { name: 'The First Circle', note: 'the laws that break a young universe', trials: CHALLENGES.slice(0, 6) },
+    { name: 'The Inner Horizon', note: 'compound laws for a universe that remembers', trials: CHALLENGES.slice(6) },
+  ])
+  const localize = (text: string) => {
+    let localized = text
+      .replaceAll('✦', pack.currencyGlyph)
+      .replaceAll('light', pack.currency.toLowerCase())
+      .replaceAll('falling-star', pack.events.noun)
+      .replaceAll('falling stars', `${pack.events.noun}s`)
+    for (const generator of pack.generators) localized = localized.replaceAll(`{${generator.id}}`, generator.name)
+    return localized
+  }
 
   function collapse() {
     armed = false
@@ -80,7 +95,7 @@
   <header>
     <h2>The Deep</h2>
     <span class="balance">◉ {game.singularities} <em>singularit{game.singularities === 1 ? 'y' : 'ies'}</em></span>
-    <button class="close" onclick={onclose}>✕</button>
+    <button bind:this={closeButton} class="close" aria-label="close the Deep" onclick={onclose}>✕</button>
   </header>
 
   <div class="fold" class:ready={gain >= 1}>
@@ -133,7 +148,7 @@
           {/if}
         </div>
         <em>{u.flavor}</em>
-        <span class="desc">{u.desc}</span>
+        <span class="desc">{localize(u.desc)}</span>
       </div>
     {/each}
   </div>
@@ -172,28 +187,50 @@
     {/if}
   </section>
 
-  <h3>Trials</h3>
-  <div class="trials">
-    {#each CHALLENGES as c (c.id)}
-      {@const done = game.challengesDone.includes(c.id)}
-      {@const active = game.challenge === c.id}
-      <div class="trial" class:done class:active>
-        <div class="trial-head">
-          <strong>{c.name}</strong>
-          {#if done}
-            <span class="held">endured</span>
-          {:else if active}
-            <span class="held">underway</span>
-          {:else}
-            <button class="buy" disabled={!!game.challenge} onclick={() => beginTrial(c.id)}>begin</button>
-          {/if}
-        </div>
-        <em>{c.flavor}</em>
-        <span class="desc">{localize(c.rules)} · goal: {localize(c.goalText)}</span>
-        <span class="reward">reward: {localize(c.rewardDesc)}</span>
-      </div>
+  <ResonanceAtlas />
+
+  <div class="trial-title">
+    <div>
+      <h3>Trials of the Deep</h3>
+      <span>rules rehearsed until they become power</span>
+    </div>
+    <strong>{game.challengesDone.length} / {CHALLENGES.length}</strong>
+  </div>
+  <div class="trial-progress" aria-label={`${game.challengesDone.length} of ${CHALLENGES.length} trials complete`}>
+    {#each CHALLENGES as challenge (challenge.id)}
+      <i class:done={game.challengesDone.includes(challenge.id)}></i>
     {/each}
   </div>
+  {#each trialCircles as circle (circle.name)}
+    <div class="circle-head">
+      <h4>{circle.name}</h4>
+      <span>{circle.note}</span>
+    </div>
+    <div class="trials">
+      {#each circle.trials as c (c.id)}
+        {@const done = game.challengesDone.includes(c.id)}
+        {@const active = game.challenge === c.id}
+        {@const unlocked = challengeUnlocked(game.challengesDone, c)}
+        <div class="trial" class:done class:active class:locked={!unlocked}>
+          <div class="trial-head">
+            <strong>{c.name}</strong>
+            {#if done}
+              <span class="held">endured</span>
+            {:else if active}
+              <span class="held">underway</span>
+            {:else if unlocked}
+              <button class="buy" disabled={!!game.challenge} onclick={() => beginTrial(c.id)}>begin</button>
+            {:else}
+              <span class="sealed">after {c.unlockAfter} trials</span>
+            {/if}
+          </div>
+          <em>{c.flavor}</em>
+          <span class="desc">{localize(c.rules)} · goal: {localize(c.goalText)}</span>
+          <span class="reward">reward: {localize(c.rewardDesc)}</span>
+        </div>
+      {/each}
+    </div>
+  {/each}
 </section>
 
 <style>
@@ -330,6 +367,10 @@
     border-color: rgba(255, 140, 90, 0.5);
     box-shadow: 0 0 18px rgba(255, 120, 70, 0.12);
   }
+  .trial.locked {
+    opacity: 0.52;
+    border-style: dashed;
+  }
   .item-head, .trial-head {
     display: flex;
     align-items: center;
@@ -360,6 +401,59 @@
     font-size: 0.72rem;
     font-style: italic;
     color: rgba(140, 220, 255, 0.75);
+  }
+  .sealed {
+    font-size: 0.63rem;
+    color: #6e8490;
+    white-space: nowrap;
+  }
+  .trial-title {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.15rem;
+  }
+  .trial-title h3 { margin: 0; }
+  .trial-title span,
+  .circle-head span {
+    font-family: Georgia, serif;
+    font-size: 0.66rem;
+    color: #708b98;
+  }
+  .trial-title strong {
+    font-size: 0.76rem;
+    color: #ffd98a;
+    font-variant-numeric: tabular-nums;
+  }
+  .trial-progress {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 0.24rem;
+    margin: 0.5rem 0 0.75rem;
+  }
+  .trial-progress i {
+    height: 0.22rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.07);
+  }
+  .trial-progress i.done {
+    background: linear-gradient(90deg, #80cfee, #ffd98a);
+    box-shadow: 0 0 7px rgba(128, 207, 238, 0.4);
+  }
+  .circle-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    margin: 0.75rem 0 0.38rem;
+  }
+  .circle-head h4 {
+    margin: 0;
+    font-size: 0.68rem;
+    font-weight: 650;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9fc9dc;
   }
   .toggle {
     display: flex;

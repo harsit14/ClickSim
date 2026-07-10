@@ -42,7 +42,7 @@ export const DEEP_UPGRADES: DeepUpgrade[] = [
     name: 'Dawn Memory',
     flavor: 'Some mornings refuse to be unmade.',
     cost: 2,
-    desc: 'every rebirth begins with 40 Sparks and 5 Wisps',
+    desc: 'every rebirth begins with 40 {spark} and 5 {wisp}',
   },
   {
     id: 'event-horizon',

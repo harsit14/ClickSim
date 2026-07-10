@@ -11,6 +11,7 @@
   import { gamePaused } from '../core/pause.svelte'
   import { curiosityStarRateBonus } from '../content/curiosities'
   import { universeById } from '../content/universes'
+  import type { UniversePowerUp } from '../content/universes'
 
   const LIFETIME_MS = 18_000
   // sky constellation perks: more frequent stars, longer blessings, star pairs
@@ -20,8 +21,8 @@
     (1 +
       perkBonus(game.constellation, 'starRate') +
       (game.challengesDone.includes('drought') ? 0.2 : 0) +
-      (game.curiosities.includes('star-jar') ? 0.05 : 0) +
-      curiosityStarRateBonus(game.curiosities))
+      (game.curiosities.includes('star-jar') ? universeById(game.activeUniverse).cabinet.starItemRateBonus : 0) +
+      curiosityStarRateBonus(game.curiosities, universeById(game.activeUniverse).cabinet))
   const durScale = () => 1 + perkBonus(game.constellation, 'starDuration')
   const starsForbidden = () => {
     const c = game.challenge ? CHALLENGE_BY_ID.get(game.challenge) : null
@@ -30,17 +31,12 @@
   const FIRST_DELAY = () => (20_000 + Math.random() * 25_000) * rateScale()
   const NEXT_DELAY = () => (90_000 + Math.random() * 150_000) * rateScale()
 
-  type PowerUpKind = 'frenzy' | 'gift' | 'fury'
-
-  const POWER_UPS: Record<PowerUpKind, { label: string; glyph: string; hue: number; weight: number }> = {
-    frenzy: { label: 'Frenzy', glyph: '×7', hue: 38, weight: 45 },
-    gift: { label: 'Gift', glyph: '+15m', hue: 52, weight: 45 },
-    fury: { label: 'Fury', glyph: '×777', hue: 5, weight: 10 },
-  }
-  const POWER_UP_POOL = Object.entries(POWER_UPS) as Array<[PowerUpKind, (typeof POWER_UPS)[PowerUpKind]]>
-
   interface Star {
-    kind: PowerUpKind
+    universeId: string
+    power: UniversePowerUp
+    motion: 'meteor' | 'bubble'
+    eventNoun: string
+    audioMode: 'emberlight' | 'tidefall'
     x: number
     y: number
     vx: number
@@ -54,21 +50,26 @@
   let raf = 0
   let handledSummons = $state(0)
   let queuedSummon = $state(false)
+  let forcedPowerId = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('event') : null
 
-  function pickKind(fromRhythm = false): PowerUpKind {
-    const pool = fromRhythm
-      ? POWER_UP_POOL.map(([kind, power]) => [
-          kind,
-          { ...power, weight: kind === 'fury' ? power.weight * 2.5 : power.weight },
-        ] as [PowerUpKind, (typeof POWER_UPS)[PowerUpKind]])
-      : POWER_UP_POOL
-    const total = pool.reduce((sum, [, p]) => sum + p.weight, 0)
-    let roll = Math.random() * total
-    for (const [kind, power] of pool) {
-      roll -= power.weight
-      if (roll <= 0) return kind
+  function pickPower(fromRhythm = false): UniversePowerUp {
+    const powers = universeById(game.activeUniverse).events.powerUps
+    if (forcedPowerId) {
+      const forced = powers.find((power) => power.id === forcedPowerId)
+      forcedPowerId = null
+      if (forced) return forced
     }
-    return 'gift'
+    const pool = powers.map((power) => ({
+      power,
+      weight: power.weight * (fromRhythm && power.weight <= 10 ? 2.5 : 1),
+    }))
+    const total = pool.reduce((sum, entry) => sum + entry.weight, 0)
+    let roll = Math.random() * total
+    for (const entry of pool) {
+      roll -= entry.weight
+      if (roll <= 0) return entry.power
+    }
+    return powers[0]
   }
 
   function spawn(fromRhythm = false) {
@@ -77,13 +78,19 @@
       spawnTimer = setTimeout(spawn, gamePaused() ? 1_000 : 30_000)
       return
     }
+    const pack = universeById(game.activeUniverse)
     const fromLeft = Math.random() < 0.5
+    const bubble = pack.events.motion === 'bubble'
     const next = {
-      kind: pickKind(fromRhythm),
-      x: fromLeft ? -30 : window.innerWidth + 30,
-      y: 40 + Math.random() * window.innerHeight * 0.3,
-      vx: (fromLeft ? 1 : -1) * (45 + Math.random() * 35),
-      vy: 18 + Math.random() * 18,
+      power: pickPower(fromRhythm),
+      universeId: pack.id,
+      motion: pack.events.motion,
+      eventNoun: pack.events.noun,
+      audioMode: pack.audio.event,
+      x: bubble ? window.innerWidth * (0.18 + Math.random() * 0.64) : fromLeft ? -30 : window.innerWidth + 30,
+      y: bubble ? window.innerHeight + 30 : 40 + Math.random() * window.innerHeight * 0.3,
+      vx: bubble ? (fromLeft ? 1 : -1) * (5 + Math.random() * 8) : (fromLeft ? 1 : -1) * (45 + Math.random() * 35),
+      vy: bubble ? -(36 + Math.random() * 18) : 18 + Math.random() * 18,
       born: performance.now(),
     }
     star = next
@@ -105,6 +112,11 @@
     let last = performance.now()
     const frame = (now: number) => {
       if (!star) return
+      if (star.universeId !== game.activeUniverse) {
+        star = null
+        scheduleNext()
+        return
+      }
       const elapsed = now - last
       last = now
       if (gamePaused()) {
@@ -116,7 +128,8 @@
       star.x += star.vx * dt
       star.y += star.vy * dt
       pos = { x: star.x, y: star.y }
-      if (now - star.born > LIFETIME_MS || star.y > window.innerHeight + 40) {
+      const leftWorld = star.motion === 'bubble' ? star.y < -50 : star.y > window.innerHeight + 40
+      if (now - star.born > LIFETIME_MS || leftWorld) {
         star = null
         scheduleNext()
         return
@@ -130,25 +143,36 @@
     event?.preventDefault()
     event?.stopPropagation()
     if (!star || gamePaused()) return
-    const kind = star.kind
+    const caught = star
+    const power = caught.power
     star = null
     cancelAnimationFrame(raf)
     game.starsCaught += 1
-    playStarCatch()
-    const pack = universeById(game.activeUniverse)
-    if (kind === 'frenzy') {
-      addBuff({ id: 'frenzy', label: 'Frenzy ×7', prodMult: 7, clickMult: 7 }, 77 * durScale())
-      pushToast('Frenzy!', `All ${pack.currency.toLowerCase()} ×7 for ${Math.round(77 * durScale())} seconds.`, 'falling star')
-    } else if (kind === 'fury') {
-      addBuff({ id: 'fury', label: 'Fury ×777', prodMult: 1, clickMult: 777 }, 13 * durScale())
-      pushToast('Fury!', `Clicks ×777 for ${Math.round(13 * durScale())} seconds. Go.`, 'falling star')
-    } else {
-      const amount = Math.max(25, passiveRatePerSec() * 900)
-      earn(amount)
-      pushToast('A Gift', `${pack.currencyGlyph} ${format(amount)} — fifteen minutes of ${pack.currency.toLowerCase()}, at once.`, 'falling star')
+    playStarCatch(caught.audioMode)
+    const pack = universeById(caught.universeId)
+    const duration = power.durationSec ? Math.round(power.durationSec * durScale()) : 0
+    if (duration > 0) {
+      addBuff(
+        {
+          id: `${pack.id}-${power.id}`,
+          label: `${power.label} ${power.glyph}`,
+          prodMult: power.prodMult ?? 1,
+          clickMult: power.clickMult ?? 1,
+        },
+        duration,
+      )
     }
+    let amount = 0
+    if (power.rateSeconds) {
+      amount = Math.max(power.minAward ?? 0, passiveRatePerSec() * power.rateSeconds)
+      earn(amount)
+    }
+    let message = power.toast.replaceAll('{currency}', pack.currency.toLowerCase())
+    if (amount > 0) message += ` ${pack.currencyGlyph} ${format(amount)} gathered.`
+    if (duration > 0) message += ` ${duration} seconds.`
+    pushToast(power.label, message, caught.eventNoun)
     if (Math.random() < perkBonus(game.constellation, 'starPair') && summonFallingStar()) {
-      pushToast('Meteor Season', 'Another one follows the first.', 'constellation')
+      pushToast('A paired omen', `Another ${caught.eventNoun} follows the first.`, 'constellation')
     }
     scheduleNext()
   }
@@ -165,7 +189,7 @@
   })
 
   onMount(() => {
-    spawnTimer = setTimeout(spawn, FIRST_DELAY())
+    spawnTimer = setTimeout(spawn, forcedPowerId ? 650 : FIRST_DELAY())
     return () => {
       clearTimeout(spawnTimer)
       cancelAnimationFrame(raf)
@@ -174,9 +198,10 @@
 </script>
 
 {#if star}
-  {@const power = POWER_UPS[star.kind]}
+  {@const power = star.power}
   <button
     class="falling-star"
+    class:bubble={star.motion === 'bubble'}
     style:left={pos.x + 'px'}
     style:top={pos.y + 'px'}
     style:--hue={power.hue}
@@ -220,6 +245,24 @@
     background: linear-gradient(90deg, transparent, hsla(var(--hue), 95%, 72%, 0.62));
     filter: blur(1px);
     pointer-events: none;
+  }
+  .falling-star.bubble::before {
+    right: auto;
+    width: 3.1rem;
+    height: 3.1rem;
+    border: 1px solid hsla(var(--hue), 88%, 76%, 0.34);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.18), transparent 24%), radial-gradient(circle, hsla(var(--hue), 78%, 56%, 0.08), transparent 68%);
+    filter: none;
+    animation: bubble-ring 2.2s ease-in-out infinite;
+  }
+  .falling-star.bubble .core {
+    background:
+      radial-gradient(circle at 34% 25%, rgba(255,255,255,0.55), transparent 17%),
+      radial-gradient(circle at 50% 60%, hsla(var(--hue), 86%, 68%, 0.23), rgba(5,30,48,0.2) 64%);
+    border-color: hsla(var(--hue), 86%, 78%, 0.62);
+    box-shadow: inset 0 0 12px rgba(255,255,255,0.12), 0 0 22px hsla(var(--hue), 84%, 62%, 0.38);
+    animation: bubble-float 1.8s ease-in-out infinite alternate;
   }
   .core {
     position: relative;
@@ -267,5 +310,13 @@
   @keyframes twinkle {
     from { transform: scale(0.85) rotate(-8deg); }
     to { transform: scale(1.15) rotate(8deg); }
+  }
+  @keyframes bubble-ring {
+    0%, 100% { transform: scale(0.82); opacity: 0.42; }
+    50% { transform: scale(1.18); opacity: 0.82; }
+  }
+  @keyframes bubble-float {
+    from { transform: translateY(2px) scale(0.92); }
+    to { transform: translateY(-3px) scale(1.07); }
   }
 </style>

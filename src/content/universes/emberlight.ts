@@ -2,6 +2,7 @@ import { ECHOES } from '../echoes'
 import { GENERATORS, GENERATOR_BY_ID } from '../generators'
 import { LUMEN_LINES } from '../lumen'
 import { UPGRADES } from '../upgrades'
+import { EMBERLIGHT_CABINET } from '../curiosities'
 import type { UniversePack } from './types'
 
 export const EMBERLIGHT: UniversePack = {
@@ -10,6 +11,7 @@ export const EMBERLIGHT: UniversePack = {
   shortName: 'Emberlight',
   currency: 'Light',
   currencyGlyph: '✦',
+  centralObject: 'Ember',
   description: 'The first warm universe, rebuilt from one ember.',
   generators: GENERATORS,
   generatorById: GENERATOR_BY_ID,
@@ -18,7 +20,17 @@ export const EMBERLIGHT: UniversePack = {
   lumen: LUMEN_LINES,
   echoes: ECHOES,
   palette: { theme: 'ember', accentHue: 42, vars: { '--bg': '#07070d' } },
-  musicMode: 'emberlight',
+  audio: { music: 'emberlight', click: 'emberlight', event: 'emberlight' },
+  events: {
+    noun: 'falling star',
+    motion: 'meteor',
+    powerUps: [
+      { id: 'frenzy', label: 'Frenzy', glyph: '×7', hue: 38, weight: 45, prodMult: 7, clickMult: 7, durationSec: 77, toast: 'The sky ignites. All {currency} and clicks surge together.' },
+      { id: 'gift', label: 'Gift', glyph: '+15m', hue: 52, weight: 45, rateSeconds: 900, minAward: 25, toast: 'Fifteen minutes of {currency}, gathered at once.' },
+      { id: 'fury', label: 'Fury', glyph: '×777', hue: 5, weight: 10, clickMult: 777, durationSec: 13, toast: 'The ember answers with impossible force.' },
+    ],
+  },
+  cabinet: EMBERLIGHT_CABINET,
   twist: {
     id: 'baseline',
     name: 'Baseline',

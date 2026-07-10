@@ -2,6 +2,34 @@ import type { EchoDef } from '../echoes'
 import type { GeneratorDef } from '../generators'
 import type { LumenLine } from '../lumen'
 import type { UpgradeDef } from '../upgrades'
+import type { CuriosityCabinetDef } from '../curiosities'
+
+export interface UniverseAudioIdentity {
+  music: 'emberlight' | 'tidefall'
+  click: 'emberlight' | 'tidefall'
+  event: 'emberlight' | 'tidefall'
+}
+
+export interface UniversePowerUp {
+  id: string
+  label: string
+  glyph: string
+  hue: number
+  weight: number
+  prodMult?: number
+  clickMult?: number
+  durationSec?: number
+  /** instant award as this many seconds of passive production */
+  rateSeconds?: number
+  minAward?: number
+  toast: string
+}
+
+export interface UniverseEventIdentity {
+  noun: string
+  motion: 'meteor' | 'bubble'
+  powerUps: UniversePowerUp[]
+}
 
 export interface UniverseTwist {
   id: string
@@ -38,6 +66,7 @@ export interface UniversePack {
   shortName: string
   currency: string
   currencyGlyph: string
+  centralObject: string
   description: string
   generators: GeneratorDef[]
   generatorById: Map<string, GeneratorDef>
@@ -46,7 +75,9 @@ export interface UniversePack {
   lumen: LumenLine[]
   echoes: EchoDef[]
   palette: UniversePalette
-  musicMode: string
+  audio: UniverseAudioIdentity
+  events: UniverseEventIdentity
+  cabinet: CuriosityCabinetDef
   twist: UniverseTwist
   route: UniverseRoute
   beacon: UniverseBeacon

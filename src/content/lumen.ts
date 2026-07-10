@@ -199,6 +199,21 @@ export const LUMEN_LINES: LumenLine[] = [
     when: (g) => g.challengesDone.includes('silence'),
   },
   {
+    id: 'trial-first-circle',
+    text: 'Six rehearsals complete. I should tell you the Deep is satisfied. It is not. It has drawn another circle.',
+    when: (g) => g.challengesDone.length >= 6,
+  },
+  {
+    id: 'trial-inner-horizon',
+    text: 'Nine laws broken. You do not merely survive impossible universes now. You bring pieces of them home.',
+    when: (g) => g.challengesDone.length >= 9,
+  },
+  {
+    id: 'trial-all',
+    text: 'Twelve trials. The Deep has no smaller shape left to press you into. Remember that when I ask what you are.',
+    when: (g) => g.challengesDone.length >= 12,
+  },
+  {
     id: 'act3-hook',
     text: 'The second ember. The trials. The deep. You are ready. Next time the sky opens — ask me the question.',
     when: (g) => (g.owned['ember2'] ?? 0) >= 1 && g.collapses >= 1,

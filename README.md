@@ -23,11 +23,15 @@ you work, and slowly lets slip what happened to the last one.
 - **Rhythm combos** — click on the beat for climbing multipliers and rhythm blessings; a long enough streak pulls a falling star into reach
 - **Supernova prestige** — collapse your universe in a full cutscene and keep the stardust: +2% production each, forever, plus the **Observatory**, a constellation skill tree you literally draw into the sky (production, clicking, star-weather, and rebirth branches)
 - **Codex of Echoes** — recovered lore fragments of the universe that came before, growing darker as you climb; Act II of the story begins after your first collapse
-- **The Deep (layer 2)** — fold whole eras of stardust into singularities; buy automation (auto-buyers, a schedulable Nova Engine) and face six **trials** with permanent rewards
+- **Universes with their own identity** — crossings change the economy, soundtrack, click timbre, active power-ups, cabinet collection, lore, and living background rather than merely recoloring the canvas
+- **The Field Guide** — a searchable in-game reference for every economy, active system, universe, collection, prestige layer, trial, story system, save tool, and control; live tables stay synchronized with the game’s content definitions
+- **The Deep (layer 2)** — fold whole eras of stardust into singularities; buy automation (auto-buyers, a schedulable Nova Engine), study the live Resonance Atlas, and face twelve **trials** with permanent rewards
 - **The Question** — Act III. When you are ready, Lumen finally tells the truth, and asks you three words back. Three endings; one is hidden behind a complete Codex. The ember wears your answer forever.
 - **Vestments** — cosmetic accent themes earned by playing (recover echoes, brave the Deep, finish trials); your ending already recolors the ember itself
 - **Accessibility** — honors `prefers-reduced-motion`; Space/Enter click the ember, keys 1–9 buy generators
-- **Saves that respect you** — autosave, offline progress, export/import codes, versioned migrations so an old save never breaks
+- **Polish controls** — persistent reduced motion, strong/off visual beat guides, large text, high contrast, and automatic/high/balanced/low canvas budgets
+- **Enforced launch budget** — production verification fails above a 3 MB initial payload or when any initial asset exceeds 1 MB
+- **Saves that respect you** — autosave, offline progress, copy/download/import codes, three rolling recovery checkpoints plus a daily backup, and versioned migrations so an old save never breaks
 - No ads, no timers that punish you, no dark patterns. The game wants you back because it's warm, not because it scolds you.
 
 ## Run it
@@ -44,12 +48,13 @@ npm run build      # outputs dist/
 npm run preview    # serve the production build locally
 ```
 
-Balance simulator (plays 40 hours of game headlessly as a greedy bot,
-prints when each tier and wealth milestone is reached — run after any
-economy change to catch dead zones):
+Balance simulator (plays 40 hours in every universe as idle and active greedy bots,
+prints tier/milestone timing and the longest sensible-purchase wall — run after any
+economy change to catch dead zones; use `--universe=tidefall` to isolate one pack):
 
 ```bash
 npm run sim
+npm run sim -- --universe=tidefall
 ```
 
 ## How to play
@@ -58,6 +63,8 @@ Click the pulsing ember. That's genuinely all you need to know — the game
 teaches everything else by letting you buy it.
 
 - **Space / Enter** also click the ember
+- **G / I / O / C / V / S / D / E** open the Guide, Stats, Options, Cabinet, Vessel, Observatory, Deep, and Codex when available
+- **B** cycles bulk-buy and **Escape** closes the active utility panel
 - Hover an upgrade chip (top bar) for its effect and cost
 - Once the music plays, clicking in time with the pulse builds a combo
 - Catch the ✦ that occasionally streaks across the sky

@@ -28,7 +28,11 @@ function audio(): { ctx: AudioContext; master: GainNode } | null {
 }
 
 /** Warm, woody thump — pitch-randomized so rapid clicking never grates. */
-export function playClick() {
+export function playClick(mode: 'emberlight' | 'tidefall' = 'emberlight') {
+  if (mode === 'tidefall') {
+    playTidefallClick()
+    return
+  }
   const a = audio()
   if (!a) return
   const t = a.ctx.currentTime
@@ -59,6 +63,40 @@ export function playClick() {
   filter.frequency.value = 3000
   noise.connect(filter).connect(nGain).connect(a.master)
   noise.start(t)
+}
+
+/** A rounded droplet with a soft underwater pressure tail. */
+function playTidefallClick() {
+  const a = audio()
+  if (!a) return
+  const t = a.ctx.currentTime
+  const base = 210 * (0.96 + Math.random() * 0.08)
+
+  const drop = a.ctx.createOscillator()
+  const dropGain = a.ctx.createGain()
+  drop.type = 'sine'
+  drop.frequency.setValueAtTime(base * 3.1, t)
+  drop.frequency.exponentialRampToValueAtTime(base, t + 0.11)
+  dropGain.gain.setValueAtTime(0.0001, t)
+  dropGain.gain.exponentialRampToValueAtTime(0.38, t + 0.008)
+  dropGain.gain.exponentialRampToValueAtTime(0.001, t + 0.19)
+  drop.connect(dropGain).connect(a.master)
+  drop.start(t)
+  drop.stop(t + 0.21)
+
+  const pressure = a.ctx.createOscillator()
+  const pressureGain = a.ctx.createGain()
+  pressure.type = 'triangle'
+  pressure.frequency.setValueAtTime(base * 0.72, t)
+  pressure.frequency.exponentialRampToValueAtTime(48, t + 0.2)
+  pressureGain.gain.setValueAtTime(0.12, t)
+  pressureGain.gain.exponentialRampToValueAtTime(0.001, t + 0.24)
+  const filter = a.ctx.createBiquadFilter()
+  filter.type = 'lowpass'
+  filter.frequency.value = 520
+  pressure.connect(filter).connect(pressureGain).connect(a.master)
+  pressure.start(t)
+  pressure.stop(t + 0.26)
 }
 
 /** Soft two-note purchase chime. */
@@ -116,7 +154,11 @@ export function playSupernova() {
 }
 
 /** Sparkling ascent for catching a falling star. */
-export function playStarCatch() {
+export function playStarCatch(mode: 'emberlight' | 'tidefall' = 'emberlight') {
+  if (mode === 'tidefall') {
+    playTidefallCatch()
+    return
+  }
   const a = audio()
   if (!a) return
   const t = a.ctx.currentTime
@@ -133,6 +175,28 @@ export function playStarCatch() {
     osc.connect(gain).connect(a.master)
     osc.start(start)
     osc.stop(start + 0.55)
+  })
+}
+
+/** Bubble-pop cascade for Tidefall's wandering blessings. */
+function playTidefallCatch() {
+  const a = audio()
+  if (!a) return
+  const t = a.ctx.currentTime
+  const notes = [392, 329.63, 261.63, 196]
+  notes.forEach((freq, index) => {
+    const osc = a.ctx.createOscillator()
+    const gain = a.ctx.createGain()
+    osc.type = 'sine'
+    const start = t + index * 0.055
+    osc.frequency.setValueAtTime(freq * 1.8, start)
+    osc.frequency.exponentialRampToValueAtTime(freq, start + 0.18)
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(0.13, start + 0.008)
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.48)
+    osc.connect(gain).connect(a.master)
+    osc.start(start)
+    osc.stop(start + 0.52)
   })
 }
 

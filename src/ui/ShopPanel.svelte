@@ -1,7 +1,16 @@
 <script lang="ts">
   import { shownAt, teasedAt, type GeneratorDef } from '../content/generators'
   import { universeById } from '../content/universes'
-  import { unitRate, bulkCost, maxAffordable, costMultOf, costScaleOf, genDisabled } from '../engine/compute'
+  import {
+    unitRate,
+    bulkCost,
+    maxAffordable,
+    costMultOf,
+    costScaleOf,
+    genDisabled,
+    genPurchaseDisabled,
+    challengeMods,
+  } from '../engine/compute'
   import { game, hasUi, buyGenerator, type BuyAmount } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { playBuy } from '../audio/sfx'
@@ -23,10 +32,12 @@
     const owned = game.owned[g.id] ?? 0
     const mult = costMultOf(game, g)
     const scale = costScaleOf(game)
-    const count =
+    let count =
       game.buyAmount === 'max'
         ? Math.max(1, maxAffordable(g, owned, game.light, mult, scale))
         : game.buyAmount
+    const cap = challengeMods(game).maxOwnedPerGen
+    if (cap !== undefined) count = Math.min(count, Math.max(0, cap - owned))
     return { count, cost: bulkCost(g, owned, count, mult, scale) }
   }
 
@@ -50,11 +61,13 @@
     <header>
       <h2>Kindling</h2>
       {#if hasUi('bulk')}
-        <div class="amounts">
+        <div class="amounts" role="group" aria-label="bulk purchase amount" aria-keyshortcuts="B">
           {#each AMOUNTS as a (a)}
             <button
               class="amt"
               class:active={game.buyAmount === a}
+              aria-label={a === 'max' ? 'maximum' : `buy ${a}`}
+              aria-pressed={game.buyAmount === a}
               onclick={() => (game.buyAmount = a)}
             >
               {a === 'max' ? 'max' : '×' + a}
@@ -69,9 +82,9 @@
         {@const owned = game.owned[g.id] ?? 0}
         <button
           class="row"
-          class:unaffordable={game.light < p.cost || genDisabled(game, g)}
+          class:unaffordable={game.light < p.cost || genPurchaseDisabled(game, g)}
           onclick={() => tryBuy(g)}
-          title={genDisabled(game, g) ? 'silenced by the trial' : g.flavor}
+          title={genDisabled(game, g) ? 'silenced by the trial' : genPurchaseDisabled(game, g) ? 'limited by the trial' : g.flavor}
         >
           <span class="dot" style:--hue={g.hue}></span>
           <span class="info">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import {
     VESSEL_PARTS,
     vesselPartComplete,
@@ -26,6 +27,9 @@
   import { pushToast } from '../systems/toasts.svelte'
 
   let { onclose, oncross }: { onclose: () => void; oncross: (universeId: string) => void } = $props()
+  let closeButton: HTMLButtonElement
+
+  onMount(() => closeButton.focus())
 
   const activePack = $derived(universeById(game.activeUniverse))
 
@@ -70,7 +74,7 @@
       <h2>The Vessel</h2>
       <span>{vesselStage(game)}</span>
     </div>
-    <button class="close" onclick={onclose}>✕</button>
+    <button bind:this={closeButton} class="close" aria-label="close the Vessel" onclick={onclose}>✕</button>
   </header>
 
   <div class="schematic" aria-hidden="true">

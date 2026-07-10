@@ -19,6 +19,8 @@ if (import.meta.env.DEV) {
     ([music, buffs]) => {
       Object.assign((window as any).__ember, {
         beatPhase: music.beatPhaseSec,
+        beatDuration: music.beatDurationSec,
+        musicMode: music.currentMusicMode,
         playing: music.isPlaying,
         addBuff: buffs.addBuff,
         buffs: () => buffs.buffState.list,

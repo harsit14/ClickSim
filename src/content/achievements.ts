@@ -111,7 +111,10 @@ A('deeper-still', 'Deeper Still', 'The finished Deep discovered that finished wa
 // ── Trials ──────────────────────────────────────────────────────────────
 A('trial-1', 'Tested', 'One trial endured.', (g) => g.challengesDone.length >= 1)
 A('trial-3', 'Tempered', 'Three trials. The dark is running out of ideas.', (g) => g.challengesDone.length >= 3)
-A('trial-6', 'Unbreakable', 'Every trial, endured. Lumen has stopped setting them.', (g) => g.challengesDone.length >= 6)
+A('trial-6', 'First Circle', 'Six trials endured. The Deep reveals an inner horizon.', (g) => g.challengesDone.length >= 6)
+A('trial-9', 'Lawbreaker', 'Nine broken laws, returned as permanent strengths.', (g) => g.challengesDone.length >= 9)
+A('trial-12', 'Unbreakable', 'Every trial endured. The Deep has run out of ways to diminish you.', (g) =>
+  g.challengesDone.length >= 12)
 
 // ── Curiosities & chance ────────────────────────────────────────────────
 A('first-crit', 'Found the Fault Line', 'One touch struck the dark exactly wrong.', (g) => g.crits >= 1)
@@ -149,7 +152,7 @@ A('ten-hours-kindled', 'Ten Hours Kindled', 'Lumen made you a mug of something w
 
 // ── Hidden ──────────────────────────────────────────────────────────────
 H('impatience', 'Impatience', '100 clicks before buying a single thing. The ember admires commitment to the bit.', (g) =>
-  g.clicks >= 100 && Object.keys(g.owned).length === 0)
+  g.challenge === null && g.clicks >= 100 && Object.keys(g.owned).length === 0)
 H('night-reader', 'Night Reader', 'It’s 3 AM. The ember doesn’t judge. Lumen does, a little.', () =>
   new Date().getHours() === 3)
 H('the-quiet-kind', 'The Quiet Kind', 'All sound off. The light doesn’t mind silence.', (g) =>
@@ -157,7 +160,7 @@ H('the-quiet-kind', 'The Quiet Kind', 'All sound off. The light doesn’t mind s
 H('dragons-nest', 'Dragon’s Nest', 'Sitting on a full hour of production, unspent.', (g, r) =>
   r > 10 && g.light >= r * 3_600)
 H('purist', 'Purist', 'A million light and not one upgrade. Why though.', (g) =>
-  g.totalEarned >= 1e6 && g.upgrades.length === 0)
+  g.challenge === null && g.totalEarned >= 1e6 && g.upgrades.length === 0)
 H('lucky-777', 'Jackpot', '✦777 exactly on the counter.', (g) => Math.floor(g.light) === 777)
 H('louder-than-silence', 'Louder Than Silence', 'You beat The Silence with nothing but your own rhythm.', (g) =>
   g.challengesDone.includes('silence'))

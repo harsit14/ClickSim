@@ -1,7 +1,6 @@
 import { ACHIEVEMENTS } from '../content/achievements'
 import { CHALLENGES } from '../content/challenges'
 import { CONSTELLATION } from '../content/constellation'
-import { CURIOSITIES } from '../content/curiosities'
 import { DEEP_UPGRADES } from '../content/deep'
 import { THEMES } from '../content/themes'
 import { UI_UNLOCKS } from '../content/ui-unlocks'
@@ -9,11 +8,12 @@ import { DEFAULT_UNIVERSE_ID, UNIVERSES, universeById } from '../content/univers
 import { VESSEL_PARTS } from '../content/vessel'
 import { DEEP_WORKS, STARDUST_WORKS } from '../content/repeatables'
 import type { BuyAmount, RunSnapshot, UniverseRunState } from '../engine/game.svelte'
+import type { BeatVisual, MotionPreference, TextScale, VisualQuality } from './preferences'
 
-export const CURRENT_SAVE_VERSION = 11
+export const CURRENT_SAVE_VERSION = 12
 
-export interface SaveDataV11 {
-  version: 11
+export interface SaveDataV12 {
+  version: 12
   savedAt: number
   activeUniverse: string
   light: number
@@ -27,6 +27,11 @@ export interface SaveDataV11 {
   playtime: number
   sfxVolume: number
   musicVolume: number
+  motionPreference: MotionPreference
+  visualQuality: VisualQuality
+  beatVisual: BeatVisual
+  textScale: TextScale
+  highContrast: boolean
   buyAmount: BuyAmount
   starsCaught: number
   bestCombo: number
@@ -143,16 +148,28 @@ const MIGRATIONS: Record<number, (d: Record<string, unknown>) => Record<string, 
     stardustWorks: d.stardustWorks ?? {},
     deepWorks: d.deepWorks ?? {},
   }),
+  11: (d) => ({
+    ...d,
+    version: 12,
+    motionPreference: d.motionPreference ?? 'system',
+    visualQuality: d.visualQuality ?? 'auto',
+    beatVisual: d.beatVisual ?? 'subtle',
+    textScale: d.textScale ?? 'normal',
+    highContrast: d.highContrast ?? false,
+  }),
 }
 
 const BUY_AMOUNTS = new Set<BuyAmount>([1, 10, 100, 'max'])
 const ENDINGS = new Set<string>(['warden', 'hunger', 'companion'])
 const SAFE_ID = /^[a-z0-9][a-z0-9-]{0,63}$/
+const MOTION_PREFERENCES = new Set<MotionPreference>(['system', 'reduced'])
+const VISUAL_QUALITIES = new Set<VisualQuality>(['auto', 'high', 'balanced', 'low'])
+const BEAT_VISUALS = new Set<BeatVisual>(['subtle', 'strong', 'off'])
+const TEXT_SCALES = new Set<TextScale>(['normal', 'large'])
 
 const achievementIds = new Set(ACHIEVEMENTS.map((item) => item.id))
 const challengeIds = new Set(CHALLENGES.map((item) => item.id))
 const constellationIds = new Set(CONSTELLATION.map((item) => item.id))
-const curiosityIds = new Set(CURIOSITIES.map((item) => item.id))
 const deepUpgradeIds = new Set(DEEP_UPGRADES.map((item) => item.id))
 const stardustWorkIds = new Set(STARDUST_WORKS.map((item) => item.id))
 const deepWorkIds = new Set(DEEP_WORKS.map((item) => item.id))
@@ -223,10 +240,14 @@ function rankRecord(value: unknown, allowed: ReadonlySet<string>): Record<string
   return result
 }
 
-function endingValue(value: unknown): SaveDataV11['ending'] {
+function endingValue(value: unknown): SaveDataV12['ending'] {
   return typeof value === 'string' && ENDINGS.has(value)
-    ? (value as SaveDataV11['ending'])
+    ? (value as SaveDataV12['ending'])
     : null
+}
+
+function enumValue<T extends string>(value: unknown, allowed: ReadonlySet<T>, fallback: T): T {
+  return typeof value === 'string' && allowed.has(value as T) ? (value as T) : fallback
 }
 
 function buyAmountValue(value: unknown): BuyAmount {
@@ -257,6 +278,7 @@ function sanitizeUniverseRun(value: unknown, universeId: string): UniverseRunSta
   const generatorIds = new Set(pack.generators.map((item) => item.id))
   const upgradeIds = new Set(pack.upgrades.map((item) => item.id))
   const echoIds = new Set(pack.echoes.map((item) => item.id))
+  const curiosityIds = new Set(pack.cabinet.items.map((item) => item.id))
   const localSeenIds = new Set(pack.lumen.map((item) => item.id))
   const totalEarned = numberValue(source.totalEarned, 0)
   const stardustTotal = integerValue(source.stardustTotal)
@@ -311,8 +333,8 @@ function sanitizeUniverseRuns(value: unknown): Record<string, UniverseRunState> 
   return result
 }
 
-/** Migrates an unknown save and returns a complete, content-aware, safe v11 snapshot. */
-export function migrateAndSanitizeSave(data: unknown): SaveDataV11 | null {
+/** Migrates an unknown save and returns a complete, content-aware, safe v12 snapshot. */
+export function migrateAndSanitizeSave(data: unknown): SaveDataV12 | null {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null
   let source = { ...(data as Record<string, unknown>) }
   if (typeof source.version !== 'number' || !Number.isInteger(source.version)) return null
@@ -332,13 +354,14 @@ export function migrateAndSanitizeSave(data: unknown): SaveDataV11 | null {
   const generatorIds = new Set(pack.generators.map((item) => item.id))
   const upgradeIds = new Set(pack.upgrades.map((item) => item.id))
   const echoIds = new Set(pack.echoes.map((item) => item.id))
+  const curiosityIds = new Set(pack.cabinet.items.map((item) => item.id))
   const totalEarned = numberValue(source.totalEarned, 0)
   const stardustTotal = integerValue(source.stardustTotal)
   const singTotal = integerValue(source.singTotal)
   const ending = endingValue(source.ending)
 
   return {
-    version: 11,
+    version: 12,
     savedAt: integerValue(source.savedAt, Date.now(), 0),
     activeUniverse,
     light: Math.min(numberValue(source.light, 0), totalEarned),
@@ -352,6 +375,11 @@ export function migrateAndSanitizeSave(data: unknown): SaveDataV11 | null {
     playtime: numberValue(source.playtime, 0, 0, 1_000_000_000_000),
     sfxVolume: numberValue(source.sfxVolume, 0.5, 0, 1),
     musicVolume: numberValue(source.musicVolume, 0.6, 0, 1),
+    motionPreference: enumValue(source.motionPreference, MOTION_PREFERENCES, 'system'),
+    visualQuality: enumValue(source.visualQuality, VISUAL_QUALITIES, 'auto'),
+    beatVisual: enumValue(source.beatVisual, BEAT_VISUALS, 'subtle'),
+    textScale: enumValue(source.textScale, TEXT_SCALES, 'normal'),
+    highContrast: booleanValue(source.highContrast, false),
     buyAmount: buyAmountValue(source.buyAmount),
     starsCaught: integerValue(source.starsCaught),
     bestCombo: integerValue(source.bestCombo),
@@ -382,7 +410,7 @@ export function migrateAndSanitizeSave(data: unknown): SaveDataV11 | null {
     theme:
       typeof source.theme === 'string' && themeIds.has(source.theme) ? source.theme : 'ember',
     remembrances: integerValue(source.remembrances),
-    pastEndings: knownStrings(source.pastEndings, ENDINGS) as SaveDataV11['pastEndings'],
+    pastEndings: knownStrings(source.pastEndings, ENDINGS) as SaveDataV12['pastEndings'],
     curiosities: knownStrings(source.curiosities, curiosityIds),
     keeperFedUntil: integerValue(source.keeperFedUntil, 0, 0),
     snailLastGiftAt: integerValue(source.snailLastGiftAt, 0, 0),

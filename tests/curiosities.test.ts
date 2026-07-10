@@ -3,6 +3,8 @@ import test from 'node:test'
 import {
   CURIOSITIES,
   CURIOSITY_SHELVES,
+  EMBERLIGHT_CABINET,
+  TIDEFALL_CABINET,
   completedCuriosityShelves,
   curiosityClickMult,
   curiosityProductionMult,
@@ -18,6 +20,25 @@ const deepSky = ['star-jar', 'metronome-heart', 'letter', 'orrery']
 test('curiosity resonance counts only unique known finds', () => {
   assert.equal(curiosityProductionMult(['moth', 'moth', 'unknown']), 1.01)
   assert.equal(curiosityProductionMult(['moth', 'chimes', 'hearthkeeper']), 1.03)
+})
+
+test('Tidefall owns a distinct cabinet and reward profile without breaking slot saves', () => {
+  assert.deepEqual(
+    TIDEFALL_CABINET.items.map((item) => item.id),
+    EMBERLIGHT_CABINET.items.map((item) => item.id),
+  )
+  const emberNames = new Set(EMBERLIGHT_CABINET.items.map((item) => item.name))
+  assert.equal(TIDEFALL_CABINET.items.some((item) => emberNames.has(item.name)), false)
+  assert.equal(TIDEFALL_CABINET.title, 'The Pelagic Archive')
+  assert.equal(TIDEFALL_CABINET.fuelProductionMult, 1.08)
+  assert.equal(TIDEFALL_CABINET.returnCycleSec, 3600)
+
+  const surface = TIDEFALL_CABINET.shelves[0].ids
+  const pelagic = TIDEFALL_CABINET.shelves[1].ids
+  const abyss = TIDEFALL_CABINET.shelves[2].ids
+  assert.equal(curiosityStarRateBonus(surface, TIDEFALL_CABINET), 0.15)
+  assert.ok(Math.abs(curiosityProductionMult([...surface, ...pelagic], TIDEFALL_CABINET) - 1.064 * 1.18) < 1e-12)
+  assert.equal(curiosityClickMult(abyss, TIDEFALL_CABINET), 1.35)
 })
 
 test('the Local Sky capstone joins item resonance', () => {

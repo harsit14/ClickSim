@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "budget": "node scripts/check-build-budget.mjs",
     "check": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
-    "verify": "npm run check && npm run test && npm run build",
+    "verify": "npm run check && npm run test && npm run build && npm run budget",
     "preview": "vite preview",
     "sim": "tsx balance/simulate.ts"
   },

@@ -1,12 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import {
-    CURIOSITIES,
-    CURIOSITY_BY_ID,
-    CURIOSITY_RESONANCE_PER_ITEM,
-    CURIOSITY_SHELVES,
-    PROTOSTAR_FUEL_HOURS,
-    RED_GIANT_RECORD,
     completedCuriosityShelves,
     curiosityShelfComplete,
     curiosityShelfProgress,
@@ -32,9 +26,12 @@
   let { onclose }: { onclose: () => void } = $props()
   let now = $state(Date.now())
   let letterOpen = $state(false)
+  let closeButton: HTMLButtonElement
   const pack = $derived(universeById(game.activeUniverse))
+  const cabinet = $derived(pack.cabinet)
 
   onMount(() => {
+    closeButton.focus()
     const timer = setInterval(() => (now = Date.now()), 1000)
     return () => clearInterval(timer)
   })
@@ -42,21 +39,21 @@
   const held = (id: string) => game.curiosities.includes(id)
   const revealed = (c: CuriosityDef) => held(c.id) || game.totalEarned >= c.cost * 0.25
   const shelfOpen = (shelf: CuriosityShelfDef) =>
-    shelf.index === 'I' || shelf.ids.some((id) => revealed(CURIOSITY_BY_ID.get(id)!))
-  const shelfDone = (shelf: CuriosityShelfDef) => curiosityShelfComplete(game.curiosities, shelf.id)
-  const shelfCount = (shelf: CuriosityShelfDef) => curiosityShelfProgress(game.curiosities, shelf)
+    shelf.index === 'I' || shelf.ids.some((id) => revealed(cabinet.itemById.get(id)!))
+  const shelfDone = (shelf: CuriosityShelfDef) => curiosityShelfComplete(game.curiosities, shelf.id, cabinet)
+  const shelfCount = (shelf: CuriosityShelfDef) => curiosityShelfProgress(game.curiosities, shelf, cabinet)
 
-  const ownedCount = $derived(CURIOSITIES.filter((c) => held(c.id)).length)
-  const completedShelves = $derived(completedCuriosityShelves(game.curiosities))
+  const ownedCount = $derived(cabinet.items.filter((c) => held(c.id)).length)
+  const completedShelves = $derived(completedCuriosityShelves(game.curiosities, cabinet))
   const resonancePercent = $derived(
-    Math.round(ownedCount * CURIOSITY_RESONANCE_PER_ITEM * 100),
+    Math.round(ownedCount * cabinet.resonancePerItem * 100),
   )
   const cabinetLine = $derived.by(() => {
-    if (ownedCount === CURIOSITIES.length) return 'The survey is complete. Taken together, these objects describe a route out.'
-    if (completedShelves >= 2) return 'The cabinet has stopped resembling a collection. It is becoming a cosmology.'
-    if (completedShelves >= 1) return 'Four distant phenomena have resolved into one chapter of the same sky.'
-    if (ownedCount > 0) return 'The universe becomes less lonely once its oldest lights have names.'
-    return 'Three survey bands wait for signals Emberlight has not learned to recognize.'
+    if (ownedCount === cabinet.items.length) return cabinet.lines.complete
+    if (completedShelves >= 2) return cabinet.lines.cosmology
+    if (completedShelves >= 1) return cabinet.lines.chapter
+    if (ownedCount > 0) return cabinet.lines.first
+    return cabinet.lines.empty
   })
 
   const fueled = $derived(protostarFueled(now))
@@ -75,8 +72,8 @@
   }
 
   function tryBuy(id: string) {
-    const curiosity = CURIOSITY_BY_ID.get(id)
-    const shelf = CURIOSITY_SHELVES.find((entry) => entry.ids.includes(id))
+    const curiosity = cabinet.itemById.get(id)
+    const shelf = cabinet.shelves.find((entry) => entry.ids.includes(id))
     if (!curiosity || !buyCuriosity(id)) return
     playBuy()
     save()
@@ -91,7 +88,7 @@
     if (!fuelProtostar()) return
     playBuy()
     save()
-    pushToast('Protostar fueled', `Core stable for ${PROTOSTAR_FUEL_HOURS} hours.`, 'celestial archive')
+    pushToast(`${cabinet.itemById.get('hearthkeeper')?.name ?? 'Nursery'} sustained`, `Core stable for ${cabinet.fuelHours} hours.`, cabinet.title)
   }
 
   function tryCollectComet() {
@@ -99,22 +96,24 @@
     if (amount <= 0) return
     playCollect()
     save()
-    pushToast('The comet returns', `${pack.currencyGlyph} ${format(amount)} carried home in its tail.`, 'celestial archive')
+    const title = cabinet.id === 'tidefall' ? 'The leviathan returns' : 'The comet returns'
+    const carrier = cabinet.id === 'tidefall' ? 'wake' : 'tail'
+    pushToast(title, `${pack.currencyGlyph} ${format(amount)} carried home in its ${carrier}.`, cabinet.title)
   }
 </script>
 
-<section class="cabinet" aria-labelledby="cabinet-title">
+<section class="cabinet" class:tidefall={cabinet.id === 'tidefall'} aria-labelledby="cabinet-title">
   <header class="cabinet-header">
     <div>
-      <span class="kicker">Emberlight astronomical survey</span>
-      <h2 id="cabinet-title">The Celestial Cabinet</h2>
+      <span class="kicker">{cabinet.surveyLabel}</span>
+      <h2 id="cabinet-title">{cabinet.title}</h2>
     </div>
-    <button class="close" aria-label="close the Celestial Cabinet" onclick={onclose}>×</button>
+    <button bind:this={closeButton} class="close" aria-label={`close ${cabinet.title}`} onclick={onclose}>×</button>
   </header>
 
   <div class="ledger">
     <div class="count">
-      <strong>{ownedCount}<span>/{CURIOSITIES.length}</span></strong>
+      <strong>{ownedCount}<span>/{cabinet.items.length}</span></strong>
       <small>catalogued</small>
     </div>
     <div class="progress-copy">
@@ -123,21 +122,21 @@
         role="progressbar"
         aria-label="Cabinet collection progress"
         aria-valuemin="0"
-        aria-valuemax={CURIOSITIES.length}
+        aria-valuemax={cabinet.items.length}
         aria-valuenow={ownedCount}
       >
-        <span style:width={`${(ownedCount / CURIOSITIES.length) * 100}%`}></span>
+        <span style:width={`${(ownedCount / cabinet.items.length) * 100}%`}></span>
       </div>
       <p>{cabinetLine}</p>
     </div>
     <dl>
       <div><dt>resonance</dt><dd>+{resonancePercent}% all production</dd></div>
-      <div><dt>shelves awake</dt><dd>{completedShelves}/{CURIOSITY_SHELVES.length}</dd></div>
+      <div><dt>shelves awake</dt><dd>{completedShelves}/{cabinet.shelves.length}</dd></div>
     </dl>
   </div>
 
   <div class="shelves">
-    {#each CURIOSITY_SHELVES as shelf (shelf.id)}
+    {#each cabinet.shelves as shelf (shelf.id)}
       {@const open = shelfOpen(shelf)}
       {@const complete = shelfDone(shelf)}
       <section class="shelf" class:complete class:sealed={!open} aria-labelledby={`shelf-${shelf.id}`}>
@@ -157,7 +156,7 @@
         {#if open}
           <div class="objects">
             {#each shelf.ids as id (id)}
-              {@const c = CURIOSITY_BY_ID.get(id)!}
+              {@const c = cabinet.itemById.get(id)!}
               {@const owned = held(id)}
               {@const near = revealed(c)}
               <article
@@ -191,30 +190,30 @@
 
                 {#if owned && c.kind === 'hearthkeeper'}
                   <div class="special">
-                    <span>{fueled ? `core stable for ${fmtDuration(fuelLeft)}` : 'core awaiting fuel'}</span>
+                    <span>{fueled ? `core stable for ${fmtDuration(fuelLeft)}` : cabinet.id === 'tidefall' ? 'nursery awaiting current' : 'core awaiting fuel'}</span>
                     <button class="small" disabled={game.challenge !== null || game.light < fuelCost} onclick={tryFuel}>
-                      fuel core <span>{pack.currencyGlyph} {format(fuelCost)}</span>
+                      {cabinet.id === 'tidefall' ? 'feed nursery' : 'fuel core'} <span>{pack.currencyGlyph} {format(fuelCost)}</span>
                     </button>
                   </div>
                 {:else if owned && c.kind === 'snail'}
                   <div class="special">
-                    <span>{cometReady ? 'the comet has returned' : `${Math.floor(cometProgress(now) * 100)}% through its orbit`}</span>
+                    <span>{cometReady ? (cabinet.id === 'tidefall' ? 'the leviathan has returned' : 'the comet has returned') : `${Math.floor(cometProgress(now) * 100)}% through its ${cabinet.id === 'tidefall' ? 'migration' : 'orbit'}`}</span>
                     <button class="small" disabled={game.challenge !== null || !cometReady} onclick={tryCollectComet}>
-                      gather tail
+                      {cabinet.id === 'tidefall' ? 'gather wake' : 'gather tail'}
                     </button>
                   </div>
                 {:else if owned && c.kind === 'letter'}
                   <div class="special letter">
                     <button class="small" aria-expanded={letterOpen} onclick={() => (letterOpen = !letterOpen)}>
-                      {letterOpen ? 'close spectral record' : 'decode spectral record'}
+                      {letterOpen ? 'close archive record' : cabinet.id === 'tidefall' ? 'decode tide record' : 'decode spectral record'}
                     </button>
                     {#if letterOpen}
-                      <p>{RED_GIANT_RECORD}</p>
+                      <p>{cabinet.archiveRecord}</p>
                     {/if}
                   </div>
                 {:else if owned && c.kind === 'door'}
                   <div class="special">
-                    <span>{game.allTimeEarned >= 1e30 ? 'the event horizon is readable' : 'the horizon returns no signal'}</span>
+                    <span>{game.allTimeEarned >= 1e30 ? (cabinet.id === 'tidefall' ? 'the black mouth is readable' : 'the event horizon is readable') : 'the horizon returns no signal'}</span>
                   </div>
                 {/if}
               </article>
@@ -504,6 +503,27 @@
   .art-orrery .core { width: 1rem; height: 1rem; }
   .art-orrery .halo { inset: 0.2rem; border-color: rgba(255, 183, 105, 0.28); }
   .art-orrery .ring { width: 2.3rem; height: 0.58rem; border-width: 2px; border-color: rgba(255, 215, 137, 0.52); border-bottom-color: rgba(255, 91, 48, 0.22); }
+
+  .cabinet.tidefall {
+    background:
+      radial-gradient(circle at 18% 0%, rgba(61, 206, 214, 0.1), transparent 34%),
+      linear-gradient(150deg, rgba(5, 31, 43, 0.97), rgba(3, 12, 24, 0.96));
+    border-color: rgba(88, 222, 216, 0.22);
+  }
+  .tidefall .cabinet-header { background: linear-gradient(180deg, rgba(5, 31, 43, 0.99), rgba(4, 21, 32, 0.96)); }
+  .tidefall .kicker,
+  .tidefall .chapter { color: rgba(109, 237, 225, 0.68); }
+  .tidefall .object { background: rgba(3, 17, 27, 0.97); }
+  .tidefall .object.owned { background: linear-gradient(135deg, hsla(var(--hue), 78%, 48%, 0.13), rgba(3, 17, 27, 0.97) 65%); }
+  .tidefall .object-art { border-radius: 46% 54% 58% 42%; background: radial-gradient(circle at 50% 36%, hsla(var(--hue), 72%, 62%, 0.13), rgba(1, 12, 22, 0.88) 72%); }
+  .tidefall .art-moth .core { background: transparent; box-shadow: inset 0.24rem 0 0 rgba(207, 252, 255, 0.92), 0 0 12px rgba(116, 226, 255, 0.68); }
+  .tidefall .art-chimes .ring { width: 2rem; height: 0.72rem; border-style: solid; }
+  .tidefall .art-hearthkeeper .core { width: 0.82rem; height: 0.82rem; background: radial-gradient(circle at 32% 28%, #fff, #b9fff2 42%, #39a9a1 72%); box-shadow: 0 0 15px rgba(88, 222, 216, 0.75); }
+  .tidefall .art-glass-garden .core { background: radial-gradient(ellipse, rgba(90, 255, 193, 0.62), rgba(24, 151, 153, 0.3) 52%, transparent 74%); }
+  .tidefall .art-snail .ring { height: 0.7rem; border-radius: 50%; background: linear-gradient(90deg, transparent, rgba(79, 216, 207, 0.22), rgba(183, 255, 242, 0.62)); }
+  .tidefall .art-letter .core { background: radial-gradient(circle at 35% 30%, #ffe9cc, #ef5d53 48%, #42152a 78%); }
+  .tidefall .art-door .ring,
+  .tidefall .art-orrery .ring { border-color: rgba(92, 218, 255, 0.5); border-bottom-color: rgba(83, 89, 255, 0.22); }
 
   @keyframes archive-pulse { from { opacity: 0.46; transform: scale(0.94); } to { opacity: 1; transform: scale(1.06); } }
   @keyframes archive-spin { to { transform: translate(-50%, -50%) rotate(344deg); } }
