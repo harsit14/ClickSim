@@ -8,6 +8,14 @@ import {
   verdanceCohortProductionMultiplier,
   verdanceStageForAge,
 } from '../src/content/universes/verdance/cohorts'
+import {
+  advanceVerdanceCohortLawState,
+  verdanceCohortRuntimeSummary,
+  verdanceGeneratorCohortStatus,
+} from '../src/content/universes/verdance/runtime'
+import { VERDANCE } from '../src/content/universes/verdance'
+import { unitRate, type EcoState } from '../src/engine/compute'
+import { ZERO_AMOUNT, amountToNumber } from '../src/core/numeric/amount'
 
 test('Verdance cohorts age through four deterministic non-withering stages', () => {
   assert.equal(verdanceStageForAge(0), 'u3-cohort-new')
@@ -37,4 +45,40 @@ test('invalid time and quantity values fail closed', () => {
   assert.throws(() => plantVerdanceCohort(0), /positive safe integer/)
   assert.throws(() => verdanceStageForAge(Number.NaN), /finite and nonnegative/)
   assert.throws(() => advanceVerdanceCohorts([plantVerdanceCohort(1)], 1, -1), /finite and nonnegative/)
+})
+
+test('runtime cohorts age per Kindling and new planting dilutes maturity', () => {
+  const generator = VERDANCE.generators[0]
+  const state = {}
+  const owned = { [generator.id]: 10 }
+  advanceVerdanceCohortLawState(state, owned, [generator.id], 5 * 60_000)
+  assert.equal(verdanceGeneratorCohortStatus(generator.id, 10, state).stageLabel, 'rooted')
+  assert.equal(verdanceGeneratorCohortStatus(generator.id, 10, state).multiplier, 1.35)
+
+  owned[generator.id] = 20
+  advanceVerdanceCohortLawState(state, owned, [generator.id], 0)
+  const diluted = verdanceGeneratorCohortStatus(generator.id, 20, state)
+  assert.equal(diluted.stageLabel, 'new')
+  assert.equal(diluted.multiplier, 1)
+  assert.equal(Object.keys(state).length, 2)
+})
+
+test('runtime maturity changes production and contributes Memory Seeds to Pruning', () => {
+  const generator = VERDANCE.generators[0]
+  const numericLawState = {}
+  const owned = { [generator.id]: 20 }
+  advanceVerdanceCohortLawState(numericLawState, owned, [generator.id], 8 * 60 * 60_000)
+  const summary = verdanceCohortRuntimeSummary([generator.id], owned, numericLawState)
+  assert.equal(summary.dominantStageLabel, 'ancient')
+  assert.equal(summary.multiplier, 3.5)
+  assert.equal(summary.memorySeedBonus, 12)
+
+  const economy: EcoState = {
+    activeUniverse: 'verdance', light: ZERO_AMOUNT, totalEarned: ZERO_AMOUNT, clicks: 0,
+    owned, upgrades: [], achievements: [], stardustTotal: ZERO_AMOUNT, constellation: [],
+    stardustWorks: {}, singUpgrades: [], deepWorks: {}, challenge: null, challengesDone: [],
+    ending: null, remembrances: 0, curiosities: [], keeperFedUntil: 0, beacons: [],
+    darkBetween: ZERO_AMOUNT, wayfinder: [], vesselParts: [], numericLawState,
+  }
+  assert.equal(amountToNumber(unitRate(economy, generator)), generator.baseRate * 3.5)
 })

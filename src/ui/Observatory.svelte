@@ -24,6 +24,11 @@
   } from '../content/universe-progression'
   import { universeRateMult } from '../engine/compute'
   import {
+    VERDANCE_COHORT_LABELS,
+    verdanceCohortRuntimeSummary,
+    type VerdanceCohortStageId,
+  } from '../content/universes/verdance'
+  import {
     ONE_AMOUNT,
     addAmounts,
     amountFromNumber,
@@ -52,6 +57,7 @@
   const pack = $derived(universeById(game.activeUniverse))
   const identity = $derived(progressionIdentity(pack.id).observatory)
   const tidefall = $derived(pack.id === 'tidefall')
+  const verdance = $derived(pack.id === 'verdance')
   const epochMatter = $derived(universeV2ById(pack.id)?.economy.localPrestige.rewardCurrency)
   const epochMatterGlyph = $derived(epochMatter?.glyph ?? (tidefall ? '◇' : '✧'))
   const epochMatterName = $derived(epochMatter?.localName ?? (tidefall ? 'Moon Salt' : 'Stardust'))
@@ -60,6 +66,12 @@
   const tideNext = $derived(universeRateMult(game, now + 500))
   const tidePosition = $derived(Math.max(0, Math.min(100, ((tideRate - 0.6) / 0.8) * 100)))
   const tideLabel = $derived(tideRate >= 1.22 ? 'crest' : tideRate <= 0.78 ? 'ebb' : tideNext > tideRate ? 'rising' : 'falling')
+  const growthStageIds: readonly VerdanceCohortStageId[] = ['u3-cohort-new', 'u3-cohort-rooted', 'u3-cohort-mature', 'u3-cohort-ancient']
+  const growth = $derived(verdanceCohortRuntimeSummary(
+    pack.generators.map(({ id }) => id),
+    game.owned,
+    game.numericLawState,
+  ))
 
   const worldText = (text: string) => text.replaceAll('{currency}', pack.currency.toLowerCase())
 
@@ -127,6 +139,22 @@
       <div><span>moonless pull</span><strong>{tideLabel}</strong></div>
       <span class="current-track"><i style:left={`${tidePosition}%`}></i></span>
       <b>×{tideRate.toFixed(2)}</b>
+    </div>
+  {:else if verdance}
+    <div
+      class="growth-reading"
+      aria-label={`${growth.dominantStageLabel} growth. Cohort production ×${growth.multiplier.toFixed(2)}. Pruning adds ${growth.memorySeedBonus} Memory Seeds from mature growth.`}
+    >
+      <div><span>living cohorts</span><strong>{growth.dominantStageLabel}</strong></div>
+      <span class="ring-stages">
+        {#each growthStageIds as stageId}
+          <i class:awake={growth.stageQuantities[stageId] > 0}>
+            <small>{VERDANCE_COHORT_LABELS[stageId]}</small>
+            <b>{growth.stageQuantities[stageId]}</b>
+          </i>
+        {/each}
+      </span>
+      <div class="growth-yield"><b>×{growth.multiplier.toFixed(2)}</b><small>+{growth.memorySeedBonus} {epochMatterGlyph} on Pruning</small></div>
     </div>
   {/if}
 
@@ -329,6 +357,39 @@
   .current-track { position: relative; height: 2px; background: linear-gradient(90deg, #244d71, #4cd7d2, #d2fff8); border-radius: 999px; }
   .current-track i { position: absolute; top: 50%; width: 0.5rem; height: 0.5rem; transform: translate(-50%, -50%); border: 1px solid #d7fffa; border-radius: 50%; background: #58ded8; box-shadow: 0 0 12px rgba(88, 222, 216, 0.8); }
 
+  .growth-reading {
+    display: grid;
+    grid-template-columns: auto minmax(13rem, 1fr) auto;
+    align-items: center;
+    gap: 0.8rem;
+    margin: -0.2rem 0 0.7rem;
+    padding: 0.52rem 0.7rem;
+    border-top: 1px solid color-mix(in srgb, var(--gold) 20%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold) 12%, transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--amber) 6%, transparent), transparent);
+  }
+  .growth-reading > div { display: flex; flex-direction: column; }
+  .growth-reading span,
+  .growth-reading small { color: color-mix(in srgb, var(--gold) 62%, var(--dim)); font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .growth-reading strong { color: var(--gold); font-family: Georgia, serif; font-size: 0.84rem; font-weight: 500; }
+  .ring-stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.28rem; }
+  .ring-stages i {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.28rem;
+    padding: 0.3rem 0.38rem;
+    border: 1px solid color-mix(in srgb, var(--gold) 10%, transparent);
+    border-radius: 65% 35% 65% 35%;
+    opacity: 0.42;
+  }
+  .ring-stages i.awake { border-color: color-mix(in srgb, var(--gold) 34%, transparent); background: color-mix(in srgb, var(--amber) 8%, transparent); opacity: 1; }
+  .ring-stages b { color: color-mix(in srgb, var(--gold) 82%, white); font-size: 0.64rem; font-style: normal; }
+  .growth-yield { align-items: flex-end; }
+  .growth-yield > b { color: var(--gold); font-size: 0.76rem; }
+  .growth-yield small { white-space: nowrap; }
+
   .nova {
     position: relative;
     padding: 0.72rem 1rem;
@@ -343,6 +404,7 @@
     background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--amber) 7%, transparent) 18% 82%, transparent);
   }
   .nova.armed {
+    isolation: isolate;
     min-height: 4.4rem;
     display: grid;
     grid-template-columns: 2.55rem minmax(0, 1fr) auto;
@@ -350,6 +412,36 @@
     gap: 0.75rem;
     padding: 0.68rem 0.2rem;
     text-align: left;
+  }
+  .nova.armed::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .nova.armed[data-universe='emberlight']::after {
+    background:
+      radial-gradient(circle at 1.15rem 50%, color-mix(in srgb, var(--amber) 16%, transparent), transparent 3.4rem),
+      linear-gradient(90deg, color-mix(in srgb, var(--amber) 4%, transparent), transparent 62%);
+  }
+  .nova.armed[data-universe='tidefall']::after {
+    background:
+      radial-gradient(ellipse at 8% 115%, color-mix(in srgb, var(--amber) 13%, transparent), transparent 34%),
+      linear-gradient(90deg, color-mix(in srgb, var(--amber) 4%, transparent), transparent 70%);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold) 14%, transparent);
+    border-radius: 50%;
+  }
+  .nova.armed[data-universe='verdance']::after {
+    background:
+      repeating-radial-gradient(ellipse at 6% 50%, transparent 0 0.8rem, color-mix(in srgb, var(--amber) 10%, transparent) 0.84rem 0.9rem, transparent 0.94rem 1.45rem);
+    -webkit-mask: linear-gradient(90deg, #000, transparent 42%);
+    mask: linear-gradient(90deg, #000, transparent 42%);
+  }
+  .nova.armed[data-universe='clockwork']::after {
+    background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--gold) 7%, transparent) 0 1px, transparent 1px 2.8rem);
+    -webkit-mask: linear-gradient(90deg, #000, transparent 68%);
+    mask: linear-gradient(90deg, #000, transparent 68%);
   }
   .nova.armed::before {
     content: '✦';
@@ -373,7 +465,7 @@
     font-family: Georgia, serif;
     font-style: italic;
     font-size: 0.9rem;
-    color: rgba(220, 214, 240, 0.85);
+    color: color-mix(in srgb, var(--gold) 68%, var(--text));
   }
   .nova-text em {
     display: block;
@@ -393,12 +485,12 @@
     padding: 0.45rem 1.3rem;
     font: inherit;
     font-weight: 700;
-    color: #1a1206;
+    color: var(--bg);
     background: linear-gradient(180deg, var(--gold), var(--amber));
     border: none;
     border-radius: 999px;
     cursor: pointer;
-    box-shadow: 0 0 24px rgba(255, 179, 92, 0.35);
+    box-shadow: 0 0 24px color-mix(in srgb, var(--amber) 35%, transparent);
     transition: transform 0.08s;
   }
   .nova-btn:hover { transform: scale(1.04); }

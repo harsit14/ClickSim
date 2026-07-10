@@ -131,6 +131,7 @@ export interface SaveRunSnapshotV13 {
   owned: Record<string, number>
   upgrades: string[]
   buyAmount: BuyAmount
+  numericLawState: Record<string, Amount>
 }
 
 export interface SaveUniverseRunStateV13 {
@@ -202,9 +203,10 @@ export interface SaveDataV13 extends Omit<SaveDataV12,
   universeRuns: Record<string, SaveUniverseRunStateV13>
 }
 
-export interface SerializedRunSnapshotV13 extends Omit<SaveRunSnapshotV13, 'light' | 'totalEarned'> {
+export interface SerializedRunSnapshotV13 extends Omit<SaveRunSnapshotV13, 'light' | 'totalEarned' | 'numericLawState'> {
   light: SerializedAmount
   totalEarned: SerializedAmount
+  numericLawState: Record<string, SerializedAmount>
 }
 
 export interface SerializedUniverseRunStateV13 extends Omit<SaveUniverseRunStateV13,
@@ -651,6 +653,7 @@ function convertRunSnapshotV12(value: LegacyRunSnapshotV12 | null): SaveRunSnaps
     ...value,
     light: amountFromNumber(value.light),
     totalEarned: amountFromNumber(value.totalEarned),
+    numericLawState: {},
   }
 }
 
@@ -715,6 +718,9 @@ function sanitizeRunSnapshotV13(
     ...legacy,
     light: minAmount(requiredAmount(source, 'light'), totalEarned),
     totalEarned,
+    numericLawState: source.numericLawState === undefined
+      ? {}
+      : sanitizeNumericLawState(source.numericLawState),
   }
 }
 
@@ -865,6 +871,7 @@ function serializeRunSnapshotV13(value: SaveRunSnapshotV13 | null): SerializedRu
     ...value,
     light: serializeAmount(value.light),
     totalEarned: serializeAmount(value.totalEarned),
+    numericLawState: serializeNumericLawState(value.numericLawState),
   }
 }
 

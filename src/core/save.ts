@@ -1,5 +1,7 @@
 import { game, ratePerSec, snapshotUniverseRun, type RunSnapshot } from '../engine/game.svelte'
 import { perkBonus } from '../content/constellation'
+import { universeById } from '../content/universes'
+import { advanceVerdanceCohortLawState } from '../content/universes/verdance/runtime'
 import {
   migrateAndSanitizeSave,
   stringifySaveDataV13,
@@ -44,6 +46,7 @@ function copyRunSnapshot(snapshot: RunSnapshot | null | undefined): RunSnapshot 
     owned: { ...snapshot.owned },
     upgrades: [...snapshot.upgrades],
     buyAmount: snapshot.buyAmount,
+    numericLawState: { ...snapshot.numericLawState },
   }
 }
 
@@ -374,6 +377,13 @@ export function load(): EconomyAmount {
   if (elapsedMs < MIN_OFFLINE_MS) return ZERO_AMOUNT
   const elapsed = elapsedMs / 1000
   const counted = Math.min(elapsed, capSeconds)
+  if (game.activeUniverse === 'verdance') {
+    const generatorIds = universeById('verdance').generators.map(({ id }) => id)
+    advanceVerdanceCohortLawState(game.numericLawState, game.owned, generatorIds, counted * 500)
+    const midpointRate = ratePerSec()
+    advanceVerdanceCohortLawState(game.numericLawState, game.owned, generatorIds, counted * 500)
+    return multiplyAmountByNumber(midpointRate, counted * Math.min(1, efficiency))
+  }
   return multiplyAmountByNumber(ratePerSec(), counted * Math.min(1, efficiency))
 }
 

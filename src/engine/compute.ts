@@ -8,6 +8,7 @@ import {
   curiosityProductionMult,
 } from '../content/curiosities'
 import { universeById } from '../content/universes'
+import { verdanceGeneratorCohortStatus } from '../content/universes/verdance/runtime'
 import { wayfinderProductionMult, wayfinderTideAmplitude } from '../content/wayfinder'
 import { deepProductionMult, stardustProductionMult } from '../content/repeatables'
 import type { EconomyAmount, UniverseId } from '../content/universes/types'
@@ -83,6 +84,8 @@ export interface EcoState {
   wayfinder: string[]
   /** completed visible Vessel construction parts */
   vesselParts: string[]
+  /** Amount-valued state for universe-specific production laws. */
+  numericLawState?: Readonly<Record<string, EconomyAmount>>
 }
 
 const NO_MODS: ChallengeMods = {}
@@ -185,9 +188,12 @@ export function unitRate(s: EcoState, def: GeneratorDef): EconomyAmount {
     if (e.kind === 'genMult' && e.gen === def.id) mult *= e.value
     else if (e.kind === 'synergy' && e.gen === def.id) synergy += e.value * (s.owned[e.per] ?? 0)
   }
+  const cohortMultiplier = s.activeUniverse === 'verdance'
+    ? verdanceGeneratorCohortStatus(def.id, s.owned[def.id] ?? 0, s.numericLawState).multiplier
+    : 1
   return multiplyAmountByNumber(
     toAmount(def.baseRate),
-    mult * (1 + synergy * synergyBonusMult(s)),
+    mult * (1 + synergy * synergyBonusMult(s)) * cohortMultiplier,
   )
 }
 
@@ -218,7 +224,9 @@ export function globalMult(s: EcoState, now = Date.now()): EconomyAmount {
 /** The active universe's living physics at a specific moment. */
 export function universeRateMult(s: EcoState, now = Date.now()): number {
   const raw = universeById(s.activeUniverse).twist.rateMultiplier?.(now) ?? 1
-  return 1 + (raw - 1) * wayfinderTideAmplitude(s.wayfinder)
+  return s.activeUniverse === 'tidefall'
+    ? 1 + (raw - 1) * wayfinderTideAmplitude(s.wayfinder)
+    : raw
 }
 
 /** true when a challenge silences this generator entirely */
@@ -388,6 +396,19 @@ function generatorRateFormula(
   let generatorMultiplier = 1
   let synergy = 0
   let synergyScale = 1
+
+  if (s.activeUniverse === 'verdance') {
+    const cohort = verdanceGeneratorCohortStatus(generator.id, owned, s.numericLawState)
+    generatorMultiplier *= cohort.multiplier
+    genMultiplierInputs.push(formulaTerm(
+      `${prefix}:cohort-maturity`,
+      'universe-law',
+      `${generator.id}-cohort-maturity`,
+      `${cohort.stageLabel} cohort maturity`,
+      formulaScalar('multiplier', cohort.multiplier),
+      universe.id,
+    ))
+  }
 
   for (const record of effectSourceRecords(s)) {
     record.effects.forEach((effect, index) => {

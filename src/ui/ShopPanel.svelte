@@ -21,6 +21,10 @@
   import { aggregatePurchaseFeedback } from '../feedback'
   import { publishLivePurchase } from '../feedback/live-runtime.svelte'
   import { resolveVisualQuality } from '../core/preferences'
+  import {
+    verdanceGeneratorCohortStatus,
+    type VerdanceGeneratorCohortStatus,
+  } from '../content/universes/verdance'
 
   const AMOUNTS: BuyAmount[] = [1, 10, 100, 'max']
 
@@ -94,6 +98,14 @@
       audio: { silence: game.sfxVolume <= 0 },
     })
   }
+
+  function cohortTiming(status: VerdanceGeneratorCohortStatus): string {
+    if (status.nextStageInMs === null) return 'maximum age'
+    const minutes = Math.max(1, Math.ceil(status.nextStageInMs / 60_000))
+    if (minutes < 60) return `next ring in ${minutes}m`
+    const hours = Math.ceil(minutes / 60)
+    return `next ring in ${hours}h`
+  }
 </script>
 
 {#if visible && !suppressed}
@@ -131,17 +143,27 @@
       {#each shown as g (g.id)}
         {@const p = purchase(g)}
         {@const owned = game.owned[g.id] ?? 0}
+        {@const cohort = pack.id === 'verdance' ? verdanceGeneratorCohortStatus(g.id, owned, game.numericLawState) : null}
         <button
           class="row"
           data-generator-id={g.id}
           class:unaffordable={ltAmount(game.light, p.cost) || genPurchaseDisabled(game, g)}
           onclick={() => tryBuy(g)}
-          title={genDisabled(game, g) ? 'silenced by the trial' : genPurchaseDisabled(game, g) ? 'limited by the trial' : g.flavor}
+          title={genDisabled(game, g)
+            ? 'silenced by the trial'
+            : genPurchaseDisabled(game, g)
+              ? 'limited by the trial'
+              : cohort
+                ? `${g.flavor} — ${cohort.stageLabel} cohort, production ×${cohort.multiplier.toFixed(2)}, ${cohortTiming(cohort)}`
+                : g.flavor}
         >
           <span class="dot" style:--hue={g.hue}></span>
           <span class="info">
             <span class="name">{g.name}{#if p.count > 1}&nbsp;<small>×{p.count}</small>{/if}</span>
             <span class="meta">{pack.currencyGlyph} {format(p.cost)} · +{format(unitRate(game, g))}/s</span>
+            {#if cohort && owned > 0}
+              <span class="cohort">{cohort.stageLabel} · ×{cohort.multiplier.toFixed(2)} · {cohortTiming(cohort)}</span>
+            {/if}
           </span>
           <span class="owned">{owned || ''}</span>
         </button>
@@ -314,6 +336,14 @@
     font-size: 0.74rem;
     color: var(--dim);
     font-variant-numeric: tabular-nums;
+  }
+  .cohort {
+    margin-top: 0.08rem;
+    color: color-mix(in srgb, var(--gold) 66%, var(--dim));
+    font-size: 0.58rem;
+    font-weight: 650;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
   }
   .owned {
     font-size: 1.15rem;

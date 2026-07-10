@@ -226,7 +226,7 @@ export const VERDANCE: UniversePack = {
     ],
   },
   cabinet: VERDANCE_CABINET,
-  twist: { id: 'living-cohorts', name: 'The Patient Growth', randomnessAllowed: true, description: 'Kindlings mature through new, rooted, mature, and ancient cohorts; nothing withers while absent.', rateMultiplier: () => 1 },
+  twist: { id: 'living-cohorts', name: 'The Patient Growth', randomnessAllowed: true, description: 'Kindlings mature through new, rooted, mature, and ancient cohorts; mature growth strengthens production and Pruning.', },
   route: { glyph: '❧', epithet: 'the patient world', arrival: 'one seed opens beneath a sky made entirely of waiting', unlockText: 'light Tidefall’s Beacon' },
   beacon: { generatorId: 'u3-kindling-18', count: 1, reward: 3, description: 'The World-Tree flowers into the Dark Between without abandoning its roots.' },
 }

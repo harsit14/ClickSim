@@ -9,6 +9,10 @@ import {
 } from '../content/curiosities'
 import { DEFAULT_UNIVERSE_ID, UNIVERSE_BY_ID, universeById } from '../content/universes'
 import {
+  advanceVerdanceCohortLawState,
+  verdanceCohortRuntimeSummary,
+} from '../content/universes/verdance/runtime'
+import {
   DEEP_WORK_BY_ID,
   STARDUST_WORK_BY_ID,
   singularityYieldMult,
@@ -39,6 +43,7 @@ import {
   ONE_AMOUNT,
   ZERO_AMOUNT,
   addAmounts,
+  amountFromNumber,
   divideAmountByNumber,
   divideAmounts,
   floorAmount,
@@ -84,6 +89,7 @@ export interface RunSnapshot {
   owned: Record<string, number>
   upgrades: string[]
   buyAmount: BuyAmount
+  numericLawState: Record<string, EconomyAmount>
 }
 
 /** The progression that stays anchored to one universe when the Vessel leaves. */
@@ -305,6 +311,7 @@ function copyChallengeRun(run: RunSnapshot | null): RunSnapshot | null {
     owned: { ...run.owned },
     upgrades: [...run.upgrades],
     buyAmount: run.buyAmount,
+    numericLawState: { ...run.numericLawState },
   }
 }
 
@@ -534,7 +541,15 @@ export function stardustTargetFor(totalStardust: AmountInput): EconomyAmount {
 /** Stardust gained by collapsing right now. */
 export function supernovaGain(): EconomyAmount {
   if (game.challenge) return ZERO_AMOUNT // trials give no stardust
-  const potential = potentialStardust()
+  const pack = universeById(game.activeUniverse)
+  const maturityBonus = game.activeUniverse === 'verdance'
+    ? verdanceCohortRuntimeSummary(
+      pack.generators.map(({ id }) => id),
+      game.owned,
+      game.numericLawState,
+    ).memorySeedBonus
+    : 0
+  const potential = addAmounts(potentialStardust(), amountFromNumber(maturityBonus))
   return gtAmount(potential, game.stardustTotal)
     ? subtractAmounts(potential, game.stardustTotal)
     : ZERO_AMOUNT
@@ -551,8 +566,9 @@ function resetRun(withHeadStart: boolean) {
   const sparks =
     perkBonus(game.constellation, 'headStart') +
     (game.singUpgrades.includes('dawn-memory') ? 40 : 0)
-  if (sparks > 0) game.owned['spark'] = sparks
-  if (game.singUpgrades.includes('dawn-memory')) game.owned['wisp'] = 5
+  const [firstKindling, secondKindling] = universeById(game.activeUniverse).generators
+  if (sparks > 0 && firstKindling) game.owned[firstKindling.id] = sparks
+  if (game.singUpgrades.includes('dawn-memory') && secondKindling) game.owned[secondKindling.id] = 5
 }
 
 function snapshotRun(): RunSnapshot {
@@ -562,6 +578,7 @@ function snapshotRun(): RunSnapshot {
     owned: { ...game.owned },
     upgrades: [...game.upgrades],
     buyAmount: game.buyAmount,
+    numericLawState: { ...game.numericLawState },
   }
 }
 
@@ -571,6 +588,7 @@ function restoreRun(snapshot: RunSnapshot) {
   game.owned = { ...snapshot.owned }
   game.upgrades = [...snapshot.upgrades]
   game.buyAmount = snapshot.buyAmount
+  game.numericLawState = { ...snapshot.numericLawState }
 }
 
 /** The state reset. The cutscene around it lives in the UI layer. */
@@ -583,6 +601,7 @@ export function performSupernova(): EconomyAmount {
   game.supernovae = next.resetCount
   game.challengeReturn = null
   resetRun(true)
+  game.numericLawState = {}
   return gain
 }
 
@@ -610,6 +629,7 @@ export function performDeepCollapse(): EconomyAmount {
   game.eraEarned = ZERO_AMOUNT
   game.challengeReturn = null
   resetRun(true)
+  game.numericLawState = {}
   return gain
 }
 
@@ -710,6 +730,7 @@ export function startChallenge(id: string): boolean {
   if (!challengeUnlocked(game.challengesDone, challenge)) return false
   game.challengeReturn = snapshotRun()
   resetRun(false)
+  game.numericLawState = {}
   game.challenge = id
   clickMeter.samples = []
   return true
@@ -802,6 +823,15 @@ export function tick(dtSeconds: number) {
   game.playtime += dtSeconds
   tickBuffs()
   pruneClickSamples()
+  if (game.activeUniverse === 'verdance') {
+    const generatorIds = universeById('verdance').generators.map(({ id }) => id)
+    advanceVerdanceCohortLawState(
+      game.numericLawState,
+      game.owned,
+      generatorIds,
+      dtSeconds * 1_000,
+    )
+  }
   const rate = passiveRatePerSec()
   if (!isZeroAmount(rate)) earn(multiplyAmountByNumber(rate, dtSeconds))
 }
