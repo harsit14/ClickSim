@@ -25,6 +25,7 @@
   import { game } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { acquireGamePause } from '../core/pause.svelte'
+  import { amountFromNumber, gteAmount } from '../core/numeric/amount'
 
   let { onclose }: { onclose: () => void } = $props()
 
@@ -46,7 +47,7 @@
     if (game.vesselParts.length > 0) return { label: 'The Vessel', detail: `${game.vesselParts.length}/5 parts assembled.`, chapter: 'multiverse' }
     if (game.collapses > 0) return { label: 'The Deep', detail: `${game.collapses} Deep Collapse${game.collapses === 1 ? '' : 's'} and ${game.challengesDone.length}/12 trials endured.`, chapter: 'deep' }
     if (game.supernovae > 0) return { label: 'Stardust era', detail: `${game.supernovae} Supernova${game.supernovae === 1 ? '' : 'e'} recorded; ${game.constellation.length}/13 constellation nodes drawn.`, chapter: 'supernova' }
-    if (game.totalEarned >= 250_000) return { label: 'Growing universe', detail: 'Cabinet signals and deeper generator relationships are beginning to resolve.', chapter: 'cabinet' }
+    if (gteAmount(game.totalEarned, amountFromNumber(250_000))) return { label: 'Growing universe', detail: 'Cabinet signals and deeper generator relationships are beginning to resolve.', chapter: 'cabinet' }
     return { label: 'First light', detail: 'Build the interface, buy early kindling, and let the first upgrades teach the loop.', chapter: 'awakening' }
   })
 

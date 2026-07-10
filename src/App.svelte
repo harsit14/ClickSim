@@ -42,8 +42,10 @@
   import { acquireGamePause } from './core/pause.svelte'
   import { worldRef } from './render/world-ref'
   import { clearToasts } from './systems/toasts.svelte'
+  import type { EconomyAmount } from './content/universes/types'
+  import { amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
 
-  let { offlineGain }: { offlineGain: number } = $props()
+  let { offlineGain }: { offlineGain: EconomyAmount } = $props()
 
   let statsOpen = $state(false)
   let optionsOpen = $state(false)
@@ -60,15 +62,15 @@
   let crossingTarget = $state<string | null>(null)
   let resumeMusicAfterNova = false
 
-  const novaReady = $derived(supernovaGain() >= 1)
+  const novaReady = $derived(!isZeroAmount(supernovaGain()))
   const observatoryVisible = $derived(
-    game.stardustTotal > 0 || game.supernovae > 0 || novaReady || game.allTimeEarned >= 1e11,
+    !isZeroAmount(game.stardustTotal) || game.supernovae > 0 || novaReady || gteAmount(game.allTimeEarned, amountFromNumber(1e11)),
   )
   const deepVisible = $derived(
-    game.singTotal > 0 || game.collapses > 0 || game.stardustTotal >= 15 || game.challenge !== null,
+    !isZeroAmount(game.singTotal) || game.collapses > 0 || gteAmount(game.stardustTotal, amountFromNumber(15)) || game.challenge !== null,
   )
-  const deepReady = $derived(game.challenge === null && game.stardustTotal >= 20)
-  const curiositiesVisible = $derived(game.curiosities.length > 0 || game.totalEarned >= 250_000)
+  const deepReady = $derived(game.challenge === null && gteAmount(game.stardustTotal, amountFromNumber(20)))
+  const curiositiesVisible = $derived(game.curiosities.length > 0 || gteAmount(game.totalEarned, amountFromNumber(250_000)))
   const activePack = $derived(universeById(game.activeUniverse))
   const vesselVisible = $derived(vesselRevealed())
   const vesselReady = $derived(vesselHasReadyPart())
@@ -161,7 +163,7 @@
     cutsceneActive = true
   }
 
-  function resetForSupernova(): number {
+  function resetForSupernova(): EconomyAmount {
     const gain = performSupernova()
     clearBuffs()
     combo.streak = 0

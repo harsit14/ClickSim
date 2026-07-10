@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { ACHIEVEMENTS, achievementDisplay } from '../content/achievements'
   import { universeById } from '../content/universes'
-  import { genRate } from '../engine/compute'
+  import { clickFormula, genRate, rateFormula } from '../engine/compute'
   import {
     game,
     ratePerSec,
@@ -22,18 +22,33 @@
     workRank,
   } from '../content/repeatables'
   import { renderHealth } from '../core/render-health.svelte'
+  import { clickBuffMult, productionBuffMult } from '../systems/buffs.svelte'
+  import FormulaInspector from './FormulaInspector.svelte'
+  import {
+    amountToNumber,
+    divideAmounts,
+    isZeroAmount,
+    multiplyAmountByNumber,
+  } from '../core/numeric/amount'
 
   let { onclose }: { onclose: () => void } = $props()
   let closeButton: HTMLButtonElement
   let view = $state<'stats' | 'achievements'>('stats')
+  let inspectedAt = $state(Date.now())
 
-  onMount(() => closeButton.focus())
+  onMount(() => {
+    closeButton.focus()
+    const timer = setInterval(() => (inspectedAt = Date.now()), 500)
+    return () => clearInterval(timer)
+  })
 
   const pack = $derived(universeById(game.activeUniverse))
-  const rate = $derived(ratePerSec())
-  const passiveRate = $derived(passiveRatePerSec())
-  const activeRate = $derived(activeRatePerSec())
+  const rate = $derived(ratePerSec(inspectedAt))
+  const passiveRate = $derived(passiveRatePerSec(inspectedAt))
+  const activeRate = $derived(activeRatePerSec(inspectedAt))
   const clickRate = $derived(recentClickRatePerSec())
+  const passiveBreakdown = $derived(rateFormula(game, inspectedAt, productionBuffMult()))
+  const clickBreakdown = $derived(clickFormula(game, productionBuffMult(), inspectedAt, clickBuffMult()))
   const unlocked = $derived(new Set(game.achievements))
   const achievementRows = $derived(
     ACHIEVEMENTS.map((a) => ({
@@ -88,7 +103,7 @@
       <dt>ever earned here</dt><dd>{pack.currencyGlyph} {format(game.totalEarned)}</dd>
       <dt>active {pack.currency.toLowerCase()} / second</dt><dd>{format(activeRate)}</dd>
       <dt>passive {pack.currency.toLowerCase()} / second</dt><dd>{format(passiveRate)}</dd>
-      {#if clickRate > 0}
+      {#if !isZeroAmount(clickRate)}
         <dt>recent clicks / second</dt><dd>{format(clickRate)}</dd>
       {/if}
       <dt>per click</dt><dd>{format(clickPower())}</dd>
@@ -114,12 +129,12 @@
       {/if}
       {#if game.beacons.length > 0}
         <dt>beacons lit</dt><dd>{game.beacons.length}</dd>
-        <dt>Dark Between</dt><dd>◆ {game.darkBetween}</dd>
+        <dt>Dark Between</dt><dd>◆ {format(game.darkBetween)}</dd>
         <dt>Wayfinder laws</dt><dd>{game.wayfinder.length}</dd>
       {/if}
       {#if game.supernovae > 0}
         <dt>supernovae</dt><dd>{game.supernovae}</dd>
-        <dt>stardust glow</dt><dd>+{game.stardustTotal * 2}%</dd>
+        <dt>stardust glow</dt><dd>+{format(multiplyAmountByNumber(game.stardustTotal, 2))}%</dd>
         <dt>{pack.currency.toLowerCase()}, all lifetimes</dt><dd>{pack.currencyGlyph} {format(game.allTimeEarned)}</dd>
       {/if}
       {#if stardustRanks > 0}
@@ -128,7 +143,7 @@
       {/if}
       {#if game.collapses > 0}
         <dt>deep collapses</dt><dd>{game.collapses}</dd>
-        <dt>singularities</dt><dd>◉ {game.singTotal}</dd>
+        <dt>singularities</dt><dd>◉ {format(game.singTotal)}</dd>
       {/if}
       {#if deepRanks > 0}
         <dt>worldseed compression</dt><dd>rank {workRank(game.deepWorks, 'worldseed-compression')} · ×{format(deepProductionMult(game.deepWorks))}</dd>
@@ -139,6 +154,8 @@
       {/if}
     </dl>
 
+    <FormulaInspector breakdowns={[passiveBreakdown, clickBreakdown]} />
+
     {#if rows.length > 0}
       <h3>{pack.currency} sources</h3>
       <table>
@@ -148,7 +165,7 @@
               <td class="gname"><span class="dot" style:--hue={r.g.hue}></span>{r.g.name}</td>
               <td class="num">{r.owned}</td>
               <td class="num">{format(r.rate)}/s</td>
-              <td class="num dim">{rate > 0 ? ((r.rate / rate) * 100).toFixed(0) + '%' : '—'}</td>
+              <td class="num dim">{!isZeroAmount(rate) ? (amountToNumber(divideAmounts(r.rate, rate)) * 100).toFixed(0) + '%' : '—'}</td>
             </tr>
           {/each}
         </tbody>

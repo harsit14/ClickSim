@@ -3,9 +3,23 @@
   import { game, endChallenge } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { save } from '../core/save'
+  import {
+    amountToNumber,
+    divideAmounts,
+    minAmount,
+    toAmount,
+  } from '../core/numeric/amount'
 
   const trial = $derived(game.challenge ? CHALLENGE_BY_ID.get(game.challenge) : null)
   const progress = $derived(trial ? trial.progress(game) : null)
+  const progressCurrent = $derived(progress ? toAmount(progress.current) : null)
+  const progressTarget = $derived(progress ? toAmount(progress.target) : null)
+  const progressShown = $derived(progressCurrent && progressTarget ? minAmount(progressCurrent, progressTarget) : null)
+  const progressPercent = $derived(
+    progressShown && progressTarget
+      ? Math.min(100, amountToNumber(divideAmounts(progressShown, progressTarget)) * 100)
+      : 0,
+  )
 
   function abandon() {
     if (!confirm('Abandon the trial? Your previous run returns, and no reward is earned.')) return
@@ -14,13 +28,13 @@
   }
 </script>
 
-{#if trial && progress}
+{#if trial && progress && progressShown && progressTarget}
   <div class="banner">
     <span class="name">{trial.name}</span>
     <span class="goal">
-      {format(Math.min(progress.current, progress.target))} / {format(progress.target)}
+      {format(progressShown)} / {format(progressTarget)}
     </span>
-    <span class="bar"><span class="fill" style:width={Math.min(100, (progress.current / progress.target) * 100) + '%'}></span></span>
+    <span class="bar"><span class="fill" style:width={progressPercent + '%'}></span></span>
     <button class="abandon" onclick={abandon} title="Abandon the trial">✕</button>
   </div>
 {/if}

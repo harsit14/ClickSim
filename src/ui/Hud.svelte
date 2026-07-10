@@ -4,6 +4,7 @@
   import { universeRateMult } from '../engine/compute'
   import { universeById } from '../content/universes'
   import { format } from '../core/format'
+  import { isZeroAmount } from '../core/numeric/amount'
 
   let now = $state(Date.now())
   const pack = $derived(universeById(game.activeUniverse))
@@ -25,8 +26,8 @@
 {#if hasUi('counter')}
   <div class="hud">
     <div class="light"><span class="star">{pack.currencyGlyph}</span>{format(game.light)}</div>
-    {#if rate > 0}
-      <div class="rate" class:active={clickRate > 0}>{format(rate)} {pack.currency.toLowerCase()} /s</div>
+    {#if !isZeroAmount(rate)}
+      <div class="rate" class:active={!isZeroAmount(clickRate)}>{format(rate)} {pack.currency.toLowerCase()} /s</div>
     {/if}
     {#if pack.twist.rateMultiplier}
       <div class="tide" aria-label={`${tideLabel}, production ×${tide.toFixed(2)}`}>
@@ -35,8 +36,8 @@
         <strong>×{tide.toFixed(2)}</strong>
       </div>
     {/if}
-    {#if game.stardustTotal > 0 || game.singTotal > 0}
-      <div class="dust">✧ {game.stardust}{#if game.singTotal > 0}&nbsp;&nbsp;<span class="sing">◉ {game.singularities}</span>{/if}</div>
+    {#if !isZeroAmount(game.stardustTotal) || !isZeroAmount(game.singTotal)}
+      <div class="dust">✧ {format(game.stardust)}{#if !isZeroAmount(game.singTotal)}&nbsp;&nbsp;<span class="sing">◉ {format(game.singularities)}</span>{/if}</div>
     {/if}
   </div>
 {/if}

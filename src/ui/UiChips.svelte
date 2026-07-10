@@ -5,10 +5,11 @@
   import { playBloom } from '../audio/sfx'
   import { startMusic } from '../audio/music'
   import { universeById } from '../content/universes'
+  import { amountFromNumber, gteAmount, ltAmount } from '../core/numeric/amount'
 
   const currencyGlyph = $derived(universeById(game.activeUniverse).currencyGlyph)
   const next = $derived(
-    UI_UNLOCKS.find((u) => !game.ui.includes(u.id) && game.totalEarned >= u.appearAt),
+    UI_UNLOCKS.find((u) => !game.ui.includes(u.id) && gteAmount(game.totalEarned, amountFromNumber(u.appearAt))),
   )
 
   function tryBuy() {
@@ -21,7 +22,7 @@
 
 {#if next}
   {#key next.id}
-    <button type="button" class="chip" class:unaffordable={game.light < next.cost} onclick={tryBuy}>
+    <button type="button" class="chip" class:unaffordable={ltAmount(game.light, amountFromNumber(next.cost))} onclick={tryBuy}>
       <span class="label">{next.label}</span>
       <span class="cost">{currencyGlyph} {format(next.cost)}</span>
     </button>

@@ -10,6 +10,7 @@
   import { beatDurationSec, currentBeatIndex, startMusic, isPlaying } from '../audio/music'
   import { registerClick, silenced } from '../systems/combo.svelte'
   import { gamePaused } from '../core/pause.svelte'
+  import { amountFromNumber, gteAmount } from '../core/numeric/amount'
 
   let canvas: HTMLCanvasElement
   let world: World | undefined
@@ -63,7 +64,7 @@
     if (target && (target.tagName === 'BUTTON' || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
     // 1–9 buy the nth generator in the shop
     if (e.key >= '1' && e.key <= '9' && hasUi('shop')) {
-      const shown = universeById(game.activeUniverse).generators.filter((g) => game.totalEarned >= shownAt(g))
+      const shown = universeById(game.activeUniverse).generators.filter((g) => gteAmount(game.totalEarned, amountFromNumber(shownAt(g))))
       const def = shown[Number(e.key) - 1]
       if (def && buyGenerator(def) > 0) playBuy()
       return

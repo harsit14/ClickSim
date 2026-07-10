@@ -3,10 +3,12 @@
   import { format } from '../core/format'
   import { playCollect } from '../audio/sfx'
   import { universeById } from '../content/universes'
+  import type { EconomyAmount } from '../content/universes/types'
+  import { isZeroAmount } from '../core/numeric/amount'
 
-  let { amount }: { amount: number } = $props()
+  let { amount }: { amount: EconomyAmount } = $props()
   let dismissed = $state(false)
-  const open = $derived(amount >= 1 && !dismissed)
+  const open = $derived(!isZeroAmount(amount) && !dismissed)
   const pack = $derived(universeById(game.activeUniverse))
 
   function collect() {

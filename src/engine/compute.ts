@@ -2,7 +2,7 @@ import type { GeneratorDef } from '../content/generators'
 import type { UpgradeDef, Effect } from '../content/upgrades'
 import { NODE_BY_ID } from '../content/constellation'
 import { CHALLENGE_BY_ID, type ChallengeMods } from '../content/challenges'
-import { DEEP_EFFECTS } from '../content/deep'
+import { DEEP_EFFECTS, DEEP_UPGRADE_BY_ID } from '../content/deep'
 import {
   curiosityClickMult,
   curiosityProductionMult,
@@ -10,7 +10,7 @@ import {
 import { universeById } from '../content/universes'
 import { wayfinderProductionMult, wayfinderTideAmplitude } from '../content/wayfinder'
 import { deepProductionMult, stardustProductionMult } from '../content/repeatables'
-import type { EconomyAmount } from '../content/universes/types'
+import type { EconomyAmount, UniverseId } from '../content/universes/types'
 import {
   ONE_AMOUNT,
   ZERO_AMOUNT,
@@ -30,6 +30,16 @@ import {
   sumAmounts,
   toAmount,
 } from '../core/numeric/amount'
+import {
+  formulaAmount,
+  formulaScalar,
+  type FormulaBreakdown,
+  type FormulaNode,
+  type FormulaOperation,
+  type FormulaSourceKind,
+  type FormulaTerm,
+  type FormulaValue,
+} from '../core/numeric/formula-breakdown'
 
 /** The purely economic slice of game state — everything production math needs.
  *  Kept free of Svelte so the headless balance simulator can drive it. */
@@ -103,6 +113,58 @@ function* ownedEffects(s: EcoState): Generator<Effect> {
   for (const id of s.challengesDone) {
     const c = CHALLENGE_BY_ID.get(id)
     if (c) yield* c.rewardEffects
+  }
+}
+
+interface EffectSourceRecord {
+  id: string
+  label: string
+  kind: FormulaSourceKind
+  effects: readonly Effect[]
+}
+
+function effectSourceRecords(s: EcoState): EffectSourceRecord[] {
+  const records: EffectSourceRecord[] = []
+  for (const id of s.upgrades) {
+    const upgrade = upgradeById(s, id)
+    if (upgrade) records.push({ id, label: upgrade.name, kind: 'upgrade', effects: upgrade.effects })
+  }
+  for (const id of s.constellation) {
+    const node = NODE_BY_ID.get(id)
+    if (node) records.push({ id, label: node.name, kind: 'epoch', effects: node.effects })
+  }
+  for (const id of s.singUpgrades) {
+    const effects = DEEP_EFFECTS[id]
+    const upgrade = DEEP_UPGRADE_BY_ID.get(id)
+    if (effects && upgrade) records.push({ id, label: upgrade.name, kind: 'deep', effects })
+  }
+  for (const id of s.challengesDone) {
+    const challenge = CHALLENGE_BY_ID.get(id)
+    if (challenge) records.push({ id, label: challenge.name, kind: 'deep', effects: challenge.rewardEffects })
+  }
+  return records
+}
+
+function formulaTerm(
+  id: string,
+  sourceKind: FormulaSourceKind,
+  sourceId: string,
+  label: string,
+  value: FormulaValue,
+  universeId?: string,
+  detail?: string,
+): FormulaTerm {
+  return {
+    kind: 'term',
+    id,
+    source: {
+      kind: sourceKind,
+      id: sourceId,
+      label,
+      ...(universeId ? { universeId: universeId as UniverseId } : {}),
+    },
+    value,
+    ...(detail ? { detail } : {}),
   }
 }
 
@@ -227,6 +289,368 @@ export function clickPower(s: EcoState, rateMult = 1, now = Date.now()): Economy
     maxAmount(amountFromNumber(mult), ratePower),
     hunger * curiosityClickMult(s.curiosities, cabinet) * (challengeMods(s).clickScale ?? 1),
   )
+}
+
+function globalFormulaTerms(s: EcoState, now: number, prefix: string): FormulaNode[] {
+  const universe = universeById(s.activeUniverse)
+  const terms: FormulaNode[] = [
+    formulaTerm(
+      `${prefix}:radiance`,
+      'system',
+      'achievement-radiance',
+      'Achievement radiance',
+      formulaAmount(amountFromNumber(1 + 0.01 * s.achievements.length)),
+      universe.id,
+      `${s.achievements.length} achievements`,
+    ),
+    formulaTerm(
+      `${prefix}:stardust`,
+      'epoch',
+      'stardust-glow',
+      'Stardust glow',
+      formulaAmount(addAmounts(ONE_AMOUNT, multiplyAmountByNumber(s.stardustTotal, 0.02))),
+      universe.id,
+    ),
+    formulaTerm(
+      `${prefix}:remembrance`,
+      'doctrine',
+      'remembrance-memory',
+      'Remembrance memory',
+      formulaAmount(powAmount(amountFromNumber(2), s.remembrances)),
+      universe.id,
+      `${s.remembrances} remembrances`,
+    ),
+    formulaTerm(
+      `${prefix}:beacons`,
+      'between',
+      'beacon-network',
+      'Beacon network',
+      formulaAmount(powAmount(amountFromNumber(3), s.beacons.length)),
+      undefined,
+      `${s.beacons.length} beacons`,
+    ),
+    formulaTerm(`${prefix}:wayfinder`, 'between', 'wayfinder-production', 'Wayfinder laws', formulaScalar('multiplier', wayfinderProductionMult(s.wayfinder))),
+    formulaTerm(`${prefix}:epoch-works`, 'epoch', 'stardust-works', 'Epoch works', formulaScalar('multiplier', stardustProductionMult(s.stardustWorks)), universe.id),
+    formulaTerm(`${prefix}:deep-works`, 'deep', 'deep-works', 'Deep works', formulaScalar('multiplier', deepProductionMult(s.deepWorks))),
+    formulaTerm(`${prefix}:archive`, 'archive', universe.cabinet.id, universe.cabinet.title, formulaScalar('multiplier', curiosityProductionMult(s.curiosities, universe.cabinet)), universe.id),
+  ]
+
+  if (s.curiosities.includes('hearthkeeper') && s.keeperFedUntil > now) {
+    terms.push(formulaTerm(
+      `${prefix}:archive-fuel`,
+      'archive',
+      'hearthkeeper-fuel',
+      'Fueled archive object',
+      formulaScalar('multiplier', universe.cabinet.fuelProductionMult),
+      universe.id,
+    ))
+  }
+  const endingMultiplier = s.ending === 'warden' ? 1.25 : s.ending === 'companion' ? 1.3 : null
+  if (endingMultiplier !== null) {
+    terms.push(formulaTerm(
+      `${prefix}:doctrine`,
+      'doctrine',
+      s.ending!,
+      `${s.ending![0].toUpperCase()}${s.ending!.slice(1)} answer`,
+      formulaScalar('multiplier', endingMultiplier),
+    ))
+  }
+  for (const record of effectSourceRecords(s)) {
+    record.effects.forEach((effect, index) => {
+      if (effect.kind !== 'globalMult') return
+      terms.push(formulaTerm(
+        `${prefix}:effect:${record.kind}:${record.id}:${index}`,
+        record.kind,
+        record.id,
+        record.label,
+        formulaScalar('multiplier', effect.value),
+        universe.id,
+      ))
+    })
+  }
+  return terms
+}
+
+function generatorRateFormula(
+  s: EcoState,
+  generator: GeneratorDef,
+  owned: number,
+): FormulaOperation {
+  const universe = universeById(s.activeUniverse)
+  const prefix = `rate:kindling:${generator.id}`
+  const genMultiplierInputs: FormulaNode[] = [
+    formulaTerm(`${prefix}:gen-mult-base`, 'base', `${generator.id}-base-multiplier`, 'Base generator multiplier', formulaScalar('multiplier', 1), universe.id),
+  ]
+  const synergyInputs: FormulaNode[] = []
+  const synergyMultiplierInputs: FormulaNode[] = [
+    formulaTerm(`${prefix}:synergy-scale-base`, 'base', 'base-synergy-scale', 'Base resonance scale', formulaScalar('multiplier', 1), universe.id),
+  ]
+  let generatorMultiplier = 1
+  let synergy = 0
+  let synergyScale = 1
+
+  for (const record of effectSourceRecords(s)) {
+    record.effects.forEach((effect, index) => {
+      if (effect.kind === 'genMult' && effect.gen === generator.id) {
+        generatorMultiplier *= effect.value
+        genMultiplierInputs.push(formulaTerm(
+          `${prefix}:gen-mult:${record.kind}:${record.id}:${index}`,
+          record.kind,
+          record.id,
+          record.label,
+          formulaScalar('multiplier', effect.value),
+          universe.id,
+        ))
+      } else if (effect.kind === 'synergy' && effect.gen === generator.id) {
+        const pairedOwned = s.owned[effect.per] ?? 0
+        const paired = universe.generatorById.get(effect.per)
+        const contribution = effect.value * pairedOwned
+        synergy += contribution
+        synergyInputs.push({
+          kind: 'operation',
+          id: `${prefix}:synergy:${record.kind}:${record.id}:${index}`,
+          label: `${record.label} from ${paired?.name ?? effect.per}`,
+          operator: 'product',
+          inputs: [
+            formulaTerm(`${prefix}:synergy-value:${record.kind}:${record.id}:${index}`, record.kind, record.id, record.label, formulaScalar('ratio', effect.value), universe.id),
+            formulaTerm(`${prefix}:synergy-count:${record.kind}:${record.id}:${index}`, 'kindling', effect.per, paired?.name ?? effect.per, formulaScalar('count', pairedOwned), universe.id),
+          ],
+          result: formulaScalar('ratio', contribution),
+        })
+      } else if (effect.kind === 'synergyMult') {
+        synergyScale *= effect.value
+        synergyMultiplierInputs.push(formulaTerm(
+          `${prefix}:synergy-scale:${record.kind}:${record.id}:${index}`,
+          record.kind,
+          record.id,
+          record.label,
+          formulaScalar('multiplier', effect.value),
+          universe.id,
+        ))
+      }
+    })
+  }
+  if (synergyInputs.length === 0) {
+    synergyInputs.push(formulaTerm(
+      `${prefix}:synergy-none`,
+      'system',
+      `${generator.id}-no-resonance`,
+      'No active resonance',
+      formulaScalar('ratio', 0),
+      universe.id,
+    ))
+  }
+  const synergySum: FormulaOperation = {
+    kind: 'operation',
+    id: `${prefix}:synergy-sum`,
+    label: 'Resonance bonus',
+    operator: 'sum',
+    inputs: synergyInputs,
+    result: formulaScalar('ratio', synergy),
+  }
+  const synergyScaleOperation: FormulaOperation = {
+    kind: 'operation',
+    id: `${prefix}:synergy-scale-product`,
+    label: 'Resonance scale',
+    operator: 'product',
+    inputs: synergyMultiplierInputs,
+    result: formulaScalar('multiplier', synergyScale),
+  }
+  const scaledSynergy: FormulaOperation = {
+    kind: 'operation',
+    id: `${prefix}:scaled-synergy`,
+    label: 'Scaled resonance bonus',
+    operator: 'product',
+    inputs: [synergySum, synergyScaleOperation],
+    result: formulaScalar('ratio', synergy * synergyScale),
+  }
+  const resonanceMultiplier: FormulaOperation = {
+    kind: 'operation',
+    id: `${prefix}:resonance-multiplier`,
+    label: 'Final resonance multiplier',
+    operator: 'sum',
+    inputs: [
+      formulaTerm(`${prefix}:resonance-base`, 'base', 'base-resonance', 'Base production', formulaScalar('multiplier', 1), universe.id),
+      scaledSynergy,
+    ],
+    result: formulaScalar('multiplier', 1 + synergy * synergyScale),
+  }
+  const contribution = multiplyAmountByNumber(unitRate(s, generator), owned)
+  return {
+    kind: 'operation',
+    id: `${prefix}:subtotal`,
+    label: generator.name,
+    operator: 'product',
+    inputs: [
+      formulaTerm(`${prefix}:base-rate`, 'base', `${generator.id}-base-rate`, `${generator.name} base rate`, formulaAmount(toAmount(generator.baseRate)), universe.id),
+      formulaTerm(`${prefix}:owned`, 'kindling', generator.id, `${generator.name} owned`, formulaScalar('count', owned), universe.id),
+      {
+        kind: 'operation',
+        id: `${prefix}:gen-mult-product`,
+        label: 'Generator multipliers',
+        operator: 'product',
+        inputs: genMultiplierInputs,
+        result: formulaScalar('multiplier', generatorMultiplier),
+      },
+      resonanceMultiplier,
+    ],
+    result: formulaAmount(contribution),
+    collapsedByDefault: true,
+  }
+}
+
+/** Pure explanation tree for the current passive production rate. */
+export function rateFormula(
+  s: EcoState,
+  evaluatedAtMs: number,
+  outputMultiplier = 1,
+): FormulaBreakdown {
+  const universe = universeById(s.activeUniverse)
+  const mods = challengeMods(s)
+  const kindlingTerms: FormulaNode[] = []
+  const kindlingAmounts: EconomyAmount[] = []
+  if (!mods.gensDisabled) {
+    for (const generator of universe.generators) {
+      const owned = Math.min(s.owned[generator.id] ?? 0, mods.maxOwnedPerGen ?? Number.POSITIVE_INFINITY)
+      if (owned <= 0 || genDisabled(s, generator)) continue
+      const contribution = multiplyAmountByNumber(unitRate(s, generator), owned)
+      kindlingAmounts.push(contribution)
+      kindlingTerms.push(generatorRateFormula(s, generator, owned))
+    }
+  }
+  if (kindlingTerms.length === 0) {
+    kindlingAmounts.push(ZERO_AMOUNT)
+    kindlingTerms.push(formulaTerm(
+      'rate:kindling:none',
+      'system',
+      'no-active-kindlings',
+      'No active Kindlings',
+      formulaAmount(ZERO_AMOUNT),
+      universe.id,
+    ))
+  }
+  const baseRate = sumAmounts(kindlingAmounts)
+  const globalTerms = globalFormulaTerms(s, evaluatedAtMs, 'rate:global')
+  const resultAmount = multiplyAmountByNumber(totalRate(s, evaluatedAtMs), outputMultiplier)
+  const root: FormulaNode = {
+    kind: 'operation',
+    id: 'rate:result',
+    label: 'Current passive production',
+    operator: 'product',
+    inputs: [
+      {
+        kind: 'operation',
+        id: 'rate:kindling-sum',
+        label: 'Active Kindlings',
+        operator: 'sum',
+        inputs: kindlingTerms,
+        result: formulaAmount(baseRate),
+      },
+      {
+        kind: 'operation',
+        id: 'rate:global-product',
+        label: 'Persistent multipliers',
+        operator: 'product',
+        inputs: globalTerms,
+        result: formulaAmount(globalMult(s, evaluatedAtMs)),
+        collapsedByDefault: true,
+      },
+      formulaTerm('rate:universe-law', 'universe-law', `${universe.id}-rate-law`, universe.twist.name, formulaScalar('multiplier', universeRateMult(s, evaluatedAtMs)), universe.id),
+      formulaTerm('rate:challenge', 'system', s.challenge ?? 'no-challenge', s.challenge ? 'Trial production rule' : 'No trial penalty', formulaScalar('multiplier', mods.globalScale ?? 1), universe.id),
+      formulaTerm('rate:omen', 'omen', 'active-production-effect', 'Active production effect', formulaScalar('multiplier', outputMultiplier), universe.id),
+    ],
+    result: formulaAmount(resultAmount),
+  }
+  return {
+    contractVersion: 'formula-breakdown-v1',
+    formulaId: 'current-passive-rate-v1',
+    universeId: universe.id as UniverseId,
+    subject: { kind: 'rate', sourceId: universe.id },
+    root,
+    result: formulaAmount(resultAmount),
+    evaluatedAtMs,
+  }
+}
+
+/** Pure explanation tree for click power with all dynamic multipliers explicit. */
+export function clickFormula(
+  s: EcoState,
+  rateMultiplier: number,
+  evaluatedAtMs: number,
+  outputMultiplier = 1,
+): FormulaBreakdown {
+  const universe = universeById(s.activeUniverse)
+  const flatInputs: FormulaNode[] = [
+    formulaTerm('click:flat-base', 'heart', `${universe.id}-heart`, universe.centralObject, formulaAmount(ONE_AMOUNT), universe.id),
+  ]
+  const shareInputs: FormulaNode[] = [
+    formulaTerm('click:share-base', 'base', 'base-click-rate-share', 'Base rate share', formulaScalar('ratio', BASE_CLICK_RATE_SHARE), universe.id),
+  ]
+  let flatMultiplier = 1
+  let share = BASE_CLICK_RATE_SHARE
+  for (const record of effectSourceRecords(s)) {
+    record.effects.forEach((effect, index) => {
+      if (effect.kind === 'clickMult') {
+        flatMultiplier *= effect.value
+        flatInputs.push(formulaTerm(`click:flat:${record.kind}:${record.id}:${index}`, record.kind, record.id, record.label, formulaScalar('multiplier', effect.value), universe.id))
+      } else if (effect.kind === 'clickShare') {
+        share += effect.value
+        shareInputs.push(formulaTerm(`click:share:${record.kind}:${record.id}:${index}`, record.kind, record.id, record.label, formulaScalar('ratio', effect.value), universe.id))
+      }
+    })
+  }
+  const rate = totalRate(s, evaluatedAtMs)
+  const ratePower = multiplyAmountByNumber(rate, rateMultiplier * share)
+  const flatPower = amountFromNumber(flatMultiplier)
+  const preModifier = maxAmount(flatPower, ratePower)
+  const cabinetMultiplier = curiosityClickMult(s.curiosities, universe.cabinet)
+  const challengeMultiplier = challengeMods(s).clickScale ?? 1
+  const hungerMultiplier = s.ending === 'hunger' ? 2 : 1
+  const resultAmount = multiplyAmountByNumber(clickPower(s, rateMultiplier, evaluatedAtMs), outputMultiplier)
+  const root: FormulaNode = {
+    kind: 'operation',
+    id: 'click:result',
+    label: 'Current click power',
+    operator: 'product',
+    inputs: [
+      {
+        kind: 'operation',
+        id: 'click:minimum-choice',
+        label: 'Flat power or rate share',
+        operator: 'maximum',
+        inputs: [
+          { kind: 'operation', id: 'click:flat-product', label: 'Flat click power', operator: 'product', inputs: flatInputs, result: formulaAmount(flatPower) },
+          {
+            kind: 'operation',
+            id: 'click:rate-product',
+            label: 'Production rate share',
+            operator: 'product',
+            inputs: [
+              formulaTerm('click:rate', 'system', 'current-production-rate', 'Current production rate', formulaAmount(rate), universe.id),
+              formulaTerm('click:rate-multiplier', 'omen', 'active-production-effect', 'Active production effect', formulaScalar('multiplier', rateMultiplier), universe.id),
+              { kind: 'operation', id: 'click:share-sum', label: 'Click rate share', operator: 'sum', inputs: shareInputs, result: formulaScalar('ratio', share) },
+            ],
+            result: formulaAmount(ratePower),
+          },
+        ],
+        result: formulaAmount(preModifier),
+      },
+      formulaTerm('click:hunger', 'doctrine', s.ending === 'hunger' ? 'hunger' : 'no-hunger', 'Hunger answer', formulaScalar('multiplier', hungerMultiplier)),
+      formulaTerm('click:archive', 'archive', universe.cabinet.id, universe.cabinet.title, formulaScalar('multiplier', cabinetMultiplier), universe.id),
+      formulaTerm('click:challenge', 'system', s.challenge ?? 'no-challenge', s.challenge ? 'Trial click rule' : 'No trial click penalty', formulaScalar('multiplier', challengeMultiplier), universe.id),
+      formulaTerm('click:omen', 'omen', 'active-click-effect', 'Active click effect', formulaScalar('multiplier', outputMultiplier), universe.id),
+    ],
+    result: formulaAmount(resultAmount),
+  }
+  return {
+    contractVersion: 'formula-breakdown-v1',
+    formulaId: 'current-click-power-v1',
+    universeId: universe.id as UniverseId,
+    subject: { kind: 'click', sourceId: `${universe.id}-heart` },
+    root,
+    result: formulaAmount(resultAmount),
+    evaluatedAtMs,
+  }
 }
 
 export function critChance(s: EcoState): number {

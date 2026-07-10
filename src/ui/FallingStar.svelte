@@ -12,6 +12,14 @@
   import { curiosityStarRateBonus } from '../content/curiosities'
   import { universeById } from '../content/universes'
   import type { UniversePowerUp } from '../content/universes'
+  import type { EconomyAmount } from '../content/universes/types'
+  import {
+    ZERO_AMOUNT,
+    amountFromNumber,
+    isZeroAmount,
+    maxAmount,
+    multiplyAmountByNumber,
+  } from '../core/numeric/amount'
 
   const LIFETIME_MS = 18_000
   // sky constellation perks: more frequent stars, longer blessings, star pairs
@@ -162,13 +170,16 @@
         duration,
       )
     }
-    let amount = 0
+    let amount: EconomyAmount = ZERO_AMOUNT
     if (power.rateSeconds) {
-      amount = Math.max(power.minAward ?? 0, passiveRatePerSec() * power.rateSeconds)
+      amount = maxAmount(
+        amountFromNumber(power.minAward ?? 0),
+        multiplyAmountByNumber(passiveRatePerSec(), power.rateSeconds),
+      )
       earn(amount)
     }
     let message = power.toast.replaceAll('{currency}', pack.currency.toLowerCase())
-    if (amount > 0) message += ` ${pack.currencyGlyph} ${format(amount)} gathered.`
+    if (!isZeroAmount(amount)) message += ` ${pack.currencyGlyph} ${format(amount)} gathered.`
     if (duration > 0) message += ` ${duration} seconds.`
     pushToast(power.label, message, caught.eventNoun)
     if (Math.random() < perkBonus(game.constellation, 'starPair') && summonFallingStar()) {

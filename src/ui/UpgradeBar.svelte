@@ -5,6 +5,7 @@
   import { universeById } from '../content/universes'
   import { format } from '../core/format'
   import { playBuy } from '../audio/sfx'
+  import { amountFromNumber, ltAmount } from '../core/numeric/amount'
 
   const SHOWN = 9
   const available = $derived(hasUi('upgrades') ? availableUpgrades(game) : [])
@@ -43,7 +44,7 @@
         <button
           class="up"
           class:previewing={previewId === u.id}
-          class:unaffordable={game.light < u.cost}
+          class:unaffordable={ltAmount(game.light, amountFromNumber(u.cost))}
           style:--hue={u.hue}
           aria-label={`${u.name}: ${u.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())).join(', ')}`}
           aria-describedby={previewId === u.id ? 'upgrade-preview' : undefined}

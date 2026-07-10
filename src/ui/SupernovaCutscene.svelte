@@ -5,15 +5,18 @@
   import { playSupernova } from '../audio/sfx'
   import { game } from '../engine/game.svelte'
   import { progressionIdentity } from '../content/universe-progression'
+  import type { EconomyAmount } from '../content/universes/types'
+  import { ZERO_AMOUNT } from '../core/numeric/amount'
+  import { format } from '../core/format'
 
   let {
     doReset,
     onfinished,
-  }: { doReset: () => number; onfinished: () => void } = $props()
+  }: { doReset: () => EconomyAmount; onfinished: () => void } = $props()
 
   type Phase = 'collapse' | 'void' | 'flash' | 'after'
   let phase = $state<Phase>('collapse')
-  let gained = $state(0)
+  let gained = $state<EconomyAmount>(ZERO_AMOUNT)
   let scene: HTMLDivElement
   let againButton = $state<HTMLButtonElement>()
   const tidefall = $derived(game.activeUniverse === 'tidefall')
@@ -75,7 +78,7 @@
       {/each}
       <div class="result">
         <p class="whisper">{tidefall ? 'the tide returned as memory' : 'the dark kept nothing'}</p>
-        <p class="dust">✧ {gained} stardust</p>
+        <p class="dust">✧ {format(gained)} stardust</p>
         <button bind:this={againButton} class="again" onclick={onfinished}>{tidefall ? 'begin at low tide' : 'begin again'}</button>
       </div>
     </div>

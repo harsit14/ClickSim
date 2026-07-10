@@ -14,6 +14,8 @@
   import { game, hasUi, buyGenerator, type BuyAmount } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { playBuy } from '../audio/sfx'
+  import type { EconomyAmount } from '../content/universes/types'
+  import { amountFromNumber, gteAmount, ltAmount } from '../core/numeric/amount'
 
   const AMOUNTS: BuyAmount[] = [1, 10, 100, 'max']
 
@@ -23,12 +25,12 @@
   const visible = $derived(hasUi('shop'))
   const pack = $derived(universeById(game.activeUniverse))
   const generators = $derived(pack.generators)
-  const shown = $derived(generators.filter((g) => game.totalEarned >= shownAt(g)))
+  const shown = $derived(generators.filter((g) => gteAmount(game.totalEarned, amountFromNumber(shownAt(g)))))
   const teased = $derived(
-    generators.find((g) => game.totalEarned < shownAt(g) && game.totalEarned >= teasedAt(g)),
+    generators.find((g) => ltAmount(game.totalEarned, amountFromNumber(shownAt(g))) && gteAmount(game.totalEarned, amountFromNumber(teasedAt(g)))),
   )
 
-  function purchase(g: GeneratorDef): { count: number; cost: number } {
+  function purchase(g: GeneratorDef): { count: number; cost: EconomyAmount } {
     const owned = game.owned[g.id] ?? 0
     const mult = costMultOf(game, g)
     const scale = costScaleOf(game)
@@ -82,7 +84,7 @@
         {@const owned = game.owned[g.id] ?? 0}
         <button
           class="row"
-          class:unaffordable={game.light < p.cost || genPurchaseDisabled(game, g)}
+          class:unaffordable={ltAmount(game.light, p.cost) || genPurchaseDisabled(game, g)}
           onclick={() => tryBuy(g)}
           title={genDisabled(game, g) ? 'silenced by the trial' : genPurchaseDisabled(game, g) ? 'limited by the trial' : g.flavor}
         >

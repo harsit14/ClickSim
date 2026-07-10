@@ -22,6 +22,11 @@
   import { playBuy, playCollect } from '../audio/sfx'
   import { pushToast } from '../systems/toasts.svelte'
   import { universeById } from '../content/universes'
+  import {
+    amountFromNumber,
+    gteAmount,
+    isZeroAmount,
+  } from '../core/numeric/amount'
 
   let { onclose }: { onclose: () => void } = $props()
   let now = $state(Date.now())
@@ -37,7 +42,7 @@
   })
 
   const held = (id: string) => game.curiosities.includes(id)
-  const revealed = (c: CuriosityDef) => held(c.id) || game.totalEarned >= c.cost * 0.25
+  const revealed = (c: CuriosityDef) => held(c.id) || gteAmount(game.totalEarned, amountFromNumber(c.cost * 0.25))
   const shelfOpen = (shelf: CuriosityShelfDef) =>
     shelf.index === 'I' || shelf.ids.some((id) => revealed(cabinet.itemById.get(id)!))
   const shelfDone = (shelf: CuriosityShelfDef) => curiosityShelfComplete(game.curiosities, shelf.id, cabinet)
@@ -93,7 +98,7 @@
 
   function tryCollectComet() {
     const amount = collectCometReturn()
-    if (amount <= 0) return
+    if (isZeroAmount(amount)) return
     playCollect()
     save()
     const title = cabinet.id === 'tidefall' ? 'The leviathan returns' : 'The comet returns'
@@ -181,7 +186,7 @@
                 {#if owned}
                   <span class="held">catalogued</span>
                 {:else if near}
-                  <button class="buy" disabled={game.challenge !== null || game.light < c.cost} onclick={() => tryBuy(c.id)}>
+                  <button class="buy" disabled={game.challenge !== null || !gteAmount(game.light, amountFromNumber(c.cost))} onclick={() => tryBuy(c.id)}>
                     catalogue <span>{pack.currencyGlyph} {format(c.cost)}</span>
                   </button>
                 {:else}
@@ -191,7 +196,7 @@
                 {#if owned && c.kind === 'hearthkeeper'}
                   <div class="special">
                     <span>{fueled ? `core stable for ${fmtDuration(fuelLeft)}` : cabinet.id === 'tidefall' ? 'nursery awaiting current' : 'core awaiting fuel'}</span>
-                    <button class="small" disabled={game.challenge !== null || game.light < fuelCost} onclick={tryFuel}>
+                    <button class="small" disabled={game.challenge !== null || !gteAmount(game.light, fuelCost)} onclick={tryFuel}>
                       {cabinet.id === 'tidefall' ? 'feed nursery' : 'fuel core'} <span>{pack.currencyGlyph} {format(fuelCost)}</span>
                     </button>
                   </div>
@@ -213,7 +218,7 @@
                   </div>
                 {:else if owned && c.kind === 'door'}
                   <div class="special">
-                    <span>{game.allTimeEarned >= 1e30 ? (cabinet.id === 'tidefall' ? 'the black mouth is readable' : 'the event horizon is readable') : 'the horizon returns no signal'}</span>
+                    <span>{gteAmount(game.allTimeEarned, amountFromNumber(1e30)) ? (cabinet.id === 'tidefall' ? 'the black mouth is readable' : 'the event horizon is readable') : 'the horizon returns no signal'}</span>
                   </div>
                 {/if}
               </article>

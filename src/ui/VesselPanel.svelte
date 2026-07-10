@@ -26,6 +26,7 @@
   import { save } from '../core/save'
   import { playBuy, playCollect } from '../audio/sfx'
   import { pushToast } from '../systems/toasts.svelte'
+  import { amountFromNumber, gteAmount, isZeroAmount } from '../core/numeric/amount'
 
   let { onclose, oncross }: { onclose: () => void; oncross: (universeId: string) => void } = $props()
   let closeButton: HTMLButtonElement
@@ -54,10 +55,10 @@
 
   function tryLightBeacon() {
     const gained = igniteCurrentBeacon()
-    if (gained <= 0) return
+    if (isZeroAmount(gained)) return
     playCollect()
     save()
-    pushToast(`${activePack.shortName} Beacon lit`, `◆ ${gained} Dark Between recovered.`, 'wayfinder')
+    pushToast(`${activePack.shortName} Beacon lit`, `◆ ${format(gained)} Dark Between recovered.`, 'wayfinder')
   }
 
   function tryBuyWayfinder(id: (typeof WAYFINDER_NODES)[number]['id']) {
@@ -122,7 +123,7 @@
           <span class="overline">routes through the quiet</span>
           <h3 id="wayfinder-title">The Wayfinder</h3>
         </div>
-        <div class="between"><strong>◆ {game.darkBetween}</strong><span>Dark Between</span></div>
+        <div class="between"><strong>◆ {format(game.darkBetween)}</strong><span>Dark Between</span></div>
       </header>
 
       <div class="routes">
@@ -174,7 +175,7 @@
             {#if owned}
               <span class="learned">learned</span>
             {:else}
-              <button disabled={!available || game.darkBetween < node.cost} onclick={() => tryBuyWayfinder(node.id)}>◆ {node.cost}</button>
+              <button disabled={!available || !gteAmount(game.darkBetween, amountFromNumber(node.cost))} onclick={() => tryBuyWayfinder(node.id)}>◆ {node.cost}</button>
             {/if}
           </article>
         {/each}
