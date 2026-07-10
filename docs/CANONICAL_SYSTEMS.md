@@ -82,7 +82,6 @@ it.
 - local doctrine/constellation choices;
 - local recurring Epoch works;
 - the era earnings used to calculate Epoch Matter;
-- local Epoch Turn count.
 
 Epoch state is lost at a Deep Collapse and above. It is parked on crossing.
 
@@ -93,7 +92,7 @@ Epoch state is lost at a Deep Collapse and above. It is parked on crossing.
 - completed local trials and automation state;
 - local Echoes, Archive records, event/click records, and story state;
 - the local answer to the Question until Remembrance;
-- the local Deep Collapse count.
+- local Epoch Turn and Deep Collapse counts.
 
 "Shared Deep layer" means the seven packs implement the same canonical layer and hook
 contract. It does **not** mean one shared Singularity wallet. Deep balances and trials are
@@ -122,9 +121,9 @@ must preview these boundaries in local language and must require explicit confir
 | Boundary | Lost or temporarily replaced | Retained | Result |
 |---|---|---|---|
 | **Enter a trial** | The active World wallet, Kindlings, normal upgrades, and buy mode are replaced by a temporary clean run. Trial earnings cannot produce Epoch Matter. | All Epoch, Deep, Archive/story, and Between state; local record counters. The exact pre-trial World snapshot is held for return. | Complete or abandon the trial to restore the stored World snapshot. Completion adds the local trial record. |
-| **Epoch Turn** | Active World currency, run earnings, Kindlings, ordinary upgrades, buy mode, and any temporary trial return snapshot. | Epoch Matter and choices; Deep state; Archive/Echo/story; records; automation; all Between state. | Award local Epoch Matter, increment the local Epoch count, and apply earned starting Kindlings. |
-| **Deep Collapse** | Everything lost by an Epoch Turn, plus unspent/lifetime Epoch Matter for the era, local doctrine/constellation choices, local recurring Epoch works, and era earnings. | Singularities, Deep laws/works, completed local trials, Archive/Echo/story, records, automation, and all Between state. | Award Singularities, increment the local Deep count, and apply earned starting Kindlings. |
-| **Remembrance** | In the active universe: World, Epoch, and Deep balances/upgrades/works, local trial completion, local story-seen sequence, automation configuration, and the current answer. The progressive UI is re-earned. | Active universe Echoes, Archive, achievement and performance records, presentation settings, theme, all-time/playtime records, historical answers, and all Between state. Other parked universe runs remain parked unchanged for v12 compatibility. | Append the answer to history, increment the shared Remembrance count, clear the active answer, and replay that universe's opening with the permanent memory multiplier. |
+| **Epoch Turn** | Active World currency, run earnings, Kindlings, ordinary upgrades, buy mode, and any temporary trial return snapshot. | Epoch Matter and choices; Deep state; local reset counts; Archive/Echo/story; records; automation; all Between state. | Award local Epoch Matter, increment the local Epoch count, and apply earned starting Kindlings. |
+| **Deep Collapse** | Everything lost by an Epoch Turn, plus unspent/lifetime Epoch Matter for the era, local doctrine/constellation choices, local recurring Epoch works, and era earnings. | Singularities, Deep laws/works, local Epoch Turn history, completed local trials, Archive/Echo/story, records, automation, and all Between state. | Award Singularities, increment the local Deep count, and apply earned starting Kindlings. |
+| **Remembrance** | In the active universe: World, Epoch, and Deep balances/upgrades/works, local Epoch Turn and Deep Collapse counts, local trial completion, local story-seen sequence, automation configuration, and the current answer. The progressive UI is re-earned. | Active universe Echoes, Archive, achievement and performance records, presentation settings, theme, all-time/playtime records, historical answers, and all Between state. Other parked universe runs remain parked unchanged for v12 compatibility. | Append the answer to history, increment the shared Remembrance count, clear the active answer, and replay that universe's opening with the permanent memory multiplier. |
 | **Crossing** | Nothing. Crossing is not a reset. Temporary trials block departure. | The entire departing local run is parked; all Between state remains active. A visited destination is restored exactly. | A first visit starts from the destination's opening state plus explicit Wayfinder starting benefits. |
 | **Light a Beacon** | Nothing. Lighting is not a reset and never consumes the final Kindling. | All local and shared state. | Record the universe ID once, award its deterministic Dark Between amount once, and expose its global contribution. |
 | **Atlas route (planned)** | Nothing in the source universe. Route-only state is discarded or archived when the route ends. | Source universe parking, Between state, Chronicle, and permanent route unlocks. | Run a seeded sandbox from an explicit route configuration. No route may mutate a source run through hidden side effects. |
