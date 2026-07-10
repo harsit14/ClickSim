@@ -118,7 +118,6 @@ const EPOCH = [
   category('epoch-doctrines', 'epoch'),
   category('epoch-works', 'epoch'),
   category('era-earnings', 'epoch'),
-  category('epoch-turn-count', 'epoch'),
 ] as const
 
 const DEEP_HISTORY = [
@@ -132,6 +131,7 @@ const DEEP_HISTORY = [
   category('local-story-seen-sequence', 'deep-history'),
   category('local-records', 'deep-history'),
   category('current-answer', 'deep-history'),
+  category('epoch-turn-count', 'deep-history'),
   category('deep-collapse-count', 'deep-history'),
   category('progressive-ui', 'deep-history'),
 ] as const
@@ -242,7 +242,6 @@ export function compareProgressionBoundary(input: ResetComparisonInput): ResetCo
         'local-echoes',
         'local-archive',
         'local-records',
-        'deep-collapse-count',
       ]
       const retainedDeep = DEEP_HISTORY.filter(({ id }) => retainedDeepIds.includes(id))
       const lostDeep = DEEP_HISTORY.filter(({ id }) => !retainedDeepIds.includes(id))
