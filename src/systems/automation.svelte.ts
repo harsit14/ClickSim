@@ -18,6 +18,7 @@ import { clearBuffs } from './buffs.svelte'
 import { combo } from './combo.svelte'
 import { pushToast } from './toasts.svelte'
 import { save } from '../core/save'
+import { gamePaused } from '../core/pause.svelte'
 
 const TICK_MS = 2_000
 
@@ -61,7 +62,7 @@ function autoNova() {
 
 export function startAutomation() {
   setInterval(() => {
-    if (game.challenge) return // trials are taken bare-handed
+    if (gamePaused() || game.challenge) return // story scenes pause; trials are taken bare-handed
     if (game.singUpgrades.includes('auto-kindler') && game.autoKindler) autoKindle()
     if (game.singUpgrades.includes('auto-stoker') && game.autoStoker) autoStoke()
     if (

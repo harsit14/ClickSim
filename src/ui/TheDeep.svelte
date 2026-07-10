@@ -6,6 +6,8 @@
     deepCollapseGain,
     performDeepCollapse,
     buyDeepUpgrade,
+    buyDeepWork,
+    deepMarketComplete,
     startChallenge,
   } from '../engine/game.svelte'
   import { clearBuffs } from '../systems/buffs.svelte'
@@ -14,11 +16,26 @@
   import { save } from '../core/save'
   import { stopMusic } from '../audio/music'
   import { playBuy, playSupernova } from '../audio/sfx'
+  import { universeById } from '../content/universes'
+  import { format } from '../core/format'
+  import {
+    DEEP_WORKS,
+    deepProductionMult,
+    singularityYieldMult,
+    workCost,
+    workRank,
+    type DeepWorkId,
+  } from '../content/repeatables'
 
   let { onclose }: { onclose: () => void } = $props()
   let armed = $state(false)
 
   const gain = $derived(deepCollapseGain())
+  const pack = $derived(universeById(game.activeUniverse))
+  const marketComplete = $derived(deepMarketComplete())
+  const localize = (text: string) => text
+    .replaceAll('✦', pack.currencyGlyph)
+    .replaceAll('light', pack.currency.toLowerCase())
 
   function collapse() {
     armed = false
@@ -34,6 +51,18 @@
 
   function tryBuy(id: string) {
     if (buyDeepUpgrade(id)) playBuy()
+  }
+
+  function tryBuyWork(id: DeepWorkId) {
+    if (!buyDeepWork(id)) return
+    playBuy()
+    save()
+  }
+
+  function workStatus(id: DeepWorkId): string {
+    const ranks = game.deepWorks
+    if (id === 'worldseed-compression') return `current ×${deepProductionMult(ranks).toFixed(0)} · next ×${(deepProductionMult(ranks) * 2).toFixed(0)}`
+    return `current +${Math.round((singularityYieldMult(ranks) - 1) * 100)}% · next +${Math.round((singularityYieldMult(ranks) - 0.75) * 100)}%`
   }
 
   function beginTrial(id: string) {
@@ -64,10 +93,10 @@
       </p>
     {:else if !armed}
       <p class="fold-text">Fold the era. Stardust, constellation, everything — for ◉.</p>
-      <button class="fold-btn" onclick={() => (armed = true)}>Deep Collapse &nbsp;·&nbsp; gain ◉{gain}</button>
+      <button class="fold-btn" onclick={() => (armed = true)}>Deep Collapse &nbsp;·&nbsp; gain ◉{format(gain)}</button>
     {:else}
       <p class="fold-text warn">
-        Your ✧{game.stardustTotal} stardust, every constellation star, and the era's light are all taken.
+        Your ✧{game.stardustTotal} stardust, every constellation star, and the era's {pack.currency.toLowerCase()} are all taken.
         Singularities — and everything they buy — are forever.
       </p>
       <div class="confirm">
@@ -109,6 +138,40 @@
     {/each}
   </div>
 
+  <section class="recursive" class:locked={!marketComplete} aria-label="Repeatable Singularity works">
+    <div class="recursive-head">
+      <div>
+        <span>beyond the finished market</span>
+        <h3>The Recursive Works</h3>
+      </div>
+      {#if marketComplete}<strong>◉ survives collapse</strong>{/if}
+    </div>
+    {#if marketComplete}
+      <p>Singularities can be compressed repeatedly. These ranks survive every Deep Collapse and end only with Remembrance.</p>
+      <div class="recursive-grid">
+        {#each DEEP_WORKS as work (work.id)}
+          {@const rank = workRank(game.deepWorks, work.id)}
+          {@const cost = workCost(work, rank)}
+          <article class="recursive-work">
+            <span class="work-glyph">{work.glyph}</span>
+            <div class="work-copy">
+              <small>rank {rank}</small>
+              <strong>{work.name}</strong>
+              <em>{work.flavor}</em>
+              <span>{work.effect}</span>
+              <b>{workStatus(work.id)}</b>
+            </div>
+            <button disabled={!Number.isFinite(cost) || game.singularities < cost} onclick={() => tryBuyWork(work.id)}>
+              {Number.isFinite(cost) ? `compress · ◉ ${cost}` : 'mastered'}
+            </button>
+          </article>
+        {/each}
+      </div>
+    {:else}
+      <p>Acquire every Singularity work first. Once the market is complete, the Deep begins offering ranks instead of endings.</p>
+    {/if}
+  </section>
+
   <h3>Trials</h3>
   <div class="trials">
     {#each CHALLENGES as c (c.id)}
@@ -126,8 +189,8 @@
           {/if}
         </div>
         <em>{c.flavor}</em>
-        <span class="desc">{c.rules} · goal: {c.goalText}</span>
-        <span class="reward">reward: {c.rewardDesc}</span>
+        <span class="desc">{localize(c.rules)} · goal: {localize(c.goalText)}</span>
+        <span class="reward">reward: {localize(c.rewardDesc)}</span>
       </div>
     {/each}
   </div>
@@ -316,7 +379,31 @@
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 6px;
   }
+  .recursive {
+    margin-top: 0.75rem;
+    padding: 0.85rem;
+    border: 1px solid rgba(140, 220, 255, 0.2);
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(75, 177, 218, 0.075), rgba(68, 55, 125, 0.07));
+  }
+  .recursive.locked { opacity: 0.58; }
+  .recursive-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+  .recursive-head span { display: block; margin-bottom: 0.16rem; font-size: 0.54rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #80c9eb; }
+  .recursive h3 { margin: 0; font-family: Georgia, serif; font-size: 1rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: #d9f2ff; }
+  .recursive-head > strong { font-size: 0.62rem; color: #9fdcf4; }
+  .recursive > p { margin: 0.45rem 0 0; font-family: Georgia, serif; font-size: 0.74rem; font-style: italic; color: var(--dim); }
+  .recursive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.7rem; }
+  .recursive-work { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.55rem; padding: 0.7rem; border: 1px solid rgba(140, 220, 255, 0.14); border-radius: 10px; background: rgba(2, 8, 13, 0.34); }
+  .work-glyph { width: 1.9rem; height: 1.9rem; display: grid; place-items: center; color: #c5efff; border: 1px solid rgba(140, 220, 255, 0.2); border-radius: 50%; box-shadow: 0 0 14px rgba(105, 210, 255, 0.08); }
+  .work-copy { min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+  .work-copy small { font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; color: #80c9eb; }
+  .work-copy strong { font-size: 0.78rem; color: #e5f6ff; }
+  .work-copy em { font-family: Georgia, serif; font-size: 0.66rem; line-height: 1.3; color: var(--dim); }
+  .work-copy span { font-size: 0.62rem; color: #a9d2e4; }
+  .work-copy b { margin-top: 0.1rem; font-size: 0.58rem; font-weight: 650; color: #9fe3ff; }
+  .recursive-work button { grid-column: 1 / -1; justify-self: start; padding: 0.3rem 0.72rem; font: inherit; font-size: 0.64rem; font-weight: 750; color: #06131c; background: linear-gradient(180deg, #d6f3ff, #80c9eb); border: 0; border-radius: 999px; cursor: pointer; }
+  .recursive-work button:disabled { opacity: 0.38; cursor: default; }
   @media (max-width: 720px) {
-    .shop, .trials { grid-template-columns: 1fr; }
+    .shop, .trials, .recursive-grid { grid-template-columns: 1fr; }
   }
 </style>

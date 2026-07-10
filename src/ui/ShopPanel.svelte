@@ -8,10 +8,12 @@
 
   const AMOUNTS: BuyAmount[] = [1, 10, 100, 'max']
 
+  let { suppressed = false }: { suppressed?: boolean } = $props()
   let collapsed = $state(false)
 
   const visible = $derived(hasUi('shop'))
-  const generators = $derived(universeById(game.activeUniverse).generators)
+  const pack = $derived(universeById(game.activeUniverse))
+  const generators = $derived(pack.generators)
   const shown = $derived(generators.filter((g) => game.totalEarned >= shownAt(g)))
   const teased = $derived(
     generators.find((g) => game.totalEarned < shownAt(g) && game.totalEarned >= teasedAt(g)),
@@ -33,7 +35,7 @@
   }
 </script>
 
-{#if visible}
+{#if visible && !suppressed}
   <aside class="shop" class:collapsed aria-label="Kindling shop">
     <button
       class="retract"
@@ -74,7 +76,7 @@
           <span class="dot" style:--hue={g.hue}></span>
           <span class="info">
             <span class="name">{g.name}{#if p.count > 1}&nbsp;<small>×{p.count}</small>{/if}</span>
-            <span class="meta">✦ {format(p.cost)} · +{format(unitRate(game, g))}/s</span>
+            <span class="meta">{pack.currencyGlyph} {format(p.cost)} · +{format(unitRate(game, g))}/s</span>
           </span>
           <span class="owned">{owned || ''}</span>
         </button>

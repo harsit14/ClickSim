@@ -8,6 +8,9 @@
   import { CHALLENGE_BY_ID } from '../content/challenges'
   import { playStarCatch } from '../audio/sfx'
   import { format } from '../core/format'
+  import { gamePaused } from '../core/pause.svelte'
+  import { curiosityStarRateBonus } from '../content/curiosities'
+  import { universeById } from '../content/universes'
 
   const LIFETIME_MS = 18_000
   // sky constellation perks: more frequent stars, longer blessings, star pairs
@@ -17,11 +20,12 @@
     (1 +
       perkBonus(game.constellation, 'starRate') +
       (game.challengesDone.includes('drought') ? 0.2 : 0) +
-      (game.curiosities.includes('star-jar') ? 0.05 : 0))
+      (game.curiosities.includes('star-jar') ? 0.05 : 0) +
+      curiosityStarRateBonus(game.curiosities))
   const durScale = () => 1 + perkBonus(game.constellation, 'starDuration')
   const starsForbidden = () => {
     const c = game.challenge ? CHALLENGE_BY_ID.get(game.challenge) : null
-    return !!(c?.mods.noStars || c?.mods.silence)
+    return !!(c?.mods.noStars || c?.mods.silence || !universeById(game.activeUniverse).twist.randomnessAllowed)
   }
   const FIRST_DELAY = () => (20_000 + Math.random() * 25_000) * rateScale()
   const NEXT_DELAY = () => (90_000 + Math.random() * 150_000) * rateScale()
@@ -68,9 +72,9 @@
   }
 
   function spawn(fromRhythm = false) {
-    if (!hasUi('shop') || document.hidden || starsForbidden()) {
+    if (!hasUi('shop') || document.hidden || starsForbidden() || gamePaused()) {
       queuedSummon ||= fromRhythm
-      spawnTimer = setTimeout(spawn, 30_000)
+      spawnTimer = setTimeout(spawn, gamePaused() ? 1_000 : 30_000)
       return
     }
     const fromLeft = Math.random() < 0.5
@@ -101,8 +105,14 @@
     let last = performance.now()
     const frame = (now: number) => {
       if (!star) return
-      const dt = (now - last) / 1000
+      const elapsed = now - last
       last = now
+      if (gamePaused()) {
+        star.born += elapsed
+        raf = requestAnimationFrame(frame)
+        return
+      }
+      const dt = elapsed / 1000
       star.x += star.vx * dt
       star.y += star.vy * dt
       pos = { x: star.x, y: star.y }
@@ -119,22 +129,23 @@
   function catchStar(event?: Event) {
     event?.preventDefault()
     event?.stopPropagation()
-    if (!star) return
+    if (!star || gamePaused()) return
     const kind = star.kind
     star = null
     cancelAnimationFrame(raf)
     game.starsCaught += 1
     playStarCatch()
+    const pack = universeById(game.activeUniverse)
     if (kind === 'frenzy') {
       addBuff({ id: 'frenzy', label: 'Frenzy ×7', prodMult: 7, clickMult: 7 }, 77 * durScale())
-      pushToast('Frenzy!', `All light ×7 for ${Math.round(77 * durScale())} seconds.`, 'falling star')
+      pushToast('Frenzy!', `All ${pack.currency.toLowerCase()} ×7 for ${Math.round(77 * durScale())} seconds.`, 'falling star')
     } else if (kind === 'fury') {
       addBuff({ id: 'fury', label: 'Fury ×777', prodMult: 1, clickMult: 777 }, 13 * durScale())
       pushToast('Fury!', `Clicks ×777 for ${Math.round(13 * durScale())} seconds. Go.`, 'falling star')
     } else {
       const amount = Math.max(25, passiveRatePerSec() * 900)
       earn(amount)
-      pushToast('A Gift', `✦ ${format(amount)} — fifteen minutes of light, at once.`, 'falling star')
+      pushToast('A Gift', `${pack.currencyGlyph} ${format(amount)} — fifteen minutes of ${pack.currency.toLowerCase()}, at once.`, 'falling star')
     }
     if (Math.random() < perkBonus(game.constellation, 'starPair') && summonFallingStar()) {
       pushToast('Meteor Season', 'Another one follows the first.', 'constellation')

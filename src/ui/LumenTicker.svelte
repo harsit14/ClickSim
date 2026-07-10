@@ -1,11 +1,13 @@
 <script lang="ts">
   import { game } from '../engine/game.svelte'
   import { universeById } from '../content/universes'
+  import { gamePaused } from '../core/pause.svelte'
 
   let current = $state<string | null>(null)
   let timer: ReturnType<typeof setTimeout> | undefined
 
   $effect(() => {
+    if (gamePaused()) return
     if (current) return
     const line = universeById(game.activeUniverse).lumen.find((l) => !game.seen.includes(l.id) && l.when(game))
     if (!line) return

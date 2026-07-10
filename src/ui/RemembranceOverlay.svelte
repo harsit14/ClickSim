@@ -1,18 +1,27 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { performRemembrance } from '../engine/game.svelte'
+  import { game, performRemembrance } from '../engine/game.svelte'
   import { save } from '../core/save'
   import { clearBuffs } from '../systems/buffs.svelte'
   import { combo } from '../systems/combo.svelte'
-  import { stopMusic } from '../audio/music'
+  import { isPlaying, startMusic, stopMusic } from '../audio/music'
   import { playCollect } from '../audio/sfx'
   import { worldRef } from '../render/world-ref'
 
   let { onfinished }: { onfinished: () => void } = $props()
 
   let text = $state('the archive closes its eyes')
+  let resumeMusic = false
+  let veil: HTMLDivElement
+
+  function finish() {
+    if (resumeMusic && game.ui.includes('music')) startMusic()
+    onfinished()
+  }
 
   onMount(() => {
+    queueMicrotask(() => veil?.focus())
+    resumeMusic = isPlaying()
     stopMusic()
     const timers = [
       setTimeout(() => {
@@ -25,13 +34,20 @@
         playCollect()
         text = 'and remembers everything'
       }, 2_200),
-      setTimeout(onfinished, 4_600),
+      setTimeout(finish, 4_600),
     ]
     return () => timers.forEach(clearTimeout)
   })
 </script>
 
-<div class="veil">
+<div
+  bind:this={veil}
+  class="veil"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Remembrance"
+  tabindex="-1"
+>
   {#key text}
     <p>{text}</p>
   {/key}

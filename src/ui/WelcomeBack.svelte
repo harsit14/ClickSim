@@ -1,11 +1,13 @@
 <script lang="ts">
-  import { earn } from '../engine/game.svelte'
+  import { game, earn } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { playCollect } from '../audio/sfx'
+  import { universeById } from '../content/universes'
 
   let { amount }: { amount: number } = $props()
   let dismissed = $state(false)
   const open = $derived(amount >= 1 && !dismissed)
+  const pack = $derived(universeById(game.activeUniverse))
 
   function collect() {
     earn(amount)
@@ -18,9 +20,9 @@
   <div class="scrim">
     <div class="card">
       <p class="title">While you were gone,</p>
-      <p class="body">your lights kept burning.</p>
-      <p class="gain">✦ {format(amount)}</p>
-      <button onclick={collect}>Gather the light</button>
+      <p class="body">your {pack.currency.toLowerCase()} kept gathering.</p>
+      <p class="gain">{pack.currencyGlyph} {format(amount)}</p>
+      <button onclick={collect}>Gather the {pack.currency.toLowerCase()}</button>
     </div>
   </div>
 {/if}

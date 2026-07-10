@@ -5,6 +5,7 @@ import { game, ratePerSec, endChallenge } from '../engine/game.svelte'
 import { save } from '../core/save'
 import { pushToast } from './toasts.svelte'
 import { playAchievement, playSupernova } from '../audio/sfx'
+import { gamePaused } from '../core/pause.svelte'
 
 function checkChallenge() {
   if (!game.challenge) return
@@ -17,6 +18,7 @@ function checkChallenge() {
 }
 
 function check() {
+  if (gamePaused()) return
   checkChallenge()
   const rate = ratePerSec()
   for (const def of ACHIEVEMENTS) {

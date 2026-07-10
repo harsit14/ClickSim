@@ -7,12 +7,15 @@
   import { clickEmber, hasUi, game, buyGenerator } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { playClick, playBuy } from '../audio/sfx'
-  import { startMusic, isPlaying } from '../audio/music'
+  import { BEAT_SEC, currentBeatIndex, startMusic, isPlaying } from '../audio/music'
   import { registerClick, silenced } from '../systems/combo.svelte'
+  import { gamePaused } from '../core/pause.svelte'
 
   let canvas: HTMLCanvasElement
   let world: World | undefined
   let hovering = $state(false)
+  let quasarRaf = 0
+  let lastQuasarBeat = -1
 
   function handleClick(x: number, y: number) {
     if (!world) return
@@ -24,8 +27,26 @@
     world.addFloat(`${result.crit ? 'CRIT ' : '+'}${format(result.amount)}`, x, y - 12)
   }
 
+  function quasarBeatIndex() {
+    const beat = currentBeatIndex()
+    if (beat !== null) return beat
+    return Math.floor(performance.now() / (BEAT_SEC * 1000))
+  }
+
+  function tickQuasar(now: number) {
+    if (!world || gamePaused() || game.challenge || !game.curiosities.includes('second-cursor')) {
+      lastQuasarBeat = -1
+      return
+    }
+    const beat = quasarBeatIndex()
+    if (beat === lastQuasarBeat) return
+    lastQuasarBeat = beat
+    const result = clickEmber(1)
+    world.quasarTap(`${result.crit ? 'CRIT ' : ''}+${format(result.amount)}`, result.crit, now)
+  }
+
   function onPointerDown(e: PointerEvent) {
-    if (!world) return
+    if (!world || gamePaused()) return
     if (world.isOnEmber(e.clientX, e.clientY, performance.now())) {
       handleClick(e.clientX, e.clientY)
     }
@@ -37,6 +58,7 @@
   }
 
   function onKeyDown(e: KeyboardEvent) {
+    if (gamePaused()) return
     const target = e.target as HTMLElement | null
     if (target && (target.tagName === 'BUTTON' || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
     // 1–9 buy the nth generator in the shop
@@ -57,11 +79,17 @@
     world = new World(canvas)
     setWorldRef(world)
     world.start()
+    const quasarFrame = (now: number) => {
+      tickQuasar(now)
+      quasarRaf = requestAnimationFrame(quasarFrame)
+    }
+    quasarRaf = requestAnimationFrame(quasarFrame)
     const onResize = () => world?.resize()
     window.addEventListener('resize', onResize)
     window.addEventListener('keydown', onKeyDown)
     return () => {
       world?.stop()
+      cancelAnimationFrame(quasarRaf)
       setWorldRef(null)
       window.removeEventListener('resize', onResize)
       window.removeEventListener('keydown', onKeyDown)

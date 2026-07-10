@@ -3,8 +3,14 @@ import type { UpgradeDef, Effect } from '../content/upgrades'
 import { NODE_BY_ID } from '../content/constellation'
 import { CHALLENGE_BY_ID, type ChallengeMods } from '../content/challenges'
 import { DEEP_EFFECTS } from '../content/deep'
-import { KEEPER_BONUS } from '../content/curiosities'
+import {
+  PROTOSTAR_BONUS,
+  curiosityClickMult,
+  curiosityProductionMult,
+} from '../content/curiosities'
 import { universeById } from '../content/universes'
+import { wayfinderProductionMult, wayfinderTideAmplitude } from '../content/wayfinder'
+import { deepProductionMult, stardustProductionMult } from '../content/repeatables'
 
 /** The purely economic slice of game state — everything production math needs.
  *  Kept free of Svelte so the headless balance simulator can drive it. */
@@ -22,8 +28,12 @@ export interface EcoState {
   stardustTotal: number
   /** owned constellation node ids — their effects join the modifier pipeline */
   constellation: string[]
+  /** repeatable Stardust works; reset by a Deep Collapse */
+  stardustWorks: Record<string, number>
   /** owned singularity upgrades (layer 2) */
   singUpgrades: string[]
+  /** repeatable Singularity works; persist through Deep Collapses */
+  deepWorks: Record<string, number>
   /** active challenge trial, if any */
   challenge: string | null
   /** completed challenge trials — their rewards are permanent */
@@ -32,9 +42,9 @@ export interface EcoState {
   ending: 'warden' | 'hunger' | 'companion' | null
   /** completed NG+ cycles — each doubles all production, forever */
   remembrances: number
-  /** one-shot oddities bought for this universe */
+  /** celestial phenomena catalogued in this universe */
   curiosities: string[]
-  /** wall-clock ms until the Hearthkeeper helps; 0 means sulking */
+  /** wall-clock ms until the Protostar cools; 0 means unfueled */
   keeperFedUntil: number
   /** universes finished strongly enough to shine across worlds */
   beacons: string[]
@@ -93,11 +103,21 @@ export function globalMult(s: EcoState, now = Date.now()): number {
   m *= 1 + 0.02 * s.stardustTotal // stardust, kept across every rebirth
   m *= Math.pow(2, s.remembrances) // memory glow — the universe remembers being bright
   m *= Math.pow(3, s.beacons.length) // Beacons will be earned by future Crossings.
-  if (s.curiosities.includes('hearthkeeper') && s.keeperFedUntil > now) m *= KEEPER_BONUS
+  m *= wayfinderProductionMult(s.wayfinder)
+  m *= stardustProductionMult(s.stardustWorks)
+  m *= deepProductionMult(s.deepWorks)
+  m *= curiosityProductionMult(s.curiosities)
+  if (s.curiosities.includes('hearthkeeper') && s.keeperFedUntil > now) m *= PROTOSTAR_BONUS
   if (s.ending === 'warden') m *= 1.25
   else if (s.ending === 'companion') m *= 1.3
   for (const e of ownedEffects(s)) if (e.kind === 'globalMult') m *= e.value
   return m
+}
+
+/** The active universe's living physics at a specific moment. */
+export function universeRateMult(s: EcoState, now = Date.now()): number {
+  const raw = universeById(s.activeUniverse).twist.rateMultiplier?.(now) ?? 1
+  return 1 + (raw - 1) * wayfinderTideAmplitude(s.wayfinder)
 }
 
 /** true when a challenge silences this generator entirely */
@@ -110,10 +130,10 @@ export function genDisabled(s: EcoState, def: GeneratorDef): boolean {
 export function genRate(s: EcoState, def: GeneratorDef): number {
   const owned = s.owned[def.id] ?? 0
   if (owned === 0 || genDisabled(s, def)) return 0
-  return unitRate(s, def) * owned * globalMult(s) * (challengeMods(s).globalScale ?? 1)
+  return unitRate(s, def) * owned * globalMult(s) * universeRateMult(s) * (challengeMods(s).globalScale ?? 1)
 }
 
-export function totalRate(s: EcoState): number {
+export function totalRate(s: EcoState, now = Date.now()): number {
   const mods = challengeMods(s)
   if (mods.gensDisabled) return 0
   let sum = 0
@@ -121,7 +141,7 @@ export function totalRate(s: EcoState): number {
     const owned = s.owned[g.id] ?? 0
     if (owned > 0 && !genDisabled(s, g)) sum += unitRate(s, g) * owned
   }
-  return sum * globalMult(s) * (mods.globalScale ?? 1)
+  return sum * globalMult(s, now) * universeRateMult(s, now) * (mods.globalScale ?? 1)
 }
 
 export function clickPower(s: EcoState, rateMult = 1): number {
@@ -133,7 +153,7 @@ export function clickPower(s: EcoState, rateMult = 1): number {
   }
   const hunger = s.ending === 'hunger' ? 2 : 1
   const ratePower = totalRate(s) * rateMult * share
-  return Math.max(mult, ratePower) * hunger
+  return Math.max(mult, ratePower) * hunger * curiosityClickMult(s.curiosities)
 }
 
 export function critChance(s: EcoState): number {

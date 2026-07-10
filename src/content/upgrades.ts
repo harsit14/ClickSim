@@ -28,8 +28,8 @@ export interface UpgradeDef {
   effects: Effect[]
 }
 
-export function describeEffect(e: Effect): string {
-  const gen = (id: string) => GENERATOR_BY_ID.get(id)?.name ?? id
+export function describeEffect(e: Effect, generators = GENERATOR_BY_ID): string {
+  const gen = (id: string) => generators.get(id)?.name ?? id
   switch (e.kind) {
     case 'genMult':
       return `${gen(e.gen)} production ×${e.value}`
@@ -125,8 +125,8 @@ upgrades.push(
   },
   {
     id: 'jarred-fortune',
-    name: 'Jarred Fortune',
-    flavor: 'The little star taps the glass when your hand is near.',
+    name: 'Neutron Fortune',
+    flavor: 'The remnant bends unlikely paths until they pass through your hand.',
     cost: 9e12,
     glyph: '×',
     hue: 55,
@@ -139,8 +139,8 @@ upgrades.push(
 upgrades.push(
   {
     id: 'moth-lantern',
-    name: 'Moth Lantern',
-    flavor: 'It circles your hand now, finding the warmest path.',
+    name: 'White Dwarf Lens',
+    flavor: 'The remnant bends each touch toward the brightest possible outcome.',
     cost: 3e6,
     glyph: '◍',
     hue: 40,
@@ -149,8 +149,8 @@ upgrades.push(
   },
   {
     id: 'chime-resonance',
-    name: 'Chime Resonance',
-    flavor: 'The empty air learns to answer in tune.',
+    name: 'Magnetar Resonance',
+    flavor: 'The empty sky learns the frequency of a magnetic starquake.',
     cost: 18e6,
     glyph: '◍',
     hue: 190,
@@ -162,8 +162,8 @@ upgrades.push(
   },
   {
     id: 'keeper-embers',
-    name: 'Keeper Embers',
-    flavor: 'The Hearthkeeper labels the good coals. Incorrectly, but with confidence.',
+    name: 'Protostellar Fuel',
+    flavor: 'The unborn star learns to turn everything you give it toward ignition.',
     cost: 90e6,
     glyph: '◍',
     hue: 18,
@@ -172,8 +172,8 @@ upgrades.push(
   },
   {
     id: 'glass-rootwork',
-    name: 'Glass Rootwork',
-    flavor: 'The garden drinks reflection and returns it as dawn.',
+    name: 'Nebular Filaments',
+    flavor: 'Every luminous thread becomes a cradle for one more source of light.',
     cost: 350e6,
     glyph: '◍',
     hue: 280,
@@ -182,8 +182,8 @@ upgrades.push(
   },
   {
     id: 'ghost-practice',
-    name: 'Ghost Practice',
-    flavor: 'The second cursor has been watching your rhythm. It has notes.',
+    name: 'Quasar Timing',
+    flavor: 'The distant beam has crossed enough darkness to arrive exactly on the beat.',
     cost: 1.5e9,
     glyph: '◍',
     hue: 200,
@@ -192,8 +192,8 @@ upgrades.push(
   },
   {
     id: 'snail-road',
-    name: 'Snail Road',
-    flavor: 'A path so patient that even light slows down to admire it.',
+    name: 'Cometary Return',
+    flavor: 'A patient orbit teaches the universe that leaving and returning are one motion.',
     cost: 6e9,
     glyph: '◍',
     hue: 90,
@@ -202,8 +202,8 @@ upgrades.push(
   },
   {
     id: 'aurora-spectrum',
-    name: 'Aurora Spectrum',
-    flavor: 'Every color teaches the ember one more way to be bright.',
+    name: 'Remnant Spectrum',
+    flavor: 'Every color in the expanding shock front remembers a different kind of star.',
     cost: 30e9,
     glyph: '◍',
     hue: 160,
@@ -212,8 +212,8 @@ upgrades.push(
   },
   {
     id: 'door-hinge',
-    name: 'Door Hinge',
-    flavor: 'It still will not open. It does, however, creak meaningfully.',
+    name: 'Event Horizon',
+    flavor: 'The edge does not open. Space simply admits there was never a wall.',
     cost: 400e9,
     glyph: '◍',
     hue: 50,
@@ -222,8 +222,8 @@ upgrades.push(
   },
   {
     id: 'orrery-route',
-    name: 'Orrery Route',
-    flavor: 'One brass world points to another, and the ember understands distance.',
+    name: 'Galactic Lens',
+    flavor: 'A universe behind the darkness becomes visible by the way its light bends.',
     cost: 4e15,
     glyph: '◍',
     hue: 45,

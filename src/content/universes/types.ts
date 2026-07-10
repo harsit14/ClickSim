@@ -7,11 +7,29 @@ export interface UniverseTwist {
   id: string
   name: string
   randomnessAllowed: boolean
+  description: string
+  /** Multiplies production at a wall-clock moment. Average should remain near 1. */
+  rateMultiplier?: (timeMs: number) => number
 }
 
 export interface UniversePalette {
   theme: string
   accentHue: number
+  vars: Record<string, string>
+}
+
+export interface UniverseRoute {
+  glyph: string
+  epithet: string
+  arrival: string
+  unlockText: string
+}
+
+export interface UniverseBeacon {
+  generatorId: string
+  count: number
+  reward: number
+  description: string
 }
 
 export interface UniversePack {
@@ -19,6 +37,7 @@ export interface UniversePack {
   name: string
   shortName: string
   currency: string
+  currencyGlyph: string
   description: string
   generators: GeneratorDef[]
   generatorById: Map<string, GeneratorDef>
@@ -29,4 +48,6 @@ export interface UniversePack {
   palette: UniversePalette
   musicMode: string
   twist: UniverseTwist
+  route: UniverseRoute
+  beacon: UniverseBeacon
 }

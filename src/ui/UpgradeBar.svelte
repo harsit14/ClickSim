@@ -2,6 +2,7 @@
   import { availableUpgrades } from '../engine/compute'
   import { describeEffect } from '../content/upgrades'
   import { game, hasUi, buyUpgrade } from '../engine/game.svelte'
+  import { universeById } from '../content/universes'
   import { format } from '../core/format'
   import { playBuy } from '../audio/sfx'
 
@@ -11,6 +12,7 @@
   const overflow = $derived(available.length - shown.length)
   let previewId = $state<string | null>(null)
   const preview = $derived(shown.find((u) => u.id === previewId) ?? null)
+  const pack = $derived(universeById(game.activeUniverse))
 
   function tryBuy(id: string): boolean {
     const bought = buyUpgrade(id)
@@ -43,7 +45,7 @@
           class:previewing={previewId === u.id}
           class:unaffordable={game.light < u.cost}
           style:--hue={u.hue}
-          aria-label={`${u.name}: ${u.effects.map(describeEffect).join(', ')}`}
+          aria-label={`${u.name}: ${u.effects.map((effect) => describeEffect(effect, pack.generatorById)).join(', ')}`}
           aria-describedby={previewId === u.id ? 'upgrade-preview' : undefined}
           onpointerenter={() => (previewId = u.id)}
           onpointerdown={() => (previewId = u.id)}
@@ -61,8 +63,8 @@
       <div id="upgrade-preview" class="detail" style:--hue={preview.hue}>
         <strong>{preview.name}</strong>
         <em>{preview.flavor}</em>
-        <span class="fx">{preview.effects.map(describeEffect).join(' · ')}</span>
-        <span class="price">✦ {format(preview.cost)}</span>
+        <span class="fx">{preview.effects.map((effect) => describeEffect(effect, pack.generatorById)).join(' · ')}</span>
+        <span class="price">{pack.currencyGlyph} {format(preview.cost)}</span>
       </div>
     {/if}
   </div>

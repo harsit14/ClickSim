@@ -38,6 +38,9 @@
     if (importSave(importCode)) {
       message = 'The light remembers.'
       importCode = ''
+      // Imported saves replace nearly every reactive branch. Reloading after the
+      // validated snapshot is committed guarantees one coherent mounted world.
+      window.location.reload()
     } else {
       message = 'That code isn’t light. Check it and try again.'
     }
@@ -275,9 +278,11 @@
       left: 0.6rem;
       right: 0.6rem;
       width: auto;
-      top: 3.6rem;
+      top: 8.2rem;
+      bottom: 0.6rem;
       transform: none;
-      max-height: 50vh;
+      max-height: none;
+      z-index: 10;
     }
   }
 </style>

@@ -19,7 +19,7 @@ import {
 } from '../src/engine/compute'
 
 const HORIZON_HOURS = 40
-const DT = 5 // seconds per step
+const DT = 30 // seconds per step; fine enough for pacing, fast enough for routine CI
 const PAYBACK_LIMIT = 4 * 3600 // don't buy anything that pays back slower than this
 
 interface Profile {
@@ -34,6 +34,7 @@ function fmtT(sec: number): string {
 }
 
 function simulate(profile: Profile) {
+  console.log(`simulating ${profile.name}...`)
   const s: EcoState = {
     activeUniverse: DEFAULT_UNIVERSE_ID,
     light: 0,
@@ -44,7 +45,9 @@ function simulate(profile: Profile) {
     achievements: [],
     stardustTotal: 0,
     constellation: [],
+    stardustWorks: {},
     singUpgrades: [],
+    deepWorks: {},
     challenge: null,
     challengesDone: [],
     ending: null,
@@ -68,7 +71,7 @@ function simulate(profile: Profile) {
     s.clicks += profile.cps * DT
 
     // buy greedily by payback until nothing sensible is affordable
-    for (let guard = 0; guard < 40; guard++) {
+    for (let guard = 0; guard < 16; guard++) {
       let bestPayback = Infinity
       let bestBuy: (() => string) | null = null
 

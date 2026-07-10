@@ -2,8 +2,19 @@
   import { CONSTELLATION, nodeAvailable, type StarNode } from '../content/constellation'
   import { describeEffect } from '../content/upgrades'
   import { game, supernovaGain, buyNode, stardustTargetFor } from '../engine/game.svelte'
+  import { buyStardustWork, stardustMarketComplete } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { playBuy } from '../audio/sfx'
+  import { universeById } from '../content/universes'
+  import {
+    STARDUST_WORKS,
+    stardustProductionMult,
+    stardustYieldMult,
+    workCost,
+    workRank,
+    type StardustWorkId,
+  } from '../content/repeatables'
+  import { save } from '../core/save'
 
   let {
     onclose,
@@ -15,6 +26,8 @@
 
   const gain = $derived(supernovaGain())
   const selected = $derived(CONSTELLATION.find((n) => n.id === selectedId) ?? null)
+  const pack = $derived(universeById(game.activeUniverse))
+  const marketComplete = $derived(stardustMarketComplete())
 
   function nodeState(n: StarNode): 'owned' | 'ready' | 'reachable' | 'locked' {
     if (game.constellation.includes(n.id)) return 'owned'
@@ -26,6 +39,18 @@
     if (buyNode(n.id)) playBuy()
   }
 
+  function tryBuyWork(id: StardustWorkId) {
+    if (!buyStardustWork(id)) return
+    playBuy()
+    save()
+  }
+
+  function workStatus(id: StardustWorkId): string {
+    const ranks = game.stardustWorks
+    if (id === 'continuing-corona') return `current ×${stardustProductionMult(ranks).toFixed(2)} · next ×${(stardustProductionMult(ranks) * 1.3).toFixed(2)}`
+    return `current +${Math.round((stardustYieldMult(ranks) - 1) * 100)}% · next +${Math.round((stardustYieldMult(ranks) - 0.85) * 100)}%`
+  }
+
   function lineTargets(n: StarNode): StarNode[] {
     return n.requires
       .map((id) => CONSTELLATION.find((m) => m.id === id))
@@ -33,7 +58,7 @@
   }
 
   function describe(n: StarNode): string[] {
-    return [...n.effects.map(describeEffect), ...n.perks.map((p) => p.desc)]
+    return [...n.effects.map((effect) => describeEffect(effect, pack.generatorById)), ...n.perks.map((p) => p.desc)]
   }
 </script>
 
@@ -49,19 +74,19 @@
       <p class="nova-text">A trial is underway — the sky waits until it ends.</p>
     {:else if game.supernovae === 0 && gain < 1}
       <p class="nova-text">
-        When your light has been vast enough, you may let the ember collapse — and keep the
-        stardust. <em>first ✧ at {format(stardustTargetFor(1))} light this era ({format(game.eraEarned)} so far)</em>
+        When your {pack.currency.toLowerCase()} has been vast enough, you may let this universe collapse — and keep the
+        stardust. <em>first ✧ at {format(stardustTargetFor(1))} {pack.currency.toLowerCase()} this era ({format(game.eraEarned)} so far)</em>
       </p>
     {:else if gain < 1}
       <p class="nova-text">
-        The next collapse needs more light. <em>✧{game.stardustTotal + 1} at
-        {format(stardustTargetFor(game.stardustTotal + 1))} light this era ({format(game.eraEarned)} so far)</em>
+        The next collapse needs more {pack.currency.toLowerCase()}. <em>✧{game.stardustTotal + 1} at
+        {format(stardustTargetFor(game.stardustTotal + 1))} {pack.currency.toLowerCase()} this era ({format(game.eraEarned)} so far)</em>
       </p>
     {:else if !armed}
       <p class="nova-text">Collapse everything. Begin again, brighter.</p>
-      <button class="nova-btn" onclick={() => (armed = true)}>Supernova &nbsp;·&nbsp; gain ✧{gain}</button>
+      <button class="nova-btn" onclick={() => (armed = true)}>Supernova &nbsp;·&nbsp; gain ✧{format(gain)}</button>
     {:else}
-      <p class="nova-text warn">All light, generators, and upgrades return to the dark. Stardust is forever.</p>
+      <p class="nova-text warn">All {pack.currency.toLowerCase()}, generators, and upgrades return to the dark. Stardust is forever.</p>
       <div class="confirm">
         <button class="nova-btn go" onclick={() => { armed = false; onsupernova() }}>Let go</button>
         <button class="nova-btn stay" onclick={() => (armed = false)}>Not yet</button>
@@ -69,7 +94,7 @@
     {/if}
   </div>
 
-  <svg viewBox="0 0 100 74" class="map">
+  <svg viewBox="0 0 100 74" class="map" class:complete={marketComplete}>
     {#each CONSTELLATION as n (n.id)}
       {#each lineTargets(n) as target (target.id)}
         <line
@@ -117,6 +142,40 @@
       {/if}
     </div>
   {/if}
+
+  <section class="eternal" class:locked={!marketComplete} aria-label="Repeatable Stardust works">
+    <div class="eternal-head">
+      <div>
+        <span>after the final constellation</span>
+        <h3>The Eternal Observatory</h3>
+      </div>
+      {#if marketComplete}<strong>✧ repeats forever</strong>{/if}
+    </div>
+    {#if marketComplete}
+      <p>These works consume unspent Stardust. Their ranks survive Supernovas and fold away only during a Deep Collapse.</p>
+      <div class="work-grid">
+        {#each STARDUST_WORKS as work (work.id)}
+          {@const rank = workRank(game.stardustWorks, work.id)}
+          {@const cost = workCost(work, rank)}
+          <article class="work">
+            <span class="work-glyph">{work.glyph}</span>
+            <div class="work-copy">
+              <small>rank {rank}</small>
+              <strong>{work.name}</strong>
+              <em>{work.flavor}</em>
+              <span>{work.effect}</span>
+              <b>{workStatus(work.id)}</b>
+            </div>
+            <button disabled={!Number.isFinite(cost) || game.stardust < cost} onclick={() => tryBuyWork(work.id)}>
+              {Number.isFinite(cost) ? `draw · ✧ ${cost}` : 'mastered'}
+            </button>
+          </article>
+        {/each}
+      </div>
+    {:else}
+      <p>Complete every constellation node. When the sky has no empty place left, Stardust can be drawn into repeatable works.</p>
+    {/if}
+  </section>
 </section>
 
 <style>
@@ -232,6 +291,9 @@
     width: 100%;
     display: block;
   }
+  .map.complete {
+    height: 13rem;
+  }
   .edge {
     stroke: rgba(180, 170, 255, 0.12);
     stroke-width: 0.25;
@@ -319,4 +381,29 @@
     font-style: italic;
   }
   .owned-tag { color: rgba(255, 233, 184, 0.7); }
+  .eternal {
+    margin-top: 0.8rem;
+    padding: 0.85rem;
+    border: 1px solid rgba(190, 175, 255, 0.22);
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(115, 95, 190, 0.09), rgba(255, 194, 113, 0.035));
+  }
+  .eternal.locked { opacity: 0.6; }
+  .eternal-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+  .eternal-head span { display: block; margin-bottom: 0.16rem; font-size: 0.54rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #a99cf0; }
+  .eternal h3 { margin: 0; font-family: Georgia, serif; font-size: 1rem; font-weight: 500; color: #e6e1ff; }
+  .eternal-head > strong { font-size: 0.62rem; color: #ffe2a8; }
+  .eternal > p { margin: 0.45rem 0 0; font-family: Georgia, serif; font-size: 0.74rem; font-style: italic; color: var(--dim); }
+  .work-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.7rem; }
+  .work { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.55rem; padding: 0.7rem; border: 1px solid rgba(190, 175, 255, 0.15); border-radius: 10px; background: rgba(3, 3, 10, 0.28); }
+  .work-glyph { width: 1.9rem; height: 1.9rem; display: grid; place-items: center; color: #ffe4ad; border: 1px solid rgba(255, 220, 160, 0.2); border-radius: 50%; box-shadow: 0 0 14px rgba(255, 196, 110, 0.08); }
+  .work-copy { min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+  .work-copy small { font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; color: #a99cf0; }
+  .work-copy strong { font-size: 0.78rem; color: #eeeaff; }
+  .work-copy em { font-family: Georgia, serif; font-size: 0.66rem; line-height: 1.3; color: var(--dim); }
+  .work-copy span { font-size: 0.62rem; color: #cfc8f5; }
+  .work-copy b { margin-top: 0.1rem; font-size: 0.58rem; font-weight: 650; color: #ffe0a3; }
+  .work button { grid-column: 1 / -1; justify-self: start; padding: 0.3rem 0.72rem; font: inherit; font-size: 0.64rem; font-weight: 750; color: #171127; background: linear-gradient(180deg, #e5ddff, #aa9bf0); border: 0; border-radius: 999px; cursor: pointer; }
+  .work button:disabled { opacity: 0.38; cursor: default; }
+  @media (max-width: 620px) { .work-grid { grid-template-columns: 1fr; } }
 </style>

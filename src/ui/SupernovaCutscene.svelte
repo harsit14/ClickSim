@@ -12,6 +12,13 @@
   type Phase = 'collapse' | 'void' | 'flash' | 'after'
   let phase = $state<Phase>('collapse')
   let gained = $state(0)
+  let scene: HTMLDivElement
+  let againButton = $state<HTMLButtonElement>()
+
+  $effect(() => {
+    if (phase !== 'after') return
+    queueMicrotask(() => againButton?.focus())
+  })
 
   const rain = Array.from({ length: 36 }, (_, i) => ({
     key: i,
@@ -22,6 +29,7 @@
   }))
 
   onMount(() => {
+    queueMicrotask(() => scene?.focus())
     stopMusic()
     worldRef()?.beginCollapse()
     const timers = [
@@ -38,7 +46,14 @@
   })
 </script>
 
-<div class="scene {phase}">
+<div
+  bind:this={scene}
+  class="scene {phase}"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Supernova"
+  tabindex="-1"
+>
   <div class="dark"></div>
   <div class="flash"></div>
 
@@ -56,7 +71,7 @@
       <div class="result">
         <p class="whisper">the dark kept nothing</p>
         <p class="dust">✧ {gained} stardust</p>
-        <button class="again" onclick={onfinished}>begin again</button>
+        <button bind:this={againButton} class="again" onclick={onfinished}>begin again</button>
       </div>
     </div>
   {/if}

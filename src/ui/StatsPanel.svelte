@@ -13,10 +13,18 @@
     critMult,
   } from '../engine/game.svelte'
   import { format } from '../core/format'
+  import {
+    deepProductionMult,
+    singularityYieldMult,
+    stardustProductionMult,
+    stardustYieldMult,
+    workRank,
+  } from '../content/repeatables'
 
   let { onclose }: { onclose: () => void } = $props()
   let view = $state<'stats' | 'achievements'>('stats')
 
+  const pack = $derived(universeById(game.activeUniverse))
   const rate = $derived(ratePerSec())
   const passiveRate = $derived(passiveRatePerSec())
   const activeRate = $derived(activeRatePerSec())
@@ -29,8 +37,10 @@
       concealed: a.hidden && !unlocked.has(a.id),
     })),
   )
+  const stardustRanks = $derived(Object.values(game.stardustWorks).reduce((sum, rank) => sum + rank, 0))
+  const deepRanks = $derived(Object.values(game.deepWorks).reduce((sum, rank) => sum + rank, 0))
   const rows = $derived(
-    universeById(game.activeUniverse).generators.filter((g) => (game.owned[g.id] ?? 0) > 0).map((g) => ({
+    pack.generators.filter((g) => (game.owned[g.id] ?? 0) > 0).map((g) => ({
       g,
       owned: game.owned[g.id] ?? 0,
       rate: genRate(game, g),
@@ -67,10 +77,11 @@
 
   {#if view === 'stats'}
     <dl>
-      <dt>light</dt><dd>✦ {format(game.light)}</dd>
-      <dt>ever earned</dt><dd>✦ {format(game.totalEarned)}</dd>
-      <dt>active light / second</dt><dd>{format(activeRate)}</dd>
-      <dt>passive light / second</dt><dd>{format(passiveRate)}</dd>
+      <dt>universe</dt><dd>{pack.shortName}</dd>
+      <dt>{pack.currency.toLowerCase()}</dt><dd>{pack.currencyGlyph} {format(game.light)}</dd>
+      <dt>ever earned here</dt><dd>{pack.currencyGlyph} {format(game.totalEarned)}</dd>
+      <dt>active {pack.currency.toLowerCase()} / second</dt><dd>{format(activeRate)}</dd>
+      <dt>passive {pack.currency.toLowerCase()} / second</dt><dd>{format(passiveRate)}</dd>
       {#if clickRate > 0}
         <dt>recent clicks / second</dt><dd>{format(clickRate)}</dd>
       {/if}
@@ -79,7 +90,7 @@
       <dt>crit chance</dt><dd>{Math.round(critChance() * 100)}% ×{critMult()}</dd>
       <dt>clicks</dt><dd>{format(game.clicks)}</dd>
       <dt>upgrades found</dt><dd>{game.upgrades.length}</dd>
-      <dt>curiosities</dt><dd>{game.curiosities.length}</dd>
+      <dt>objects catalogued</dt><dd>{game.curiosities.length}</dd>
       <dt>radiance</dt><dd>+{game.achievements.length}%</dd>
       <dt>stars caught</dt><dd>{game.starsCaught}</dd>
       <dt>best combo</dt><dd>{game.bestCombo}</dd>
@@ -91,14 +102,27 @@
       {#if game.vesselParts.length > 0}
         <dt>vessel parts</dt><dd>{game.vesselParts.length} / 5</dd>
       {/if}
+      {#if game.beacons.length > 0}
+        <dt>beacons lit</dt><dd>{game.beacons.length}</dd>
+        <dt>Dark Between</dt><dd>◆ {game.darkBetween}</dd>
+        <dt>Wayfinder laws</dt><dd>{game.wayfinder.length}</dd>
+      {/if}
       {#if game.supernovae > 0}
         <dt>supernovae</dt><dd>{game.supernovae}</dd>
         <dt>stardust glow</dt><dd>+{game.stardustTotal * 2}%</dd>
-        <dt>light, all lifetimes</dt><dd>✦ {format(game.allTimeEarned)}</dd>
+        <dt>{pack.currency.toLowerCase()}, all lifetimes</dt><dd>{pack.currencyGlyph} {format(game.allTimeEarned)}</dd>
+      {/if}
+      {#if stardustRanks > 0}
+        <dt>continuing corona</dt><dd>rank {workRank(game.stardustWorks, 'continuing-corona')} · ×{format(stardustProductionMult(game.stardustWorks))}</dd>
+        <dt>parallax engine</dt><dd>rank {workRank(game.stardustWorks, 'parallax-engine')} · +{Math.round((stardustYieldMult(game.stardustWorks) - 1) * 100)}%</dd>
       {/if}
       {#if game.collapses > 0}
         <dt>deep collapses</dt><dd>{game.collapses}</dd>
         <dt>singularities</dt><dd>◉ {game.singTotal}</dd>
+      {/if}
+      {#if deepRanks > 0}
+        <dt>worldseed compression</dt><dd>rank {workRank(game.deepWorks, 'worldseed-compression')} · ×{format(deepProductionMult(game.deepWorks))}</dd>
+        <dt>recursive abyss</dt><dd>rank {workRank(game.deepWorks, 'recursive-abyss')} · +{Math.round((singularityYieldMult(game.deepWorks) - 1) * 100)}%</dd>
       {/if}
       {#if game.challengesDone.length > 0}
         <dt>trials endured</dt><dd>{game.challengesDone.length} / 6</dd>
@@ -106,7 +130,7 @@
     </dl>
 
     {#if rows.length > 0}
-      <h3>Your lights</h3>
+      <h3>{pack.currency} sources</h3>
       <table>
         <tbody>
           {#each rows as r (r.g.id)}
@@ -325,9 +349,11 @@
       left: 0.6rem;
       right: 0.6rem;
       width: auto;
-      top: 3.6rem;
+      top: 8.2rem;
+      bottom: 0.6rem;
       transform: none;
-      max-height: 50vh;
+      max-height: none;
+      z-index: 10;
     }
   }
 </style>

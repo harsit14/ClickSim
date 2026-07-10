@@ -53,13 +53,33 @@ export const LUMEN_LINES: LumenLine[] = [
   { id: 'bulk', text: 'A way to hunger. ...I said careful.', when: (g) => has(g, 'bulk') },
   {
     id: 'first-curiosity',
-    text: 'You are decorating the dark. I did not expect that to make me happy.',
+    text: 'You are naming the dark. I did not expect a universe to feel larger once it had a catalogue.',
     when: (g) => g.curiosities.length >= 1,
   },
   {
     id: 'hearthkeeper',
-    text: 'The small one with the rake has opinions. I trust it immediately.',
+    text: 'That protostar is younger than everything we have made. Be gentle with it.',
     when: (g) => g.curiosities.includes('hearthkeeper'),
+  },
+  {
+    id: 'cabinet-hearthside',
+    text: 'White dwarf. Magnetar. Protostar. Nebula. A life of stars, recorded out of order—as memory usually is.',
+    when: (g) => ['moth', 'chimes', 'hearthkeeper', 'glass-garden'].every((id) => g.curiosities.includes(id)),
+  },
+  {
+    id: 'cabinet-pilgrims',
+    text: 'A quasar, a comet, a remnant, a horizon. Four signals crossing distances their senders could not survive.',
+    when: (g) => ['second-cursor', 'snail', 'aurora', 'door'].every((id) => g.curiosities.includes(id)),
+  },
+  {
+    id: 'cabinet-portents',
+    text: 'The deep-sky objects agree on one thing: Emberlight is not the only universe being observed.',
+    when: (g) => ['star-jar', 'metronome-heart', 'letter', 'orrery'].every((id) => g.curiosities.includes(id)),
+  },
+  {
+    id: 'cabinet-complete',
+    text: 'The catalogue is a map. The map is a warning. The warning may also be an invitation.',
+    when: (g) => g.curiosities.length >= 12,
   },
   {
     id: 'first-star',
@@ -70,6 +90,16 @@ export const LUMEN_LINES: LumenLine[] = [
     id: 'groove',
     text: 'You’re playing it like an instrument. It likes that.',
     when: (g) => g.bestCombo >= 16,
+  },
+  {
+    id: 'eternal-observatory',
+    text: 'The constellation was complete. You added another star anyway. I think that is the most human thing you have done.',
+    when: (g) => Object.values(g.stardustWorks).some((rank) => rank > 0),
+  },
+  {
+    id: 'recursive-works',
+    text: 'The Deep has learned recursion. We should be worried. I am mostly impressed.',
+    when: (g) => Object.values(g.deepWorks).some((rank) => rank > 0),
   },
   { id: 'wisp', text: 'The wisps remember how to dance. They shouldn’t. They do.', when: (g) => owns(g, 'wisp') },
   { id: 'hearth', text: 'A hearth. Something out there could be warm again.', when: (g) => owns(g, 'hearth') },

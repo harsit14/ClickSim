@@ -1,6 +1,5 @@
 import { game, ratePerSec } from '../engine/game.svelte'
 import { universeById } from '../content/universes'
-import { VESSEL_PARTS, vesselPartComplete, vesselProgress, vesselRevealed } from '../content/vessel'
 import { currentBeatIndex } from '../audio/music'
 
 interface Particle {
@@ -23,6 +22,13 @@ interface FloatText {
   life: number
   maxLife: number
   text: string
+}
+
+interface QuasarTap {
+  x: number
+  y: number
+  born: number
+  crit: boolean
 }
 
 interface Glimmer {
@@ -50,6 +56,7 @@ export class World {
   private ctx: CanvasRenderingContext2D
   private particles: Particle[] = []
   private floats: FloatText[] = []
+  private quasarTaps: QuasarTap[] = []
   private glimmers = new Map<string, Glimmer[]>()
   private pulse = 0
   private driftAcc = 0
@@ -103,6 +110,35 @@ export class World {
     this.pulse = 1
   }
 
+  quasarTap(text: string, crit = false, now = performance.now()) {
+    const c = this.center
+    const r = this.emberRadius(now)
+    const angle = now / 1450
+    const x = c.x + Math.cos(angle) * r * 0.95
+    const y = c.y + Math.sin(angle * 1.12) * r * 0.55
+    this.quasarTaps.push({ x, y, born: now, crit })
+    if (this.quasarTaps.length > 10) this.quasarTaps.shift()
+    this.pulse = Math.max(this.pulse, crit ? 0.55 : 0.28)
+    this.addFloat(text, x, y - 8)
+
+    const count = Math.max(2, Math.round((crit ? 8 : 5) * this.motion))
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2
+      const speed = 22 + Math.random() * 70
+      this.addParticle({
+        x,
+        y,
+        vx: Math.cos(a) * speed,
+        vy: Math.sin(a) * speed - 18,
+        life: 0,
+        maxLife: 0.45 + Math.random() * 0.45,
+        size: 0.7 + Math.random() * 1.3,
+        hue: crit ? 42 + Math.random() * 18 : 188 + Math.random() * 24,
+        light: crit ? 70 + Math.random() * 20 : 64 + Math.random() * 18,
+      })
+    }
+  }
+
   /** Supernova cutscene: everything falls into the ember. */
   beginCollapse() {
     this.collapseStart = performance.now()
@@ -113,6 +149,7 @@ export class World {
     this.particles = []
     this.glimmers.clear()
     this.rings = []
+    this.quasarTaps = []
   }
 
   private collapseProgress(now: number): number {
@@ -123,6 +160,9 @@ export class World {
   /** The ember wears its answer: gold for the warden, red for the hunger,
    *  silver-blue for the one who stayed. */
   private palette() {
+    if (game.activeUniverse === 'tidefall') {
+      return { c0: '235, 255, 252', c1: '158, 244, 232', c2: '67, 190, 199', c3: '36, 91, 139', halo: '76, 220, 215', mid: '54, 145, 185' }
+    }
     switch (game.ending) {
       case 'warden':
         return { c0: '255, 252, 240', c1: '255, 238, 185', c2: '255, 205, 110', c3: '255, 175, 80', halo: '255, 215, 130', mid: '255, 190, 100' }
@@ -137,6 +177,7 @@ export class World {
 
   burst(x: number, y: number) {
     const c = this.center
+    const accent = universeById(game.activeUniverse).palette.accentHue
     const count = Math.max(3, Math.round((9 + Math.floor(Math.random() * 6)) * this.motion))
     for (let i = 0; i < count; i++) {
       const angle = Math.atan2(y - c.y, x - c.x) + (Math.random() - 0.5) * 2.4
@@ -149,7 +190,7 @@ export class World {
         life: 0,
         maxLife: 0.5 + Math.random() * 0.7,
         size: 1 + Math.random() * 2.4,
-        hue: 30 + Math.random() * 26,
+        hue: accent - 12 + Math.random() * 24,
         light: 55 + Math.random() * 40,
       })
     }
@@ -215,283 +256,305 @@ export class World {
     return game.curiosities.includes(id)
   }
 
-  private drawVessel(now: number, fade: number) {
-    if (!vesselRevealed(game)) return
-    const { ctx, width, height } = this
-    const x = width * 0.15
-    const y = height * 0.5
-    const scale = Math.max(0.72, Math.min(1.15, width / 1200))
-    const complete = (id: Parameters<typeof vesselPartComplete>[1]) => vesselPartComplete(game, id)
-    const shimmer = 0.65 + 0.35 * Math.sin(now / 1200)
-
-    ctx.save()
-    ctx.globalAlpha = fade
-    ctx.translate(x, y)
-    ctx.scale(scale, scale)
-
-    ctx.strokeStyle = 'rgba(170, 220, 255, 0.12)'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(-62, 34)
-    ctx.quadraticCurveTo(0, 64, 74, 28)
-    ctx.moveTo(-20, 34)
-    ctx.lineTo(-20, -58)
-    ctx.moveTo(24, 30)
-    ctx.lineTo(24, -44)
-    ctx.stroke()
-
-    if (complete('hull-hearths')) {
-      ctx.strokeStyle = `rgba(255, 190, 110, ${0.38 + shimmer * 0.12})`
-      ctx.lineWidth = 3
-      ctx.beginPath()
-      ctx.moveTo(-70, 22)
-      ctx.quadraticCurveTo(-18, 70, 78, 24)
-      ctx.quadraticCurveTo(22, 48, -48, 39)
-      ctx.stroke()
-    } else {
-      const hull = vesselProgress(game, VESSEL_PARTS[0])
-      ctx.strokeStyle = `rgba(255, 190, 110, ${0.08 + hull * 0.18})`
-      ctx.lineWidth = 2
-      ctx.beginPath()
-      ctx.moveTo(-70, 22)
-      ctx.quadraticCurveTo(-18, 70, 78, 24)
-      ctx.stroke()
-    }
-
-    if (complete('sails-constellation')) {
-      ctx.fillStyle = `rgba(170, 220, 255, ${0.12 + shimmer * 0.05})`
-      ctx.strokeStyle = 'rgba(205, 238, 255, 0.32)'
-      ctx.beginPath()
-      ctx.moveTo(-18, -56)
-      ctx.lineTo(-18, 20)
-      ctx.lineTo(-76, 14)
-      ctx.closePath()
-      ctx.fill()
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.moveTo(26, -42)
-      ctx.lineTo(26, 22)
-      ctx.lineTo(73, 15)
-      ctx.closePath()
-      ctx.fill()
-      ctx.stroke()
-    }
-
-    if (complete('keel-trials')) {
-      ctx.strokeStyle = 'rgba(255, 130, 90, 0.32)'
-      ctx.lineWidth = 2
-      ctx.beginPath()
-      ctx.moveTo(-34, 44)
-      ctx.lineTo(55, 42)
-      ctx.stroke()
-    }
-
-    if (complete('heart-sun')) {
-      const glow = 4 + shimmer * 4
-      const grad = ctx.createRadialGradient(0, 20, 0, 0, 20, 28 + glow)
-      grad.addColorStop(0, 'rgba(255, 245, 190, 0.52)')
-      grad.addColorStop(0.45, 'rgba(255, 190, 80, 0.16)')
-      grad.addColorStop(1, 'rgba(255, 190, 80, 0)')
-      ctx.fillStyle = grad
-      ctx.beginPath()
-      ctx.arc(0, 20, 28 + glow, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.fillStyle = 'rgba(255, 235, 150, 0.7)'
-      ctx.beginPath()
-      ctx.arc(0, 20, 4 + shimmer * 1.5, 0, Math.PI * 2)
-      ctx.fill()
-    }
-
-    if (complete('archive')) {
-      ctx.strokeStyle = 'rgba(214, 198, 255, 0.36)'
-      ctx.fillStyle = 'rgba(214, 198, 255, 0.08)'
-      ctx.beginPath()
-      ctx.roundRect(45, -2, 20, 24, 3)
-      ctx.fill()
-      ctx.stroke()
-    }
-
-    for (let i = 0; i < VESSEL_PARTS.length; i++) {
-      const part = VESSEL_PARTS[i]
-      const a = -Math.PI * 0.85 + i * 0.42
-      const px = Math.cos(a) * 92
-      const py = Math.sin(a) * 56 + 16
-      const done = vesselPartComplete(game, part.id)
-      ctx.fillStyle = done
-        ? `hsla(${part.hue}, 90%, 72%, ${0.5 + shimmer * 0.18})`
-        : `hsla(${part.hue}, 80%, 65%, ${0.08 + vesselProgress(game, part) * 0.16})`
-      ctx.beginPath()
-      ctx.arc(px, py, done ? 3.2 : 2.2, 0, Math.PI * 2)
-      ctx.fill()
-    }
-
-    ctx.restore()
-  }
-
   private drawCuriosities(now: number, fade: number) {
     const { ctx, width, height } = this
     const c = this.center
+    const scale = Math.max(0.76, Math.min(1.08, width / 1360))
 
     if (this.hasCuriosity('aurora')) {
+      const x = width * 0.76
       const y = height * 0.15
-      const drift = Math.sin(now / 3200) * 18
-      const grad = ctx.createLinearGradient(0, y, width, y + 80)
-      grad.addColorStop(0, 'rgba(65, 255, 210, 0)')
-      grad.addColorStop(0.35, `rgba(85, 255, 210, ${0.12 * fade})`)
-      grad.addColorStop(0.7, `rgba(170, 110, 255, ${0.12 * fade})`)
-      grad.addColorStop(1, 'rgba(85, 170, 255, 0)')
-      ctx.strokeStyle = grad
-      ctx.lineWidth = 18
-      ctx.beginPath()
-      ctx.moveTo(width * -0.05, y + drift)
-      ctx.bezierCurveTo(width * 0.25, y - 60, width * 0.55, y + 90, width * 1.05, y + 15 - drift)
-      ctx.stroke()
-    }
-
-    if (this.hasCuriosity('glass-garden')) {
-      const baseY = height * 0.91
-      for (let i = 0; i < 9; i++) {
-        const x = width * (0.28 + i * 0.055)
-        const h = 18 + ((i * 17) % 29)
-        const tw = 0.65 + 0.35 * Math.sin(now / 900 + i)
-        ctx.fillStyle = `hsla(${250 + i * 7}, 90%, 76%, ${0.18 * tw * fade})`
-        ctx.beginPath()
-        ctx.moveTo(x, baseY)
-        ctx.lineTo(x + 8, baseY - h)
-        ctx.lineTo(x + 16, baseY)
-        ctx.closePath()
-        ctx.fill()
-      }
-    }
-
-    if (this.hasCuriosity('chimes')) {
-      const x = width * 0.18
-      const y = height * 0.2
-      ctx.strokeStyle = `rgba(210, 245, 255, ${0.22 * fade})`
-      ctx.lineWidth = 1
+      const breathe = 1 + 0.08 * Math.sin(now / 2100)
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(-0.18)
+      ctx.globalAlpha = fade
       for (let i = 0; i < 4; i++) {
-        const sway = Math.sin(now / 1200 + i) * 4
+        ctx.strokeStyle = `hsla(${165 + i * 27}, 86%, 72%, ${0.075 - i * 0.009})`
+        ctx.lineWidth = 5 - i * 0.75
         ctx.beginPath()
-        ctx.moveTo(x + i * 9, y)
-        ctx.lineTo(x + i * 9 + sway, y + 32 + i * 3)
+        ctx.ellipse(0, 0, (27 + i * 9) * breathe, (12 + i * 5) * breathe, i * 0.24, -2.6, 1.05)
         ctx.stroke()
       }
+      ctx.restore()
     }
 
-    if (this.hasCuriosity('door')) {
-      const x = width * 0.76
-      const y = height * 0.66
-      const open = game.allTimeEarned >= 1e30
-      ctx.fillStyle = open ? `rgba(255, 220, 130, ${0.11 * fade})` : `rgba(255, 210, 120, ${0.04 * fade})`
-      ctx.strokeStyle = `rgba(255, 210, 120, ${0.28 * fade})`
-      ctx.lineWidth = 1.5
+    if (this.hasCuriosity('hearthkeeper')) {
+      const x = width * 0.13
+      const y = height * 0.25
+      const fueled = game.keeperFedUntil > Date.now()
+      const pulse = 1 + 0.08 * Math.sin(now / 760)
+      ctx.save()
+      ctx.globalAlpha = fade
+      const nursery = ctx.createRadialGradient(x, y, 0, x, y, 28 * pulse)
+      nursery.addColorStop(0, fueled ? 'rgba(255, 246, 196, 0.72)' : 'rgba(255, 219, 170, 0.46)')
+      nursery.addColorStop(0.22, fueled ? 'rgba(255, 153, 72, 0.32)' : 'rgba(176, 91, 79, 0.18)')
+      nursery.addColorStop(0.64, 'rgba(131, 74, 178, 0.09)')
+      nursery.addColorStop(1, 'rgba(100, 60, 160, 0)')
+      ctx.fillStyle = nursery
       ctx.beginPath()
-      ctx.roundRect(x, y, 34, 54, 5)
+      ctx.arc(x, y, 28 * pulse, 0, Math.PI * 2)
       ctx.fill()
+      ctx.strokeStyle = fueled ? 'rgba(255, 201, 126, 0.22)' : 'rgba(196, 139, 137, 0.12)'
+      ctx.setLineDash([2, 6])
+      ctx.beginPath()
+      ctx.ellipse(x, y, 31, 12, now / 12000, 0, Math.PI * 2)
       ctx.stroke()
-      ctx.beginPath()
-      ctx.arc(x + 25, y + 29, 2, 0, Math.PI * 2)
-      ctx.fillStyle = `rgba(255, 235, 170, ${0.7 * fade})`
-      ctx.fill()
+      ctx.setLineDash([])
+      ctx.restore()
     }
 
-    if (this.hasCuriosity('star-jar')) {
+    const shelfHas = ['chimes', 'door', 'star-jar', 'letter'].some((id) => this.hasCuriosity(id))
+    if (shelfHas) {
       const x = width * 0.2
-      const y = height * 0.73
-      const tw = 0.7 + 0.3 * Math.sin(now / 500)
-      ctx.strokeStyle = `rgba(255, 235, 160, ${0.26 * fade})`
-      ctx.fillStyle = `rgba(255, 235, 160, ${0.06 * fade})`
-      ctx.beginPath()
-      ctx.roundRect(x, y, 26, 36, 7)
-      ctx.fill()
-      ctx.stroke()
-      ctx.fillStyle = `rgba(255, 240, 170, ${0.78 * tw * fade})`
-      ctx.beginPath()
-      ctx.arc(x + 13, y + 18, 3.5 + tw, 0, Math.PI * 2)
-      ctx.fill()
-    }
-
-    if (this.hasCuriosity('letter')) {
-      const x = width * 0.28
       const y = height * 0.68
-      ctx.strokeStyle = `rgba(255, 226, 190, ${0.22 * fade})`
-      ctx.fillStyle = `rgba(255, 226, 190, ${0.05 * fade})`
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.scale(scale, scale)
+      ctx.lineCap = 'round'
+      ctx.globalAlpha = fade
+
+      ctx.strokeStyle = 'rgba(190, 210, 255, 0.065)'
+      ctx.lineWidth = 1
+      ctx.setLineDash([2, 7])
       ctx.beginPath()
-      ctx.rect(x, y, 38, 24)
-      ctx.fill()
+      ctx.ellipse(4, 8, 126, 72, -0.12, 0.18, 2.75)
       ctx.stroke()
-      ctx.beginPath()
-      ctx.moveTo(x, y)
-      ctx.lineTo(x + 19, y + 13)
-      ctx.lineTo(x + 38, y)
-      ctx.stroke()
+      ctx.setLineDash([])
+
+      if (this.hasCuriosity('chimes')) {
+        const pulse = 0.72 + 0.28 * Math.sin(now / 440)
+        ctx.strokeStyle = `rgba(175, 238, 255, ${0.2 * pulse})`
+        ctx.beginPath()
+        ctx.arc(-58, -38, 14 + pulse * 3, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.setLineDash([2, 5])
+        ctx.beginPath()
+        ctx.arc(-58, -38, 22 + pulse * 4, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.setLineDash([])
+        ctx.save()
+        ctx.translate(-58, -38)
+        ctx.rotate(now / 2300)
+        ctx.beginPath()
+        ctx.moveTo(-34, 0)
+        ctx.lineTo(34, 0)
+        ctx.stroke()
+        ctx.restore()
+        ctx.fillStyle = 'rgba(225, 250, 255, 0.7)'
+        ctx.beginPath()
+        ctx.arc(-58, -38, 3.2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      if (this.hasCuriosity('star-jar')) {
+        const tw = 0.7 + 0.3 * Math.sin(now / 540)
+        ctx.strokeStyle = 'rgba(190, 229, 255, 0.24)'
+        ctx.beginPath()
+        ctx.arc(-74, 37, 10 + tw * 2, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.fillStyle = `rgba(235, 249, 255, ${0.72 * tw})`
+        ctx.beginPath()
+        ctx.arc(-74, 37, 2.5 + tw * 0.8, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      if (this.hasCuriosity('letter')) {
+        const x = 20
+        const y = 48
+        const giant = ctx.createRadialGradient(x - 4, y - 5, 0, x, y, 18)
+        giant.addColorStop(0, 'rgba(255, 239, 186, 0.78)')
+        giant.addColorStop(0.4, 'rgba(242, 116, 67, 0.52)')
+        giant.addColorStop(1, 'rgba(155, 42, 39, 0)')
+        ctx.fillStyle = giant
+        ctx.beginPath()
+        ctx.arc(x, y, 18, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      if (this.hasCuriosity('door')) {
+        const readable = game.allTimeEarned >= 1e30
+        ctx.save()
+        ctx.translate(92, 14)
+        ctx.rotate(-0.18 + Math.sin(now / 2800) * 0.04)
+        ctx.strokeStyle = readable ? 'rgba(255, 214, 143, 0.42)' : 'rgba(255, 167, 96, 0.25)'
+        ctx.lineWidth = readable ? 2 : 1.2
+        ctx.beginPath()
+        ctx.ellipse(0, 0, 20, 6, 0, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.fillStyle = 'rgba(1, 2, 6, 0.96)'
+        ctx.beginPath()
+        ctx.arc(0, 0, 8.5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
+      }
+
+      ctx.restore()
     }
 
-    if (this.hasCuriosity('snail')) {
-      const progress =
-        game.snailLastGiftAt > 0 ? Math.min(1, (Date.now() - game.snailLastGiftAt) / (90 * 60 * 1000)) : 0
-      const x = width * (0.09 + progress * 0.82)
-      const y = height * 0.88
-      ctx.fillStyle = `rgba(190, 255, 150, ${0.35 * fade})`
+    if (this.hasCuriosity('second-cursor')) {
+      const x = width * 0.88
+      const y = height * 0.28
+      const angle = -0.42 + Math.sin(now / 2600) * 0.05
+      const beam = 0.35 + 0.2 * (0.5 + 0.5 * Math.sin(now / 210))
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(angle)
+      ctx.globalAlpha = fade
+      const jet = ctx.createLinearGradient(-58, 0, 58, 0)
+      jet.addColorStop(0, 'rgba(120, 225, 255, 0)')
+      jet.addColorStop(0.48, `rgba(166, 240, 255, ${beam})`)
+      jet.addColorStop(0.52, `rgba(255, 247, 220, ${beam + 0.18})`)
+      jet.addColorStop(1, 'rgba(120, 225, 255, 0)')
+      ctx.strokeStyle = jet
+      ctx.lineWidth = 2
       ctx.beginPath()
-      ctx.arc(x, y, 7, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.fillStyle = `rgba(255, 240, 150, ${0.45 * fade})`
+      ctx.moveTo(-58, 0)
+      ctx.lineTo(58, 0)
+      ctx.stroke()
+      ctx.strokeStyle = 'rgba(145, 225, 255, 0.2)'
+      ctx.lineWidth = 1
       ctx.beginPath()
-      ctx.arc(x + 8, y - 3, 3, 0, Math.PI * 2)
+      ctx.ellipse(0, 0, 13, 4, 0, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.fillStyle = 'rgba(235, 253, 255, 0.8)'
+      ctx.beginPath()
+      ctx.arc(0, 0, 3, 0, Math.PI * 2)
       ctx.fill()
+      ctx.restore()
+    }
+
+    const groundHas = ['glass-garden', 'snail', 'metronome-heart'].some((id) => this.hasCuriosity(id))
+    if (groundHas) {
+      const baseY = height * 0.84
+      ctx.save()
+      ctx.globalAlpha = fade
+      ctx.lineCap = 'round'
+
+      if (this.hasCuriosity('glass-garden')) {
+        const x = width * 0.18
+        for (let i = 0; i < 7; i++) {
+          const a = (i / 7) * Math.PI * 2 + now / 26000
+          const px = x + Math.cos(a) * (18 + (i % 3) * 6)
+          const py = baseY - 28 + Math.sin(a * 1.4) * (10 + (i % 2) * 7)
+          const r = (9 + (i % 3) * 4) * scale
+          const cloud = ctx.createRadialGradient(px, py, 0, px, py, r)
+          cloud.addColorStop(0, `hsla(${188 + i * 18}, 88%, 72%, 0.14)`)
+          cloud.addColorStop(1, `hsla(${225 + i * 13}, 82%, 56%, 0)`)
+          ctx.fillStyle = cloud
+          ctx.beginPath()
+          ctx.arc(px, py, r, 0, Math.PI * 2)
+          ctx.fill()
+        }
+      }
+
+      if (this.hasCuriosity('snail')) {
+        const progress =
+          game.snailLastGiftAt > 0 ? Math.min(1, (Date.now() - game.snailLastGiftAt) / (90 * 60 * 1000)) : 0
+        const angle = Math.PI * (0.86 + progress * 1.28)
+        const orbitX = Math.min(width * 0.37, 430)
+        const orbitY = Math.min(height * 0.31, 245)
+        const x = c.x + Math.cos(angle) * orbitX
+        const y = c.y + Math.sin(angle) * orbitY
+        const tailAngle = angle + Math.PI * 0.5
+        const tail = ctx.createLinearGradient(x, y, x + Math.cos(tailAngle) * 34, y + Math.sin(tailAngle) * 34)
+        tail.addColorStop(0, 'rgba(229, 255, 194, 0.46)')
+        tail.addColorStop(1, 'rgba(130, 218, 255, 0)')
+        ctx.strokeStyle = tail
+        ctx.lineWidth = 4 * scale
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        ctx.lineTo(x + Math.cos(tailAngle) * 34, y + Math.sin(tailAngle) * 34)
+        ctx.stroke()
+        ctx.fillStyle = 'rgba(232, 255, 202, 0.72)'
+        ctx.beginPath()
+        ctx.arc(x, y, 3.5 * scale, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      if (this.hasCuriosity('metronome-heart')) {
+        const x = width * 0.82
+        const y = baseY - 28
+        const beat = 0.55 + 0.45 * Math.sin(now / 180) ** 2
+        ctx.save()
+        ctx.translate(x, y)
+        ctx.rotate(now / 1650)
+        ctx.strokeStyle = `rgba(255, 154, 216, ${0.13 + beat * 0.12})`
+        ctx.lineWidth = 1.2
+        ctx.beginPath()
+        ctx.moveTo(-35, 0)
+        ctx.lineTo(35, 0)
+        ctx.stroke()
+        ctx.restore()
+        ctx.strokeStyle = `rgba(255, 174, 222, ${0.16 + beat * 0.09})`
+        ctx.beginPath()
+        ctx.arc(x, y, 10 + beat * 4, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.fillStyle = 'rgba(255, 225, 245, 0.72)'
+        ctx.beginPath()
+        ctx.arc(x, y, 2.5 + beat, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      ctx.restore()
     }
 
     if (this.hasCuriosity('orrery')) {
       const x = width * 0.84
-      const y = height * 0.22
-      ctx.strokeStyle = `rgba(255, 215, 130, ${0.2 * fade})`
-      ctx.lineWidth = 1
+      const y = height * 0.76
+      const turn = now / 12000
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(-0.24 + Math.sin(turn) * 0.06)
+      ctx.strokeStyle = `rgba(255, 199, 119, ${0.3 * fade})`
+      ctx.lineWidth = 1.4
       for (let i = 0; i < 3; i++) {
         ctx.beginPath()
-        ctx.ellipse(x, y, 14 + i * 9, 5 + i * 4, now / 5000 + i, 0, Math.PI * 2)
+        ctx.ellipse(0, 0, 18 + i * 9, 5 + i * 2.5, i * 0.12, 0, Math.PI * 2)
         ctx.stroke()
       }
-      ctx.fillStyle = `rgba(255, 230, 150, ${0.5 * fade})`
+      ctx.fillStyle = `rgba(1, 2, 6, ${0.96 * fade})`
       ctx.beginPath()
-      ctx.arc(x, y, 3, 0, Math.PI * 2)
+      ctx.arc(0, 0, 10, 0, Math.PI * 2)
       ctx.fill()
-    }
-
-    if (this.hasCuriosity('metronome-heart')) {
-      const beat = 1 + 0.12 * Math.sin(now / 180)
-      ctx.fillStyle = `rgba(255, 110, 180, ${0.26 * fade})`
+      ctx.strokeStyle = `rgba(198, 224, 255, ${0.08 * fade})`
+      ctx.lineWidth = 1
       ctx.beginPath()
-      ctx.arc(width * 0.72, height * 0.84, 5 * beat, 0, Math.PI * 2)
-      ctx.arc(width * 0.735, height * 0.84, 5 * beat, 0, Math.PI * 2)
-      ctx.fill()
+      ctx.arc(0, 0, 26 + Math.sin(now / 1800) * 2, 0.25, Math.PI * 1.55)
+      ctx.stroke()
+      ctx.restore()
     }
 
     if (this.hasCuriosity('moth')) {
-      const orbit = this.emberRadius(now) * 2.1
-      const angle = now / 2300
-      const x = c.x + Math.cos(angle) * orbit
-      const y = c.y + Math.sin(angle * 1.2) * orbit * 0.55
-      ctx.fillStyle = `rgba(255, 230, 150, ${0.72 * fade})`
+      // Keep the White Dwarf in the distant sky. It must never cross the
+      // rhythm target or inherit the ember's click-pulse radius.
+      const x = width * 0.085 + Math.sin(now / 6200) * 3
+      const y = height * 0.13 + Math.cos(now / 7100) * 2
+      ctx.fillStyle = `rgba(238, 249, 255, ${0.84 * fade})`
       ctx.beginPath()
-      ctx.ellipse(x - 3, y, 4, 2, -0.6, 0, Math.PI * 2)
-      ctx.ellipse(x + 3, y, 4, 2, 0.6, 0, Math.PI * 2)
+      ctx.arc(x, y, 3.4, 0, Math.PI * 2)
       ctx.fill()
-    }
-
-    if (this.hasCuriosity('second-cursor')) {
-      const orbit = this.emberRadius(now) * 1.85
-      const tap = 0.5 + 0.5 * Math.sin(now / 420)
-      const x = c.x + Math.cos(now / 1700) * orbit * 0.7
-      const y = c.y + Math.sin(now / 1700) * orbit * 0.45 + tap * 6
-      ctx.strokeStyle = `rgba(185, 230, 255, ${0.35 * fade})`
-      ctx.lineWidth = 1.4
+      ctx.strokeStyle = `rgba(155, 207, 255, ${0.24 * fade})`
       ctx.beginPath()
-      ctx.moveTo(x, y)
-      ctx.lineTo(x + 15, y + 22)
-      ctx.lineTo(x + 3, y + 18)
-      ctx.lineTo(x - 3, y + 31)
+      ctx.arc(x, y, 8 + Math.sin(now / 760), 0, Math.PI * 2)
       ctx.stroke()
+    }
+  }
+
+  private drawQuasarTaps(now: number, fade: number) {
+    if (!this.hasCuriosity('second-cursor')) return
+    const { ctx } = this
+    for (const tap of this.quasarTaps) {
+      const age = (now - tap.born) / 720
+      if (age < 0 || age > 1) continue
+      const alpha = (1 - age) * fade
+      ctx.save()
+      ctx.strokeStyle = tap.crit ? `rgba(255, 218, 135, ${0.55 * alpha})` : `rgba(185, 230, 255, ${0.48 * alpha})`
+      ctx.lineWidth = tap.crit ? 2.1 : 1.5
+      ctx.beginPath()
+      ctx.arc(tap.x, tap.y, 8 + age * 32, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.restore()
     }
   }
 
@@ -550,6 +613,7 @@ export class World {
       this.rings.push(now)
     }
     this.rings = this.rings.filter((born) => now - born < 650)
+    this.quasarTaps = this.quasarTaps.filter((tap) => now - tap.born < 760)
 
     // gentle motes rising from the ember while generators work
     const rate = ratePerSec()
@@ -560,6 +624,7 @@ export class World {
         const c = this.center
         const r = this.emberRadius(now)
         const angle = Math.random() * Math.PI * 2
+        const accent = universeById(game.activeUniverse).palette.accentHue
         this.addParticle({
           x: c.x + Math.cos(angle) * r * 0.9,
           y: c.y + Math.sin(angle) * r * 0.9,
@@ -568,7 +633,7 @@ export class World {
           life: 0,
           maxLife: 2.5 + Math.random() * 2.5,
           size: 0.8 + Math.random() * 1.6,
-          hue: 32 + Math.random() * 24,
+          hue: accent - 10 + Math.random() * 20,
           light: 60 + Math.random() * 30,
         })
       }
@@ -636,7 +701,8 @@ export class World {
       }
     }
 
-    this.drawVessel(now, collapseFade)
+    // Vessel construction belongs to its dedicated panel; the playfield stays
+    // focused on the central rhythm target.
     this.drawCuriosities(now, collapseFade)
 
     const c = this.center
@@ -668,12 +734,14 @@ export class World {
     // beat rings — the click window made visible
     for (const born of this.rings) {
       const age = (now - born) / 650
+      const accent = universeById(game.activeUniverse).palette.accentHue
       ctx.beginPath()
-      ctx.strokeStyle = `rgba(255, 190, 110, ${(1 - age) * 0.3})`
+      ctx.strokeStyle = `hsla(${accent}, 88%, 72%, ${(1 - age) * 0.3})`
       ctx.lineWidth = 1.5
       ctx.arc(c.x, c.y, r * (1.18 + age * 1.5), 0, Math.PI * 2)
       ctx.stroke()
     }
+    this.drawQuasarTaps(now, collapseFade)
 
     // sparks
     for (const p of this.particles) {

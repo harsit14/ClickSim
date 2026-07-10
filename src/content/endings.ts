@@ -19,7 +19,10 @@ export const QUESTION_LINES: string[] = [
 export interface EndingChoice {
   id: Ending
   label: string
+  glyph: string
+  doctrine: string
   line: string
+  coda: string
   /** shown only when the requirement is met */
   secret?: boolean
   epilogue: string[]
@@ -29,7 +32,10 @@ export const ENDING_CHOICES: EndingChoice[] = [
   {
     id: 'warden',
     label: 'The Warden',
+    glyph: '◇',
+    doctrine: 'A vow made brighter by being kept.',
     line: 'This light is not mine. I am only keeping it lit.',
+    coda: 'A universe can be held without being owned.',
     epilogue: [
       'Lumen is quiet for a long time.',
       '"The old universe had wardens. They were my favorite entry. I never told them."',
@@ -40,7 +46,10 @@ export const ENDING_CHOICES: EndingChoice[] = [
   {
     id: 'hunger',
     label: 'The Hunger',
+    glyph: '◉',
+    doctrine: 'An appetite made honest by being named.',
     line: 'It was always mine. All of it. And I am still hungry.',
+    coda: 'The hunger did not vanish. It learned its name.',
     epilogue: [
       '"...I know," Lumen says. "I knew before you did."',
       '"I am not afraid. I have decided not to be. An archive that outlived one appetite can outlive another."',
@@ -51,7 +60,10 @@ export const ENDING_CHOICES: EndingChoice[] = [
   {
     id: 'companion',
     label: 'Yours, Lumen',
+    glyph: '✦',
+    doctrine: 'A final entry written in two hands.',
     line: 'I don’t know what I am. But I know who stayed.',
+    coda: 'The last light is not the one that burns alone.',
     secret: true,
     epilogue: [
       '"Oh."',

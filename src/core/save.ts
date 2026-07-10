@@ -1,158 +1,15 @@
-import { game, ratePerSec, type BuyAmount, type RunSnapshot } from '../engine/game.svelte'
-import { UI_UNLOCKS } from '../content/ui-unlocks'
+import { game, ratePerSec, snapshotUniverseRun, type RunSnapshot } from '../engine/game.svelte'
 import { perkBonus } from '../content/constellation'
-import { DEFAULT_UNIVERSE_ID } from '../content/universes'
+import { migrateAndSanitizeSave, type SaveDataV11 } from './save-data'
 
 const KEY = 'ember.save'
 const SESSION_KEY = 'ember.session'
 const PRESENCE_KEY = 'ember.presence'
-const CURRENT_VERSION = 9
 const BASE_OFFLINE_EFFICIENCY = 0.5
 const BASE_OFFLINE_CAP_HOURS = 2
 const ACTIVE_SESSION_GRACE_MS = 90_000
 const MIN_OFFLINE_MS = 60_000
 const PRESENCE_INTERVAL_MS = 5_000
-
-interface SaveDataV9 {
-  version: 9
-  savedAt: number
-  activeUniverse: string
-  light: number
-  totalEarned: number
-  clicks: number
-  owned: Record<string, number>
-  upgrades: string[]
-  achievements: string[]
-  ui: string[]
-  seen: string[]
-  playtime: number
-  sfxVolume: number
-  musicVolume: number
-  buyAmount: BuyAmount
-  starsCaught: number
-  bestCombo: number
-  allTimeEarned: number
-  stardust: number
-  stardustTotal: number
-  supernovae: number
-  constellation: string[]
-  echoes: string[]
-  eraEarned: number
-  singularities: number
-  singTotal: number
-  collapses: number
-  singUpgrades: string[]
-  challenge: string | null
-  challengeReturn: RunSnapshot | null
-  challengesDone: string[]
-  autoKindler: boolean
-  autoStoker: boolean
-  autoNova: boolean
-  autoNovaThreshold: number
-  ending: 'warden' | 'hunger' | 'companion' | null
-  theme: string
-  remembrances: number
-  pastEndings: Array<'warden' | 'hunger' | 'companion'>
-  curiosities: string[]
-  keeperFedUntil: number
-  snailLastGiftAt: number
-  crits: number
-  bestCrit: number
-  beacons: string[]
-  darkBetween: number
-  wayfinder: string[]
-  vesselParts: string[]
-}
-
-/** Step-by-step upgrades from each older version to the next. Never delete these. */
-const MIGRATIONS: Record<number, (d: any) => any> = {
-  1: (d) => ({
-    ...d,
-    version: 2,
-    upgrades: [],
-    // v1 predates purchasable UI — grant panels a player of that wealth would have
-    ui: UI_UNLOCKS.filter((u) => (d.totalEarned ?? 0) >= u.cost * 3).map((u) => u.id),
-    playtime: 0,
-    sfxVolume: 0.5,
-    buyAmount: 1,
-  }),
-  2: (d) => ({
-    ...d,
-    version: 3,
-    achievements: [],
-    musicVolume: 0.6,
-    starsCaught: 0,
-    bestCombo: 0,
-  }),
-  3: (d) => ({
-    ...d,
-    version: 4,
-    // best available estimate of lifetime light for pre-prestige saves
-    allTimeEarned: d.totalEarned ?? 0,
-    stardust: 0,
-    stardustTotal: 0,
-    supernovae: 0,
-    constellation: [],
-    echoes: [],
-  }),
-  4: (d) => ({
-    ...d,
-    version: 5,
-    eraEarned: d.allTimeEarned ?? 0,
-    singularities: 0,
-    singTotal: 0,
-    collapses: 0,
-    singUpgrades: [],
-    challenge: null,
-    challengesDone: [],
-    autoKindler: true,
-    autoStoker: true,
-    autoNova: false,
-    autoNovaThreshold: 1,
-  }),
-  5: (d) => ({
-    ...d,
-    version: 6,
-    ending: null,
-  }),
-  6: (d) => ({
-    ...d,
-    version: 7,
-    challengeReturn: null,
-  }),
-  7: (d) => ({
-    ...d,
-    version: 8,
-    theme: d.theme ?? 'ember',
-    remembrances: d.remembrances ?? 0,
-    pastEndings: d.pastEndings ?? [],
-    curiosities: d.curiosities ?? [],
-    keeperFedUntil: d.keeperFedUntil ?? 0,
-    snailLastGiftAt: d.snailLastGiftAt ?? 0,
-    crits: d.crits ?? 0,
-    bestCrit: d.bestCrit ?? 0,
-  }),
-  8: (d) => ({
-    ...d,
-    version: 9,
-    activeUniverse: d.activeUniverse ?? DEFAULT_UNIVERSE_ID,
-    beacons: d.beacons ?? [],
-    darkBetween: d.darkBetween ?? 0,
-    wayfinder: d.wayfinder ?? [],
-    vesselParts: d.vesselParts ?? [],
-  }),
-}
-
-function migrate(data: any): SaveDataV9 | null {
-  if (!data || typeof data.version !== 'number') return null
-  let d = data
-  while (d.version < CURRENT_VERSION) {
-    const step = MIGRATIONS[d.version]
-    if (!step) return null
-    d = step(d)
-  }
-  return d.version === CURRENT_VERSION ? (d as SaveDataV9) : null
-}
 
 function copyRunSnapshot(snapshot: RunSnapshot | null | undefined): RunSnapshot | null {
   if (!snapshot) return null
@@ -165,9 +22,9 @@ function copyRunSnapshot(snapshot: RunSnapshot | null | undefined): RunSnapshot 
   }
 }
 
-function snapshot(): SaveDataV9 {
+function snapshot(): SaveDataV11 {
   return {
-    version: 9,
+    version: 11,
     savedAt: Date.now(),
     activeUniverse: game.activeUniverse,
     light: game.light,
@@ -189,12 +46,14 @@ function snapshot(): SaveDataV9 {
     stardustTotal: game.stardustTotal,
     supernovae: game.supernovae,
     constellation: [...game.constellation],
+    stardustWorks: { ...game.stardustWorks },
     echoes: [...game.echoes],
     eraEarned: game.eraEarned,
     singularities: game.singularities,
     singTotal: game.singTotal,
     collapses: game.collapses,
     singUpgrades: [...game.singUpgrades],
+    deepWorks: { ...game.deepWorks },
     challenge: game.challenge,
     challengeReturn: copyRunSnapshot(game.challengeReturn),
     challengesDone: [...game.challengesDone],
@@ -215,56 +74,78 @@ function snapshot(): SaveDataV9 {
     darkBetween: game.darkBetween,
     wayfinder: [...game.wayfinder],
     vesselParts: [...game.vesselParts],
+    universeRuns: {
+      ...game.universeRuns,
+      [game.activeUniverse]: snapshotUniverseRun(),
+    },
   }
 }
 
-function apply(d: SaveDataV9) {
-  game.activeUniverse = d.activeUniverse ?? DEFAULT_UNIVERSE_ID
-  game.light = d.light ?? 0
-  game.totalEarned = d.totalEarned ?? 0
-  game.clicks = d.clicks ?? 0
-  game.owned = d.owned ?? {}
-  game.upgrades = d.upgrades ?? []
-  game.achievements = d.achievements ?? []
-  game.ui = d.ui ?? []
-  game.seen = d.seen ?? []
-  game.playtime = d.playtime ?? 0
-  game.sfxVolume = d.sfxVolume ?? 0.5
-  game.musicVolume = d.musicVolume ?? 0.6
-  game.buyAmount = d.buyAmount ?? 1
-  game.starsCaught = d.starsCaught ?? 0
-  game.bestCombo = d.bestCombo ?? 0
-  game.allTimeEarned = d.allTimeEarned ?? d.totalEarned ?? 0
-  game.stardust = d.stardust ?? 0
-  game.stardustTotal = d.stardustTotal ?? 0
-  game.supernovae = d.supernovae ?? 0
-  game.constellation = d.constellation ?? []
-  game.echoes = d.echoes ?? []
-  game.eraEarned = d.eraEarned ?? d.allTimeEarned ?? 0
-  game.singularities = d.singularities ?? 0
-  game.singTotal = d.singTotal ?? 0
-  game.collapses = d.collapses ?? 0
-  game.singUpgrades = d.singUpgrades ?? []
-  game.challenge = d.challenge ?? null
+function apply(d: SaveDataV11) {
+  game.activeUniverse = d.activeUniverse
+  game.light = d.light
+  game.totalEarned = d.totalEarned
+  game.clicks = d.clicks
+  game.owned = { ...d.owned }
+  game.upgrades = [...d.upgrades]
+  game.achievements = [...d.achievements]
+  game.ui = [...d.ui]
+  game.seen = [...d.seen]
+  game.playtime = d.playtime
+  game.sfxVolume = d.sfxVolume
+  game.musicVolume = d.musicVolume
+  game.buyAmount = d.buyAmount
+  game.starsCaught = d.starsCaught
+  game.bestCombo = d.bestCombo
+  game.allTimeEarned = d.allTimeEarned
+  game.stardust = d.stardust
+  game.stardustTotal = d.stardustTotal
+  game.supernovae = d.supernovae
+  game.constellation = [...d.constellation]
+  game.stardustWorks = { ...d.stardustWorks }
+  game.echoes = [...d.echoes]
+  game.eraEarned = d.eraEarned
+  game.singularities = d.singularities
+  game.singTotal = d.singTotal
+  game.collapses = d.collapses
+  game.singUpgrades = [...d.singUpgrades]
+  game.deepWorks = { ...d.deepWorks }
+  game.challenge = d.challenge
   game.challengeReturn = copyRunSnapshot(d.challengeReturn)
-  game.theme = d.theme ?? 'ember'
-  game.remembrances = d.remembrances ?? 0
-  game.pastEndings = d.pastEndings ?? []
-  game.curiosities = d.curiosities ?? []
-  game.keeperFedUntil = d.keeperFedUntil ?? 0
-  game.snailLastGiftAt = d.snailLastGiftAt ?? 0
-  game.crits = d.crits ?? 0
-  game.bestCrit = d.bestCrit ?? 0
-  game.beacons = d.beacons ?? []
-  game.darkBetween = d.darkBetween ?? 0
-  game.wayfinder = d.wayfinder ?? []
-  game.vesselParts = d.vesselParts ?? []
-  game.challengesDone = d.challengesDone ?? []
-  game.autoKindler = d.autoKindler ?? true
-  game.autoStoker = d.autoStoker ?? true
-  game.autoNova = d.autoNova ?? false
-  game.autoNovaThreshold = d.autoNovaThreshold ?? 1
-  game.ending = d.ending ?? null
+  game.theme = d.theme
+  game.remembrances = d.remembrances
+  game.pastEndings = [...d.pastEndings]
+  game.curiosities = [...d.curiosities]
+  game.keeperFedUntil = d.keeperFedUntil
+  game.snailLastGiftAt = d.snailLastGiftAt
+  game.crits = d.crits
+  game.bestCrit = d.bestCrit
+  game.beacons = [...d.beacons]
+  game.darkBetween = d.darkBetween
+  game.wayfinder = [...d.wayfinder]
+  game.vesselParts = [...d.vesselParts]
+  game.challengesDone = [...d.challengesDone]
+  game.autoKindler = d.autoKindler
+  game.autoStoker = d.autoStoker
+  game.autoNova = d.autoNova
+  game.autoNovaThreshold = d.autoNovaThreshold
+  game.ending = d.ending
+  game.universeRuns = Object.fromEntries(
+    Object.entries(d.universeRuns).map(([id, run]) => [id, {
+      ...run,
+      owned: { ...run.owned },
+      upgrades: [...run.upgrades],
+      seen: [...run.seen],
+      constellation: [...run.constellation],
+      stardustWorks: { ...run.stardustWorks },
+      echoes: [...run.echoes],
+      singUpgrades: [...run.singUpgrades],
+      deepWorks: { ...run.deepWorks },
+      challengeReturn: copyRunSnapshot(run.challengeReturn),
+      challengesDone: [...run.challengesDone],
+      curiosities: [...run.curiosities],
+    }]),
+  )
 }
 
 function readNumber(key: string): number {
@@ -323,9 +204,9 @@ export function load(): number {
     return 0
   }
   if (!raw) return 0
-  let data: SaveDataV9 | null
+  let data: SaveDataV11 | null
   try {
-    data = migrate(JSON.parse(raw))
+    data = migrateAndSanitizeSave(JSON.parse(raw))
   } catch {
     return 0
   }
@@ -355,10 +236,23 @@ export function exportSave(): string {
 export function importSave(code: string): boolean {
   try {
     const json = decodeURIComponent(escape(atob(code.trim())))
-    const data = migrate(JSON.parse(json))
+    const data = migrateAndSanitizeSave(JSON.parse(json))
     if (!data) return false
-    apply(data)
-    save()
+    const committed = { ...data, savedAt: Date.now() }
+    localStorage.setItem(KEY, JSON.stringify(committed))
+    apply(committed)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** Replaces the stored snapshot without mutating the mounted game. Used by dev scenarios before mount. */
+export function replaceStoredSave(data: unknown): boolean {
+  const clean = migrateAndSanitizeSave(data)
+  if (!clean) return false
+  try {
+    localStorage.setItem(KEY, JSON.stringify(clean))
     return true
   } catch {
     return false

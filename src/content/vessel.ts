@@ -110,3 +110,14 @@ export function vesselComplete(g: GameState): boolean {
 export function vesselHasReadyPart(g: GameState): boolean {
   return VESSEL_PARTS.some((part) => vesselPartReady(g, part))
 }
+
+export function vesselBuiltCount(g: GameState): number {
+  return VESSEL_PARTS.filter((part) => vesselPartComplete(g, part.id)).length
+}
+
+export function vesselStage(g: GameState): string {
+  const count = vesselBuiltCount(g)
+  if (count === 0) return 'a shape under scaffolds'
+  if (count < VESSEL_PARTS.length) return 'a vessel being remembered'
+  return 'a quiet ark, ready at the edge'
+}

@@ -4,7 +4,9 @@
   import { format } from '../core/format'
   import { playBloom } from '../audio/sfx'
   import { startMusic } from '../audio/music'
+  import { universeById } from '../content/universes'
 
+  const currencyGlyph = $derived(universeById(game.activeUniverse).currencyGlyph)
   const next = $derived(
     UI_UNLOCKS.find((u) => !game.ui.includes(u.id) && game.totalEarned >= u.appearAt),
   )
@@ -21,7 +23,7 @@
   {#key next.id}
     <button type="button" class="chip" class:unaffordable={game.light < next.cost} onclick={tryBuy}>
       <span class="label">{next.label}</span>
-      <span class="cost">✦ {format(next.cost)}</span>
+      <span class="cost">{currencyGlyph} {format(next.cost)}</span>
     </button>
   {/key}
 {/if}

@@ -86,7 +86,7 @@ A('meteor-greed', 'Greedy for Meteors', 'Fifty. The sky is keeping a list.', (g)
 // ── Rhythm ──────────────────────────────────────────────────────────────
 A('on-the-beat', 'On the Beat', 'Eight clicks in rhythm.', (g) => g.bestCombo >= 8)
 A('in-the-groove', 'In the Groove', 'Sixteen. The music leans toward you.', (g) => g.bestCombo >= 16)
-A('metronome-heart', 'Metronome Heart', 'Thirty-two. You are the percussion now.', (g) => g.bestCombo >= 32)
+A('metronome-heart', 'Pulsar Precision', 'Thirty-two. You are keeping time with a neutron star now.', (g) => g.bestCombo >= 32)
 
 // ── Rebirth ─────────────────────────────────────────────────────────────
 A('nova-1', 'Let There Be Nothing', 'You collapsed a universe on purpose. And then — again, light.', (g) => g.supernovae >= 1)
@@ -96,6 +96,8 @@ A('dust-10', 'Pocketful of Sky', 'Ten stardust, gathered from your own endings.'
 A('dust-50', 'Dust Baron', 'Fifty stardust. The void owes you money.', (g) => g.stardustTotal >= 50)
 A('first-node', 'Connect the Dots', 'Your first constellation star. The sky has a shape now.', (g) => g.constellation.length >= 1)
 A('cartographer', 'Cartographer of Heaven', 'Seven constellation stars, drawn by hand.', (g) => g.constellation.length >= 7)
+A('endless-sky', 'No Final Star', 'The complete constellation accepted one more point.', (g) =>
+  Object.values(g.stardustWorks).reduce((sum, rank) => sum + rank, 0) >= 1)
 
 // ── The Deep ────────────────────────────────────────────────────────────
 A('deep-1', 'Past the Event Horizon', 'A whole era of stardust, folded into a point.', (g) => g.collapses >= 1)
@@ -103,6 +105,8 @@ A('deep-3', 'Recursive Dark', 'Three eras deep. The dark has layers, and you own
 A('sing-5', 'Five Points of Nothing', 'Five singularities. They weigh less than doubt.', (g) => g.singTotal >= 5)
 A('automated', 'The Machine Tends the Fire', 'Kindler and stoker, working while you dream.', (g) =>
   g.singUpgrades.includes('auto-kindler') && g.singUpgrades.includes('auto-stoker'))
+A('deeper-still', 'Deeper Still', 'The finished Deep discovered that finished was only another surface.', (g) =>
+  Object.values(g.deepWorks).reduce((sum, rank) => sum + rank, 0) >= 1)
 
 // ── Trials ──────────────────────────────────────────────────────────────
 A('trial-1', 'Tested', 'One trial endured.', (g) => g.challengesDone.length >= 1)
@@ -112,9 +116,15 @@ A('trial-6', 'Unbreakable', 'Every trial, endured. Lumen has stopped setting the
 // ── Curiosities & chance ────────────────────────────────────────────────
 A('first-crit', 'Found the Fault Line', 'One touch struck the dark exactly wrong.', (g) => g.crits >= 1)
 A('crit-100', 'Hundred Bright Accidents', 'Probability has started looking over its shoulder.', (g) => g.crits >= 100)
-A('curiosity-1', 'Cabinet Key', 'A strange thing agreed to stay.', (g) => g.curiosities.length >= 1)
-A('curiosity-6', 'A Shelf of Impossible Things', 'Six curiosities. The void is getting furnished.', (g) => g.curiosities.length >= 6)
-H('curiosity-all', 'The Cabinet Is Full', 'Every oddity, held in one universe.', (g) => g.curiosities.length >= 12)
+A('curiosity-1', 'First Light on the Plate', 'One distant object resolved into a name.', (g) => g.curiosities.length >= 1)
+A('curiosity-6', 'Surveyor of the Dark', 'Six astronomical phenomena catalogued.', (g) => g.curiosities.length >= 6)
+A('curiosity-hearthside', 'Stellar Chorus', 'The Local Sky became a complete chapter.', (g) =>
+  ['moth', 'chimes', 'hearthkeeper', 'glass-garden'].every((id) => g.curiosities.includes(id)))
+A('curiosity-pilgrims', 'Signals Without Senders', 'Every object in the Signal Sky crossed the dark in its own way.', (g) =>
+  ['second-cursor', 'snail', 'aurora', 'door'].every((id) => g.curiosities.includes(id)))
+A('curiosity-portents', 'Gravitational Lens', 'The Deep Sky revealed something behind this universe.', (g) =>
+  ['star-jar', 'metronome-heart', 'letter', 'orrery'].every((id) => g.curiosities.includes(id)))
+H('curiosity-all', 'The Sky Is a Map', 'Every celestial object catalogued in one universe.', (g) => g.curiosities.length >= 12)
 
 // ── Remembrance ─────────────────────────────────────────────────────────
 A('remembered', 'Begin Again, Knowing', 'A whole universe, folded into memory. The first pixel, twice as bright.', (g) =>
