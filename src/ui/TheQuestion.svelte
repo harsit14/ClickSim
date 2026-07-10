@@ -190,7 +190,7 @@
         <div><dt>phenomena catalogued</dt><dd>{game.curiosities.length}</dd></div>
       </dl>
 
-      <p class="afterword">The game continues. The Codex now holds a path back to the first ember, if you ever choose to remember it all again.</p>
+      <p class="afterword">The game continues. The Story Archive now holds a path back to the first ember, if you ever choose to remember it all again.</p>
       <button class="return" onclick={finish} data-story-focus>Return to the {universe.currency.toLowerCase()}</button>
     </section>
   {/if}

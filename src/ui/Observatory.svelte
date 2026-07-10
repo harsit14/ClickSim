@@ -78,6 +78,13 @@
     { id: 'sky', glyph: '✾', name: 'Canopy', note: 'light, seasons, and pollination' },
     { id: 'root', glyph: '◇', name: 'Seed Memory', note: 'rest and inheritance across Prunings' },
   ] as const
+  const tidefallBranches = [
+    { id: 'forge', glyph: '≋', name: 'Reefwork', note: 'production carried upward through living reefs' },
+    { id: 'hand', glyph: '≈', name: 'Undertow', note: 'touch and rhythm moving below the surface' },
+    { id: 'sky', glyph: '◌', name: 'Surface Drift', note: 'blessings and omens riding the open current' },
+    { id: 'root', glyph: '◉', name: 'Deepwater Memory', note: 'patience and return beneath every tide' },
+  ] as const
+  const chartBranches = $derived(tidefall ? tidefallBranches : verdanceBranches)
 
   const worldText = (text: string) => text.replaceAll('{currency}', pack.currency.toLowerCase())
 
@@ -116,12 +123,12 @@
     }).join(' + ')
   }
 
-  function verdanceNodeStatus(n: StarNode): string {
+  function chartNodeStatus(n: StarNode): string {
     const state = nodeState(n)
-    if (state === 'owned') return 'grown'
+    if (state === 'owned') return tidefall ? 'charted' : 'grown'
     if (state === 'ready') return `${epochMatterGlyph}${n.cost} · ready`
     if (state === 'reachable') return `${epochMatterGlyph}${n.cost}`
-    return 'awaiting prior ring'
+    return tidefall ? 'awaiting prior current' : 'awaiting prior ring'
   }
 
   function describe(n: StarNode): string[] {
@@ -196,18 +203,18 @@
     {/if}
   </div>
 
-  {#if verdance}
+  {#if verdance || tidefall}
     {@const crown = CONSTELLATION.find(({ branch }) => branch === 'crown')!}
     {@const crownCopy = constellationNodeCopy(crown, pack.id)}
     {@const crownState = nodeState(crown)}
-    <section class="growth-map" aria-label={identity.mapTitle}>
+    <section class="growth-map" class:tide-chart={tidefall} aria-label={identity.mapTitle}>
       <div class="growth-map-head">
         <div>
-          <span>the living canopy</span>
-          <strong>Four paths, one crown</strong>
+          <span>{tidefall ? 'the current chart' : 'the living canopy'}</span>
+          <strong>{tidefall ? 'Four currents, one crown' : 'Four paths, one crown'}</strong>
         </div>
-        <div class="growth-key" aria-label="Growth-ring states">
-          <span class="grown">grown</span><span class="available">available</span><span class="waiting">waiting</span>
+        <div class="growth-key" aria-label={tidefall ? 'Current Chart states' : 'Growth-ring states'}>
+          <span class="grown">{tidefall ? 'charted' : 'grown'}</span><span class="available">available</span><span class="waiting">{tidefall ? 'submerged' : 'waiting'}</span>
         </div>
       </div>
       <button
@@ -217,12 +224,12 @@
         onclick={() => (selectedId = crown.id)}
       >
         <span class="ring-mark" aria-hidden="true"><i></i></span>
-        <span class="growth-node-copy"><small>canopy capstone</small><strong>{crownCopy.name}</strong><em>{crownCopy.flavor}</em></span>
-        <span class="growth-node-state">{verdanceNodeStatus(crown)}</span>
+        <span class="growth-node-copy"><small>{tidefall ? 'chart capstone' : 'canopy capstone'}</small><strong>{crownCopy.name}</strong><em>{crownCopy.flavor}</em></span>
+        <span class="growth-node-state">{chartNodeStatus(crown)}</span>
       </button>
 
       <div class="growth-paths">
-        {#each verdanceBranches as branch (branch.id)}
+        {#each chartBranches as branch (branch.id)}
           <section class="growth-path" data-branch={branch.id}>
             <header>
               <span aria-hidden="true">{branch.glyph}</span>
@@ -240,7 +247,7 @@
                 >
                   <span class="ring-mark" aria-hidden="true"><i></i></span>
                   <span class="growth-node-copy"><strong>{copy.name}</strong><em>{copy.flavor}</em></span>
-                  <span class="growth-node-state">{verdanceNodeStatus(n)}</span>
+                  <span class="growth-node-state">{chartNodeStatus(n)}</span>
                 </button>
               {/each}
             </div>
@@ -770,6 +777,68 @@
     left: 1.47rem;
     width: 1px;
     background: linear-gradient(color-mix(in srgb, var(--amber) 8%, transparent), color-mix(in srgb, var(--gold) 22%, transparent), color-mix(in srgb, var(--amber) 8%, transparent));
+  }
+
+  .growth-map.tide-chart {
+    border-color: rgba(88, 222, 216, 0.2);
+    border-radius: 0.95rem;
+    background:
+      repeating-radial-gradient(ellipse at 50% 112%, transparent 0 3.35rem, rgba(88, 222, 216, 0.028) 3.4rem 3.46rem, transparent 3.51rem 6.7rem),
+      radial-gradient(ellipse at 50% 100%, rgba(38, 130, 143, 0.12), transparent 62%),
+      rgba(0, 8, 16, 0.64);
+  }
+  .tide-chart .growth-map-head > div:first-child > span { color: rgba(88, 222, 216, 0.72); }
+  .tide-chart .growth-map-head > div:first-child > strong,
+  .tide-chart .growth-node-copy strong,
+  .tide-chart .growth-path > header strong { color: #d4fff8; }
+  .tide-chart .growth-key span,
+  .tide-chart .growth-node-state,
+  .tide-chart .growth-node-copy em,
+  .tide-chart .growth-path > header small { color: rgba(158, 223, 221, 0.62); }
+  .tide-chart .growth-key span::before { border-color: rgba(88, 222, 216, 0.3); }
+  .tide-chart .growth-key .grown::before { background: #9ff8ed; box-shadow: 0 0 0.45rem rgba(88, 222, 216, 0.68); }
+  .tide-chart .growth-key .available::before { border-color: #58ded8; background: rgba(88, 222, 216, 0.28); }
+  .tide-chart .growth-node {
+    border-color: rgba(88, 222, 216, 0.11);
+    border-radius: 0.72rem;
+    background: linear-gradient(90deg, rgba(42, 160, 163, 0.045), rgba(0, 8, 16, 0.3));
+  }
+  .tide-chart .growth-node:hover,
+  .tide-chart .growth-node.selected { border-color: rgba(112, 239, 228, 0.45); background: rgba(42, 160, 163, 0.1); }
+  .tide-chart .ring-mark {
+    border-color: rgba(88, 222, 216, 0.24);
+    border-radius: 50%;
+    background: rgba(0, 17, 28, 0.78);
+    box-shadow: 0 0 0 0.22rem rgba(88, 222, 216, 0.025), inset 0 0 0.65rem rgba(88, 222, 216, 0.07);
+  }
+  .tide-chart .ring-mark i { background: #286b7b; }
+  .tide-chart .growth-node.owned { border-color: rgba(133, 242, 229, 0.3); }
+  .tide-chart .growth-node.owned .ring-mark { border-color: rgba(170, 255, 244, 0.72); }
+  .tide-chart .growth-node.owned .ring-mark i { background: #cffff8; box-shadow: 0 0 0.6rem rgba(88, 222, 216, 0.9); }
+  .tide-chart .growth-node.owned .growth-node-state { color: #9ff8ed; }
+  .tide-chart .growth-node.ready { border-color: rgba(88, 222, 216, 0.52); }
+  .tide-chart .growth-node.ready .ring-mark { border-color: #58ded8; box-shadow: 0 0 0.7rem rgba(88, 222, 216, 0.2); }
+  .tide-chart .growth-node.ready .ring-mark i { background: #58ded8; }
+  .tide-chart .growth-node.ready .growth-node-state { color: #b9fff2; }
+  .tide-chart .growth-node.crown {
+    border-radius: 50% / 0.9rem;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(88, 222, 216, 0.13), transparent 62%),
+      rgba(0, 15, 26, 0.48);
+  }
+  .tide-chart .growth-path {
+    border-color: rgba(88, 222, 216, 0.1);
+    border-radius: 0.72rem;
+    background: rgba(0, 8, 16, 0.38);
+  }
+  .tide-chart .growth-path > header > span {
+    color: #9ff8ed;
+    border-color: rgba(88, 222, 216, 0.24);
+    border-radius: 50%;
+    background: rgba(38, 130, 143, 0.08);
+  }
+  .tide-chart .growth-path-nodes::before {
+    background: linear-gradient(rgba(88, 222, 216, 0.05), rgba(88, 222, 216, 0.32), rgba(88, 222, 216, 0.05));
   }
 
   .map {

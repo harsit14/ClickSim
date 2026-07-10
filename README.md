@@ -45,6 +45,9 @@ universe ended—and what may exist beyond it.
   Rhizome network involving all eighteen Kindlings.
 - **Field Archives** — twelve purposeful records per universe, grouped into three
   shelves with lore, mechanical effects, visible landmarks, and retained-state rules.
+- **Story Archive** — every Lumen ticker line in the current saved universe histories is
+  shown in occurrence order, with the latest line highlighted beside recovered Echoes
+  and ending records.
 - **Omens and active opportunities** — Falling Stars, tide phenomena, pollinators,
   Maintenance Signals, optical events, storms, and refrains use bounded rewards and
   never punish a missed event.

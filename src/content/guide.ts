@@ -47,7 +47,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Reading the screen',
         paragraphs: [
           'The large number at the top is spendable currency. The smaller rate is passive currency per second. Temporary blessings, rhythm streaks, prestige balances, and universe physics appear nearby only when relevant.',
-          'The right rail is Kindling. The bottom-left dock opens permanent systems such as Stats, Options, the cabinet, Observatory, Deep, Codex, Vessel, and this guide.',
+          'The right rail is Kindling. The bottom-left dock opens permanent systems such as Stats, Options, the cabinet, Observatory, Deep, Story Archive, Vessel, and this guide.',
         ],
       },
     ],
@@ -298,14 +298,15 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     id: 'story',
     nav: 'Story & endings',
     eyebrow: 'the archive speaks',
-    title: 'Lumen, Echoes, The Question, and Remembrance',
+    title: 'Lumen, the Story Archive, The Question, and Remembrance',
     summary: 'Story is delivered through short ambient lines, collectible Echoes, major in-engine scenes, and a final answer that changes future play.',
     keywords: ['lumen', 'echo', 'codex', 'story', 'question', 'ending', 'warden', 'hunger', 'companion', 'remembrance', 'spoiler'],
     blocks: [
       {
-        heading: 'Lumen and the Codex',
+        heading: 'Lumen and the Story Archive',
         paragraphs: [
-          'Lumen’s ticker reacts to milestones but never blocks input. Echoes are longer archive fragments recovered from economic and generator milestones. Open the Codex from the dock to read any recovered entry again.',
+          'Lumen’s ticker reacts to milestones but never blocks input. Every line in the current saved universe histories is retained in occurrence order. Open the Story Archive from the dock to revisit the latest line or read the complete journal for every visited universe.',
+          'Recovered Echoes are longer archive fragments from economic and generator milestones. They remain available in the Story Archive’s Echoes tab.',
           'Echo collections belong to their universe. Completing the active universe’s archive can reveal an additional answer when The Question arrives.',
         ],
       },
@@ -313,7 +314,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'The Question',
         paragraphs: [
           'Act III culminates in a narrative choice rather than another numeric reset. Each answer grants a permanent law and recolors the central object. The game continues after an ending, with new Lumen lines acknowledging the chosen doctrine.',
-          'After an ending, the Codex offers Remembrance: return to the first point of light while retaining the archive and record. Each Remembrance doubles production and allows another answer to be chosen later.',
+          'After an ending, the Story Archive offers Remembrance: return to the first point of light while retaining the archive and record. Each Remembrance doubles production and allows another answer to be chosen later.',
         ],
         note: 'The guide explains the system without revealing the central story twist. A spoiler panel inside this chapter records the exact ending bonuses for players who choose to open it.',
       },
@@ -398,7 +399,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
           'Click or tap the central object to earn currency.',
           'Space or Enter also activates the central object when focus is not inside a control.',
           'Number keys 1–9 buy the matching visible generator.',
-          'G opens this guide; I opens Stats; O opens Options; C opens the active cabinet; V opens the Vessel; S opens the Observatory; D opens the Deep; E opens the Codex; and L opens the Legacy hub when each system exists.',
+          'G opens this guide; I opens Stats; O opens Options; C opens the active cabinet; V opens the Vessel; S opens the Observatory; D opens the Deep; E opens the Story Archive; and L opens the Legacy hub when each system exists.',
           'B cycles the 1, 10, 100, and maximum bulk-buy settings. Escape closes any utility panel.',
           'Every major panel, upgrade, shop item, and story choice is keyboard focusable.',
           'Reduced-motion preferences disable or simplify major interface animations.',

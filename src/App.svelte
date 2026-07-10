@@ -113,6 +113,12 @@
   const vesselReady = $derived(vesselHasReadyPart())
   const endgameVisible = $derived(game.beacons.length > 0 || game.activeAtlasRoute !== null)
   const endgameReady = $derived(game.activeAtlasRoute !== null && atlasRouteReady())
+  const storyArchiveVisible = $derived(
+    game.seen.length > 0
+    || game.echoes.length > 0
+    || game.ending !== null
+    || Object.values(game.universeRuns).some((run) => run.seen.length > 0 || run.echoes.length > 0 || run.ending !== null),
+  )
   const utilityPanelOpen = $derived(
     statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen || guideOpen || endgameOpen,
   )
@@ -236,7 +242,7 @@
     else if (key === 'v' && vesselVisible) toggleVessel()
     else if (key === 's' && observatoryVisible) toggleObservatory()
     else if (key === 'd' && deepVisible) toggleDeep()
-    else if (key === 'e' && game.echoes.length > 0) toggleCodex()
+    else if (key === 'e' && storyArchiveVisible) toggleCodex()
     else if (key === 'l' && endgameVisible) toggleEndgame()
     else if (key === 'b' && hasUi('bulk')) {
       const amounts = [1, 10, 100, 'max'] as const
@@ -421,8 +427,8 @@
     {#if deepVisible}
       <button class="dock-btn deep" class:open={deepOpen} class:ready={deepReady} onclick={toggleDeep} title="The Deep · D" data-hint="The Deep · D" aria-label="The Deep" aria-keyshortcuts="D">◉</button>
     {/if}
-    {#if game.echoes.length > 0}
-      <button class="dock-btn" class:open={codexOpen} onclick={toggleCodex} title="Codex of Echoes · E" data-hint="Codex of Echoes · E" aria-label="Codex of Echoes" aria-keyshortcuts="E">❖</button>
+    {#if storyArchiveVisible}
+      <button class="dock-btn" class:open={codexOpen} onclick={toggleCodex} title="Story Archive · E" data-hint="Story Archive · E" aria-label="Story Archive" aria-keyshortcuts="E">❖</button>
     {/if}
     {#if endgameVisible}
       <button class="dock-btn legacy" class:open={endgameOpen} class:ready={endgameReady} onclick={toggleEndgame} title="The Legacy of Light · L" data-hint="Legacy · L" aria-label="The Legacy of Light" aria-keyshortcuts="L">⌘</button>
