@@ -124,8 +124,12 @@ export function playBuy(gainScale = 1): boolean {
   return true
 }
 
-/** The supernova: a deep boom, then a long shimmering bloom. */
-export function playSupernova() {
+/** A local Epoch Turn ceremony: stellar bloom or Tidefall pressure reversal. */
+export function playSupernova(mode: 'emberlight' | 'tidefall' = 'emberlight') {
+  if (mode === 'tidefall') {
+    playUndertow()
+    return
+  }
   const a = audio()
   if (!a) return
   const t = a.ctx.currentTime
@@ -154,6 +158,44 @@ export function playSupernova() {
     osc.connect(gain).connect(a.master)
     osc.start(start)
     osc.stop(start + 2.8)
+  })
+}
+
+/** Undertow: the sea draws inward, holds one quiet beat, then returns as salt glass. */
+function playUndertow() {
+  const a = audio()
+  if (!a) return
+  const t = a.ctx.currentTime
+
+  const pressure = a.ctx.createOscillator()
+  const pressureGain = a.ctx.createGain()
+  const pressureFilter = a.ctx.createBiquadFilter()
+  pressure.type = 'sine'
+  pressure.frequency.setValueAtTime(92, t)
+  pressure.frequency.exponentialRampToValueAtTime(34, t + 1.55)
+  pressureGain.gain.setValueAtTime(0.0001, t)
+  pressureGain.gain.exponentialRampToValueAtTime(0.42, t + 0.22)
+  pressureGain.gain.exponentialRampToValueAtTime(0.001, t + 1.72)
+  pressureFilter.type = 'lowpass'
+  pressureFilter.frequency.setValueAtTime(680, t)
+  pressureFilter.frequency.exponentialRampToValueAtTime(120, t + 1.55)
+  pressure.connect(pressureFilter).connect(pressureGain).connect(a.master)
+  pressure.start(t)
+  pressure.stop(t + 1.8)
+
+  const returnNotes = [293.66, 349.23, 440, 587.33]
+  returnNotes.forEach((frequency, index) => {
+    const oscillator = a.ctx.createOscillator()
+    const gain = a.ctx.createGain()
+    oscillator.type = index % 2 === 0 ? 'sine' : 'triangle'
+    oscillator.frequency.value = frequency
+    const start = t + 1.95 + index * 0.12
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(0.095, start + 0.045)
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 1.35)
+    oscillator.connect(gain).connect(a.master)
+    oscillator.start(start)
+    oscillator.stop(start + 1.42)
   })
 }
 

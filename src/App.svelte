@@ -51,11 +51,12 @@
   import { amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
   import { resolveVisualQuality } from './core/preferences'
   import { buildEmberGoalCandidates, previewSupernovaRecovery } from './experience/ember-cohesion'
-  import { formatGoalDuration, resolveEmberUiText } from './experience/ember-ui-text'
+  import { formatGoalDuration, resolveUniverseUiText } from './experience/ember-ui-text'
   import { compareProgressionBoundary } from './experience/reset-comparison'
   import type { ResetComparison } from './experience/reset-comparison'
   import type { ResetCardDecision } from './experience/reset-comparison-ui'
   import type { ContextualPromptCandidate, ContextualPromptState } from './experience/contextual-prompts'
+  import type { UiTextResolver } from './experience/ui-text'
   import type { FocusReturnDescriptor } from './accessibility/focus'
 
   let { offlineGain }: { offlineGain: EconomyAmount } = $props()
@@ -112,6 +113,9 @@
   })
   const goalPresentation = $derived(
     !averagedRhythm && combo.streak >= 4 ? 'active-rhythm' as const : 'standard' as const,
+  )
+  const resolveActiveUiText: UiTextResolver = (key, parameters = {}) => (
+    resolveUniverseUiText(game.activeUniverse, key, parameters)
   )
   const contextualPrompts = $derived([
     {
@@ -338,19 +342,19 @@
   {#if activeV2Pack && !utilityPanelOpen}
     <section class="cohesion-stack" aria-label="Optional guidance">
       <GoalLens
-        id="emberlight-goal-lens"
+        id="universe-goal-lens"
         goals={goalLensInput}
         presentationMode={goalPresentation}
-        resolveText={resolveEmberUiText}
+        resolveText={resolveActiveUiText}
         formatDuration={formatGoalDuration}
         onpinchange={(goalId) => (pinnedGoalId = goalId)}
         ondisable={() => (goalLensEnabled = false)}
       />
       <ContextualPrompts
-        id="emberlight-contextual-prompt"
+        id="universe-contextual-prompt"
         candidates={contextualPrompts}
         state={promptState}
-        resolveText={resolveEmberUiText}
+        resolveText={resolveActiveUiText}
         onstatechange={(state) => (promptState = state)}
         onaction={handlePromptAction}
       />
@@ -431,7 +435,7 @@
     comparison={resetComparison}
     confirmFocusReturn={confirmResetFocus}
     cancelFocusReturn={cancelResetFocus}
-    resolveText={resolveEmberUiText}
+    resolveText={resolveActiveUiText}
     formatDuration={formatGoalDuration}
     ondecision={handleResetDecision}
   />

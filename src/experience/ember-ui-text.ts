@@ -84,6 +84,19 @@ const COPY: Readonly<Record<string, string>> = {
   'reset.recovery.epoch-projection': 'Projection assumes the earned Stardust and current permanent bonuses.',
 }
 
+const TIDEFALL_COPY: Readonly<Record<string, string>> = {
+  'goal-lens.reason.supernova': 'Draw this tide into lasting Moon Salt.',
+  'goal-lens.supernova': 'Preview the Undertow',
+  'prompt.supernova.title': 'Preview the Undertow before committing',
+  'reset.action.cancel': 'Keep this tide',
+  'reset.action.epoch-turn': 'Undertow',
+  'reset.result.epoch-matter-and-starting-kindlings': 'Glow, Kindlings, ordinary upgrades, and buy mode return; Moon Salt and permanent systems remain.',
+  'reset.category.world-currency': 'Glow (World currency)',
+  'reset.category.epoch-matter': 'Moon Salt (Epoch Matter)',
+  'reset.category.local-archive': 'Pelagic Archive (Field Archive)',
+  'reset.recovery.epoch-projection': 'Projection assumes the earned Moon Salt and current permanent bonuses.',
+}
+
 function humanizeKey(key: string): string {
   const leaf = key.split('.').at(-1) ?? key
   const words = leaf.replaceAll('-', ' ')
@@ -102,6 +115,19 @@ export const resolveEmberUiText: UiTextResolver = (key, parameters = {}) => {
   ))
 }
 
+export function resolveUniverseUiText(
+  universeId: string,
+  key: string,
+  parameters: Readonly<Record<string, UiTextParameter>> = {},
+): string {
+  const template = universeId === 'tidefall' && TIDEFALL_COPY[key]
+    ? TIDEFALL_COPY[key]
+    : COPY[key] ?? humanizeKey(key)
+  return template.replace(/\{([a-zA-Z0-9_-]+)\}/g, (_match, name: string) => (
+    parameterText(parameters[name])
+  ))
+}
+
 export const formatGoalDuration: DurationFormatter = (milliseconds) => {
   if (!Number.isFinite(milliseconds) || milliseconds < 0) return 'time unavailable'
   const totalSeconds = Math.max(0, Math.round(milliseconds / 1_000))
@@ -112,4 +138,3 @@ export const formatGoalDuration: DurationFormatter = (milliseconds) => {
   const minutes = totalMinutes % 60
   return minutes === 0 ? `about ${hours}h` : `about ${hours}h ${minutes}m`
 }
-

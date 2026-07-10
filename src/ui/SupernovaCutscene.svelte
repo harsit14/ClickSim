@@ -5,6 +5,7 @@
   import { playSupernova } from '../audio/sfx'
   import { game } from '../engine/game.svelte'
   import { progressionIdentity } from '../content/universe-progression'
+  import { universeV2ById } from '../content/universes'
   import type { EconomyAmount } from '../content/universes/types'
   import { ZERO_AMOUNT } from '../core/numeric/amount'
   import { format } from '../core/format'
@@ -21,6 +22,9 @@
   let againButton = $state<HTMLButtonElement>()
   const tidefall = $derived(game.activeUniverse === 'tidefall')
   const ritualName = $derived(progressionIdentity(game.activeUniverse).observatory.collapseName)
+  const localPrestige = $derived(universeV2ById(game.activeUniverse)?.economy.localPrestige)
+  const rewardGlyph = $derived(localPrestige?.rewardCurrency.glyph ?? '✧')
+  const rewardName = $derived(localPrestige?.rewardCurrency.localName ?? 'Stardust')
 
   $effect(() => {
     if (phase !== 'after') return
@@ -41,7 +45,7 @@
     worldRef()?.beginCollapse()
     const timers = [
       setTimeout(() => (phase = 'void'), 3_000),
-      setTimeout(() => playSupernova(), 3_400),
+      setTimeout(() => playSupernova(tidefall ? 'tidefall' : 'emberlight'), 3_400),
       setTimeout(() => {
         gained = doReset()
         worldRef()?.endCollapse()
@@ -74,11 +78,11 @@
           style:animation-delay={drop.delay + 's'}
           style:animation-duration={drop.duration + 's'}
           style:font-size={drop.size + 'rem'}
-        >✧</span>
+        >{rewardGlyph}</span>
       {/each}
       <div class="result">
         <p class="whisper">{tidefall ? 'the tide returned as memory' : 'the dark kept nothing'}</p>
-        <p class="dust">✧ {format(gained)} stardust</p>
+        <p class="dust">{rewardGlyph} {format(gained)} {rewardName}</p>
         <button bind:this={againButton} class="again" onclick={onfinished}>{tidefall ? 'begin at low tide' : 'begin again'}</button>
       </div>
     </div>
