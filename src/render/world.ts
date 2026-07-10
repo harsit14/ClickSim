@@ -245,6 +245,19 @@ export class World {
     this.quasarTaps = []
   }
 
+  /** A Crossing must not carry short-lived canvas artifacts into the next world. */
+  resetForUniverse() {
+    this.collapseStart = 0
+    this.particles = []
+    this.floats = []
+    this.quasarTaps = []
+    this.glimmers.clear()
+    this.rings = []
+    this.pulse = 0
+    this.driftAcc = 0
+    this.lastBeat = -1
+  }
+
   private collapseProgress(now: number): number {
     if (this.collapseStart === 0) return 0
     return Math.min(1, (now - this.collapseStart) / 2800)

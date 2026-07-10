@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { ACHIEVEMENTS, achievementDisplay } from '../src/content/achievements'
+import { THEMES, themeVarsForUniverse } from '../src/content/themes'
 import { tidefallRateMultiplier } from '../src/content/universes/tidefall'
 import { universeById } from '../src/content/universes'
 import {
@@ -53,8 +55,22 @@ test('Tidefall ships a complete economy with a distinct identity', () => {
   assert.notEqual(tidefall.events.motion, emberlight.events.motion)
   assert.equal(tidefall.events.noun, 'wandering bubble')
   assert.equal(tidefall.cabinet.title, 'The Pelagic Archive')
+  assert.equal(emberlight.achievementPower, 'Radiance')
+  assert.equal(tidefall.achievementPower, 'Resonance')
   const emberPowerUps = new Set(emberlight.events.powerUps.map((power) => power.id))
   assert.equal(tidefall.events.powerUps.some((power) => emberPowerUps.has(power.id)), false)
+})
+
+test('achievements and vestments adopt the active universe identity', () => {
+  const firstSpark = ACHIEVEMENTS.find((achievement) => achievement.id === 'first-spark')!
+  const catcher = ACHIEVEMENTS.find((achievement) => achievement.id === 'star-catcher')!
+  assert.equal(achievementDisplay(firstSpark, 'emberlight').name, 'First Spark')
+  assert.equal(achievementDisplay(firstSpark, 'tidefall').name, 'First Droplet')
+  assert.equal(achievementDisplay(catcher, 'tidefall').name, 'Bubble Catcher')
+
+  const tidefallAccents = THEMES.map((theme) => themeVarsForUniverse(theme, 'tidefall')['--amber'])
+  assert.equal(new Set(tidefallAccents).size, THEMES.length)
+  assert.ok(THEMES.every((theme) => themeVarsForUniverse(theme, 'tidefall')['--amber'] !== theme.vars['--amber']))
 })
 
 test('the living tide averages around one and reaches its stated extrema', () => {

@@ -225,6 +225,7 @@ export const TIDEFALL: UniversePack = {
   currency: 'Glow',
   currencyGlyph: '≈',
   centralObject: 'Tidewell',
+  achievementPower: 'Resonance',
   description: 'A moonless ocean where production rises and falls on a visible ninety-second tide.',
   generators: TIDEFALL_GENERATORS,
   generatorById: new Map(TIDEFALL_GENERATORS.map((generator) => [generator.id, generator])),

@@ -313,14 +313,14 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     id: 'progress',
     nav: 'Records & themes',
     eyebrow: 'everything that remembers',
-    title: 'Achievements, Radiance, Stats, and Vestments',
+    title: 'Achievements, World Power, Stats, and Vestments',
     summary: 'Records are both a history of play and a quiet permanent-growth system.',
-    keywords: ['achievement', 'radiance', 'stats', 'theme', 'vestment', 'cosmetic', 'record', 'hidden'],
+    keywords: ['achievement', 'radiance', 'resonance', 'stats', 'theme', 'vestment', 'cosmetic', 'record', 'hidden'],
     blocks: [
       {
-        heading: 'Achievements and Radiance',
+        heading: 'Achievements and world power',
         paragraphs: [
-          'Every achievement grants one Radiance, and each Radiance adds one percent to global production. The Stats panel lists unlocked achievements and conceals the names of hidden ones until discovered.',
+          'Every achievement grants one point of the current universe’s achievement power: Radiance in Emberlight and Resonance in Tidefall. Each point adds one percent to global production. The Stats panel localizes the record to the current world and conceals hidden names until discovered.',
           'Achievement categories cover earnings, generators, clicking, criticals, rhythm, prestige, trials, cabinets, time, endings, and unusual behavior. Hidden achievements reward experimentation; they are never required to make the economy function.',
         ],
       },
@@ -328,7 +328,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Stats and Vestments',
         paragraphs: [
           'Stats separates passive production, recent active clicking, generator contribution, critical chance, prestige history, market ranks, trials, multiverse progress, and time played. Use it to find which generator actually drives the current build.',
-          'Vestments are cosmetic accent palettes unlocked through Echoes, Deep Collapses, and trials. They grant no production. Universe palettes still override world-specific colors so Tidefall remains readable in every vestment.',
+          'Vestments are cosmetic accent palettes unlocked through Echoes, Deep Collapses, and trials. They grant no production. Each universe adapts a vestment into its own color family, so the change stays visible without making Tidefall look like Emberlight or vice versa.',
         ],
       },
     ],

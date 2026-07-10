@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { game, wipe, hasUi } from '../engine/game.svelte'
-  import { THEMES } from '../content/themes'
+  import { THEMES, themeVarsForUniverse } from '../content/themes'
+  import { universeById } from '../content/universes'
   import {
     exportSave,
     importSave,
@@ -28,6 +29,7 @@
   let message = $state('')
   let backups = $state<SaveBackupSummary[]>([])
   let diagnosticCode = $state('')
+  const activeUniverseId = $derived(universeById(game.activeUniverse).id)
 
   const effectiveQuality = $derived(resolveVisualQuality(game.visualQuality, {
     width: window.innerWidth,
@@ -233,7 +235,7 @@
           class="swatch"
           class:active={game.theme === t.id}
           class:locked={!open}
-          style:--sw={t.vars['--amber']}
+          style:--sw={themeVarsForUniverse(t, activeUniverseId)['--amber']}
           title={open ? `${t.name} — ${t.flavor}` : `${t.name} — ${t.unlockText}`}
           aria-pressed={game.theme === t.id}
           onclick={() => open && chooseTheme(t.id)}

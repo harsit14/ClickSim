@@ -4,12 +4,19 @@
   import { gamePaused } from '../core/pause.svelte'
 
   let current = $state<string | null>(null)
+  let currentUniverse = $state(game.activeUniverse)
   let timer: ReturnType<typeof setTimeout> | undefined
 
   $effect(() => {
+    const universeId = game.activeUniverse
+    if (currentUniverse !== universeId) {
+      currentUniverse = universeId
+      current = null
+      clearTimeout(timer)
+    }
     if (gamePaused()) return
     if (current) return
-    const line = universeById(game.activeUniverse).lumen.find((l) => !game.seen.includes(l.id) && l.when(game))
+    const line = universeById(universeId).lumen.find((l) => !game.seen.includes(l.id) && l.when(game))
     if (!line) return
     game.seen.push(line.id)
     current = line.text

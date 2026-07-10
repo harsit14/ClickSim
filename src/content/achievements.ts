@@ -1,4 +1,5 @@
 import { GENERATORS } from './generators'
+import { universeById } from './universes'
 import type { GameState } from '../engine/game.svelte'
 
 export interface AchievementDef {
@@ -169,3 +170,85 @@ H('with-these-hands', 'With These Hands', 'A million points of light, every one 
 H('beyond-the-song', 'Beyond the Song', 'A 64-beat streak. The music follows YOU now.', (g) => g.bestCombo >= 64)
 
 export const ACHIEVEMENTS: AchievementDef[] = defs
+
+type AchievementCopy = Pick<AchievementDef, 'name' | 'flavor'>
+
+const TIDEFALL_ACHIEVEMENT_COPY: Record<string, AchievementCopy> = {
+  'first-hundred': { name: 'A Hundred Drops of Glow', flavor: 'The first hint of an ocean.' },
+  'warm-corner': { name: 'Quiet Current', flavor: 'This corner of nothing moves now.' },
+  milliflame: { name: 'Milliglow', flavor: 'Six zeroes beneath the surface.' },
+  petalight: { name: 'Petaglow', flavor: 'The old ocean peaked around here. Keep rising.' },
+  exaflare: { name: 'Exatide', flavor: 'Lumen has stopped counting. You have not.' },
+  zettashine: { name: 'Zettasheen', flavor: 'Glow beyond bookkeeping.' },
+  yottablaze: { name: 'Yottaflood', flavor: 'There is no prefix after this. There will be.' },
+  persistent: { name: 'Persistent', flavor: 'The Tidewell appreciates the attention.' },
+  devoted: { name: 'Devoted', flavor: 'Your finger can feel the current now too.' },
+  'true-name': { name: 'The Tide Knows Your Name', flavor: 'It will not tell you how it learned it.' },
+  'steady-glow': { name: 'Steady Glow', flavor: 'It flows without you now. It still prefers you.' },
+  'the-pour': { name: 'The Glow Pours', flavor: 'From what ocean? Do not ask yet.' },
+  'spark-x10': { name: 'Droplet Pool', flavor: 'Ten beads of an ocean that has not arrived.' },
+  'spark-x25': { name: 'Rain Without Sky', flavor: 'Weather, remembered by water.' },
+  'spark-x50': { name: 'A Thousand Droplets', flavor: 'Give or take nine hundred and fifty.' },
+  'wisp-x10': { name: 'Ripple Chorus', flavor: 'Every circle carries the same note outward.' },
+  'wisp-x25': { name: 'Current Parliament', flavor: 'Motion passes: keep rising.' },
+  'hearth-x10': { name: 'First Lagoon', flavor: 'No shore yet. Details.' },
+  'hearth-x25': { name: 'Moonless Coast', flavor: 'The water obeys an absent horizon.' },
+  'sun-x10': { name: 'Drowned Choir', flavor: 'Ten beacons calling through the same deep water.' },
+  'galaxy-x10': { name: 'Ten Living Seas', flavor: 'Every current carries a bedtime.' },
+  'caught-one': { name: 'Caught One!', flavor: 'The current notices generosity.' },
+  'star-catcher': { name: 'Bubble Catcher', flavor: 'Ten wandering blessings, intercepted.' },
+  'meteor-greed': { name: 'Greedy for Omens', flavor: 'Fifty. The sea is keeping a list.' },
+  'metronome-heart': { name: 'Tideclock Precision', flavor: 'Thirty-two. You are keeping time with water that has not arrived yet.' },
+  automated: { name: 'The Machine Tends the Current', flavor: 'Kindler and stoker, working while you dream.' },
+  'curiosity-1': { name: 'First Signal on the Plate', flavor: 'One distant object resolved into a name.' },
+  'curiosity-6': { name: 'Surveyor of the Deep', flavor: 'Six pelagic phenomena catalogued.' },
+  'curiosity-all': { name: 'The Ocean Is a Map', flavor: 'Every pelagic object catalogued in one universe.' },
+  'an-hour-warm': { name: 'An Hour Afloat', flavor: 'Time flows when you are raising a universe.' },
+  'ten-hours-kindled': { name: 'Ten Hours Rising', flavor: 'Lumen made you a mug of something warm. Metaphorically.' },
+  impatience: { name: 'Impatience', flavor: '100 clicks before buying a single thing. The Tidewell admires commitment to the bit.' },
+  'night-reader': { name: 'Night Diver', flavor: 'It is 3 AM. The Tidewell does not judge. Lumen does, a little.' },
+  purist: { name: 'Purist', flavor: 'A million glow and not one upgrade. Why though.' },
+  'with-these-hands': { name: 'With These Hands', flavor: 'A million points of glow, every one of them touched.' },
+}
+
+const CABINET_ACHIEVEMENT_SHELVES: Record<string, number> = {
+  'curiosity-hearthside': 0,
+  'curiosity-pilgrims': 1,
+  'curiosity-portents': 2,
+}
+
+function tidefallWorldText(text: string): string {
+  return text
+    .replace(/\bpoints of light\b/gi, 'points of glow')
+    .replace(/\blight\b/g, 'glow')
+    .replace(/\bLight\b/g, 'Glow')
+    .replace(/\bthe ember\b/g, 'the Tidewell')
+    .replace(/\bThe Ember\b/g, 'The Tidewell')
+    .replace(/\bember\b/g, 'current')
+    .replace(/\bfire\b/g, 'current')
+}
+
+/** Stable achievement ids stay global; visible copy belongs to the active universe. */
+export function achievementDisplay(def: AchievementDef, universeId: string): AchievementCopy {
+  const pack = universeById(universeId)
+  if (pack.id === 'emberlight') return { name: def.name, flavor: def.flavor }
+
+  if (def.id.startsWith('first-')) {
+    const generator = pack.generatorById.get(def.id.slice('first-'.length))
+    if (generator) return { name: `First ${generator.name}`, flavor: generator.flavor }
+  }
+
+  const shelfIndex = CABINET_ACHIEVEMENT_SHELVES[def.id]
+  const shelf = shelfIndex === undefined ? undefined : pack.cabinet.shelves[shelfIndex]
+  if (shelf) {
+    return {
+      name: shelf.rewardName,
+      flavor: `${shelf.name} became a complete chapter of ${pack.name}.`,
+    }
+  }
+
+  return TIDEFALL_ACHIEVEMENT_COPY[def.id] ?? {
+    name: tidefallWorldText(def.name),
+    flavor: tidefallWorldText(def.flavor),
+  }
+}

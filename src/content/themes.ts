@@ -9,6 +9,8 @@ export interface ThemeDef {
   unlocked: (g: GameState) => boolean
   /** CSS custom properties applied to :root; every theme sets the full accent set */
   vars: Record<string, string>
+  /** World-specific tailoring keeps a vestment visible without erasing universe identity. */
+  universeVars?: Record<string, Record<string, string>>
 }
 
 export const THEMES: ThemeDef[] = [
@@ -23,6 +25,13 @@ export const THEMES: ThemeDef[] = [
       '--gold': '#ffd98a',
       '--panel': 'rgba(20, 18, 32, 0.78)',
     },
+    universeVars: {
+      tidefall: {
+        '--amber': '#58ded8',
+        '--gold': '#b9fff2',
+        '--panel': 'rgba(7, 24, 34, 0.82)',
+      },
+    },
   },
   {
     id: 'vellum',
@@ -34,6 +43,13 @@ export const THEMES: ThemeDef[] = [
       '--amber': '#e6c887',
       '--gold': '#f4e6c0',
       '--panel': 'rgba(30, 26, 19, 0.80)',
+    },
+    universeVars: {
+      tidefall: {
+        '--amber': '#9ccfbf',
+        '--gold': '#e4e0bd',
+        '--panel': 'rgba(17, 31, 31, 0.84)',
+      },
     },
   },
   {
@@ -47,6 +63,13 @@ export const THEMES: ThemeDef[] = [
       '--gold': '#d8d2ff',
       '--panel': 'rgba(17, 15, 34, 0.80)',
     },
+    universeVars: {
+      tidefall: {
+        '--amber': '#8f9cf2',
+        '--gold': '#c9d5ff',
+        '--panel': 'rgba(10, 18, 42, 0.84)',
+      },
+    },
   },
   {
     id: 'dawnforge',
@@ -59,7 +82,18 @@ export const THEMES: ThemeDef[] = [
       '--gold': '#ffc79a',
       '--panel': 'rgba(33, 17, 14, 0.80)',
     },
+    universeVars: {
+      tidefall: {
+        '--amber': '#f08f7b',
+        '--gold': '#ffd0aa',
+        '--panel': 'rgba(33, 20, 27, 0.84)',
+      },
+    },
   },
 ]
 
 export const THEME_BY_ID = new Map(THEMES.map((t) => [t.id, t]))
+
+export function themeVarsForUniverse(theme: ThemeDef, universeId: string): Record<string, string> {
+  return { ...theme.vars, ...(theme.universeVars?.[universeId] ?? {}) }
+}

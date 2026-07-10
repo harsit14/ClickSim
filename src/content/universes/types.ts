@@ -67,6 +67,8 @@ export interface UniversePack {
   currency: string
   currencyGlyph: string
   centralObject: string
+  /** The +1% production power awarded by each achievement in this world. */
+  achievementPower: string
   description: string
   generators: GeneratorDef[]
   generatorById: Map<string, GeneratorDef>

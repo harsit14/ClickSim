@@ -37,9 +37,11 @@
   import { combo } from './systems/combo.svelte'
   import { save } from './core/save'
   import { isPlaying, setMusicMode, setStems, startMusic } from './audio/music'
-  import { THEME_BY_ID } from './content/themes'
+  import { THEME_BY_ID, themeVarsForUniverse } from './content/themes'
   import { universeById } from './content/universes'
   import { acquireGamePause } from './core/pause.svelte'
+  import { worldRef } from './render/world-ref'
+  import { clearToasts } from './systems/toasts.svelte'
 
   let { offlineGain }: { offlineGain: number } = $props()
 
@@ -183,8 +185,10 @@
   function finishCrossing(universeId: string) {
     if (crossToUniverse(universeId)) {
       clearBuffs()
+      clearToasts()
       combo.streak = 0
       combo.lastRewardAt = 0
+      worldRef()?.resetForUniverse()
       save()
     }
     crossingPrelude = false
@@ -200,10 +204,10 @@
     document.documentElement.dataset.beatVisual = game.beatVisual
     document.documentElement.dataset.visualQuality = game.visualQuality
     const theme = THEME_BY_ID.get(game.theme) ?? THEME_BY_ID.get('ember')!
-    for (const [key, value] of Object.entries(theme.vars)) {
+    for (const [key, value] of Object.entries(activePack.palette.vars)) {
       document.documentElement.style.setProperty(key, value)
     }
-    for (const [key, value] of Object.entries(universeById(game.activeUniverse).palette.vars)) {
+    for (const [key, value] of Object.entries(themeVarsForUniverse(theme, activePack.id))) {
       document.documentElement.style.setProperty(key, value)
     }
   })

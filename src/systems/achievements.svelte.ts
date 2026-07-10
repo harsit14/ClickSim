@@ -1,4 +1,4 @@
-import { ACHIEVEMENTS } from '../content/achievements'
+import { ACHIEVEMENTS, achievementDisplay } from '../content/achievements'
 import { CHALLENGE_BY_ID } from '../content/challenges'
 import { universeById } from '../content/universes'
 import { game, ratePerSec, endChallenge } from '../engine/game.svelte'
@@ -25,7 +25,9 @@ function check() {
     if (game.achievements.includes(def.id)) continue
     if (!def.when(game, rate)) continue
     game.achievements.push(def.id)
-    pushToast(def.name, def.flavor, 'radiance +1%')
+    const pack = universeById(game.activeUniverse)
+    const copy = achievementDisplay(def, pack.id)
+    pushToast(copy.name, copy.flavor, `${pack.achievementPower.toLowerCase()} +1%`)
     playAchievement()
   }
   for (const echo of universeById(game.activeUniverse).echoes) {

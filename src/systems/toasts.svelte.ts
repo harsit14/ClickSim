@@ -17,3 +17,7 @@ export function pushToast(title: string, body: string, tag?: string) {
     toastState.list = toastState.list.filter((t) => t.key !== key)
   }, 5_000)
 }
+
+export function clearToasts() {
+  toastState.list = []
+}

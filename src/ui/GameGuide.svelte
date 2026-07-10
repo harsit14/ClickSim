@@ -9,7 +9,7 @@
   import { CHALLENGES } from '../content/challenges'
   import { VESSEL_PARTS } from '../content/vessel'
   import { WAYFINDER_NODES } from '../content/wayfinder'
-  import { THEMES } from '../content/themes'
+  import { THEMES, themeVarsForUniverse } from '../content/themes'
   import { ACHIEVEMENTS } from '../content/achievements'
   import { ENDING_BONUS, ENDING_CHOICES } from '../content/endings'
   import { describeEffect } from '../content/upgrades'
@@ -305,7 +305,7 @@
               <section class="reference">
                 <div class="reference-title"><span>{game.achievements.length}/{ACHIEVEMENTS.length} achievements</span><h4>Vestment catalogue</h4></div>
                 <div class="theme-list">
-                  {#each THEMES as theme (theme.id)}<article class:owned={theme.unlocked(game)} style:--theme-color={theme.vars['--amber']}><i></i><div><strong>{theme.name}</strong><p>{theme.flavor}</p><small>{theme.unlockText}</small></div></article>{/each}
+                  {#each THEMES as theme (theme.id)}<article class:owned={theme.unlocked(game)} style:--theme-color={themeVarsForUniverse(theme, pack.id)['--amber']}><i></i><div><strong>{theme.name}</strong><p>{theme.flavor}</p><small>{theme.unlockText}</small></div></article>{/each}
                 </div>
               </section>
             {/if}

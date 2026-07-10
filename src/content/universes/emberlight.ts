@@ -12,6 +12,7 @@ export const EMBERLIGHT: UniversePack = {
   currency: 'Light',
   currencyGlyph: '✦',
   centralObject: 'Ember',
+  achievementPower: 'Radiance',
   description: 'The first warm universe, rebuilt from one ember.',
   generators: GENERATORS,
   generatorById: GENERATOR_BY_ID,

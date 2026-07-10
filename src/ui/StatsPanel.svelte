@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { ACHIEVEMENTS } from '../content/achievements'
+  import { ACHIEVEMENTS, achievementDisplay } from '../content/achievements'
   import { universeById } from '../content/universes'
   import { genRate } from '../engine/compute'
   import {
@@ -38,6 +38,7 @@
   const achievementRows = $derived(
     ACHIEVEMENTS.map((a) => ({
       ...a,
+      ...achievementDisplay(a, pack.id),
       unlocked: unlocked.has(a.id),
       concealed: a.hidden && !unlocked.has(a.id),
     })),
@@ -96,7 +97,7 @@
       <dt>clicks</dt><dd>{format(game.clicks)}</dd>
       <dt>upgrades found</dt><dd>{game.upgrades.length}</dd>
       <dt>objects catalogued</dt><dd>{game.curiosities.length}</dd>
-      <dt>radiance</dt><dd>+{game.achievements.length}%</dd>
+      <dt>{pack.achievementPower.toLowerCase()}</dt><dd>+{game.achievements.length}%</dd>
       <dt>stars caught</dt><dd>{game.starsCaught}</dd>
       <dt>best combo</dt><dd>{game.bestCombo}</dd>
       <dt>time kindling</dt><dd>{fmtTime(game.playtime)}</dd>
@@ -156,7 +157,7 @@
   {:else}
     <div class="achievement-summary">
       <strong>{game.achievements.length} / {ACHIEVEMENTS.length}</strong>
-      <span>Radiance +{game.achievements.length}%</span>
+      <span>{pack.achievementPower} +{game.achievements.length}%</span>
     </div>
     <div class="achievement-list">
       {#each achievementRows as a (a.id)}
