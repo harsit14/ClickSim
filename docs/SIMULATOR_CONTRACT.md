@@ -93,13 +93,15 @@ The suite should fail balance review when one doctrine dominates every context, 
 
 `validateSimulationCaseResult` is pure and checks:
 
-- contract version, case ID, and seed identity;
-- complete milestone coverage and canonical targets;
-- finite/nonnegative milestone, gap, recovery, score, and stall values;
+- exact simulator, numeric, and RNG contract identifiers before cases are created;
+- nonempty, unique configured milestone IDs plus canonical targets;
+- result contract version, case ID, seed identity, and complete milestone coverage;
+- finite/nonnegative milestone, gap, recovery, score, and stall values, with threshold-gap count no greater than purchase count;
 - complete rate-source coverage and normalized shares;
-- both reset boundaries;
+- exactly one Epoch Turn and exactly one Deep Collapse recovery entry;
 - at least four unique build candidates and valid leader references;
 - canonical numeric output;
+- finished stalls whose end is not before their start and whose duration exactly equals end minus start;
 - fail-closed numeric status and required diagnostics.
 
 It returns serializable issues rather than throwing during a suite, allowing every failed case to appear in evidence. Invalid configuration is rejected before cases are created.

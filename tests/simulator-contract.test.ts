@@ -179,7 +179,61 @@ test('numeric overflow, malformed output, and stalled comparisons fail closed', 
   assert.ok(issues.some((issue) => issue.path === 'stalls[0]'))
 })
 
+test('result contract rejects impossible gap, duplicate recovery, and inconsistent finished stalls', () => {
+  const simulationCase = createSimulatorCases()[0]
+  const baseline = validResult(simulationCase)
+  const invalid: SimulationCaseResult = {
+    ...baseline,
+    purchaseGaps: {
+      ...baseline.purchaseGaps,
+      purchaseCount: 2,
+      gapsOverThreshold: 3,
+    },
+    resetRecovery: [
+      baseline.resetRecovery[0],
+      baseline.resetRecovery[0],
+      baseline.resetRecovery[1],
+    ],
+    stalls: [
+      {
+        startedAtMs: 5_000,
+        endedAtMs: 4_000,
+        durationMs: 1_000,
+        reason: 'no-affordable-purchase',
+      },
+      {
+        startedAtMs: 10_000,
+        endedAtMs: 14_000,
+        durationMs: 3_999,
+        reason: 'mechanic-dead-zone',
+      },
+    ],
+  }
+  const issues = validateSimulationCaseResult(simulationCase, invalid)
+  assert.ok(issues.some((issue) =>
+    issue.path === 'purchaseGaps.gapsOverThreshold'
+    && issue.message === 'Threshold count cannot exceed purchase count'))
+  assert.ok(issues.some((issue) =>
+    issue.path === 'resetRecovery'
+    && issue.message === 'Expected exactly one epoch-turn recovery output'))
+  assert.ok(issues.some((issue) => issue.path === 'stalls[0].endedAtMs'))
+  assert.ok(issues.some((issue) => issue.path === 'stalls[0].durationMs'))
+  assert.ok(issues.some((issue) => issue.path === 'stalls[1].durationMs'))
+})
+
 test('simulator config rejects nondeterministic or invalid boundaries', () => {
+  assert.throws(() => createSimulatorCases({
+    ...DEFAULT_SIMULATOR_CONTRACT_CONFIG,
+    contractVersion: 'future-simulator-contract' as 'multi-profile-simulator-v1',
+  }), RangeError)
+  assert.throws(() => createSimulatorCases({
+    ...DEFAULT_SIMULATOR_CONTRACT_CONFIG,
+    numericContract: 'other-numeric-contract' as 'normalized-scientific-pair-v1',
+  }), RangeError)
+  assert.throws(() => createSimulatorCases({
+    ...DEFAULT_SIMULATOR_CONTRACT_CONFIG,
+    rngAlgorithm: 'other-rng' as 'indexed-mix32-v1',
+  }), RangeError)
   assert.throws(() => createSimulatorCases({
     ...DEFAULT_SIMULATOR_CONTRACT_CONFIG,
     baseSeed: -1,
@@ -192,5 +246,16 @@ test('simulator config rejects nondeterministic or invalid boundaries', () => {
     ...DEFAULT_SIMULATOR_CONTRACT_CONFIG,
     milestones: [{ id: 'bad', amount: '1.0e3' as '1e3' }],
   }))
+  assert.throws(() => createSimulatorCases({
+    ...DEFAULT_SIMULATOR_CONTRACT_CONFIG,
+    milestones: [{ id: '', amount: '1e3' }],
+  }), RangeError)
+  assert.throws(() => createSimulatorCases({
+    ...DEFAULT_SIMULATOR_CONTRACT_CONFIG,
+    milestones: [
+      { id: 'duplicate', amount: '1e3' },
+      { id: 'duplicate', amount: '1e6' },
+    ],
+  }), RangeError)
   assert.throws(() => simulatorRandomSample(1, -1), RangeError)
 })

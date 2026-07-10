@@ -193,6 +193,15 @@ export interface SimulatorCase {
 }
 
 function assertConfig(config: SimulatorContractConfig): void {
+  if (config.contractVersion !== SIMULATOR_CONTRACT_VERSION) {
+    throw new RangeError(`Unsupported simulator contract version ${String(config.contractVersion)}`)
+  }
+  if (config.numericContract !== 'normalized-scientific-pair-v1') {
+    throw new RangeError(`Unsupported numeric contract ${String(config.numericContract)}`)
+  }
+  if (config.rngAlgorithm !== SIMULATOR_RNG_ALGORITHM) {
+    throw new RangeError(`Unsupported simulator RNG algorithm ${String(config.rngAlgorithm)}`)
+  }
   if (!Number.isInteger(config.baseSeed) || config.baseSeed < 0 || config.baseSeed > 0xffff_ffff) {
     throw new RangeError('Simulator baseSeed must be an unsigned 32-bit integer')
   }
@@ -207,7 +216,13 @@ function assertConfig(config: SimulatorContractConfig): void {
   if (!Number.isFinite(config.dominanceLeadRatio) || config.dominanceLeadRatio <= 1) {
     throw new RangeError('dominanceLeadRatio must be finite and greater than one')
   }
-  config.milestones.forEach((milestone) => parseScientificPairSpike(milestone.amount))
+  const milestoneIds = new Set<string>()
+  config.milestones.forEach((milestone) => {
+    if (milestone.id.trim().length === 0) throw new RangeError('Milestone ids must not be empty')
+    if (milestoneIds.has(milestone.id)) throw new RangeError(`Duplicate milestone id ${milestone.id}`)
+    milestoneIds.add(milestone.id)
+    parseScientificPairSpike(milestone.amount)
+  })
 }
 
 /** FNV-1a over explicit case identity; it is stable across process and wall time. */
@@ -425,6 +440,8 @@ export function validateSimulationCaseResult(
   }
   if (!Number.isSafeInteger(gaps.gapsOverThreshold) || gaps.gapsOverThreshold < 0) {
     issues.push({ path: 'purchaseGaps.gapsOverThreshold', message: 'Threshold count must be a nonnegative safe integer' })
+  } else if (gaps.gapsOverThreshold > gaps.purchaseCount) {
+    issues.push({ path: 'purchaseGaps.gapsOverThreshold', message: 'Threshold count cannot exceed purchase count' })
   }
 
   let compositionShare = 0
@@ -458,10 +475,16 @@ export function validateSimulationCaseResult(
       issues.push({ path: `${path}.rateRatioAtHorizon`, message: 'Recovery ratio must be finite and nonnegative' })
     }
   }
-  const recoveryBoundaries = new Set(result.resetRecovery.map((recovery) => recovery.boundary))
+  if (result.resetRecovery.length !== 2) {
+    issues.push({ path: 'resetRecovery', message: 'Result must contain exactly two reset recovery entries' })
+  }
+  const recoveryBoundaryCounts = new Map<ResetRecoveryOutput['boundary'], number>()
+  for (const recovery of result.resetRecovery) {
+    recoveryBoundaryCounts.set(recovery.boundary, (recoveryBoundaryCounts.get(recovery.boundary) ?? 0) + 1)
+  }
   for (const boundary of ['epoch-turn', 'deep-collapse'] as const) {
-    if (!recoveryBoundaries.has(boundary)) {
-      issues.push({ path: 'resetRecovery', message: `Missing ${boundary} recovery output` })
+    if (recoveryBoundaryCounts.get(boundary) !== 1) {
+      issues.push({ path: 'resetRecovery', message: `Expected exactly one ${boundary} recovery output` })
     }
   }
 
@@ -508,6 +531,13 @@ export function validateSimulationCaseResult(
     }
     if (stall.endedAtMs !== null && !isNonnegativeFinite(stall.endedAtMs)) {
       issues.push({ path: `${path}.endedAtMs`, message: 'Stall end must be null or finite and nonnegative' })
+    } else if (stall.endedAtMs !== null && isNonnegativeFinite(stall.startedAtMs)) {
+      if (stall.endedAtMs < stall.startedAtMs) {
+        issues.push({ path: `${path}.endedAtMs`, message: 'Finished stall cannot end before it starts' })
+      }
+      if (stall.durationMs !== stall.endedAtMs - stall.startedAtMs) {
+        issues.push({ path: `${path}.durationMs`, message: 'Finished stall duration must equal end minus start' })
+      }
     }
   }
   return issues
