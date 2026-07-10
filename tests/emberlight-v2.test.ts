@@ -8,6 +8,7 @@ import {
 } from '../src/content/universes/emberlight-v2'
 import { adaptLegacyUniversePack } from '../src/content/universes/legacy-v2-adapter'
 import type { UniversePackV2Supplement } from '../src/content/universes/legacy-v2-adapter'
+import { TIDEFALL_V2_PACK } from '../src/content/universes/tidefall-v2'
 import { universeV2ById, V2_UNIVERSE_BY_ID } from '../src/content/universes'
 import { planManifestLayout } from '../src/render/manifest-layout'
 import { validateUniversePackV2 } from '../src/render/manifest-validator'
@@ -34,9 +35,9 @@ test('Emberlight crosses the temporary bridge as one complete validated V2 pack'
 })
 
 test('the lead registry exposes only approved V2 packs and never falls back across worlds', () => {
-  assert.equal(V2_UNIVERSE_BY_ID.size, 1)
+  assert.equal(V2_UNIVERSE_BY_ID.size, 2)
   assert.strictEqual(universeV2ById('emberlight'), EMBERLIGHT_V2)
-  assert.equal(universeV2ById('tidefall'), null)
+  assert.strictEqual(universeV2ById('tidefall'), TIDEFALL_V2_PACK)
   assert.equal(universeV2ById('unknown'), null)
   assert.equal(universeV2ById(null), null)
 })

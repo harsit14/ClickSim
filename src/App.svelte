@@ -322,6 +322,8 @@
     <ManifestWorldLayer
       pack={activeV2Pack}
       owned={game.owned}
+      unlockedArchiveIds={game.curiosities}
+      litBeaconUniverseIds={game.beacons}
       preferences={{
         reducedMotion: game.motionPreference === 'reduced',
         quality: effectiveQuality,
