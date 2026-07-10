@@ -13,17 +13,25 @@ import {
   unitRate,
   type EcoState,
 } from '../src/engine/compute'
+import {
+  ZERO_AMOUNT,
+  amountFromNumber,
+  amountToNumber,
+  divideAmounts,
+  eqAmount,
+  multiplyAmountByNumber,
+} from '../src/core/numeric/amount'
 
 function state(): EcoState {
   return {
     activeUniverse: 'emberlight',
-    light: 0,
-    totalEarned: 0,
+    light: ZERO_AMOUNT,
+    totalEarned: ZERO_AMOUNT,
     clicks: 0,
     owned: {},
     upgrades: [],
     achievements: [],
-    stardustTotal: 0,
+    stardustTotal: ZERO_AMOUNT,
     constellation: [],
     stardustWorks: {},
     singUpgrades: [],
@@ -35,7 +43,7 @@ function state(): EcoState {
     curiosities: [],
     keeperFedUntil: 0,
     beacons: [],
-    darkBetween: 0,
+    darkBetween: ZERO_AMOUNT,
     wayfinder: [],
     vesselParts: [],
   }
@@ -55,7 +63,7 @@ test('advanced trials reveal in order and enforce production rules', () => {
   const cappedRate = genRate(game, GENERATORS[0])
   game.challenge = null
   game.owned.spark = 15
-  assert.equal(cappedRate, genRate(game, GENERATORS[0]))
+  assert.ok(eqAmount(cappedRate, genRate(game, GENERATORS[0])))
 
   game.owned = { spark: 20, wisp: 5, hearth: 1 }
   game.challenge = 'single-voice'
@@ -68,11 +76,11 @@ test('advanced trials constrain clicking, upgrades, and tier parity', () => {
   game.owned.spark = 10
   const normalClick = clickPower(game)
   game.challenge = 'ashen-touch'
-  assert.equal(clickPower(game), normalClick * 0.05)
+  assert.ok(eqAmount(clickPower(game), multiplyAmountByNumber(normalClick, 0.05)))
 
   game.challenge = 'unwritten'
   game.clicks = 100
-  game.totalEarned = 1e9
+  game.totalEarned = amountFromNumber(1e9)
   assert.deepEqual(availableUpgrades(game), [])
 
   game.challenge = 'broken-ladder'
@@ -85,10 +93,10 @@ test('Small Vessels doubles the bonus portion of every resonance', () => {
   game.owned = { spark: 10, wisp: 1 }
   game.upgrades = ['wisp-chorus']
   const wisp = GENERATORS[1]
-  assert.ok(Math.abs(unitRate(game, wisp) / wisp.baseRate - 1.2) < 1e-12)
+  assert.ok(Math.abs(amountToNumber(divideAmounts(unitRate(game, wisp), amountFromNumber(wisp.baseRate))) - 1.2) < 1e-12)
   game.challengesDone = ['small-vessels']
   assert.equal(synergyBonusMult(game), 2)
-  assert.ok(Math.abs(unitRate(game, wisp) / wisp.baseRate - 1.4) < 1e-12)
+  assert.ok(Math.abs(amountToNumber(divideAmounts(unitRate(game, wisp), amountFromNumber(wisp.baseRate))) - 1.4) < 1e-12)
 })
 
 test('Tidefall now carries a full resonance and ten-echo lore arc', () => {
@@ -103,7 +111,7 @@ test('temporary trial resets do not award empty-run achievements', () => {
   const trial = state()
   trial.challenge = 'glass-ceiling'
   trial.clicks = 1_000
-  trial.totalEarned = 1e9
+  trial.totalEarned = amountFromNumber(1e9)
   const impatience = ACHIEVEMENTS.find((achievement) => achievement.id === 'impatience')!
   const purist = ACHIEVEMENTS.find((achievement) => achievement.id === 'purist')!
   assert.equal(impatience.when(trial as Parameters<typeof impatience.when>[0], 0), false)

@@ -2,11 +2,12 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createDevScenario } from '../src/core/dev-scenarios'
 import { migrateAndSanitizeSave } from '../src/core/save-data'
+import { serializeAmount } from '../src/core/numeric/amount'
 
 test('rejects missing, future, and non-numeric save versions', () => {
   assert.equal(migrateAndSanitizeSave({}), null)
   assert.equal(migrateAndSanitizeSave({ version: '12' }), null)
-  assert.equal(migrateAndSanitizeSave({ version: 13 }), null)
+  assert.equal(migrateAndSanitizeSave({ version: 14 }), null)
 })
 
 test('migrates a legacy v1 save through every version', () => {
@@ -20,7 +21,7 @@ test('migrates a legacy v1 save through every version', () => {
   })
 
   assert.ok(migrated)
-  assert.equal(migrated.version, 12)
+  assert.equal(migrated.version, 13)
   assert.equal(migrated.activeUniverse, 'emberlight')
   assert.deepEqual(migrated.owned, { spark: 4 })
   assert.deepEqual(migrated.ui, ['counter', 'shop', 'upgrades', 'stats', 'options'])
@@ -41,7 +42,7 @@ test('migrates v11 saves into persistent Phase 5 preferences', () => {
     totalEarned: 10,
   })
   assert.ok(migrated)
-  assert.equal(migrated.version, 12)
+  assert.equal(migrated.version, 13)
   assert.equal(migrated.motionPreference, 'system')
   assert.equal(migrated.visualQuality, 'auto')
   assert.equal(migrated.beatVisual, 'subtle')
@@ -95,14 +96,14 @@ test('sanitizes corrupt values and strips unknown content ids', () => {
 
   assert.ok(clean)
   assert.equal(clean.activeUniverse, 'emberlight')
-  assert.equal(clean.light, 0)
+  assert.equal(serializeAmount(clean.light), '0')
   assert.deepEqual(clean.owned, { spark: 2 })
   assert.deepEqual(clean.upgrades, ['ember-touch'])
   assert.deepEqual(clean.ui, ['counter'])
   assert.equal(clean.sfxVolume, 1)
   assert.equal(clean.musicVolume, 0)
-  assert.equal(clean.stardust, 5)
-  assert.equal(clean.singularities, 2)
+  assert.equal(serializeAmount(clean.stardust), '5e0')
+  assert.equal(serializeAmount(clean.singularities), '2e0')
   assert.equal(clean.ending, null)
   assert.equal(clean.theme, 'ember')
   assert.deepEqual(clean.vesselParts, [])
@@ -131,7 +132,7 @@ test('sanitizes the challenge return snapshot independently', () => {
   })
 
   assert.ok(clean?.challengeReturn)
-  assert.equal(clean.challengeReturn.light, 400)
+  assert.equal(serializeAmount(clean.challengeReturn.light), '4e2')
   assert.deepEqual(clean.challengeReturn.owned, { spark: 3 })
   assert.deepEqual(clean.challengeReturn.upgrades, ['ember-touch'])
   assert.equal(clean.challengeReturn.buyAmount, 100)
@@ -171,7 +172,7 @@ test('dev endgame scenario is deterministic and valid', () => {
   const scenario = createDevScenario('endgame', 10_000)
   assert.ok(scenario)
   assert.equal(scenario.savedAt, 10_000)
-  assert.equal(scenario.light, 1e40)
+  assert.equal(serializeAmount(scenario.light), '1e40')
   assert.equal(Object.keys(scenario.owned).length, 18)
   assert.equal(scenario.curiosities.length, 12)
   assert.equal(scenario.autoKindler, true)
@@ -184,7 +185,7 @@ test('question scenario exposes the finale without changing endgame fixtures', (
   assert.ok(endgame && question)
   assert.equal(endgame.seen.includes('act3-hook'), false)
   assert.equal(question.seen.includes('act3-hook'), true)
-  assert.equal(question.light, 1e21)
+  assert.equal(serializeAmount(question.light), '1e21')
 })
 
 test('crossing and Tidefall scenarios expose the multiverse layer safely', () => {

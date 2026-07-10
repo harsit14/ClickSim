@@ -19,7 +19,8 @@ import {
   serializeAmount,
 } from './numeric/amount'
 
-export const CURRENT_SAVE_VERSION = 12
+export const CURRENT_SAVE_VERSION = 13
+export const LEGACY_SAVE_VERSION = 12
 export const NUMERIC_SAVE_VERSION = 13
 
 export interface LegacyRunSnapshotV12 {
@@ -527,13 +528,13 @@ function sanitizeUniverseRuns(value: unknown): Record<string, LegacyUniverseRunS
 }
 
 /** Migrates an unknown save and returns a complete, content-aware, safe v12 snapshot. */
-export function migrateAndSanitizeSave(data: unknown): SaveDataV12 | null {
+export function migrateAndSanitizeSaveV12(data: unknown): SaveDataV12 | null {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null
   let source = { ...(data as Record<string, unknown>) }
   if (typeof source.version !== 'number' || !Number.isInteger(source.version)) return null
-  if (source.version < 1 || source.version > CURRENT_SAVE_VERSION) return null
+  if (source.version < 1 || source.version > LEGACY_SAVE_VERSION) return null
 
-  while (numberValue(source.version, 0) < CURRENT_SAVE_VERSION) {
+  while (numberValue(source.version, 0) < LEGACY_SAVE_VERSION) {
     const step = MIGRATIONS[numberValue(source.version, 0)]
     if (!step) return null
     source = step(source)
@@ -802,7 +803,7 @@ function sanitizeSaveV13(data: unknown): SaveDataV13 | null {
     const totalEarned = requiredAmount(source, 'totalEarned')
     const stardustTotal = requiredAmount(source, 'stardustTotal')
     const singTotal = requiredAmount(source, 'singTotal')
-    const legacy = migrateAndSanitizeSave({
+    const legacy = migrateAndSanitizeSaveV12({
       ...source,
       version: 12,
       light: 0,
@@ -854,7 +855,7 @@ export function migrateAndSanitizeSaveV13(data: unknown): SaveDataV13 | null {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null
   const version = (data as Record<string, unknown>).version
   if (version === NUMERIC_SAVE_VERSION) return sanitizeSaveV13(data)
-  const legacy = migrateAndSanitizeSave(data)
+  const legacy = migrateAndSanitizeSaveV12(data)
   return legacy ? convertSaveV12ToV13(legacy) : null
 }
 
@@ -909,3 +910,6 @@ export function serializeSaveDataV13(value: SaveDataV13): SerializedSaveDataV13 
 export function stringifySaveDataV13(value: SaveDataV13): string {
   return JSON.stringify(serializeSaveDataV13(value))
 }
+
+/** Current public reader: every accepted historical save returns v13 runtime amounts. */
+export const migrateAndSanitizeSave = migrateAndSanitizeSaveV13

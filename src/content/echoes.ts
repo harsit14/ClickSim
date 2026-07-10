@@ -1,4 +1,5 @@
 import type { GameState } from '../engine/game.svelte'
+import { amountFromNumber, gteAmount } from '../core/numeric/amount'
 
 /** Echoes — recovered fragments of the universe that came before.
  *  Collected automatically; read in the Codex. The record grows darker. */
@@ -18,7 +19,7 @@ export const ECHOES: EchoDef[] = [
     provenance: 'recovered from ash, meaning uncertain',
     text:
       'They found it in a storm, or it found them. For a hundred generations they fed it and told it their names. The record does not say when they stopped being afraid of the dark. It says only: after the fire, the nights were for stories.',
-    when: (g) => g.allTimeEarned >= 1e4,
+    when: (g) => gteAmount(g.allTimeEarned, amountFromNumber(1e4)),
   },
   {
     id: 'census',
@@ -26,7 +27,7 @@ export const ECHOES: EchoDef[] = [
     provenance: 'an administrative tablet, immaculately preserved',
     text:
       'Registered this cycle: 4 billion hearths, 90 million forges, 6,000 beacon-temples. Note by the counting-clerk, in a different hand: "counted lights all day. dreamed of them all night. there are worse jobs."',
-    when: (g) => g.allTimeEarned >= 1e7,
+    when: (g) => gteAmount(g.allTimeEarned, amountFromNumber(1e7)),
   },
   {
     id: 'lighthouse',
@@ -50,7 +51,7 @@ export const ECHOES: EchoDef[] = [
     provenance: 'a history, abridged by damage',
     text:
       'For an age the sky was so full that night was a rumor. Poets complained. Astronomers wept and bought curtains. It was, every record agrees, the best of all the ages — and no one alive remembered paying for it.',
-    when: (g) => g.allTimeEarned >= 1e12,
+    when: (g) => gteAmount(g.allTimeEarned, amountFromNumber(1e12)),
   },
   {
     id: 'wisp-song',
@@ -82,7 +83,7 @@ export const ECHOES: EchoDef[] = [
     provenance: 'tucked inside the beacon log. the ink is fresh.',
     text:
       'you have noticed the stardust fits your hands. you have noticed the dark does not fight back. you have not yet asked the only question that matters: what was the last thing the old universe saw? — when you are ready, ask me.',
-    when: (g) => g.stardustTotal >= 10,
+    when: (g) => gteAmount(g.stardustTotal, amountFromNumber(10)),
   },
   {
     id: 'shape-in-dark',
@@ -90,6 +91,6 @@ export const ECHOES: EchoDef[] = [
     provenance: 'eyewitness account. the only one.',
     text:
       'It did not roar. That is the detail every telling gets wrong. It arrived like evening does — gradually, then all at once, and the stars went out politely, as if asked. The witness swears it paused at the last ember. The witness swears it looked... relieved.',
-    when: (g) => g.allTimeEarned >= 1e15,
+    when: (g) => gteAmount(g.allTimeEarned, amountFromNumber(1e15)),
   },
 ]

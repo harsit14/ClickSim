@@ -34,6 +34,27 @@ import {
 } from '../content/vessel'
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
 import type { BeatVisual, MotionPreference, TextScale, VisualQuality } from '../core/preferences'
+import type { EconomyAmount } from '../content/universes/types'
+import {
+  ONE_AMOUNT,
+  ZERO_AMOUNT,
+  addAmounts,
+  divideAmountByNumber,
+  divideAmounts,
+  floorAmount,
+  gtAmount,
+  gteAmount,
+  isZeroAmount,
+  maxAmount,
+  multiplyAmountByNumber,
+  multiplyAmounts,
+  powAmount,
+  sqrtAmount,
+  subtractAmounts,
+  sumAmounts,
+  toAmount,
+  type AmountInput,
+} from '../core/numeric/amount'
 import {
   type EcoState,
   totalRate,
@@ -53,8 +74,8 @@ import {
 export type BuyAmount = 1 | 10 | 100 | 'max'
 
 export interface RunSnapshot {
-  light: number
-  totalEarned: number
+  light: EconomyAmount
+  totalEarned: EconomyAmount
   owned: Record<string, number>
   upgrades: string[]
   buyAmount: BuyAmount
@@ -62,22 +83,22 @@ export interface RunSnapshot {
 
 /** The progression that stays anchored to one universe when the Vessel leaves. */
 export interface UniverseRunState {
-  light: number
-  totalEarned: number
+  light: EconomyAmount
+  totalEarned: EconomyAmount
   clicks: number
   owned: Record<string, number>
   upgrades: string[]
   buyAmount: BuyAmount
   seen: string[]
-  stardust: number
-  stardustTotal: number
+  stardust: EconomyAmount
+  stardustTotal: EconomyAmount
   supernovae: number
   constellation: string[]
   stardustWorks: Record<string, number>
   echoes: string[]
-  eraEarned: number
-  singularities: number
-  singTotal: number
+  eraEarned: EconomyAmount
+  singularities: EconomyAmount
+  singTotal: EconomyAmount
   collapses: number
   singUpgrades: string[]
   deepWorks: Record<string, number>
@@ -87,17 +108,18 @@ export interface UniverseRunState {
   autoKindler: boolean
   autoStoker: boolean
   autoNova: boolean
-  autoNovaThreshold: number
+  autoNovaThreshold: EconomyAmount
   ending: 'warden' | 'hunger' | 'companion' | null
   curiosities: string[]
   keeperFedUntil: number
   snailLastGiftAt: number
   crits: number
-  bestCrit: number
+  bestCrit: EconomyAmount
+  numericLawState: Record<string, EconomyAmount>
 }
 
 export interface ClickResult {
-  amount: number
+  amount: EconomyAmount
   crit: boolean
   critMult: number
 }
@@ -117,21 +139,21 @@ export interface GameState extends EcoState {
   starsCaught: number
   bestCombo: number
   /** light earned across ALL rebirths — never resets, for the record books */
-  allTimeEarned: number
+  allTimeEarned: EconomyAmount
   /** light earned this deep-era — drives stardust math, resets at deep collapse */
-  eraEarned: number
+  eraEarned: EconomyAmount
   /** unspent stardust */
-  stardust: number
+  stardust: EconomyAmount
   supernovae: number
   echoes: string[]
   /** unspent singularities (layer 2) */
-  singularities: number
-  singTotal: number
+  singularities: EconomyAmount
+  singTotal: EconomyAmount
   collapses: number
   autoKindler: boolean
   autoStoker: boolean
   autoNova: boolean
-  autoNovaThreshold: number
+  autoNovaThreshold: EconomyAmount
   /** Main-run state to restore after a temporary trial. */
   challengeReturn: RunSnapshot | null
   /** vestment (cosmetic accent theme) id */
@@ -147,17 +169,19 @@ export interface GameState extends EcoState {
   /** critical click count */
   crits: number
   /** largest single critical click */
-  bestCrit: number
+  bestCrit: EconomyAmount
   /** universes finished strongly enough to shine across worlds */
   beacons: string[]
   /** layer-3 meta-currency, earned between universes */
-  darkBetween: number
+  darkBetween: EconomyAmount
   /** multiverse-level perks */
   wayfinder: string[]
   /** completed visible Vessel construction parts */
   vesselParts: string[]
   /** parked progression for every visited universe, including the current one at save time */
   universeRuns: Record<string, UniverseRunState>
+  /** Amount-valued law state reserved for pure universe hooks. */
+  numericLawState: Record<string, EconomyAmount>
 }
 
 /** The Question becomes available once its moment has been witnessed. */
@@ -179,22 +203,22 @@ export function performRemembrance(): boolean {
   game.remembrances += 1
   // survives: echoes, achievements, pastEndings, theme, volumes,
   // curiosities, and the record books (allTimeEarned, playtime, starsCaught, bestCombo)
-  game.light = 0
-  game.totalEarned = 0
+  game.light = ZERO_AMOUNT
+  game.totalEarned = ZERO_AMOUNT
   game.clicks = 0
   game.owned = {}
   game.upgrades = []
   game.buyAmount = 1
   game.ui = [] // the interface is bought again, piece by piece
   game.seen = [] // the story replays — Lumen remembers, and says so
-  game.stardust = 0
-  game.stardustTotal = 0
-  game.eraEarned = 0
+  game.stardust = ZERO_AMOUNT
+  game.stardustTotal = ZERO_AMOUNT
+  game.eraEarned = ZERO_AMOUNT
   game.constellation = []
   game.stardustWorks = {}
   game.supernovae = 0
-  game.singularities = 0
-  game.singTotal = 0
+  game.singularities = ZERO_AMOUNT
+  game.singTotal = ZERO_AMOUNT
   game.collapses = 0
   game.singUpgrades = []
   game.deepWorks = {}
@@ -204,20 +228,21 @@ export function performRemembrance(): boolean {
   game.autoKindler = true
   game.autoStoker = true
   game.autoNova = false
-  game.autoNovaThreshold = 1
+  game.autoNovaThreshold = ONE_AMOUNT
   game.ending = null
+  game.numericLawState = {}
   return true
 }
 
 export const game: GameState = $state({
   activeUniverse: DEFAULT_UNIVERSE_ID,
-  light: 0,
-  totalEarned: 0,
+  light: ZERO_AMOUNT,
+  totalEarned: ZERO_AMOUNT,
   clicks: 0,
   owned: {},
   upgrades: [],
   achievements: [],
-  stardustTotal: 0,
+  stardustTotal: ZERO_AMOUNT,
   constellation: [],
   stardustWorks: {},
   singUpgrades: [],
@@ -237,18 +262,18 @@ export const game: GameState = $state({
   buyAmount: 1,
   starsCaught: 0,
   bestCombo: 0,
-  allTimeEarned: 0,
-  eraEarned: 0,
-  stardust: 0,
+  allTimeEarned: ZERO_AMOUNT,
+  eraEarned: ZERO_AMOUNT,
+  stardust: ZERO_AMOUNT,
   supernovae: 0,
   echoes: [],
-  singularities: 0,
-  singTotal: 0,
+  singularities: ZERO_AMOUNT,
+  singTotal: ZERO_AMOUNT,
   collapses: 0,
   autoKindler: true,
   autoStoker: true,
   autoNova: false,
-  autoNovaThreshold: 1,
+  autoNovaThreshold: ONE_AMOUNT,
   challengeReturn: null,
   ending: null,
   theme: 'ember',
@@ -258,12 +283,13 @@ export const game: GameState = $state({
   keeperFedUntil: 0,
   snailLastGiftAt: 0,
   crits: 0,
-  bestCrit: 0,
+  bestCrit: ZERO_AMOUNT,
   beacons: [],
-  darkBetween: 0,
+  darkBetween: ZERO_AMOUNT,
   wayfinder: [],
   vesselParts: [],
   universeRuns: {},
+  numericLawState: {},
 })
 
 function copyChallengeRun(run: RunSnapshot | null): RunSnapshot | null {
@@ -311,6 +337,7 @@ export function snapshotUniverseRun(): UniverseRunState {
     snailLastGiftAt: game.snailLastGiftAt,
     crits: game.crits,
     bestCrit: game.bestCrit,
+    numericLawState: { ...game.numericLawState },
   }
 }
 
@@ -318,22 +345,22 @@ function freshUniverseRun(universeId: string): UniverseRunState {
   const firstGenerator = universeById(universeId).generators[0]
   const startingKindlings = wayfinderStartingKindlings(game.wayfinder)
   return {
-    light: 0,
-    totalEarned: 0,
+    light: ZERO_AMOUNT,
+    totalEarned: ZERO_AMOUNT,
     clicks: 0,
     owned: startingKindlings > 0 && firstGenerator ? { [firstGenerator.id]: startingKindlings } : {},
     upgrades: [],
     buyAmount: 1,
     seen: [],
-    stardust: 0,
-    stardustTotal: 0,
+    stardust: ZERO_AMOUNT,
+    stardustTotal: ZERO_AMOUNT,
     supernovae: 0,
     constellation: [],
     stardustWorks: {},
     echoes: [],
-    eraEarned: 0,
-    singularities: 0,
-    singTotal: 0,
+    eraEarned: ZERO_AMOUNT,
+    singularities: ZERO_AMOUNT,
+    singTotal: ZERO_AMOUNT,
     collapses: 0,
     singUpgrades: [],
     deepWorks: {},
@@ -343,13 +370,14 @@ function freshUniverseRun(universeId: string): UniverseRunState {
     autoKindler: true,
     autoStoker: true,
     autoNova: false,
-    autoNovaThreshold: 1,
+    autoNovaThreshold: ONE_AMOUNT,
     ending: null,
     curiosities: [],
     keeperFedUntil: 0,
     snailLastGiftAt: 0,
     crits: 0,
-    bestCrit: 0,
+    bestCrit: ZERO_AMOUNT,
+    numericLawState: {},
   }
 }
 
@@ -386,6 +414,7 @@ function restoreUniverseRun(run: UniverseRunState) {
   game.snailLastGiftAt = run.snailLastGiftAt
   game.crits = run.crits
   game.bestCrit = run.bestCrit
+  game.numericLawState = { ...run.numericLawState }
 }
 
 export function universeVisited(id: string): boolean {
@@ -399,12 +428,13 @@ export function universeBeaconReady(id = game.activeUniverse): boolean {
   return (owned?.[pack.beacon.generatorId] ?? 0) >= pack.beacon.count
 }
 
-export function igniteCurrentBeacon(): number {
-  if (game.challenge || !computeVesselComplete(game) || !universeBeaconReady()) return 0
+export function igniteCurrentBeacon(): EconomyAmount {
+  if (game.challenge || !computeVesselComplete(game) || !universeBeaconReady()) return ZERO_AMOUNT
   const pack = universeById(game.activeUniverse)
   game.beacons.push(pack.id)
-  game.darkBetween += pack.beacon.reward
-  return pack.beacon.reward
+  const reward = toAmount(pack.beacon.reward)
+  game.darkBetween = addAmounts(game.darkBetween, reward)
+  return reward
 }
 
 export function universeRouteUnlocked(id: string): boolean {
@@ -416,8 +446,9 @@ export function universeRouteUnlocked(id: string): boolean {
 
 export function buyWayfinder(id: WayfinderId): boolean {
   const node = WAYFINDER_BY_ID.get(id)
-  if (!node || !wayfinderNodeAvailable(game.wayfinder, node) || game.darkBetween < node.cost) return false
-  game.darkBetween -= node.cost
+  const cost = node ? toAmount(node.cost) : ZERO_AMOUNT
+  if (!node || !wayfinderNodeAvailable(game.wayfinder, node) || !gteAmount(game.darkBetween, cost)) return false
+  game.darkBetween = subtractAmounts(game.darkBetween, cost)
   game.wayfinder.push(id)
   return true
 }
@@ -433,7 +464,7 @@ export function crossToUniverse(id: string): boolean {
 }
 
 const CLICK_RATE_WINDOW_MS = 3_000
-const clickMeter = $state<{ samples: Array<{ at: number; amount: number }> }>({ samples: [] })
+const clickMeter = $state<{ samples: Array<{ at: number; amount: EconomyAmount }> }>({ samples: [] })
 
 function pruneClickSamples(now = performance.now()) {
   const cutoff = now - CLICK_RATE_WINDOW_MS
@@ -443,19 +474,19 @@ function pruneClickSamples(now = performance.now()) {
 }
 
 export const ratePerSec = (now = Date.now()) => totalRate(game, now)
-export const passiveRatePerSec = (now = Date.now()) => totalRate(game, now) * productionBuffMult()
+export const passiveRatePerSec = (now = Date.now()) => multiplyAmountByNumber(totalRate(game, now), productionBuffMult())
 export const recentClickRatePerSec = (now = performance.now()) => {
   // This function is read by Svelte derived values, so it must remain pure.
   // Expired samples are removed by click/tick mutations; ignore any that remain
   // here without writing reactive state during derivation.
   const cutoff = now - CLICK_RATE_WINDOW_MS
-  const total = clickMeter.samples.reduce((sum, sample) => (
-    sample.at >= cutoff ? sum + sample.amount : sum
-  ), 0)
-  return total / (CLICK_RATE_WINDOW_MS / 1000)
+  const total = sumAmounts(clickMeter.samples
+    .filter((sample) => sample.at >= cutoff)
+    .map((sample) => sample.amount))
+  return divideAmountByNumber(total, CLICK_RATE_WINDOW_MS / 1000)
 }
-export const activeRatePerSec = (now = Date.now()) => passiveRatePerSec(now) + recentClickRatePerSec()
-export const clickPower = () => computeClickPower(game, productionBuffMult()) * clickBuffMult()
+export const activeRatePerSec = (now = Date.now()) => addAmounts(passiveRatePerSec(now), recentClickRatePerSec())
+export const clickPower = () => multiplyAmountByNumber(computeClickPower(game, productionBuffMult()), clickBuffMult())
 export const critChance = () => computeCritChance(game)
 export const critMult = () => computeCritMult(game)
 export const hasUi = (id: string) => game.ui.includes(id)
@@ -464,41 +495,47 @@ export const vesselRevealed = () => computeVesselRevealed(game)
 export const vesselComplete = () => computeVesselComplete(game)
 export const vesselHasReadyPart = () => computeVesselHasReadyPart(game)
 
-export function earn(amount: number) {
-  game.light += amount
-  game.totalEarned += amount
-  game.allTimeEarned += amount
+export function earn(value: AmountInput) {
+  const amount = toAmount(value)
+  game.light = addAmounts(game.light, amount)
+  game.totalEarned = addAmounts(game.totalEarned, amount)
+  game.allTimeEarned = addAmounts(game.allTimeEarned, amount)
   // Trial light counts for the run, but never becomes stardust.
-  if (!game.challenge) game.eraEarned += amount
+  if (!game.challenge) game.eraEarned = addAmounts(game.eraEarned, amount)
 }
 
 // ── Supernova (prestige layer 1) ─────────────────────────────────────────
 export const STARDUST_PIVOT = 1e18
 
-function stardustScale(): number {
+function stardustScale(): EconomyAmount {
   const horizon = game.singUpgrades.includes('event-horizon') ? 2 : 1
-  const deepGlow = 1 + 0.5 * game.singTotal
-  return deepGlow * horizon * stardustYieldMult(game.stardustWorks)
+  const deepGlow = addAmounts(ONE_AMOUNT, multiplyAmountByNumber(game.singTotal, 0.5))
+  return multiplyAmountByNumber(deepGlow, horizon * stardustYieldMult(game.stardustWorks))
 }
 
-export function potentialStardust(): number {
-  return Math.floor(Math.sqrt(game.eraEarned / STARDUST_PIVOT) * stardustScale())
+export function potentialStardust(): EconomyAmount {
+  const base = sqrtAmount(divideAmountByNumber(game.eraEarned, STARDUST_PIVOT))
+  return floorAmount(multiplyAmounts(base, stardustScale()))
 }
 
-export function stardustTargetFor(totalStardust: number): number {
-  return Math.pow(totalStardust / stardustScale(), 2) * STARDUST_PIVOT
+export function stardustTargetFor(totalStardust: AmountInput): EconomyAmount {
+  const ratio = divideAmounts(toAmount(totalStardust), stardustScale())
+  return multiplyAmountByNumber(powAmount(ratio, 2), STARDUST_PIVOT)
 }
 
 /** Stardust gained by collapsing right now. */
-export function supernovaGain(): number {
-  if (game.challenge) return 0 // trials give no stardust
-  return Math.max(0, potentialStardust() - game.stardustTotal)
+export function supernovaGain(): EconomyAmount {
+  if (game.challenge) return ZERO_AMOUNT // trials give no stardust
+  const potential = potentialStardust()
+  return gtAmount(potential, game.stardustTotal)
+    ? subtractAmounts(potential, game.stardustTotal)
+    : ZERO_AMOUNT
 }
 
 /** Rebuild-from-nothing shared by every kind of reset. */
 function resetRun(withHeadStart: boolean) {
-  game.light = 0
-  game.totalEarned = 0
+  game.light = ZERO_AMOUNT
+  game.totalEarned = ZERO_AMOUNT
   game.owned = {}
   game.upgrades = []
   game.buyAmount = 1
@@ -529,11 +566,11 @@ function restoreRun(snapshot: RunSnapshot) {
 }
 
 /** The state reset. The cutscene around it lives in the UI layer. */
-export function performSupernova(): number {
+export function performSupernova(): EconomyAmount {
   const gain = supernovaGain()
-  if (gain <= 0) return 0
-  game.stardust += gain
-  game.stardustTotal += gain
+  if (isZeroAmount(gain)) return ZERO_AMOUNT
+  game.stardust = addAmounts(game.stardust, gain)
+  game.stardustTotal = addAmounts(game.stardustTotal, gain)
   game.supernovae += 1
   game.challengeReturn = null
   resetRun(true)
@@ -541,23 +578,26 @@ export function performSupernova(): number {
 }
 
 // ── The Deep (prestige layer 2) ──────────────────────────────────────────
-export function deepCollapseGain(): number {
-  if (game.challenge) return 0
-  return Math.floor((game.stardustTotal / SINGULARITY_COST) * singularityYieldMult(game.deepWorks))
+export function deepCollapseGain(): EconomyAmount {
+  if (game.challenge) return ZERO_AMOUNT
+  return floorAmount(multiplyAmountByNumber(
+    divideAmountByNumber(game.stardustTotal, SINGULARITY_COST),
+    singularityYieldMult(game.deepWorks),
+  ))
 }
 
 /** Collapse the era: stardust, constellation, and era-light all return to the dark. */
-export function performDeepCollapse(): number {
+export function performDeepCollapse(): EconomyAmount {
   const gain = deepCollapseGain()
-  if (gain <= 0) return 0
-  game.singularities += gain
-  game.singTotal += gain
+  if (isZeroAmount(gain)) return ZERO_AMOUNT
+  game.singularities = addAmounts(game.singularities, gain)
+  game.singTotal = addAmounts(game.singTotal, gain)
   game.collapses += 1
-  game.stardust = 0
-  game.stardustTotal = 0
+  game.stardust = ZERO_AMOUNT
+  game.stardustTotal = ZERO_AMOUNT
   game.constellation = []
   game.stardustWorks = {}
-  game.eraEarned = 0
+  game.eraEarned = ZERO_AMOUNT
   game.challengeReturn = null
   resetRun(true)
   return gain
@@ -565,8 +605,9 @@ export function performDeepCollapse(): number {
 
 export function buyDeepUpgrade(id: string): boolean {
   const def = DEEP_UPGRADE_BY_ID.get(id)
-  if (!def || game.singUpgrades.includes(id) || game.singularities < def.cost) return false
-  game.singularities -= def.cost
+  const cost = def ? toAmount(def.cost) : ZERO_AMOUNT
+  if (!def || game.singUpgrades.includes(id) || !gteAmount(game.singularities, cost)) return false
+  game.singularities = subtractAmounts(game.singularities, cost)
   game.singUpgrades.push(id)
   return true
 }
@@ -579,8 +620,10 @@ export function buyStardustWork(id: StardustWorkId): boolean {
   if (!work || !stardustMarketComplete()) return false
   const rank = workRank(game.stardustWorks, id)
   const cost = workCost(work, rank)
-  if (!Number.isFinite(cost) || game.stardust < cost) return false
-  game.stardust -= cost
+  if (!Number.isFinite(cost)) return false
+  const amount = toAmount(cost)
+  if (!gteAmount(game.stardust, amount)) return false
+  game.stardust = subtractAmounts(game.stardust, amount)
   game.stardustWorks[id] = rank + 1
   return true
 }
@@ -590,8 +633,10 @@ export function buyDeepWork(id: DeepWorkId): boolean {
   if (!work || !deepMarketComplete()) return false
   const rank = workRank(game.deepWorks, id)
   const cost = workCost(work, rank)
-  if (!Number.isFinite(cost) || game.singularities < cost) return false
-  game.singularities -= cost
+  if (!Number.isFinite(cost)) return false
+  const amount = toAmount(cost)
+  if (!gteAmount(game.singularities, amount)) return false
+  game.singularities = subtractAmounts(game.singularities, amount)
   game.deepWorks[id] = rank + 1
   return true
 }
@@ -599,8 +644,9 @@ export function buyDeepWork(id: DeepWorkId): boolean {
 // ── Curiosities ─────────────────────────────────────────────────────────
 export function buyCuriosity(id: string): boolean {
   const def = universeById(game.activeUniverse).cabinet.itemById.get(id)
-  if (game.challenge || !def || game.curiosities.includes(id) || game.light < def.cost) return false
-  game.light -= def.cost
+  const cost = def ? toAmount(def.cost) : ZERO_AMOUNT
+  if (game.challenge || !def || game.curiosities.includes(id) || !gteAmount(game.light, cost)) return false
+  game.light = subtractAmounts(game.light, cost)
   game.curiosities.push(id)
   if (id === 'snail') game.snailLastGiftAt = Date.now()
   return true
@@ -613,8 +659,8 @@ export function protostarFueled(now = Date.now()): boolean {
 export function fuelProtostar(): boolean {
   if (game.challenge || !hasCuriosity('hearthkeeper')) return false
   const cost = protostarFuelCost(passiveRatePerSec())
-  if (game.light < cost) return false
-  game.light -= cost
+  if (!gteAmount(game.light, cost)) return false
+  game.light = subtractAmounts(game.light, cost)
   const now = Date.now()
   const hours = universeById(game.activeUniverse).cabinet.fuelHours
   game.keeperFedUntil = Math.max(game.keeperFedUntil, now) + hours * 3600_000
@@ -628,9 +674,9 @@ export function cometProgress(now = Date.now()): number {
   return Math.min(1, (now - lastGiftAt) / (cycle * 1000))
 }
 
-export function collectCometReturn(): number {
-  if (game.challenge) return 0
-  if (cometProgress() < 1) return 0
+export function collectCometReturn(): EconomyAmount {
+  if (game.challenge) return ZERO_AMOUNT
+  if (cometProgress() < 1) return ZERO_AMOUNT
   const amount = cometGift(passiveRatePerSec(), universeById(game.activeUniverse).cabinet.returnRateSeconds)
   earn(amount)
   game.snailLastGiftAt = Date.now()
@@ -680,8 +726,9 @@ export function buyNode(id: string): boolean {
   const node = NODE_BY_ID.get(id)
   if (!node || game.constellation.includes(id)) return false
   if (!nodeAvailable(game.constellation, node)) return false
-  if (game.stardust < node.cost) return false
-  game.stardust -= node.cost
+  const cost = toAmount(node.cost)
+  if (!gteAmount(game.stardust, cost)) return false
+  game.stardust = subtractAmounts(game.stardust, cost)
   game.constellation.push(id)
   return true
 }
@@ -692,11 +739,11 @@ export function clickEmber(extraMult = 1): ClickResult {
   const chance = critChance()
   const crit = roll < chance
   const mult = crit ? critMult() : 1
-  const power = clickPower() * extraMult * mult
+  const power = multiplyAmountByNumber(clickPower(), extraMult * mult)
   game.clicks += 1
   if (crit) {
     game.crits += 1
-    if (power > game.bestCrit) game.bestCrit = power
+    game.bestCrit = maxAmount(game.bestCrit, power)
   }
   earn(power)
   clickMeter.samples.push({ at: performance.now(), amount: power })
@@ -716,8 +763,8 @@ export function buyGenerator(def: GeneratorDef): number {
   if (cap !== undefined) count = Math.min(count, Math.max(0, cap - owned))
   if (count <= 0) return 0
   const cost = bulkCost(def, owned, count, mult, scale)
-  if (game.light < cost) return 0
-  game.light -= cost
+  if (!gteAmount(game.light, cost)) return 0
+  game.light = subtractAmounts(game.light, cost)
   game.owned[def.id] = owned + count
   return count
 }
@@ -726,16 +773,18 @@ export function buyUpgrade(id: string): boolean {
   if (challengeMods(game).noUpgrades) return false
   const def = upgradeById(game, id)
   if (!def || game.upgrades.includes(id)) return false
-  if (!upgradeUnlocked(game, def) || game.light < def.cost) return false
-  game.light -= def.cost
+  const cost = toAmount(def.cost)
+  if (!upgradeUnlocked(game, def) || !gteAmount(game.light, cost)) return false
+  game.light = subtractAmounts(game.light, cost)
   game.upgrades.push(id)
   return true
 }
 
 export function buyUi(id: string): boolean {
   const def = UI_UNLOCK_BY_ID.get(id)
-  if (!def || game.ui.includes(id) || game.light < def.cost) return false
-  game.light -= def.cost
+  const cost = def ? toAmount(def.cost) : ZERO_AMOUNT
+  if (!def || game.ui.includes(id) || !gteAmount(game.light, cost)) return false
+  game.light = subtractAmounts(game.light, cost)
   game.ui.push(id)
   return true
 }
@@ -745,18 +794,18 @@ export function tick(dtSeconds: number) {
   tickBuffs()
   pruneClickSamples()
   const rate = passiveRatePerSec()
-  if (rate > 0) earn(rate * dtSeconds)
+  if (!isZeroAmount(rate)) earn(multiplyAmountByNumber(rate, dtSeconds))
 }
 
 export function wipe() {
   game.activeUniverse = DEFAULT_UNIVERSE_ID
-  game.light = 0
-  game.totalEarned = 0
+  game.light = ZERO_AMOUNT
+  game.totalEarned = ZERO_AMOUNT
   game.clicks = 0
   game.owned = {}
   game.upgrades = []
   game.achievements = []
-  game.stardustTotal = 0
+  game.stardustTotal = ZERO_AMOUNT
   game.constellation = []
   game.stardustWorks = {}
   game.singUpgrades = []
@@ -770,18 +819,18 @@ export function wipe() {
   game.buyAmount = 1
   game.starsCaught = 0
   game.bestCombo = 0
-  game.allTimeEarned = 0
-  game.eraEarned = 0
-  game.stardust = 0
+  game.allTimeEarned = ZERO_AMOUNT
+  game.eraEarned = ZERO_AMOUNT
+  game.stardust = ZERO_AMOUNT
   game.supernovae = 0
   game.echoes = []
-  game.singularities = 0
-  game.singTotal = 0
+  game.singularities = ZERO_AMOUNT
+  game.singTotal = ZERO_AMOUNT
   game.collapses = 0
   game.autoKindler = true
   game.autoStoker = true
   game.autoNova = false
-  game.autoNovaThreshold = 1
+  game.autoNovaThreshold = ONE_AMOUNT
   game.ending = null
   game.theme = 'ember'
   game.remembrances = 0
@@ -790,10 +839,11 @@ export function wipe() {
   game.keeperFedUntil = 0
   game.snailLastGiftAt = 0
   game.crits = 0
-  game.bestCrit = 0
+  game.bestCrit = ZERO_AMOUNT
   game.beacons = []
-  game.darkBetween = 0
+  game.darkBetween = ZERO_AMOUNT
   game.wayfinder = []
   game.vesselParts = []
   game.universeRuns = {}
+  game.numericLawState = {}
 }

@@ -1,6 +1,15 @@
 import { GENERATORS } from './generators'
 import { universeById } from './universes'
 import type { GameState } from '../engine/game.svelte'
+import type { EconomyAmount } from './universes/types'
+import {
+  amountFromNumber,
+  eqAmount,
+  floorAmount,
+  gtAmount,
+  gteAmount,
+  multiplyAmountByNumber,
+} from '../core/numeric/amount'
 
 export interface AchievementDef {
   id: string
@@ -8,7 +17,7 @@ export interface AchievementDef {
   flavor: string
   hidden?: boolean
   /** rate = current light/s, passed in so defs stay cheap */
-  when: (g: GameState, rate: number) => boolean
+  when: (g: GameState, rate: EconomyAmount) => boolean
 }
 
 const defs: AchievementDef[] = []
@@ -29,7 +38,9 @@ const wealth: Array<[string, string, number, string]> = [
   ['zettashine', 'Zettashine', 1e21, 'Light beyond bookkeeping.'],
   ['yottablaze', 'Yottablaze', 1e24, 'There is no prefix after this. There will be.'],
 ]
-for (const [id, name, amount, flavor] of wealth) A(id, name, flavor, (g) => g.totalEarned >= amount)
+for (const [id, name, amount, flavor] of wealth) {
+  A(id, name, flavor, (g) => gteAmount(g.totalEarned, amountFromNumber(amount)))
+}
 
 // ── Clicks ──────────────────────────────────────────────────────────────
 const clicks: Array<[string, string, number, string]> = [
@@ -50,7 +61,9 @@ const flow: Array<[string, string, number, string]> = [
   ['deluge', 'Deluge of Dawn', 1e12, 'The void needs an umbrella.'],
   ['the-pour', 'The Light Pours', 1e15, 'From what vessel? Don’t ask yet.'],
 ]
-for (const [id, name, rate, flavor] of flow) A(id, name, flavor, (_g, r) => r >= rate)
+for (const [id, name, rate, flavor] of flow) {
+  A(id, name, flavor, (_g, r) => gteAmount(r, amountFromNumber(rate)))
+}
 
 // ── Firsts: one per generator ───────────────────────────────────────────
 for (const gen of GENERATORS) {
@@ -93,8 +106,8 @@ A('metronome-heart', 'Pulsar Precision', 'Thirty-two. You are keeping time with 
 A('nova-1', 'Let There Be Nothing', 'You collapsed a universe on purpose. And then — again, light.', (g) => g.supernovae >= 1)
 A('nova-3', 'Serial Creator', 'Three universes, each brighter than the last.', (g) => g.supernovae >= 3)
 A('nova-10', 'The Cycle Holds', 'Ten collapses. Lumen has stopped grieving at each one. Almost.', (g) => g.supernovae >= 10)
-A('dust-10', 'Pocketful of Sky', 'Ten stardust, gathered from your own endings.', (g) => g.stardustTotal >= 10)
-A('dust-50', 'Dust Baron', 'Fifty stardust. The void owes you money.', (g) => g.stardustTotal >= 50)
+A('dust-10', 'Pocketful of Sky', 'Ten stardust, gathered from your own endings.', (g) => gteAmount(g.stardustTotal, amountFromNumber(10)))
+A('dust-50', 'Dust Baron', 'Fifty stardust. The void owes you money.', (g) => gteAmount(g.stardustTotal, amountFromNumber(50)))
 A('first-node', 'Connect the Dots', 'Your first constellation star. The sky has a shape now.', (g) => g.constellation.length >= 1)
 A('cartographer', 'Cartographer of Heaven', 'Seven constellation stars, drawn by hand.', (g) => g.constellation.length >= 7)
 A('endless-sky', 'No Final Star', 'The complete constellation accepted one more point.', (g) =>
@@ -103,7 +116,7 @@ A('endless-sky', 'No Final Star', 'The complete constellation accepted one more 
 // ── The Deep ────────────────────────────────────────────────────────────
 A('deep-1', 'Past the Event Horizon', 'A whole era of stardust, folded into a point.', (g) => g.collapses >= 1)
 A('deep-3', 'Recursive Dark', 'Three eras deep. The dark has layers, and you own several.', (g) => g.collapses >= 3)
-A('sing-5', 'Five Points of Nothing', 'Five singularities. They weigh less than doubt.', (g) => g.singTotal >= 5)
+A('sing-5', 'Five Points of Nothing', 'Five singularities. They weigh less than doubt.', (g) => gteAmount(g.singTotal, amountFromNumber(5)))
 A('automated', 'The Machine Tends the Fire', 'Kindler and stoker, working while you dream.', (g) =>
   g.singUpgrades.includes('auto-kindler') && g.singUpgrades.includes('auto-stoker'))
 A('deeper-still', 'Deeper Still', 'The finished Deep discovered that finished was only another surface.', (g) =>
@@ -159,10 +172,11 @@ H('night-reader', 'Night Reader', 'It’s 3 AM. The ember doesn’t judge. Lumen
 H('the-quiet-kind', 'The Quiet Kind', 'All sound off. The light doesn’t mind silence.', (g) =>
   g.sfxVolume === 0 && g.musicVolume === 0)
 H('dragons-nest', 'Dragon’s Nest', 'Sitting on a full hour of production, unspent.', (g, r) =>
-  r > 10 && g.light >= r * 3_600)
+  gtAmount(r, amountFromNumber(10)) && gteAmount(g.light, multiplyAmountByNumber(r, 3_600)))
 H('purist', 'Purist', 'A million light and not one upgrade. Why though.', (g) =>
-  g.challenge === null && g.totalEarned >= 1e6 && g.upgrades.length === 0)
-H('lucky-777', 'Jackpot', '✦777 exactly on the counter.', (g) => Math.floor(g.light) === 777)
+  g.challenge === null && gteAmount(g.totalEarned, amountFromNumber(1e6)) && g.upgrades.length === 0)
+H('lucky-777', 'Jackpot', '✦777 exactly on the counter.', (g) =>
+  eqAmount(floorAmount(g.light), amountFromNumber(777)))
 H('louder-than-silence', 'Louder Than Silence', 'You beat The Silence with nothing but your own rhythm.', (g) =>
   g.challengesDone.includes('silence'))
 H('with-these-hands', 'With These Hands', 'A million points of light, every one of them touched.', (g) =>

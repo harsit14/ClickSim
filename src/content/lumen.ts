@@ -1,4 +1,5 @@
 import type { GameState } from '../engine/game.svelte'
+import { amountFromNumber, gteAmount } from '../core/numeric/amount'
 
 export interface LumenLine {
   id: string
@@ -127,17 +128,17 @@ export const LUMEN_LINES: LumenLine[] = [
     text: '...it looks back at you. Do you understand yet?',
     when: (g) => owns(g, 'ember2'),
   },
-  { id: 'tenk', text: 'When the last universe went dark, I counted the embers. There was one.', when: (g) => g.totalEarned >= 10_000 },
-  { id: 'hundredk', text: 'There’s something I haven’t told you. Later. Keep going.', when: (g) => g.totalEarned >= 100_000 },
+  { id: 'tenk', text: 'When the last universe went dark, I counted the embers. There was one.', when: (g) => gteAmount(g.totalEarned, amountFromNumber(10_000)) },
+  { id: 'hundredk', text: 'There’s something I haven’t told you. Later. Keep going.', when: (g) => gteAmount(g.totalEarned, amountFromNumber(100_000)) },
   {
     id: 'billion',
     text: 'The dark is thinner here now. Do you feel it watching?',
-    when: (g) => g.totalEarned >= 1e9,
+    when: (g) => gteAmount(g.totalEarned, amountFromNumber(1e9)),
   },
   {
     id: 'quadrillion',
     text: 'I should tell you what happened to the last one. Soon. I promise.',
-    when: (g) => g.totalEarned >= 1e15,
+    when: (g) => gteAmount(g.totalEarned, amountFromNumber(1e15)),
   },
 
   // ── Act II — after the first supernova ─────────────────────────────────
@@ -149,7 +150,7 @@ export const LUMEN_LINES: LumenLine[] = [
   {
     id: 'act2-dust',
     text: 'Stardust. The old universe left some too. I never found a use for it. You did, immediately.',
-    when: (g) => g.stardust >= 1 && g.supernovae >= 1,
+    when: (g) => gteAmount(g.stardust, amountFromNumber(1)) && g.supernovae >= 1,
   },
   {
     id: 'act2-node',
@@ -176,7 +177,7 @@ export const LUMEN_LINES: LumenLine[] = [
   {
     id: 'deep-tease',
     text: 'All that stardust, pressing on the same point... do you feel it? Something beneath the sky.',
-    when: (g) => g.stardustTotal >= 15 && g.collapses === 0,
+    when: (g) => gteAmount(g.stardustTotal, amountFromNumber(15)) && g.collapses === 0,
   },
   {
     id: 'deep-first',

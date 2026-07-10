@@ -1,3 +1,6 @@
+import type { EconomyAmount } from './universes/types'
+import { amountFromNumber, maxAmount, multiplyAmountByNumber } from '../core/numeric/amount'
+
 /** Celestial curiosities — astronomical phenomena catalogued inside each universe.
  *  Stable legacy ids preserve existing saves while the visible archive can evolve
  *  into a shared cosmology across future worlds. */
@@ -361,8 +364,14 @@ export const TIDEFALL_CABINET: CuriosityCabinetDef = {
 /** Protostar fueling economy (legacy state names remain save-compatible). */
 export const PROTOSTAR_FUEL_HOURS = 2
 export const PROTOSTAR_BONUS = 1.05
-export const protostarFuelCost = (ratePerSec: number) => Math.max(100, ratePerSec * 300)
+export const protostarFuelCost = (ratePerSec: EconomyAmount): EconomyAmount => maxAmount(
+  amountFromNumber(100),
+  multiplyAmountByNumber(ratePerSec, 300),
+)
 
 /** Long-period comet return cycle. */
 export const COMET_ORBIT_SEC = 90 * 60
-export const cometGift = (ratePerSec: number, rateSeconds = 1800) => Math.max(50, ratePerSec * rateSeconds)
+export const cometGift = (ratePerSec: EconomyAmount, rateSeconds = 1800): EconomyAmount => maxAmount(
+  amountFromNumber(50),
+  multiplyAmountByNumber(ratePerSec, rateSeconds),
+)

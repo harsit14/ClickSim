@@ -1,5 +1,5 @@
 import {
-  migrateAndSanitizeSave,
+  migrateAndSanitizeSaveV12,
   migrateAndSanitizeSaveV13,
   stringifySaveDataV13,
   type SaveDataV13,
@@ -32,7 +32,7 @@ export function prepareV13Migration(raw: string): PreparedV13Migration | null {
 
     let rollbackV12Raw: string | null = null
     if (typeof version === 'number' && version <= 12) {
-      const legacy = migrateAndSanitizeSave(parsed)
+      const legacy = migrateAndSanitizeSaveV12(parsed)
       if (!legacy) return null
       rollbackV12Raw = version === 12 ? raw : JSON.stringify(legacy)
     }
@@ -55,17 +55,24 @@ export function commitV13Migration(
   storage: SaveStorage,
   primaryKey: string,
   raw: string,
+  savedAtOverride?: number,
 ): SaveDataV13 | null {
   const prepared = prepareV13Migration(raw)
   if (!prepared) return null
-  if (prepared.rollbackV12Raw === null) return prepared.data
+  const data = savedAtOverride === undefined
+    ? prepared.data
+    : { ...prepared.data, savedAt: savedAtOverride }
+  const serialized = savedAtOverride === undefined
+    ? prepared.serialized
+    : stringifySaveDataV13(data)
+  if (prepared.rollbackV12Raw === null) return data
 
   const previousPrimary = storage.getItem(primaryKey)
   const previousRollback = storage.getItem(V12_ROLLBACK_KEY)
   try {
     if (previousRollback === null) storage.setItem(V12_ROLLBACK_KEY, prepared.rollbackV12Raw)
-    storage.setItem(primaryKey, prepared.serialized)
-    return prepared.data
+    storage.setItem(primaryKey, serialized)
+    return data
   } catch {
     try {
       restore(storage, primaryKey, previousPrimary)

@@ -1,5 +1,10 @@
 import { DEEP_UPGRADES } from '../content/deep'
-import { migrateAndSanitizeSave, type SaveDataV12 } from './save-data'
+import {
+  migrateAndSanitizeSave,
+  migrateAndSanitizeSaveV12,
+  type SaveDataV12,
+  type SaveDataV13,
+} from './save-data'
 
 export type DevScenario = 'midgame' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'markets'
 
@@ -68,11 +73,11 @@ const CONSTELLATION = [
 ]
 
 function emptyScenario(now: number): SaveDataV12 {
-  return migrateAndSanitizeSave({ version: 12, savedAt: now, activeUniverse: 'emberlight' })!
+  return migrateAndSanitizeSaveV12({ version: 12, savedAt: now, activeUniverse: 'emberlight' })!
 }
 
 /** Deterministic, dev-only states used for manual and browser regression passes. */
-export function createDevScenario(name: string | null, now = Date.now()): SaveDataV12 | null {
+export function createDevScenario(name: string | null, now = Date.now()): SaveDataV13 | null {
   if (!['midgame', 'endgame', 'question', 'crossing', 'tidefall', 'markets'].includes(name ?? '')) return null
   const base = emptyScenario(now)
 

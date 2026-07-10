@@ -1,6 +1,16 @@
 import { game, ratePerSec, snapshotUniverseRun, type RunSnapshot } from '../engine/game.svelte'
 import { perkBonus } from '../content/constellation'
-import { migrateAndSanitizeSave, type SaveDataV12 } from './save-data'
+import {
+  migrateAndSanitizeSave,
+  stringifySaveDataV13,
+  type SaveDataV13,
+} from './save-data'
+import type { EconomyAmount } from '../content/universes/types'
+import {
+  ZERO_AMOUNT,
+  multiplyAmountByNumber,
+} from './numeric/amount'
+import { commitV13Migration, V12_ROLLBACK_KEY } from './numeric/save-transaction'
 
 const KEY = 'ember.save'
 const RECENT_BACKUP_KEYS = ['ember.save.backup.1', 'ember.save.backup.2', 'ember.save.backup.3'] as const
@@ -37,9 +47,9 @@ function copyRunSnapshot(snapshot: RunSnapshot | null | undefined): RunSnapshot 
   }
 }
 
-function snapshot(): SaveDataV12 {
+function snapshot(): SaveDataV13 {
   return {
-    version: 12,
+    version: 13,
     savedAt: Date.now(),
     activeUniverse: game.activeUniverse,
     light: game.light,
@@ -98,10 +108,11 @@ function snapshot(): SaveDataV12 {
       ...game.universeRuns,
       [game.activeUniverse]: snapshotUniverseRun(),
     },
+    numericLawState: { ...game.numericLawState },
   }
 }
 
-function apply(d: SaveDataV12) {
+function apply(d: SaveDataV13) {
   game.activeUniverse = d.activeUniverse
   game.light = d.light
   game.totalEarned = d.totalEarned
@@ -169,14 +180,27 @@ function apply(d: SaveDataV12) {
       challengeReturn: copyRunSnapshot(run.challengeReturn),
       challengesDone: [...run.challengesDone],
       curiosities: [...run.curiosities],
+      numericLawState: { ...run.numericLawState },
     }]),
   )
+  game.numericLawState = { ...d.numericLawState }
 }
 
-function parseStored(raw: string | null): SaveDataV12 | null {
+function parseStored(raw: string | null): SaveDataV13 | null {
   if (!raw) return null
   try {
     return migrateAndSanitizeSave(JSON.parse(raw))
+  } catch {
+    return null
+  }
+}
+
+function storedVersion(raw: string): number | null {
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null
+    const version = (parsed as Record<string, unknown>).version
+    return typeof version === 'number' && Number.isInteger(version) ? version : null
   } catch {
     return null
   }
@@ -189,7 +213,7 @@ function writeRecentBackup(raw: string) {
     const previous = localStorage.getItem(RECENT_BACKUP_KEYS[index - 1])
     if (previous) localStorage.setItem(RECENT_BACKUP_KEYS[index], previous)
   }
-  localStorage.setItem(RECENT_BACKUP_KEYS[0], JSON.stringify(clean))
+  localStorage.setItem(RECENT_BACKUP_KEYS[0], stringifySaveDataV13(clean))
 }
 
 function maybeBackup(raw: string | null, now: number) {
@@ -234,8 +258,8 @@ export function restoreSaveBackup(id: SaveBackupId): boolean {
     if (!data) return false
     const current = localStorage.getItem(KEY)
     if (current) writeRecentBackup(current)
-    const restored = { ...data, savedAt: Date.now() } satisfies SaveDataV12
-    localStorage.setItem(KEY, JSON.stringify(restored))
+    const restored = { ...data, savedAt: Date.now() } satisfies SaveDataV13
+    localStorage.setItem(KEY, stringifySaveDataV13(restored))
     apply(restored)
     return true
   } catch {
@@ -284,22 +308,23 @@ export function save() {
   try {
     const now = Date.now()
     maybeBackup(localStorage.getItem(KEY), now)
-    localStorage.setItem(KEY, JSON.stringify(snapshot()))
+    localStorage.setItem(KEY, stringifySaveDataV13(snapshot()))
   } catch {
     // storage unavailable (private mode, quota) — play on without persistence
   }
 }
 
 /** Loads the save if present. Returns pending offline earnings (not yet applied). */
-export function load(): number {
+export function load(): EconomyAmount {
   const sameTabSession = hasActiveSession()
   const lastActiveAt = readNumber(PRESENCE_KEY)
   const now = Date.now()
   markActiveSession()
   markPresence()
 
-  let data: SaveDataV12 | null = null
+  let data: SaveDataV13 | null = null
   let recoveredFrom = ''
+  let migratedFromV12 = false
   try {
     const candidates: Array<[string, string]> = [
       ['primary save', KEY],
@@ -309,51 +334,72 @@ export function load(): number {
       ['daily backup', DAILY_BACKUP_KEY],
     ]
     for (const [label, key] of candidates) {
-      data = parseStored(localStorage.getItem(key))
+      const raw = localStorage.getItem(key)
+      if (!raw) continue
+      const version = storedVersion(raw)
+      if (version !== null && version <= 12) {
+        data = commitV13Migration(localStorage, KEY, raw)
+        migratedFromV12 = data !== null
+      } else {
+        data = parseStored(raw)
+      }
       if (!data) continue
       if (key !== KEY) {
         recoveredFrom = label
-        localStorage.setItem(KEY, JSON.stringify(data))
+        if (!migratedFromV12) localStorage.setItem(KEY, stringifySaveDataV13(data))
       }
       break
     }
   } catch {
-    return 0
+    return ZERO_AMOUNT
   }
-  if (!data) return 0
-  recoveryMessage = recoveredFrom ? `Recovered from the ${recoveredFrom}.` : ''
+  if (!data) return ZERO_AMOUNT
+  const messages: string[] = []
+  if (recoveredFrom) messages.push(`Recovered from the ${recoveredFrom}.`)
+  if (migratedFromV12) {
+    messages.push('Save upgraded to v13. Your original v12 save is preserved for recovery and export.')
+  }
+  recoveryMessage = messages.join(' ')
   apply(data)
   const activeReload =
     lastActiveAt > 0 ? now - lastActiveAt < ACTIVE_SESSION_GRACE_MS : sameTabSession
   if (activeReload) {
     save()
-    return 0
+    return ZERO_AMOUNT
   }
   const efficiency = BASE_OFFLINE_EFFICIENCY + perkBonus(game.constellation, 'offline')
   const capSeconds = (BASE_OFFLINE_CAP_HOURS + perkBonus(game.constellation, 'offlineCap')) * 3600
   const lastMeaningfulActivity = Math.max(data.savedAt ?? now, lastActiveAt)
   const elapsedMs = Math.max(0, now - lastMeaningfulActivity)
-  if (elapsedMs < MIN_OFFLINE_MS) return 0
+  if (elapsedMs < MIN_OFFLINE_MS) return ZERO_AMOUNT
   const elapsed = elapsedMs / 1000
   const counted = Math.min(elapsed, capSeconds)
-  return ratePerSec() * counted * Math.min(1, efficiency)
+  return multiplyAmountByNumber(ratePerSec(), counted * Math.min(1, efficiency))
 }
 
 export function exportSave(): string {
-  const json = JSON.stringify(snapshot())
+  const json = stringifySaveDataV13(snapshot())
   return btoa(unescape(encodeURIComponent(json)))
 }
 
 export function importSave(code: string): boolean {
   try {
     const json = decodeURIComponent(escape(atob(code.trim())))
-    const data = migrateAndSanitizeSave(JSON.parse(json))
+    const version = storedVersion(json)
+    let data = migrateAndSanitizeSave(JSON.parse(json))
     if (!data) return false
-    const committed = { ...data, savedAt: Date.now() }
     const current = localStorage.getItem(KEY)
     if (current) writeRecentBackup(current)
-    localStorage.setItem(KEY, JSON.stringify(committed))
-    apply(committed)
+    if (version !== null && version <= 12) {
+      data = commitV13Migration(localStorage, KEY, json, Date.now())
+      if (!data) return false
+      recoveryMessage = 'Imported save upgraded to v13. The original v12 data is preserved for recovery and export.'
+    } else {
+      data = { ...data, savedAt: Date.now() }
+      localStorage.setItem(KEY, stringifySaveDataV13(data))
+      recoveryMessage = ''
+    }
+    apply(data)
     return true
   } catch {
     return false
@@ -362,10 +408,21 @@ export function importSave(code: string): boolean {
 
 /** Replaces the stored snapshot without mutating the mounted game. Used by dev scenarios before mount. */
 export function replaceStoredSave(data: unknown): boolean {
-  const clean = migrateAndSanitizeSave(data)
+  let candidate = data
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    const source = data as Record<string, unknown>
+    if (source.version === 13 && source.light && typeof source.light === 'object') {
+      try {
+        candidate = JSON.parse(stringifySaveDataV13(data as SaveDataV13))
+      } catch {
+        return false
+      }
+    }
+  }
+  const clean = migrateAndSanitizeSave(candidate)
   if (!clean) return false
   try {
-    localStorage.setItem(KEY, JSON.stringify(clean))
+    localStorage.setItem(KEY, stringifySaveDataV13(clean))
     return true
   } catch {
     return false
@@ -374,7 +431,7 @@ export function replaceStoredSave(data: unknown): boolean {
 
 export function hardReset() {
   try {
-    for (const key of [KEY, ...RECENT_BACKUP_KEYS, DAILY_BACKUP_KEY, BACKUP_AT_KEY, BACKUP_DAY_KEY]) {
+    for (const key of [KEY, V12_ROLLBACK_KEY, ...RECENT_BACKUP_KEYS, DAILY_BACKUP_KEY, BACKUP_AT_KEY, BACKUP_DAY_KEY]) {
       localStorage.removeItem(key)
     }
   } catch {

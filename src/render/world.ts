@@ -10,6 +10,15 @@ import {
   type VisualQuality,
 } from '../core/preferences'
 import { reportRenderHealth } from '../core/render-health.svelte'
+import {
+  ONE_AMOUNT,
+  addAmounts,
+  amountFromNumber,
+  amountLog10,
+  amountToBoundedNumber,
+  gteAmount,
+  isZeroAmount,
+} from '../core/numeric/amount'
 
 interface Particle {
   x: number
@@ -184,7 +193,7 @@ export class World {
 
   /** Current visual radius of the ember core; grows with everything ever earned. */
   emberRadius(now: number): number {
-    const growth = Math.pow(Math.log10(1 + game.totalEarned), 1.2) * 6
+    const growth = Math.pow(amountLog10(addAmounts(ONE_AMOUNT, game.totalEarned)), 1.2) * 6
     const base = 24 + Math.min(growth, 70)
     const motion = this.motionScale()
     const breath = 1 + (0.028 * Math.sin(now / 900) + 0.012 * Math.sin(now / 233)) * motion
@@ -672,7 +681,7 @@ export class World {
       }
 
       if (this.hasCuriosity('door')) {
-        const readable = game.allTimeEarned >= 1e30
+        const readable = gteAmount(game.allTimeEarned, amountFromNumber(1e30))
         ctx.save()
         ctx.translate(92, 14)
         ctx.rotate(-0.18 + Math.sin(now / 2800) * 0.04)
@@ -925,9 +934,9 @@ export class World {
 
     // gentle motes rising from the ember while generators work
     const rate = ratePerSec()
-    if (rate > 0) {
+    if (!isZeroAmount(rate)) {
       const profile = this.currentRenderProfile()
-      this.driftAcc += dt * Math.min(5, 0.6 + Math.sqrt(rate) * 0.35) * this.motionScale() * profile.moteScale
+      this.driftAcc += dt * Math.min(5, 0.6 + Math.sqrt(amountToBoundedNumber(rate)) * 0.35) * this.motionScale() * profile.moteScale
       while (this.driftAcc >= 1) {
         this.driftAcc -= 1
         const c = this.center

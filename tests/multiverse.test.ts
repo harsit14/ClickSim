@@ -22,17 +22,18 @@ import {
   progressionIdentity,
   vesselPartCopy,
 } from '../src/content/universe-progression'
+import { ZERO_AMOUNT, amountFromNumber, gtAmount } from '../src/core/numeric/amount'
 
 function tideState(): EcoState {
   return {
     activeUniverse: 'tidefall',
-    light: 0,
-    totalEarned: 1_000,
+    light: ZERO_AMOUNT,
+    totalEarned: amountFromNumber(1_000),
     clicks: 0,
     owned: { spark: 1 },
     upgrades: [],
     achievements: [],
-    stardustTotal: 0,
+    stardustTotal: ZERO_AMOUNT,
     constellation: [],
     stardustWorks: {},
     singUpgrades: [],
@@ -44,7 +45,7 @@ function tideState(): EcoState {
     curiosities: [],
     keeperFedUntil: 0,
     beacons: [],
-    darkBetween: 0,
+    darkBetween: ZERO_AMOUNT,
     wayfinder: [],
     vesselParts: [],
   }
@@ -108,7 +109,7 @@ test('the living tide averages around one and reaches its stated extrema', () =>
   assert.ok(Math.abs(tidefallRateMultiplier(67_500) - 0.6) < 1e-12)
 
   const state = tideState()
-  assert.ok(totalRate(state, 22_500) > totalRate(state, 67_500))
+  assert.ok(gtAmount(totalRate(state, 22_500), totalRate(state, 67_500)))
 })
 
 test('universe music modes carry different rhythm grids', () => {

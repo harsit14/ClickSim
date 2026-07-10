@@ -4,6 +4,7 @@ import type { LumenLine } from '../lumen'
 import type { Effect, UpgradeDef } from '../upgrades'
 import type { UniversePack } from './types'
 import { TIDEFALL_CABINET } from '../curiosities'
+import { amountFromNumber, gteAmount } from '../../core/numeric/amount'
 
 const G = (
   tier: number,
@@ -130,7 +131,7 @@ export const TIDEFALL_UPGRADES = upgrades
 const TIDEFALL_LUMEN: LumenLine[] = [
   { id: 'tide-arrival', text: 'This dark is wet. That should be impossible. It is not the strangest thing here.', when: (g) => g.clicks >= 1 },
   { id: 'tide-droplet', text: 'A droplet with no gravity. It is waiting for the rest of the ocean.', when: (g) => (g.owned.spark ?? 0) >= 1 },
-  { id: 'tide-turn', text: 'The glow is rising. Watch the pull; this universe pays attention to timing.', when: (g) => g.totalEarned >= 1e5 },
+  { id: 'tide-turn', text: 'The glow is rising. Watch the pull; this universe pays attention to timing.', when: (g) => gteAmount(g.totalEarned, amountFromNumber(1e5)) },
   { id: 'tide-beacon', text: 'That beacon is underwater. It has been calling longer than our universe was alive.', when: (g) => (g.owned.sun ?? 0) >= 1 },
   { id: 'tide-white-dwarf', text: 'The White Dwarf is reflected in water that has no surface. It has been here before us.', when: (g) => g.curiosities.includes('moth') },
   { id: 'tide-quasar', text: 'That Quasar beam is not crossing the sea. The sea is using it as a sounding line.', when: (g) => g.curiosities.includes('second-cursor') },
@@ -147,7 +148,7 @@ export const TIDEFALL_ECHOES: EchoDef[] = [
     title: 'The Salt Primer',
     provenance: 'scratched into the shell of the first tidepool',
     text: 'Lesson one: every shore is a promise the sea makes to stop. Lesson two: the sea has never kept it. Lesson three was washed away before anyone could decide whether that proved anything.',
-    when: (g) => g.totalEarned >= 1e5,
+    when: (g) => gteAmount(g.totalEarned, amountFromNumber(1e5)),
   },
   {
     id: 'tide-drowned-observatory',
@@ -161,7 +162,7 @@ export const TIDEFALL_ECHOES: EchoDef[] = [
     title: 'Ledger of Missing Moons',
     provenance: 'pressed into salt-glass beneath the first tidepool',
     text: 'Moon one: gone. Moon two: gone. Moon three: never rose. The sea continued its devotions without them. In the final margin: “Perhaps obedience can outlive its reason. Perhaps that is what hope is.”',
-    when: (g) => g.totalEarned >= 1e8,
+    when: (g) => gteAmount(g.totalEarned, amountFromNumber(1e8)),
   },
   {
     id: 'tide-quasar-sounding',

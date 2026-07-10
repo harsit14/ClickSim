@@ -1,5 +1,7 @@
 import type { Effect } from './upgrades'
 import type { GameState } from '../engine/game.svelte'
+import type { EconomyAmount } from './universes/types'
+import { amountFromNumber, gteAmount } from '../core/numeric/amount'
 
 /** Challenge trials — special runs with a twist, a goal, and a permanent reward.
  *  Started from the Deep. No stardust is earned during a trial. */
@@ -35,7 +37,7 @@ export interface ChallengeDef {
   rules: string
   goalText: string
   goal: (g: GameState) => boolean
-  progress: (g: GameState) => { current: number; target: number }
+  progress: (g: GameState) => { current: number | EconomyAmount; target: number | EconomyAmount }
   rewardDesc: string
   rewardEffects: Effect[]
   /** permanent multiplier on all generator costs once completed */
@@ -54,8 +56,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'The old universe spent its last eon like this.',
     rules: 'No music. No rhythm. No stars. Just you and the dark.',
     goalText: 'earn ✦1B this run',
-    goal: (g) => g.totalEarned >= 1e9,
-    progress: (g) => ({ current: g.totalEarned, target: 1e9 }),
+    goal: (g) => gteAmount(g.totalEarned, amountFromNumber(1e9)),
+    progress: (g) => ({ current: g.totalEarned, target: amountFromNumber(1e9) }),
     rewardDesc: 'clicks ×2, always',
     rewardEffects: [{ kind: 'clickMult', value: 2 }],
     mods: { silence: true, noStars: true },
@@ -79,8 +81,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'Before the sparks, there was only this.',
     rules: 'Generators produce nothing. Every point of light is clicked.',
     goalText: 'earn ✦1M this run',
-    goal: (g) => g.totalEarned >= 1e6,
-    progress: (g) => ({ current: g.totalEarned, target: 1e6 }),
+    goal: (g) => gteAmount(g.totalEarned, amountFromNumber(1e6)),
+    progress: (g) => ({ current: g.totalEarned, target: amountFromNumber(1e6) }),
     rewardDesc: 'clicks gain +2% of light/s, always',
     rewardEffects: [{ kind: 'clickShare', value: 0.02 }],
     mods: { gensDisabled: true },
@@ -91,8 +93,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'A sky with nothing left to give.',
     rules: 'No falling stars.',
     goalText: 'earn ✦1T this run',
-    goal: (g) => g.totalEarned >= 1e12,
-    progress: (g) => ({ current: g.totalEarned, target: 1e12 }),
+    goal: (g) => gteAmount(g.totalEarned, amountFromNumber(1e12)),
+    progress: (g) => ({ current: g.totalEarned, target: amountFromNumber(1e12) }),
     rewardDesc: 'falling stars 20% more often, always',
     rewardEffects: [],
     rewardStarRate: 0.2,
@@ -104,8 +106,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'Like working underwater. Like remembering through fog.',
     rules: 'All production ×0.1.',
     goalText: 'earn ✦10B this run',
-    goal: (g) => g.totalEarned >= 1e10,
-    progress: (g) => ({ current: g.totalEarned, target: 1e10 }),
+    goal: (g) => gteAmount(g.totalEarned, amountFromNumber(1e10)),
+    progress: (g) => ({ current: g.totalEarned, target: amountFromNumber(1e10) }),
     rewardDesc: 'all light ×1.1, always',
     rewardEffects: [{ kind: 'globalMult', value: 1.1 }],
     mods: { globalScale: 0.1 },
@@ -116,8 +118,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'No upper sky. No engines. Only the small things, in their millions.',
     rules: 'Only {spark}, {wisp}, and {hearth} function.',
     goalText: 'earn ✦1B this run',
-    goal: (g) => g.totalEarned >= 1e9,
-    progress: (g) => ({ current: g.totalEarned, target: 1e9 }),
+    goal: (g) => gteAmount(g.totalEarned, amountFromNumber(1e9)),
+    progress: (g) => ({ current: g.totalEarned, target: amountFromNumber(1e9) }),
     rewardDesc: '{spark}, {wisp}, and {hearth} ×3, always',
     rewardEffects: [
       { kind: 'genMult', gen: 'spark', value: 3 },
@@ -145,8 +147,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'Your hand remembers being smaller than a spark.',
     rules: 'Clicks produce only 5% of their usual light.',
     goalText: 'earn ✦1T this run',
-    goal: (g) => g.totalEarned >= 1e12,
-    progress: (g) => ({ current: g.totalEarned, target: 1e12 }),
+    goal: (g) => gteAmount(g.totalEarned, amountFromNumber(1e12)),
+    progress: (g) => ({ current: g.totalEarned, target: amountFromNumber(1e12) }),
     rewardDesc: 'clicks gain +2% of light/s, always',
     rewardEffects: [{ kind: 'clickShare', value: 0.02 }],
     unlockAfter: 4,
@@ -171,8 +173,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'Every second rung was removed. The climb remains.',
     rules: 'Even-numbered generator tiers are silent.',
     goalText: 'earn ✦10T this run',
-    goal: (g) => g.totalEarned >= 1e13,
-    progress: (g) => ({ current: g.totalEarned, target: 1e13 }),
+    goal: (g) => gteAmount(g.totalEarned, amountFromNumber(1e13)),
+    progress: (g) => ({ current: g.totalEarned, target: amountFromNumber(1e13) }),
     rewardDesc: 'all generator costs −5%, always',
     rewardEffects: [],
     rewardCostScale: 0.95,
@@ -185,8 +187,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'A choir becomes a solo whenever a brighter throat opens.',
     rules: 'Only your highest owned generator tier produces.',
     goalText: 'earn ✦1Qa this run',
-    goal: (g) => g.totalEarned >= 1e15,
-    progress: (g) => ({ current: g.totalEarned, target: 1e15 }),
+    goal: (g) => gteAmount(g.totalEarned, amountFromNumber(1e15)),
+    progress: (g) => ({ current: g.totalEarned, target: amountFromNumber(1e15) }),
     rewardDesc: 'all light ×1.25, always',
     rewardEffects: [{ kind: 'globalMult', value: 1.25 }],
     unlockAfter: 8,
