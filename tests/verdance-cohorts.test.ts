@@ -13,9 +13,9 @@ import {
   verdanceCohortRuntimeSummary,
   verdanceGeneratorCohortStatus,
 } from '../src/content/universes/verdance/runtime'
-import { VERDANCE } from '../src/content/universes/verdance'
-import { unitRate, type EcoState } from '../src/engine/compute'
-import { ZERO_AMOUNT, amountToNumber } from '../src/core/numeric/amount'
+import { VERDANCE, VERDANCE_UPGRADES } from '../src/content/universes/verdance'
+import { unitRate, upgradeUnlocked, type EcoState } from '../src/engine/compute'
+import { ZERO_AMOUNT, amountFromNumber, amountToNumber } from '../src/core/numeric/amount'
 
 test('Verdance cohorts age through four deterministic non-withering stages', () => {
   assert.equal(verdanceStageForAge(0), 'u3-cohort-new')
@@ -81,4 +81,35 @@ test('runtime maturity changes production and contributes Memory Seeds to Prunin
     darkBetween: ZERO_AMOUNT, wayfinder: [], vesselParts: [], numericLawState,
   }
   assert.equal(amountToNumber(unitRate(economy, generator)), generator.baseRate * 3.5)
+})
+
+test('every Verdance Kindling participates in a complete twelve-link resonance network', () => {
+  const resonances = VERDANCE_UPGRADES.flatMap((upgrade) => (
+    upgrade.effects
+      .filter((effect) => effect.kind === 'synergy')
+      .map((effect) => ({ upgrade, effect }))
+  ))
+  assert.equal(resonances.length, 12)
+  assert.deepEqual(
+    new Set(resonances.flatMap(({ effect }) => [effect.gen, effect.per])),
+    new Set(VERDANCE.generators.map(({ id }) => id)),
+  )
+
+  const owned = Object.fromEntries(VERDANCE.generators.map(({ id }) => [id, 10]))
+  const economy: EcoState = {
+    activeUniverse: 'verdance', light: amountFromNumber(1e30), totalEarned: amountFromNumber(1e30), clicks: 0,
+    owned, upgrades: resonances.map(({ upgrade }) => upgrade.id), achievements: [], stardustTotal: ZERO_AMOUNT,
+    constellation: [], stardustWorks: {}, singUpgrades: [], deepWorks: {}, challenge: null,
+    challengesDone: [], ending: null, remembrances: 0, curiosities: [], keeperFedUntil: 0,
+    beacons: [], darkBetween: ZERO_AMOUNT, wayfinder: [], vesselParts: [], numericLawState: {},
+  }
+
+  for (const { upgrade, effect } of resonances) {
+    assert.equal(upgrade.unlock.gen, effect.gen)
+    assert.equal(upgrade.unlock.count, 10)
+    assert.equal(upgradeUnlocked(economy, upgrade), true)
+    const target = VERDANCE.generatorById.get(effect.gen)!
+    const expected = target.baseRate * (1 + effect.value * 10)
+    assert.ok(Math.abs(amountToNumber(unitRate(economy, target)) - expected) <= expected * 1e-12)
+  }
 })

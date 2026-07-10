@@ -8,6 +8,7 @@ test('rejects missing, future, and non-numeric save versions', () => {
   assert.equal(migrateAndSanitizeSave({}), null)
   assert.equal(migrateAndSanitizeSave({ version: '12' }), null)
   assert.equal(migrateAndSanitizeSave({ version: 14 }), null)
+  assert.equal(migrateAndSanitizeSave({ version: 24 }), null)
 })
 
 test('migrates a legacy v1 save through every version', () => {
@@ -21,11 +22,12 @@ test('migrates a legacy v1 save through every version', () => {
   })
 
   assert.ok(migrated)
-  assert.equal(migrated.version, 22)
+  assert.equal(migrated.version, 23)
   assert.equal(migrated.activeUniverse, 'emberlight')
   assert.deepEqual(migrated.owned, { spark: 4 })
   assert.deepEqual(migrated.ui, ['counter', 'shop', 'upgrades', 'stats', 'options'])
   assert.deepEqual(migrated.vesselParts, [])
+  assert.deepEqual(migrated.vesselPartsByUniverse, {})
   assert.deepEqual(migrated.stardustWorks, {})
   assert.deepEqual(migrated.deepWorks, {})
   assert.equal(migrated.motionPreference, 'system')
@@ -42,7 +44,7 @@ test('migrates v11 saves into persistent Phase 5 preferences', () => {
     totalEarned: 10,
   })
   assert.ok(migrated)
-  assert.equal(migrated.version, 22)
+  assert.equal(migrated.version, 23)
   assert.equal(migrated.motionPreference, 'system')
   assert.equal(migrated.visualQuality, 'auto')
   assert.equal(migrated.beatVisual, 'subtle')
@@ -107,6 +109,7 @@ test('sanitizes corrupt values and strips unknown content ids', () => {
   assert.equal(clean.ending, null)
   assert.equal(clean.theme, 'ember')
   assert.deepEqual(clean.vesselParts, [])
+  assert.deepEqual(clean.vesselPartsByUniverse, {})
   assert.deepEqual(clean.wayfinder, ['safe-id'])
   assert.deepEqual(clean.stardustWorks, { 'continuing-corona': 3 })
   assert.deepEqual(clean.deepWorks, { 'worldseed-compression': 100, 'recursive-abyss': 2 })
@@ -179,6 +182,23 @@ test('dev endgame scenario is deterministic and valid', () => {
   assert.deepEqual(scenario.singUpgrades, ['deep-resonance'])
 })
 
+test('opening scenario preserves the untouched Heart-only state', () => {
+  const opening = createDevScenario('opening', 10_000)
+  assert.ok(opening)
+  assert.deepEqual(opening.ui, [])
+  assert.deepEqual(opening.owned, {})
+  assert.equal(opening.clicks, 0)
+  assert.equal(opening.activeUniverse, 'emberlight')
+})
+
+test('Pruning scenario exposes a ready Verdance Epoch turn', () => {
+  const pruning = createDevScenario('pruning', 10_000)
+  assert.ok(pruning)
+  assert.equal(pruning.activeUniverse, 'verdance')
+  assert.equal(serializeAmount(pruning.stardustTotal), '0')
+  assert.notEqual(serializeAmount(pruning.eraEarned), '0')
+})
+
 test('question scenario exposes the finale without changing endgame fixtures', () => {
   const endgame = createDevScenario('endgame', 10_000)
   const question = createDevScenario('question', 10_000)
@@ -193,9 +213,12 @@ test('crossing and Tidefall scenarios expose the multiverse layer safely', () =>
   const tidefall = createDevScenario('tidefall', 10_000)
   assert.ok(crossing && tidefall)
   assert.equal(crossing.vesselParts.length, 5)
+  assert.equal(crossing.vesselPartsByUniverse.emberlight.length, 5)
   assert.equal(crossing.ending, 'warden')
   assert.equal(tidefall.activeUniverse, 'tidefall')
   assert.deepEqual(tidefall.beacons, ['emberlight'])
+  assert.equal(tidefall.vesselPartsByUniverse.emberlight.length, 5)
+  assert.equal(tidefall.vesselPartsByUniverse.tidefall, undefined)
   assert.equal(tidefall.owned.spark, 60)
   assert.deepEqual(tidefall.echoes, ['tide-moon-ledger'])
 })

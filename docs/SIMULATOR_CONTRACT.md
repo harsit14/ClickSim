@@ -1,6 +1,6 @@
 # SIM-001 — deterministic multi-profile simulator contract
 
-Status: **F1a pure contract proposal; no simulator replacement or balance claim**
+Status: **implemented deterministic simulator contract**
 
 Behavior/save impact: none. `balance/simulator-contract.ts` neither imports nor changes `balance/simulate.ts`, live compute, save code, universe content, or package scripts.
 

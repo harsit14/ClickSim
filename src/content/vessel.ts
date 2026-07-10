@@ -1,5 +1,7 @@
 import type { GameState } from '../engine/game.svelte'
-import type { EconomyAmount } from './universes/types'
+import type { EconomyAmount, UniverseId } from './universes/types'
+import { canticleStatus, prismataStatus, tempestStatus } from './universes/f4-runtime'
+import { verdanceCohortRuntimeSummary } from './universes/verdance/runtime'
 import {
   amountFromNumber,
   amountToNumber,
@@ -15,6 +17,15 @@ export type VesselPartId =
   | 'keel-trials'
   | 'archive'
 
+export type VesselMotif =
+  | 'starship'
+  | 'bathysphere'
+  | 'seed-ark'
+  | 'clock-engine'
+  | 'spectrum-prism'
+  | 'storm-conductor'
+  | 'resonant-chamber'
+
 interface VesselPartBase {
   id: VesselPartId
   name: string
@@ -23,6 +34,7 @@ interface VesselPartBase {
   requirement: string
   hue: number
   action: string
+  glyph: string
   consumes?: { gen: string; count: number }
 }
 
@@ -40,80 +52,313 @@ export interface VesselCountPartDef extends VesselPartBase {
 
 export type VesselPartDef = VesselAmountPartDef | VesselCountPartDef
 
-export const VESSEL_REVEAL_AT = amountFromNumber(1e21)
-
-export const VESSEL_PARTS: VesselPartDef[] = [
-  {
-    id: 'hull-hearths',
-    name: 'Hull of Hearths',
-    short: 'Hull',
-    flavor: 'A thousand warm places, bent into one shelter.',
-    requirement: '1e24 light this era',
-    hue: 24,
-    progressKind: 'amount',
-    target: amountFromNumber(1e24),
-    action: 'set the hull',
-    current: (g) => g.eraEarned,
-  },
-  {
-    id: 'sails-constellation',
-    name: 'Sails of Constellation',
-    short: 'Sails',
-    flavor: 'Charts that learned to pull against the dark.',
-    requirement: '9 constellation nodes',
-    hue: 214,
-    progressKind: 'count',
-    target: 9,
-    action: 'raise the sails',
-    current: (g) => g.constellation.length,
-  },
-  {
-    id: 'heart-sun',
-    name: 'Heart of a Sun',
-    short: 'Heart',
-    flavor: 'A star given up so the vessel may keep beating.',
-    requirement: '100 Suns to sacrifice',
-    hue: 48,
-    progressKind: 'count',
-    target: 100,
-    action: 'give 100 Suns',
-    consumes: { gen: 'sun', count: 100 },
-    current: (g) => g.owned['sun'] ?? 0,
-  },
-  {
-    id: 'keel-trials',
-    name: 'Keel of Trials',
-    short: 'Keel',
-    flavor: 'Every rehearsal becomes a rib of the ship.',
-    requirement: '4 trials completed',
-    hue: 12,
-    progressKind: 'count',
-    target: 4,
-    action: 'lay the keel',
-    current: (g) => g.challengesDone.length,
-  },
-  {
-    id: 'archive',
-    name: 'The Archive',
-    short: 'Archive',
-    flavor: 'Lumen will not let you cross alone.',
-    requirement: 'an answer chosen',
-    hue: 260,
-    progressKind: 'count',
-    target: 1,
-    action: 'bring the archive',
-    current: (g) => g.ending === null ? 0 : 1,
-  },
-]
-
-export const VESSEL_PART_BY_ID = new Map(VESSEL_PARTS.map((p) => [p.id, p]))
-
-export function vesselRevealed(g: GameState): boolean {
-  return g.vesselParts.length > 0 || gteAmount(g.allTimeEarned, VESSEL_REVEAL_AT) || g.ending !== null
+export interface VesselBlueprint {
+  universeId: UniverseId
+  name: string
+  overline: string
+  description: string
+  motif: VesselMotif
+  completion: string
+  stages: readonly [string, string, string, string, string, string]
+  parts: readonly VesselPartDef[]
 }
 
-export function vesselPartComplete(g: GameState, id: VesselPartId): boolean {
-  return g.vesselParts.includes(id)
+const amountPart = (
+  id: VesselPartId,
+  name: string,
+  short: string,
+  flavor: string,
+  requirement: string,
+  hue: number,
+  action: string,
+  glyph: string,
+  target: number,
+  current: (g: GameState) => EconomyAmount,
+): VesselAmountPartDef => ({
+  id,
+  name,
+  short,
+  flavor,
+  requirement,
+  hue,
+  action,
+  glyph,
+  progressKind: 'amount',
+  target: amountFromNumber(target),
+  current,
+})
+
+const countPart = (
+  id: VesselPartId,
+  name: string,
+  short: string,
+  flavor: string,
+  requirement: string,
+  hue: number,
+  action: string,
+  glyph: string,
+  target: number,
+  current: (g: GameState) => number,
+  consumes?: { gen: string; count: number },
+): VesselCountPartDef => ({
+  id,
+  name,
+  short,
+  flavor,
+  requirement,
+  hue,
+  action,
+  glyph,
+  progressKind: 'count',
+  target,
+  current,
+  ...(consumes ? { consumes } : {}),
+})
+
+const answered = (g: GameState) => g.ending === null ? 0 : 1
+const archiveCount = (g: GameState) => g.curiosities.length
+const trialCount = (g: GameState) => g.challengesDone.length
+const constellationCount = (g: GameState) => g.constellation.length
+
+const VERDANCE_KINDLING_IDS = Array.from(
+  { length: 18 },
+  (_, index) => `u3-kindling-${String(index + 1).padStart(2, '0')}`,
+)
+
+function rootedVerdanceCohorts(g: GameState): number {
+  const stages = verdanceCohortRuntimeSummary(
+    VERDANCE_KINDLING_IDS,
+    g.owned,
+    g.numericLawState,
+  ).stageQuantities
+  return stages['u3-cohort-rooted'] + stages['u3-cohort-mature'] + stages['u3-cohort-ancient']
+}
+
+function numericLawMarker(g: GameState, id: string): number {
+  const value = g.numericLawState[id]
+  if (!value) return 0
+  try {
+    return Math.max(0, amountToNumber(value))
+  } catch {
+    return 0
+  }
+}
+
+const EMBERLIGHT_VESSEL: VesselBlueprint = {
+  universeId: 'emberlight',
+  name: 'The Starfaring Vessel',
+  overline: 'emberlight · a shelter made from endings',
+  description: 'Assemble warmth, a chart, a surrendered star, tested law, and one honest answer into the first crossing craft.',
+  motif: 'starship',
+  completion: 'The Starfaring Vessel is awake. The Wayfinder can carry it between worlds.',
+  stages: [
+    'a shape under scaffolds',
+    'one warm system holding',
+    'two structures answering the dark',
+    'three crossing systems joined',
+    'four of five parts holding',
+    'a quiet ark, ready at the edge',
+  ],
+  parts: [
+    amountPart('hull-hearths', 'Hull of Hearths', 'Hull', 'A thousand warm places, bent into one shelter.', '1e24 Light earned this era', 24, 'set the hull', '⌒', 1e24, (g) => g.eraEarned),
+    countPart('sails-constellation', 'Sails of Constellation', 'Sails', 'Charts that learned to pull against the dark.', '9 constellation nodes drawn', 214, 'raise the sails', '✦', 9, constellationCount),
+    countPart('heart-sun', 'Heart of a Sun', 'Heart', 'A star given up so the vessel may keep beating.', '100 Suns to sacrifice', 48, 'give 100 Suns', '●', 100, (g) => g.owned.sun ?? 0, { gen: 'sun', count: 100 }),
+    countPart('keel-trials', 'Keel of Trials', 'Keel', 'Every rehearsal becomes a rib of the ship.', '4 trials completed', 12, 'lay the keel', '━', 4, trialCount),
+    countPart('archive', 'The Archive', 'Archive', 'Lumen will not let you cross alone.', 'an answer chosen', 260, 'bring the archive', '▣', 1, answered),
+  ],
+}
+
+const TIDEFALL_VESSEL: VesselBlueprint = {
+  universeId: 'tidefall',
+  name: 'The Abyssal Ark',
+  overline: 'tidefall · a pressure vessel for the moonless crossing',
+  description: 'Sound the deep, catalogue its living witnesses, and join a hundred patient calls into an ark that can survive the Between.',
+  motif: 'bathysphere',
+  completion: 'The Abyssal Ark holds pressure. Its moonwake can cross where no tide should reach.',
+  stages: [
+    'an empty pressure frame',
+    'one pressure system sealed',
+    'two deep systems holding',
+    'three ark systems joined',
+    'four of five depths answered',
+    'the Abyssal Ark, sealed and awake',
+  ],
+  parts: [
+    amountPart('hull-hearths', 'Pressure Shell', 'Shell', 'Moon Salt anneals a hull that treats the Dark Between as one more depth.', '40 Moon Salt gathered', 188, 'seal the shell', '◉', 40, (g) => g.stardustTotal),
+    countPart('sails-constellation', 'Moonwake Fins', 'Fins', 'Eight recovered lives teach the ark how a world moves without a shore.', '8 Pelagic Archive objects catalogued', 202, 'set the fins', '≈', 8, archiveCount),
+    countPart('heart-sun', 'Heart of the Drowned Beacon', 'Heart', 'A hundred distant calls become one patient pressure-pulse.', '100 Drowned Beacons to release', 194, 'release 100 Beacons', '●', 100, (g) => g.owned.sun ?? 0, { gen: 'sun', count: 100 }),
+    countPart('keel-trials', 'Hadal Ballast', 'Ballast', 'Six impossible depths become the weight that keeps the crossing true.', '6 pressure trials endured', 218, 'lower the ballast', '▼', 6, trialCount),
+    countPart('archive', 'Pelagic Memory Vault', 'Memory', 'The chosen answer is sealed as a shore the ark can carry.', 'an answer chosen', 260, 'seal the memory', '▣', 1, answered),
+  ],
+}
+
+const VERDANCE_VESSEL: VesselBlueprint = {
+  universeId: 'verdance',
+  name: 'The Seed Ark',
+  overline: 'verdance · a living crossing grown instead of built',
+  description: 'Let cohorts take root, open the canopy, and graft memory around a heartwood core until the craft becomes its own ecology.',
+  motif: 'seed-ark',
+  completion: 'The Seed Ark has become self-sustaining. Its roots can take hold in the Dark Between.',
+  stages: [
+    'a dormant crossing seed',
+    'one living structure rooted',
+    'two tissues growing together',
+    'three ark systems alive',
+    'four of five growths established',
+    'the Seed Ark, alive between worlds',
+  ],
+  parts: [
+    countPart('hull-hearths', 'Rooted Seedcoat', 'Seedcoat', 'The hull is alive; every planted cohort must first choose to stay.', '50 Kindlings rooted for at least five minutes', 104, 'close the seedcoat', '◒', 50, rootedVerdanceCohorts),
+    countPart('sails-constellation', 'Folded Canopy', 'Canopy', 'Ten canopy paths become leaves that steer by opening toward possibility.', '10 Living Canopy nodes grown', 82, 'fold the canopy', '❧', 10, constellationCount),
+    countPart('heart-sun', 'Heartwood Core', 'Heartwood', 'Fifty old trunks join without becoming one identical ring.', '50 Heartwoods to graft', 42, 'graft 50 Heartwoods', '◎', 50, (g) => g.owned['u3-kindling-09'] ?? 0, { gen: 'u3-kindling-09', count: 50 }),
+    countPart('keel-trials', 'Pollinator Compass', 'Compass', 'Eight specimens teach the ark to exchange difference across the dark.', '8 Herbarium specimens catalogued', 136, 'invite the pollinators', '✾', 8, archiveCount),
+    countPart('archive', 'Garden Gate Cutting', 'Cutting', 'An answered branch remains open for a world not yet grown.', 'an answer chosen', 68, 'plant the cutting', '⌇', 1, answered),
+  ],
+}
+
+const CLOCKWORK_VESSEL: VesselBlueprint = {
+  universeId: 'clockwork',
+  name: 'The Meridian Engine',
+  overline: 'clockwork · a crossing whose every cause remains visible',
+  description: 'Regulate a public train, surrender its predictive core, and leave one final route deliberately unfilled.',
+  motif: 'clock-engine',
+  completion: 'The Meridian Engine completes its inspection. Every route is visible; the final route remains yours.',
+  stages: [
+    'an unindexed crossing frame',
+    'one assembly beneath its mark',
+    'two inspected systems engaged',
+    'three engine systems routed',
+    'four of five causes declared',
+    'the Meridian Engine, regulated for departure',
+  ],
+  parts: [
+    amountPart('hull-hearths', 'Indexed Chassis', 'Chassis', 'Preserved intervals set every plate beneath a public mark.', '50 Preserved Intervals gathered', 42, 'index the chassis', '⌑', 50, (g) => g.stardustTotal),
+    countPart('sails-constellation', 'Civic Transmission', 'Train', 'Eighteen installed laws expose where force enters, changes, and leaves.', '18 Clockwork laws installed', 210, 'engage the train', '⚙', 18, (g) => g.upgrades.length),
+    countPart('heart-sun', 'Difference Spring', 'Spring', 'Fifty prediction engines surrender certainty and store only declared intent.', '50 Difference Engines to unwind', 195, 'unwind 50 Engines', '↻', 50, (g) => g.owned['u4-difference-engine'] ?? 0, { gen: 'u4-difference-engine', count: 50 }),
+    countPart('keel-trials', 'Governor Assembly', 'Governor', 'Six deterministic trials prove the engine stops when its law says stop.', '6 regulation trials completed', 30, 'set the governor', '◎', 6, trialCount),
+    countPart('archive', 'The Blank Route', 'Route', 'The final instruction is an answer, not a prediction.', 'an answer chosen', 214, 'leave the route open', '□', 1, answered),
+  ],
+}
+
+const PRISMATA_VESSEL: VesselBlueprint = {
+  universeId: 'prismata',
+  name: 'The White Aperture',
+  overline: 'prismata · a crossing assembled from labeled difference',
+  description: 'Route every wavelength, grind a shared lens without blending its sources, and reopen white light as a navigable doorway.',
+  motif: 'spectrum-prism',
+  completion: 'The White Aperture resolves every band without erasing its label. The Wayfinder can pass through.',
+  stages: [
+    'an unlit aperture frame',
+    'one optical system resolved',
+    'two labeled structures aligned',
+    'three aperture systems focused',
+    'four of five relations visible',
+    'the White Aperture, resolved for crossing',
+  ],
+  parts: [
+    countPart('hull-hearths', 'Six-Band Frame', 'Frame', 'Every labeled wavelength must reach the crossing without being renamed white.', 'all 6 wavelength bands active', 276, 'lock the band frame', 'Ⅵ', 6, (g) => prismataStatus(g.numericLawState, g.owned).activeBands),
+    countPart('sails-constellation', 'Parallax Facets', 'Facets', 'Ten optical relations make direction from disagreement.', '10 Spectrum Map nodes resolved', 214, 'angle the facets', '◇', 10, constellationCount),
+    countPart('heart-sun', 'Lens Foundry Core', 'Core', 'Fifty foundries grind one aperture whose inputs remain inspectable.', '50 Lens Foundries to fuse', 304, 'fuse 50 Foundries', '⬡', 50, (g) => g.owned['u5-kindling-10'] ?? 0, { gen: 'u5-kindling-10', count: 50 }),
+    countPart('keel-trials', 'Spectral Ledger', 'Ledger', 'Eight recovered objects certify that invisible bands still have a place.', '8 Spectrum Archive records catalogued', 188, 'certify the ledger', '▤', 8, archiveCount),
+    countPart('archive', 'Open White Edge', 'Edge', 'The answer keeps unity from closing over difference again.', 'an answer chosen', 336, 'open the edge', '◈', 1, answered),
+  ],
+}
+
+const TEMPEST_VESSEL: VesselBlueprint = {
+  universeId: 'tempest',
+  name: 'The Storm Conductor',
+  overline: 'tempest · a crossing built by choosing where power ends',
+  description: 'Draw the longest safe route, discharge it by choice, and ground the surviving potential around one still eye.',
+  motif: 'storm-conductor',
+  completion: 'The Storm Conductor holds a quiet eye inside declared weather. It can cross without becoming an endless storm.',
+  stages: [
+    'an ungrounded field frame',
+    'one storm system bounded',
+    'two chosen paths holding',
+    'three conductor systems grounded',
+    'four of five fields resolved',
+    'the Storm Conductor, charged and grounded',
+  ],
+  parts: [
+    countPart('hull-hearths', 'Eight-Cell Conductor', 'Conductor', 'The crossing route must span the full field before it can carry a world.', 'an 8-cell storm path configured', 202, 'raise the conductor', 'ϟ', 8, (g) => tempestStatus(g.numericLawState).length),
+    countPart('sails-constellation', 'Chosen Discharge', 'Discharge', 'A completed release proves the storm can end where you decide.', 'one configured storm path discharged', 48, 'fix the discharge scar', '↯', 1, (g) => numericLawMarker(g, 'u6-last-discharge') > 0 ? 1 : 0),
+    amountPart('heart-sun', 'Potential Hull', 'Hull', 'Stormglass is annealed from the charge that survived fifty Tempest Turns.', '50 Stormglass gathered', 214, 'anneal the hull', '◉', 50, (g) => g.stardustTotal),
+    countPart('keel-trials', 'Grounding Crown', 'Ground', 'Six storm trials teach every branch a visible path back to rest.', '6 storm trials completed', 188, 'ground the crown', '⌁', 6, trialCount),
+    countPart('archive', 'The Quiet Eye', 'Eye', 'The answer is the still place the storm agrees not to occupy.', 'an answer chosen', 228, 'open the quiet eye', '○', 1, answered),
+  ],
+}
+
+const CANTICLE_VESSEL: VesselBlueprint = {
+  universeId: 'canticle',
+  name: 'The Resonant Chamber',
+  overline: 'canticle · a crossing composed with room for another voice',
+  description: 'Score every role, preserve deliberate rests, and tune a chamber whose second voice can answer without becoming an echo.',
+  motif: 'resonant-chamber',
+  completion: 'The Resonant Chamber holds every voice and every rest. The next universe may answer in its own contour.',
+  stages: [
+    'an empty measure in the dark',
+    'one scored system sounding',
+    'two relationships held apart',
+    'three chamber systems answering',
+    'four of five voices present',
+    'the Resonant Chamber, open to a second voice',
+  ],
+  parts: [
+    countPart('hull-hearths', 'Six-Role Membrane', 'Membrane', 'Pulse, sustain, multiplier, rest, syncopation, and echo must all remain audible.', 'all 6 measure roles present', 328, 'tension the membrane', '≋', 6, (g) => canticleStatus(g.numericLawState, g.owned, 0).distinctRoles),
+    countPart('sails-constellation', 'Four Deliberate Rests', 'Rests', 'Silence becomes structure only when the score makes room for it on purpose.', 'at least 4 rests in the measure', 292, 'bind the rests', '○', 4, (g) => canticleStatus(g.numericLawState, g.owned, 0).restCount),
+    countPart('heart-sun', 'Counterpoint Memory', 'Memory', 'Eight recovered voices teach the chamber to preserve source and relationship separately.', '8 Echoes recovered', 348, 'voice the memory', '⌇', 8, (g) => g.echoes.length),
+    countPart('keel-trials', 'Performance Frame', 'Frame', 'Six relationship trials prove the composition remains complete under constraint.', '6 relationship trials completed', 310, 'set the frame', '⋈', 6, trialCount),
+    countPart('archive', 'Second Voice Rest', 'Answer', 'The chosen answer is held as an open interval, not a final chord.', 'an answer chosen', 16, 'leave the rest open', '◌', 1, answered),
+  ],
+}
+
+export const VESSEL_BLUEPRINTS: readonly VesselBlueprint[] = [
+  EMBERLIGHT_VESSEL,
+  TIDEFALL_VESSEL,
+  VERDANCE_VESSEL,
+  CLOCKWORK_VESSEL,
+  PRISMATA_VESSEL,
+  TEMPEST_VESSEL,
+  CANTICLE_VESSEL,
+]
+
+const VESSEL_BLUEPRINT_BY_UNIVERSE = new Map(
+  VESSEL_BLUEPRINTS.map((blueprint) => [blueprint.universeId, blueprint]),
+)
+
+/** Legacy export retained for stable part IDs and historical save migration. */
+export const VESSEL_PARTS: readonly VesselPartDef[] = EMBERLIGHT_VESSEL.parts
+export const VESSEL_PART_BY_ID = new Map(VESSEL_PARTS.map((part) => [part.id, part]))
+export const VESSEL_PART_IDS = VESSEL_PARTS.map(({ id }) => id)
+export const VESSEL_REVEAL_AT = amountFromNumber(1e21)
+
+export function vesselBlueprint(universeId: string): VesselBlueprint {
+  return VESSEL_BLUEPRINT_BY_UNIVERSE.get(universeId as UniverseId) ?? EMBERLIGHT_VESSEL
+}
+
+export function vesselPartsForUniverse(universeId: string): readonly VesselPartDef[] {
+  return vesselBlueprint(universeId).parts
+}
+
+export function vesselPartForUniverse(universeId: string, id: VesselPartId): VesselPartDef | undefined {
+  return vesselPartsForUniverse(universeId).find((part) => part.id === id)
+}
+
+export function vesselPartIdsFor(
+  g: Pick<GameState, 'activeUniverse' | 'vesselParts' | 'vesselPartsByUniverse'>,
+  universeId = g.activeUniverse,
+): readonly string[] {
+  const local = g.vesselPartsByUniverse?.[universeId]
+  if (local) return local
+  return universeId === 'emberlight' ? g.vesselParts : []
+}
+
+export function vesselRevealed(g: GameState): boolean {
+  return vesselPartIdsFor(g).length > 0 || gteAmount(g.allTimeEarned, VESSEL_REVEAL_AT) || g.ending !== null
+}
+
+export function vesselPartComplete(g: GameState, id: VesselPartId, universeId = g.activeUniverse): boolean {
+  return vesselPartIdsFor(g, universeId).includes(id)
 }
 
 export function vesselPartCurrent(g: GameState, part: VesselPartDef): EconomyAmount | number {
@@ -122,11 +367,11 @@ export function vesselPartCurrent(g: GameState, part: VesselPartDef): EconomyAmo
     : Math.min(part.current(g), part.target)
 }
 
-export function vesselPartReady(g: GameState, part: VesselPartDef): boolean {
+export function vesselPartReady(g: GameState, part: VesselPartDef, universeId = g.activeUniverse): boolean {
   const ready = part.progressKind === 'amount'
     ? gteAmount(part.current(g), part.target)
     : part.current(g) >= part.target
-  return !vesselPartComplete(g, part.id) && ready
+  return !vesselPartComplete(g, part.id, universeId) && ready
 }
 
 export function vesselProgress(g: GameState, part: VesselPartDef): number {
@@ -135,21 +380,19 @@ export function vesselProgress(g: GameState, part: VesselPartDef): number {
   return ratio.exponent >= 0 ? 1 : Math.min(1, amountToNumber(ratio))
 }
 
-export function vesselComplete(g: GameState): boolean {
-  return VESSEL_PARTS.every((part) => vesselPartComplete(g, part.id))
+export function vesselComplete(g: GameState, universeId = g.activeUniverse): boolean {
+  return vesselPartsForUniverse(universeId).every((part) => vesselPartComplete(g, part.id, universeId))
 }
 
 export function vesselHasReadyPart(g: GameState): boolean {
-  return VESSEL_PARTS.some((part) => vesselPartReady(g, part))
+  return vesselPartsForUniverse(g.activeUniverse).some((part) => vesselPartReady(g, part))
 }
 
-export function vesselBuiltCount(g: GameState): number {
-  return VESSEL_PARTS.filter((part) => vesselPartComplete(g, part.id)).length
+export function vesselBuiltCount(g: GameState, universeId = g.activeUniverse): number {
+  return vesselPartsForUniverse(universeId).filter((part) => vesselPartComplete(g, part.id, universeId)).length
 }
 
 export function vesselStage(g: GameState): string {
-  const count = vesselBuiltCount(g)
-  if (count === 0) return 'a shape under scaffolds'
-  if (count < VESSEL_PARTS.length) return 'a vessel being remembered'
-  return 'a quiet ark, ready at the edge'
+  const blueprint = vesselBlueprint(g.activeUniverse)
+  return blueprint.stages[vesselBuiltCount(g)] ?? blueprint.stages[0]
 }

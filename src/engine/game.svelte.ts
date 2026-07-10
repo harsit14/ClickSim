@@ -14,7 +14,11 @@ import {
 } from '../content/universes/verdance/runtime'
 import {
   advanceF4LawState,
+  configureTempestRoute,
+  cycleCanticleSlot,
   dischargeTempest,
+  retainedF4LawConfiguration,
+  routePrismataKindling,
   selectCanticleMeasure,
   selectPrismataRecipe,
   selectTempestPath,
@@ -36,9 +40,10 @@ import {
   type WayfinderId,
 } from '../content/wayfinder'
 import {
-  VESSEL_PART_BY_ID,
   vesselComplete as computeVesselComplete,
   vesselHasReadyPart as computeVesselHasReadyPart,
+  vesselPartForUniverse,
+  vesselPartIdsFor,
   vesselPartReady,
   vesselRevealed as computeVesselRevealed,
   type VesselPartId,
@@ -222,6 +227,8 @@ export interface GameState extends EcoState, Omit<EndgameState, 'activeAtlasRout
   wayfinder: string[]
   /** completed visible Vessel construction parts */
   vesselParts: string[]
+  /** completed construction parts for each universe's local crossing vessel */
+  vesselPartsByUniverse: Record<string, string[]>
   /** parked progression for every visited universe, including the current one at save time */
   universeRuns: Record<string, UniverseRunState>
   /** Amount-valued law state reserved for pure universe hooks. */
@@ -333,6 +340,7 @@ export const game: GameState = $state({
   darkBetween: ZERO_AMOUNT,
   wayfinder: [],
   vesselParts: [],
+  vesselPartsByUniverse: {},
   universeRuns: {},
   numericLawState: {},
   ...emptyEndgameState(),
@@ -499,7 +507,7 @@ export function universeBeaconReady(id = game.activeUniverse): boolean {
 }
 
 export function igniteCurrentBeacon(): EconomyAmount {
-  if (game.challenge || !computeVesselComplete(game) || !universeBeaconReady()) return ZERO_AMOUNT
+  if (game.challenge || !computeVesselComplete(game, game.activeUniverse) || !universeBeaconReady()) return ZERO_AMOUNT
   const pack = universeById(game.activeUniverse)
   const reward = toAmount(pack.beacon.reward)
   const nextDarkBetween = prepareBalanceAward(game.darkBetween, reward)
@@ -511,7 +519,7 @@ export function igniteCurrentBeacon(): EconomyAmount {
 }
 
 export function universeRouteUnlocked(id: string): boolean {
-  if (!UNIVERSE_BY_ID.has(id) || !computeVesselComplete(game)) return false
+  if (!UNIVERSE_BY_ID.has(id) || !computeVesselComplete(game, game.activeUniverse)) return false
   if (id === DEFAULT_UNIVERSE_ID || universeVisited(id)) return true
   if (id === 'tidefall') return game.beacons.includes(DEFAULT_UNIVERSE_ID)
   if (id === 'verdance') return game.beacons.includes('tidefall')
@@ -773,6 +781,7 @@ function restoreRun(snapshot: RunSnapshot) {
 export function performSupernova(): EconomyAmount {
   const gain = supernovaGain()
   if (isZeroAmount(gain)) return ZERO_AMOUNT
+  const retainedLawConfiguration = retainedF4LawConfiguration(game.activeUniverse, game.numericLawState)
   const next = preparePrestigeAward(game.stardust, game.stardustTotal, game.supernovae, gain)
   game.stardust = next.balance
   game.stardustTotal = next.total
@@ -781,7 +790,7 @@ export function performSupernova(): EconomyAmount {
   const epochName = universeV2ById(game.activeUniverse)?.economy.localPrestige.localName ?? 'Epoch Turn'
   addChronicleMilestone('epoch-turn', `${epochName} preserved new Epoch Matter.`)
   resetRun(true)
-  game.numericLawState = {}
+  game.numericLawState = retainedLawConfiguration
   return gain
 }
 
@@ -894,15 +903,21 @@ export function collectCometReturn(): EconomyAmount {
 
 // ── The Vessel (prestige layer 3 scaffold) ──────────────────────────────
 export function buildVesselPart(id: VesselPartId): boolean {
-  if (game.challenge || game.vesselParts.includes(id)) return false
-  const part = VESSEL_PART_BY_ID.get(id)
+  if (game.challenge || vesselPartIdsFor(game).includes(id)) return false
+  const part = vesselPartForUniverse(game.activeUniverse, id)
   if (!part || !vesselPartReady(game, part)) return false
   if (part.consumes) {
     const owned = game.owned[part.consumes.gen] ?? 0
     if (owned < part.consumes.count) return false
     game.owned[part.consumes.gen] = owned - part.consumes.count
   }
-  game.vesselParts.push(id)
+  const localParts = [...vesselPartIdsFor(game), id]
+  game.vesselPartsByUniverse = {
+    ...game.vesselPartsByUniverse,
+    [game.activeUniverse]: localParts,
+  }
+  // Retain the original field as an Emberlight-only compatibility mirror.
+  if (game.activeUniverse === DEFAULT_UNIVERSE_ID) game.vesselParts = [...localParts]
   return true
 }
 
@@ -1029,6 +1044,27 @@ export function configureUniverseLaw(index: number): boolean {
   return false
 }
 
+/** Routes one Prismata Kindling family into one of six labeled wavelength bands. */
+export function configurePrismataRoute(kindlingIndex: number, bandIndex: number): boolean {
+  return game.challenge === null && game.activeUniverse === 'prismata'
+    ? routePrismataKindling(game.numericLawState, kindlingIndex, bandIndex)
+    : false
+}
+
+/** Configures the declared Tempest path length and risk before discharge. */
+export function configureTempestPath(length: number, riskIndex: number): boolean {
+  return game.challenge === null && game.activeUniverse === 'tempest'
+    ? configureTempestRoute(game.numericLawState, length, riskIndex)
+    : false
+}
+
+/** Advances one editable Canticle slot through the six complete role states. */
+export function editCanticleSlot(slotIndex: number): boolean {
+  return game.challenge === null && game.activeUniverse === 'canticle'
+    ? cycleCanticleSlot(game.numericLawState, slotIndex)
+    : false
+}
+
 /** Executes an active law action; currently Tempest owns the deliberate discharge verb. */
 export function activateUniverseLaw(): boolean {
   return game.challenge === null && game.activeUniverse === 'tempest'
@@ -1083,6 +1119,7 @@ export function wipe() {
   game.darkBetween = ZERO_AMOUNT
   game.wayfinder = []
   game.vesselParts = []
+  game.vesselPartsByUniverse = {}
   game.universeRuns = {}
   game.numericLawState = {}
   Object.assign(game, emptyEndgameState())

@@ -2,7 +2,7 @@ import type { ChallengeDef } from './challenges'
 import type { StarNode } from './constellation'
 import type { DeepUpgrade } from './deep'
 import type { RepeatableWork } from './repeatables'
-import type { VesselPartDef } from './vessel'
+import { vesselPartForUniverse, type VesselPartDef } from './vessel'
 
 export interface ProgressionCopy {
   name: string
@@ -64,7 +64,6 @@ export interface DeepIdentity {
 }
 
 export interface UniverseProgressionIdentity {
-  vessel?: Record<string, VesselPartCopy>
   observatory: ObservatoryIdentity
   deep: DeepIdentity
 }
@@ -113,38 +112,6 @@ const EMBERLIGHT_PROGRESSION: UniverseProgressionIdentity = {
 }
 
 const TIDEFALL_PROGRESSION: UniverseProgressionIdentity = {
-  vessel: {
-    'hull-hearths': {
-      name: 'Hull of Tidepools',
-      flavor: 'A thousand small shores, curved into one shelter.',
-      requirement: '1e24 glow this era',
-      action: 'seal the hull',
-    },
-    'sails-constellation': {
-      name: 'Sails of Moonwake',
-      flavor: 'Routes drawn in foam learn how to pull against the dark.',
-      requirement: '9 current-chart nodes',
-      action: 'raise the moonwake',
-    },
-    'heart-sun': {
-      name: 'Heart of the Drowned Beacon',
-      flavor: 'A hundred distant calls, joined into one patient pulse.',
-      requirement: '100 Drowned Beacons to release',
-      action: 'release 100 Beacons',
-    },
-    'keel-trials': {
-      name: 'Keel of Pressure',
-      flavor: 'Every impossible depth becomes another rib of the ship.',
-      requirement: '4 pressure trials completed',
-      action: 'sound the keel',
-    },
-    archive: {
-      name: 'The Pelagic Archive',
-      flavor: 'Lumen seals every remembered shore inside the crossing.',
-      requirement: 'an answer chosen',
-      action: 'bring the archive',
-    },
-  },
   observatory: {
     overline: 'tidefall · currents remembered as stars',
     title: 'The Moonless Chart',
@@ -701,11 +668,12 @@ export function progressionIdentity(universeId: string): UniverseProgressionIden
 }
 
 export function vesselPartCopy(part: VesselPartDef, universeId: string): VesselPartCopy {
-  return progressionIdentity(universeId).vessel?.[part.id] ?? {
-    name: part.name,
-    flavor: part.flavor,
-    requirement: part.requirement,
-    action: part.action,
+  const local = vesselPartForUniverse(universeId, part.id) ?? part
+  return {
+    name: local.name,
+    flavor: local.flavor,
+    requirement: local.requirement,
+    action: local.action,
   }
 }
 

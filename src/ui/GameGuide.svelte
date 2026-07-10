@@ -7,7 +7,7 @@
   import { DEEP_UPGRADES } from '../content/deep'
   import { STARDUST_WORKS, DEEP_WORKS } from '../content/repeatables'
   import { CHALLENGES } from '../content/challenges'
-  import { VESSEL_PARTS } from '../content/vessel'
+  import { vesselBlueprint, vesselComplete, vesselPartIdsFor } from '../content/vessel'
   import {
     challengeCopy,
     constellationNodeCopy,
@@ -35,6 +35,8 @@
   let searchInput: HTMLInputElement
 
   const pack = $derived(universeById(game.activeUniverse))
+  const localVessel = $derived(vesselBlueprint(pack.id))
+  const localVesselPartIds = $derived(vesselPartIdsFor(game))
   const localPrestige = $derived(universeV2ById(pack.id)?.economy.localPrestige)
   const epochMatterGlyph = $derived(localPrestige?.rewardCurrency.glyph ?? '✧')
   const epochMatterName = $derived(localPrestige?.rewardCurrency.localName ?? 'Stardust')
@@ -47,8 +49,9 @@
 
   const progress = $derived.by(() => {
     if (game.ending) return { label: 'Answer recorded', detail: `${ENDING_CHOICES.find((choice) => choice.id === game.ending)?.label ?? 'An ending'} shapes this remembrance.`, chapter: 'story' }
+    if (game.beacons.length > 0 && !vesselComplete(game)) return { label: localVessel.name, detail: `${localVesselPartIds.length}/5 local parts activated; the Wayfinder remains sealed in ${pack.shortName}.`, chapter: 'multiverse' }
     if (game.beacons.length > 0) return { label: 'Between universes', detail: `${game.beacons.length} Beacon${game.beacons.length === 1 ? '' : 's'} lit; Wayfinder laws now join every world.`, chapter: 'multiverse' }
-    if (game.vesselParts.length > 0) return { label: 'The Vessel', detail: `${game.vesselParts.length}/5 parts assembled.`, chapter: 'multiverse' }
+    if (localVesselPartIds.length > 0) return { label: localVessel.name, detail: `${localVesselPartIds.length}/5 local parts activated.`, chapter: 'multiverse' }
     if (game.collapses > 0) return { label: 'The Deep', detail: `${game.collapses} Deep Collapse${game.collapses === 1 ? '' : 's'} and ${game.challengesDone.length}/12 trials endured.`, chapter: 'deep' }
     if (game.supernovae > 0) return { label: `${epochMatterName} era`, detail: `${game.supernovae} ${epochTurnName}${game.supernovae === 1 ? '' : 's'} recorded; ${game.constellation.length}/13 constellation nodes drawn.`, chapter: 'supernova' }
     if (gteAmount(game.totalEarned, amountFromNumber(250_000))) return { label: 'Growing universe', detail: 'Cabinet signals and deeper generator relationships are beginning to resolve.', chapter: 'cabinet' }
@@ -96,7 +99,7 @@
         const copy = challengeCopy(trial, universe.id)
         return [copy.name, copy.flavor, trial.rules, trial.rewardDesc]
       })),
-      multiverse: [...UNIVERSES.flatMap((universe) => VESSEL_PARTS.flatMap((part) => Object.values(vesselPartCopy(part, universe.id)))), ...WAYFINDER_NODES.flatMap((node) => [node.name, node.effect, node.flavor])],
+      multiverse: [...UNIVERSES.flatMap((universe) => vesselBlueprint(universe.id).parts.flatMap((part) => Object.values(vesselPartCopy(part, universe.id)))), ...WAYFINDER_NODES.flatMap((node) => [node.name, node.effect, node.flavor])],
       story: ENDING_CHOICES.flatMap((ending) => [ending.label, ending.doctrine, ending.line]),
       progress: THEMES.flatMap((theme) => [theme.name, theme.flavor, theme.unlockText]),
     }
@@ -331,9 +334,9 @@
               </section>
             {:else if chapter.id === 'multiverse'}
               <section class="reference">
-                <div class="reference-title"><span>departure checklist</span><h4>Vessel parts</h4></div>
+                <div class="reference-title"><span>local departure checklist</span><h4>{localVessel.name}</h4></div>
                 <div class="vessel-list">
-                  {#each VESSEL_PARTS as part, index (part.id)}{@const copy = vesselPartCopy(part, pack.id)}<article class:owned={game.vesselParts.includes(part.id)}><span>{index + 1}</span><div><strong>{copy.name}</strong><em>{copy.flavor}</em><p>{copy.requirement}</p></div></article>{/each}
+                  {#each localVessel.parts as part, index (part.id)}{@const copy = vesselPartCopy(part, pack.id)}<article class:owned={localVesselPartIds.includes(part.id)}><span>{index + 1}</span><div><strong>{copy.name}</strong><em>{copy.flavor}</em><p>{copy.requirement}</p></div></article>{/each}
                 </div>
                 <div class="reference-title sub"><span>Dark Between market</span><h4>Wayfinder laws</h4></div>
                 <div class="wayfinder-list">

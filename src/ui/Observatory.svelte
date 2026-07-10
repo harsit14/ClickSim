@@ -72,6 +72,12 @@
     game.owned,
     game.numericLawState,
   ))
+  const verdanceBranches = [
+    { id: 'forge', glyph: '⌇', name: 'Rootwork', note: 'production carried upward through living structure' },
+    { id: 'hand', glyph: '❧', name: 'Tending', note: 'care translated into deliberate touch' },
+    { id: 'sky', glyph: '✾', name: 'Canopy', note: 'light, seasons, and pollination' },
+    { id: 'root', glyph: '◇', name: 'Seed Memory', note: 'rest and inheritance across Prunings' },
+  ] as const
 
   const worldText = (text: string) => text.replaceAll('{currency}', pack.currency.toLowerCase())
 
@@ -108,6 +114,14 @@
       const required = CONSTELLATION.find((node) => node.id === id)
       return required ? constellationNodeCopy(required, pack.id).name : id
     }).join(' + ')
+  }
+
+  function verdanceNodeStatus(n: StarNode): string {
+    const state = nodeState(n)
+    if (state === 'owned') return 'grown'
+    if (state === 'ready') return `${epochMatterGlyph}${n.cost} · ready`
+    if (state === 'reachable') return `${epochMatterGlyph}${n.cost}`
+    return 'awaiting prior ring'
   }
 
   function describe(n: StarNode): string[] {
@@ -182,37 +196,91 @@
     {/if}
   </div>
 
-  <svg viewBox="0 0 100 74" class="map" class:complete={marketComplete} aria-label={identity.mapTitle}>
-    <title>{identity.mapTitle}</title>
-    {#each CONSTELLATION as n (n.id)}
-      {#each lineTargets(n) as target (target.id)}
-        {@const from = constellationNodePosition(n, pack.id)}
-        {@const to = constellationNodePosition(target, pack.id)}
-        <line
-          x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-          class="edge"
-          class:lit={game.constellation.includes(n.id) && game.constellation.includes(target.id)}
-        />
-      {/each}
-    {/each}
-    {#each CONSTELLATION as n (n.id)}
-      {@const copy = constellationNodeCopy(n, pack.id)}
-      {@const position = constellationNodePosition(n, pack.id)}
-      {@const state = nodeState(n)}
-      <g
-        class="node {state}"
-        class:selected={selectedId === n.id}
-        onclick={() => (selectedId = n.id)}
-        onkeydown={(e) => e.key === 'Enter' && (selectedId = n.id)}
-        role="button"
-        tabindex="0"
+  {#if verdance}
+    {@const crown = CONSTELLATION.find(({ branch }) => branch === 'crown')!}
+    {@const crownCopy = constellationNodeCopy(crown, pack.id)}
+    {@const crownState = nodeState(crown)}
+    <section class="growth-map" aria-label={identity.mapTitle}>
+      <div class="growth-map-head">
+        <div>
+          <span>the living canopy</span>
+          <strong>Four paths, one crown</strong>
+        </div>
+        <div class="growth-key" aria-label="Growth-ring states">
+          <span class="grown">grown</span><span class="available">available</span><span class="waiting">waiting</span>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="growth-node crown {crownState}"
+        class:selected={selectedId === crown.id}
+        onclick={() => (selectedId = crown.id)}
       >
-        <circle cx={position.x} cy={position.y} r="4.5" class="halo" />
-        <circle cx={position.x} cy={position.y} r="1.9" class="core" />
-        <text x={position.x} y={position.y + 6.4}>{copy.name}</text>
-      </g>
-    {/each}
-  </svg>
+        <span class="ring-mark" aria-hidden="true"><i></i></span>
+        <span class="growth-node-copy"><small>canopy capstone</small><strong>{crownCopy.name}</strong><em>{crownCopy.flavor}</em></span>
+        <span class="growth-node-state">{verdanceNodeStatus(crown)}</span>
+      </button>
+
+      <div class="growth-paths">
+        {#each verdanceBranches as branch (branch.id)}
+          <section class="growth-path" data-branch={branch.id}>
+            <header>
+              <span aria-hidden="true">{branch.glyph}</span>
+              <div><strong>{branch.name}</strong><small>{branch.note}</small></div>
+            </header>
+            <div class="growth-path-nodes">
+              {#each CONSTELLATION.filter((node) => node.branch === branch.id) as n (n.id)}
+                {@const copy = constellationNodeCopy(n, pack.id)}
+                {@const state = nodeState(n)}
+                <button
+                  type="button"
+                  class="growth-node {state}"
+                  class:selected={selectedId === n.id}
+                  onclick={() => (selectedId = n.id)}
+                >
+                  <span class="ring-mark" aria-hidden="true"><i></i></span>
+                  <span class="growth-node-copy"><strong>{copy.name}</strong><em>{copy.flavor}</em></span>
+                  <span class="growth-node-state">{verdanceNodeStatus(n)}</span>
+                </button>
+              {/each}
+            </div>
+          </section>
+        {/each}
+      </div>
+    </section>
+  {:else}
+    <svg viewBox="0 0 100 74" class="map" class:complete={marketComplete} aria-label={identity.mapTitle}>
+      <title>{identity.mapTitle}</title>
+      {#each CONSTELLATION as n (n.id)}
+        {#each lineTargets(n) as target (target.id)}
+          {@const from = constellationNodePosition(n, pack.id)}
+          {@const to = constellationNodePosition(target, pack.id)}
+          <line
+            x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+            class="edge"
+            class:lit={game.constellation.includes(n.id) && game.constellation.includes(target.id)}
+          />
+        {/each}
+      {/each}
+      {#each CONSTELLATION as n (n.id)}
+        {@const copy = constellationNodeCopy(n, pack.id)}
+        {@const position = constellationNodePosition(n, pack.id)}
+        {@const state = nodeState(n)}
+        <g
+          class="node {state}"
+          class:selected={selectedId === n.id}
+          onclick={() => (selectedId = n.id)}
+          onkeydown={(e) => e.key === 'Enter' && (selectedId = n.id)}
+          role="button"
+          tabindex="0"
+        >
+          <circle cx={position.x} cy={position.y} r="4.5" class="halo" />
+          <circle cx={position.x} cy={position.y} r="1.9" class="core" />
+          <text x={position.x} y={position.y + 6.4}>{copy.name}</text>
+        </g>
+      {/each}
+    </svg>
+  {/if}
 
   {#if selected}
     {@const copy = constellationNodeCopy(selected, pack.id)}
@@ -518,6 +586,190 @@
     color: var(--dim);
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: none;
+  }
+
+  .growth-map {
+    margin: 0.2rem 0;
+    padding: 0.82rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--gold) 16%, transparent);
+    border-radius: 1.1rem;
+    background:
+      radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--amber) 10%, transparent), transparent 32%),
+      linear-gradient(180deg, color-mix(in srgb, var(--bg) 48%, transparent), color-mix(in srgb, var(--panel) 62%, transparent));
+  }
+  .growth-map-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0 0.18rem 0.65rem;
+  }
+  .growth-map-head > div:first-child > span {
+    display: block;
+    color: color-mix(in srgb, var(--amber) 76%, var(--dim));
+    font-size: 0.5rem;
+    font-weight: 750;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .growth-map-head > div:first-child > strong {
+    display: block;
+    margin-top: 0.12rem;
+    color: color-mix(in srgb, var(--gold) 88%, white);
+    font: 500 0.92rem/1.2 Georgia, serif;
+  }
+  .growth-key { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.52rem; }
+  .growth-key span {
+    color: color-mix(in srgb, var(--gold) 55%, var(--dim));
+    font-size: 0.5rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .growth-key span::before {
+    content: '';
+    width: 0.42rem;
+    aspect-ratio: 1;
+    display: inline-block;
+    margin-right: 0.22rem;
+    vertical-align: -0.04rem;
+    border: 1px solid color-mix(in srgb, var(--gold) 22%, transparent);
+    border-radius: 50%;
+  }
+  .growth-key .grown::before { background: var(--gold); box-shadow: 0 0 0.45rem color-mix(in srgb, var(--amber) 60%, transparent); }
+  .growth-key .available::before { border-color: var(--amber); background: color-mix(in srgb, var(--amber) 34%, transparent); }
+  .growth-key .waiting::before { opacity: 0.38; }
+
+  .growth-node {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.62rem;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    background: color-mix(in srgb, var(--amber) 3%, rgba(0, 0, 0, 0.2));
+    border: 1px solid color-mix(in srgb, var(--gold) 10%, transparent);
+    border-radius: 0.72rem 0.42rem 0.72rem 0.42rem;
+    cursor: pointer;
+    transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+  }
+  .growth-node:hover { border-color: color-mix(in srgb, var(--gold) 34%, transparent); background: color-mix(in srgb, var(--amber) 7%, rgba(0, 0, 0, 0.2)); }
+  .growth-node:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .growth-node.selected { border-color: color-mix(in srgb, var(--gold) 62%, transparent); background: color-mix(in srgb, var(--amber) 10%, rgba(0, 0, 0, 0.2)); }
+  .ring-mark {
+    width: 1.75rem;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent);
+    border-radius: 58% 42% 58% 42%;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    box-shadow: 0 0 0 0.22rem color-mix(in srgb, var(--amber) 3%, transparent);
+  }
+  .ring-mark i {
+    width: 0.46rem;
+    aspect-ratio: 1;
+    display: block;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--gold) 28%, var(--bg));
+  }
+  .growth-node-copy { min-width: 0; display: block; }
+  .growth-node-copy small {
+    display: block;
+    margin-bottom: 0.08rem;
+    color: color-mix(in srgb, var(--amber) 70%, var(--dim));
+    font-size: 0.46rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .growth-node-copy strong {
+    display: block;
+    color: color-mix(in srgb, var(--gold) 76%, white);
+    font-size: 0.68rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .growth-node-copy em {
+    display: block;
+    margin-top: 0.1rem;
+    color: color-mix(in srgb, var(--gold) 42%, var(--dim));
+    font: italic 0.55rem/1.28 Georgia, serif;
+  }
+  .growth-node-state {
+    max-width: 5.6rem;
+    color: color-mix(in srgb, var(--gold) 58%, var(--dim));
+    font-size: 0.5rem;
+    font-weight: 650;
+    line-height: 1.25;
+    text-align: right;
+    text-transform: uppercase;
+  }
+  .growth-node.owned { border-color: color-mix(in srgb, var(--gold) 28%, transparent); }
+  .growth-node.owned .ring-mark { border-color: color-mix(in srgb, var(--gold) 58%, transparent); }
+  .growth-node.owned .ring-mark i { background: var(--gold); box-shadow: 0 0 0.55rem color-mix(in srgb, var(--amber) 78%, transparent); }
+  .growth-node.owned .growth-node-state { color: var(--gold); }
+  .growth-node.ready { border-color: color-mix(in srgb, var(--amber) 46%, transparent); }
+  .growth-node.ready .ring-mark { border-color: var(--amber); box-shadow: 0 0 0.7rem color-mix(in srgb, var(--amber) 22%, transparent); }
+  .growth-node.ready .ring-mark i { background: var(--amber); }
+  .growth-node.ready .growth-node-state { color: color-mix(in srgb, var(--gold) 88%, white); }
+  .growth-node.locked { opacity: 0.58; }
+
+  .growth-node.crown {
+    width: min(31rem, 100%);
+    margin: 0 auto 0.78rem;
+    padding: 0.72rem 0.78rem;
+    border-radius: 50% / 1rem;
+    background:
+      radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--amber) 13%, transparent), transparent 62%),
+      color-mix(in srgb, var(--amber) 4%, rgba(0, 0, 0, 0.22));
+  }
+  .growth-node.crown .ring-mark { width: 2.15rem; box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--amber) 4%, transparent); }
+  .growth-node.crown .growth-node-copy strong { font-size: 0.78rem; }
+
+  .growth-paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr)); gap: 0.64rem; }
+  .growth-path {
+    min-width: 0;
+    padding: 0.62rem;
+    border: 1px solid color-mix(in srgb, var(--gold) 9%, transparent);
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--bg) 46%, transparent);
+  }
+  .growth-path > header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.48rem;
+  }
+  .growth-path > header > span {
+    width: 1.55rem;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    color: var(--gold);
+    border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent);
+    border-radius: 60% 40% 60% 40%;
+  }
+  .growth-path > header div { min-width: 0; }
+  .growth-path > header strong { display: block; color: color-mix(in srgb, var(--gold) 76%, white); font-size: 0.64rem; }
+  .growth-path > header small { display: block; margin-top: 0.06rem; color: color-mix(in srgb, var(--gold) 40%, var(--dim)); font-size: 0.49rem; line-height: 1.2; }
+  .growth-path-nodes { position: relative; display: grid; gap: 0.38rem; }
+  .growth-path-nodes::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    top: 1rem;
+    bottom: 1rem;
+    left: 1.47rem;
+    width: 1px;
+    background: linear-gradient(color-mix(in srgb, var(--amber) 8%, transparent), color-mix(in srgb, var(--gold) 22%, transparent), color-mix(in srgb, var(--amber) 8%, transparent));
   }
 
   .map {

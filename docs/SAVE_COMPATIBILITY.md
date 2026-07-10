@@ -2,9 +2,10 @@
 
 Status: **F5 implemented decision record**
 
-The current game reads historical versions 1–13 and writes save version 22. Economy
-amounts use the v13 canonical scientific-string format; v22 adds the non-economic Garden,
-Chronicle, loadout, and Atlas record envelope required for continuing play.
+The current game reads historical versions 1–13 and 22, and writes save version 23.
+Economy amounts use the v13 canonical scientific-string format; v22 adds the non-economic
+Garden, Chronicle, loadout, and Atlas envelope, while v23 records each universe's local
+Vessel construction independently.
 
 ## 1. Compatibility policy
 
@@ -22,7 +23,7 @@ Chronicle, loadout, and Atlas record envelope required for continuing play.
   rollback snapshot is retained for at least two shipped save versions and at least
   ninety days after the v13 release, whichever is longer.
 
-Version 13 remains the atomic economy-number boundary. Version 22 is the current writer.
+Version 13 remains the atomic economy-number boundary. Version 23 is the current writer.
 
 ## 2. Reserved migration versions
 
@@ -41,7 +42,8 @@ does not authorize a worker to edit `src/core/save-data.ts` or emit the version 
 | 19 | F4 Canticle | Superseded: v13 generic parked-run envelope carries the selected measure; silent equivalence is a presentation preference, not new save state |
 | 20 | F5 Chronicle/loadouts | Staged into the atomic v22 F5 envelope; never emitted independently |
 | 21 | F5 Garden | Staged into the atomic v22 F5 envelope; never emitted independently |
-| 22 | F5 Atlas and aggregate F5 migration | **Current:** Chronicle records, personal bests, Beacon names, build metadata, Garden closure, seeded route state, replay digests, and Convergence archive |
+| 22 | F5 Atlas and aggregate F5 migration | Chronicle records, personal bests, Beacon names, build metadata, Garden closure, seeded route state, replay digests, and Convergence archive |
+| 23 | Local Vessel progression | **Current writer:** per-universe five-part Vessel completion; legacy global parts map to Emberlight and already-lit Beacon worlds, never to the current unlit destination |
 
 Versions 15–19 were retired before emission because v13 deliberately introduced a
 bounded, sanitized generic envelope for parked worlds and numeric law state. Historical
@@ -248,7 +250,7 @@ F0 leaves every v12 save byte-compatible. The v13 implementation must:
 There is no lossy automatic v13-to-v12 down-conversion. A rollback build restores the
 dedicated raw snapshot and may lose only progress made after the migration; it does not
 guess at values the v12 client cannot represent. Current rolling backups are written as
-v22. The dedicated raw v12 rollback key is not rotated with them.
+v23. The dedicated raw v12 rollback key is not rotated with them.
 
 Numeric-core, v13 migration, and presentation refactors land as separate reviewable
 commits. A failed numeric rollout reverts the v13 writer/reader commits without mixing in
@@ -261,6 +263,8 @@ Permanent migration fixtures must cover:
 - minimal and progressed saves from every historical version;
 - v11 and v12 preference preservation;
 - active and parked Emberlight/Tidefall runs, including independent local IDs;
+- historical global Vessel completion mapped to Emberlight and already-lit Beacon worlds,
+  while the current unlit destination begins its own local Vessel;
 - temporary trial return snapshots;
 - every reset scope and retained collection;
 - zero, one, fractional scientific values, fifteen-digit mantissas, large positive and
@@ -270,7 +274,9 @@ Permanent migration fixtures must cover:
 - each U3–U7 first-visit/parked-run migration as its reserved version lands;
 - rename, merge, split, tombstone, and refund ID mappings before any such mapping ships;
 - v13-to-v22 defaulting plus Chronicle/loadout validation, Garden closure state, Atlas
-  seed/config replay, and Convergence permanence.
+  seed/config replay, and Convergence permanence;
+- v22-to-v23 local Vessel migration, including an unlit active destination that must not
+  inherit Emberlight's completed craft.
 
 Required properties:
 

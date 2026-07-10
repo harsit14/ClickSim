@@ -2,7 +2,7 @@
 
 > A long-horizon design plan for a coherent, deeply replayable incremental game.
 >
-> Status: proposal for post-Phase-5 work. This document does not override save compatibility, accessibility, performance, or the rule that the player must always understand what a reset will remove.
+> Status: implemented design bible retained for ongoing balance and content work. It does not override save compatibility, accessibility, performance, or the rule that the player must always understand what a reset will remove.
 
 ## How to use this document
 

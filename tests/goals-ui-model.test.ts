@@ -64,6 +64,16 @@ test('Goal Lens fully hides when off or minimalist and collapses during active r
   assert.equal(activeRhythm.result.now?.goalId, 'generator')
 })
 
+test('Goal Lens stays absent until it has a meaningful recommendation', () => {
+  const empty = buildGoalLensUiModel({
+    goals: { enabled: true, candidates: [] },
+    presentationMode: 'standard',
+  })
+  assert.equal(empty.result.status, 'empty')
+  assert.equal(empty.visibility, 'hidden')
+  assert.equal(empty.hiddenReason, 'no-recommendation')
+})
+
 test('Goal Lens pin changes remain explicit caller-owned values', () => {
   assert.equal(nextGoalPin(null, 'beacon'), 'beacon')
   assert.equal(nextGoalPin('beacon', 'beacon'), null)
@@ -87,6 +97,14 @@ test('reset card model preserves exact impact categories and caller recovery inp
   const retained = card.sections.find(({ id }) => id === 'retained')
   assert.deepEqual(lost?.items, comparison.lost)
   assert.deepEqual(retained?.items, comparison.retained)
+  assert.deepEqual(lost?.groups.map(({ scope, items }) => [scope, items.length]), [
+    ['world', 6],
+  ])
+  assert.deepEqual(retained?.groups.map(({ scope, items }) => [scope, items.length]), [
+    ['epoch', 4],
+    ['deep-history', 13],
+    ['between', 13],
+  ])
   assert.deepEqual(card.recovery.inputs, comparison.recovery.inputs)
   assert.equal(card.requiresExplicitConfirmation, true)
 })
@@ -122,4 +140,17 @@ test('new F1b components compile with no accessibility compiler warnings', () =>
     const compiled = compile(readFileSync(path, 'utf8'), { filename: path.pathname, generate: 'client' })
     assert.deepEqual(compiled.warnings, [], `${filename} emitted compiler warnings`)
   }
+})
+
+test('optional guidance is off until the player enables it from Settings', () => {
+  const appSource = readFileSync(new URL('../src/App.svelte', import.meta.url), 'utf8')
+  const optionsSource = readFileSync(new URL('../src/ui/OptionsPanel.svelte', import.meta.url), 'utf8')
+
+  assert.match(appSource, /let goalLensEnabled = \$state\(false\)/)
+  assert.match(appSource, /promptState = \$state<ContextualPromptState>\(\{ enabled: false, dismissedIds: \[\] \}\)/)
+  assert.match(appSource, /goalLensEnabled \|\| promptState\.enabled/)
+  assert.match(optionsSource, /goalLensEnabled = false/)
+  assert.match(optionsSource, /promptsEnabled = false/)
+  assert.match(optionsSource, /Opt in to next-useful/)
+  assert.match(optionsSource, /These never appear automatically/)
 })

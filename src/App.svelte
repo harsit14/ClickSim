@@ -81,10 +81,12 @@
   let crossingTarget = $state<string | null>(null)
   let resetPreviewOpen = $state(false)
   let resetComparison = $state<ResetComparison | null>(null)
-  let goalLensEnabled = $state(true)
+  // Guidance is opt-in. The opening should remain only the Heart and the
+  // systems the player has actually unlocked until Settings enables help.
+  let goalLensEnabled = $state(false)
   let pinnedGoalId = $state<string | null>(null)
   let averagedRhythm = $state(false)
-  let promptState = $state<ContextualPromptState>({ enabled: true, dismissedIds: [] })
+  let promptState = $state<ContextualPromptState>({ enabled: false, dismissedIds: [] })
   let resumeMusicAfterNova = false
   const comparativeBlind = import.meta.env.DEV
     && new URLSearchParams(window.location.search).get('f2-blind') === '1'
@@ -362,27 +364,31 @@
       <UpgradeBar />
     {/if}
   </section>
-  {#if activeV2Pack && !utilityPanelOpen}
+  {#if activeV2Pack && !utilityPanelOpen && (goalLensEnabled || promptState.enabled)}
     <section class="cohesion-stack" aria-label="Optional guidance">
-      <GoalLens
-        id="universe-goal-lens"
-        universeId={activePack.id}
-        goals={goalLensInput}
-        presentationMode={goalPresentation}
-        resolveText={resolveActiveUiText}
-        formatDuration={formatGoalDuration}
-        onpinchange={(goalId) => (pinnedGoalId = goalId)}
-        ondisable={() => (goalLensEnabled = false)}
-      />
-      <ContextualPrompts
-        id="universe-contextual-prompt"
-        universeId={activePack.id}
-        candidates={contextualPrompts}
-        state={promptState}
-        resolveText={resolveActiveUiText}
-        onstatechange={(state) => (promptState = state)}
-        onaction={handlePromptAction}
-      />
+      {#if goalLensEnabled}
+        <GoalLens
+          id="universe-goal-lens"
+          universeId={activePack.id}
+          goals={goalLensInput}
+          presentationMode={goalPresentation}
+          resolveText={resolveActiveUiText}
+          formatDuration={formatGoalDuration}
+          onpinchange={(goalId) => (pinnedGoalId = goalId)}
+          ondisable={() => (goalLensEnabled = false)}
+        />
+      {/if}
+      {#if promptState.enabled}
+        <ContextualPrompts
+          id="universe-contextual-prompt"
+          universeId={activePack.id}
+          candidates={contextualPrompts}
+          state={promptState}
+          resolveText={resolveActiveUiText}
+          onstatechange={(state) => (promptState = state)}
+          onaction={handlePromptAction}
+        />
+      {/if}
     </section>
   {/if}
   <ShopPanel suppressed={utilityPanelOpen} />

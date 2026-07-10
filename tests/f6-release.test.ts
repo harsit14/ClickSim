@@ -17,7 +17,7 @@ import {
   migrateAndSanitizeSave,
   migrateAndSanitizeSaveV13,
   serializeSaveDataV13,
-  serializeSaveDataV22,
+  serializeSaveDataV23,
 } from '../src/core/save-data'
 import {
   DEFAULT_SIMULATOR_CONTRACT_CONFIG,
@@ -95,19 +95,19 @@ test('five-hour, fifty-hour, and returning-player simulations remain numeric and
   }
 })
 
-test('complete historical fixture ladder migrates to v22 and canonicalizes idempotently', () => {
+test('complete historical fixture ladder migrates to v23 and canonicalizes idempotently', () => {
   for (let version = 1; version <= 12; version++) {
     const migrated = migrateAndSanitizeSave({ version, savedAt: version, light: 0, totalEarned: 0 })
     assert.ok(migrated, `version ${version} should migrate`)
-    assert.equal(migrated.version, 22)
-    const wire = serializeSaveDataV22(migrated)
-    assert.deepEqual(serializeSaveDataV22(migrateAndSanitizeSave(wire)!), wire)
+    assert.equal(migrated.version, 23)
+    const wire = serializeSaveDataV23(migrated)
+    assert.deepEqual(serializeSaveDataV23(migrateAndSanitizeSave(wire)!), wire)
   }
   const numeric = migrateAndSanitizeSaveV13({ version: 12, savedAt: 13, light: 1, totalEarned: 2 })!
   const numericWire = serializeSaveDataV13(numeric)
   const current = migrateAndSanitizeSave(numericWire)
   assert.ok(current)
-  assert.equal(current.version, 22)
+  assert.equal(current.version, 23)
   assert.deepEqual(current.endgame.atlasCompletions, [])
 })
 
@@ -121,7 +121,7 @@ test('crash drill skips corrupt primary data and accepts the newest valid histor
   const recovered = candidates.map((candidate) => migrateAndSanitizeSave(candidate)).find(Boolean)
   assert.ok(recovered)
   assert.equal(recovered.savedAt, 5_000)
-  assert.equal(recovered.version, 22)
+  assert.equal(recovered.version, 23)
 })
 
 test('translation catalog covers release content with stable unique keys', () => {

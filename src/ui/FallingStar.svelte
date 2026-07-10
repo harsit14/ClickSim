@@ -14,6 +14,15 @@
   import type { UniversePowerUp } from '../content/universes'
   import type { EconomyAmount, UniverseId } from '../content/universes/types'
   import {
+    hudClearanceRect,
+    rectIntersectsHudClearance,
+  } from '../render/hud-clearance'
+  import {
+    heartMaximumHitRadius,
+    heartTargetCenter,
+    rectIntersectsHeartTarget,
+  } from '../render/heart-target'
+  import {
     ZERO_AMOUNT,
     amountFromNumber,
     isZeroAmount,
@@ -89,14 +98,33 @@
     const pack = universeById(game.activeUniverse)
     const fromLeft = Math.random() < 0.5
     const bubble = pack.events.motion === 'bubble'
+    const viewport = { width: window.innerWidth, height: window.innerHeight }
+    const clearance = hudClearanceRect(viewport)
+    const eventHalfWidth = 3.3 * 16
+    const eventHalfHeight = 1.9 * 16
+    const heartCenter = heartTargetCenter(viewport)
+    const heartClearance = heartMaximumHitRadius(viewport)
+    const protectedLeft = Math.min(clearance.x, heartCenter.x - heartClearance)
+    const protectedRight = Math.max(clearance.x + clearance.width, heartCenter.x + heartClearance)
+    const leftLane = [eventHalfWidth, protectedLeft - eventHalfWidth] as const
+    const rightLane = [protectedRight + eventHalfWidth, window.innerWidth - eventHalfWidth] as const
+    const usableLanes = [leftLane, rightLane].filter(([start, end]) => end > start)
+    const lane = usableLanes[Math.floor(Math.random() * usableLanes.length)]
+    const bubbleX = lane
+      ? lane[0] + Math.random() * (lane[1] - lane[0])
+      : window.innerWidth * (fromLeft ? 0.08 : 0.92)
+    const meteorY = Math.max(
+      clearance.height + eventHalfHeight + 12,
+      heartCenter.y + heartClearance + eventHalfHeight + 12,
+    ) + Math.random() * Math.max(0, window.innerHeight * 0.08)
     const next = {
       power: pickPower(fromRhythm),
       universeId: pack.id,
       motion: pack.events.motion,
       eventNoun: pack.events.noun,
       audioMode: pack.audio.event,
-      x: bubble ? window.innerWidth * (0.18 + Math.random() * 0.64) : fromLeft ? -30 : window.innerWidth + 30,
-      y: bubble ? window.innerHeight + 30 : 40 + Math.random() * window.innerHeight * 0.3,
+      x: bubble ? bubbleX : fromLeft ? -30 : window.innerWidth + 30,
+      y: bubble ? window.innerHeight + 30 : meteorY,
       vx: bubble ? (fromLeft ? 1 : -1) * (5 + Math.random() * 8) : (fromLeft ? 1 : -1) * (45 + Math.random() * 35),
       vy: bubble ? -(36 + Math.random() * 18) : 18 + Math.random() * 18,
       born: performance.now(),
@@ -135,6 +163,21 @@
       const dt = elapsed / 1000
       star.x += star.vx * dt
       star.y += star.vy * dt
+      const eventRect = {
+        x: star.x - 3.3 * 16,
+        y: star.y - 1.9 * 16,
+        width: 6.6 * 16,
+        height: 3.8 * 16,
+      }
+      const viewport = { width: window.innerWidth, height: window.innerHeight }
+      if (
+        rectIntersectsHudClearance(eventRect, viewport)
+        || rectIntersectsHeartTarget(eventRect, viewport)
+      ) {
+        star = null
+        scheduleNext()
+        return
+      }
       pos = { x: star.x, y: star.y }
       const leftWorld = star.motion === 'bubble' ? star.y < -50 : star.y > window.innerHeight + 40
       if (now - star.born > LIFETIME_MS || leftWorld) {

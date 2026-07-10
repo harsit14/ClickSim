@@ -1,6 +1,6 @@
 # Universe V2 contract lock
 
-Status: **F0.2 approved contract**
+Status: **implemented Universe V2 contract reference**
 
 This record explains how the compile-only contracts in
 `src/content/universes/types.ts` enter the existing Phase 5 runtime. F0 adds no content,

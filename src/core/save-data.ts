@@ -30,7 +30,8 @@ import {
   serializeAmount,
 } from './numeric/amount'
 
-export const CURRENT_SAVE_VERSION = 22
+export const CURRENT_SAVE_VERSION = 23
+export const F5_SAVE_VERSION = 22
 export const LEGACY_SAVE_VERSION = 12
 export const NUMERIC_SAVE_VERSION = 13
 
@@ -286,6 +287,17 @@ export interface SaveDataV22 extends Omit<SaveDataV13, 'version'> {
 export interface SerializedSaveDataV22 extends Omit<SerializedSaveDataV13, 'version'> {
   version: 22
   endgame: EndgameState
+}
+
+export interface SaveDataV23 extends Omit<SaveDataV22, 'version'> {
+  version: 23
+  vesselPartsByUniverse: Record<string, string[]>
+  endgame: EndgameState
+}
+
+export interface SerializedSaveDataV23 extends Omit<SerializedSaveDataV22, 'version'> {
+  version: 23
+  vesselPartsByUniverse: Record<string, string[]>
 }
 
 const MIGRATIONS: Record<number, (d: Record<string, unknown>) => Record<string, unknown>> = {
@@ -1059,6 +1071,30 @@ export function stringifySaveDataV13(value: SaveDataV13): string {
   return JSON.stringify(serializeSaveDataV13(value))
 }
 
+function sanitizeVesselPartsByUniverse(
+  value: unknown,
+  legacy: Pick<SaveDataV13, 'beacons' | 'vesselParts'>,
+): Record<string, string[]> {
+  const result: Record<string, string[]> = {}
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    for (const universe of UNIVERSES) {
+      const parts = knownStrings((value as Record<string, unknown>)[universe.id], vesselPartIds)
+      if (parts.length > 0) result[universe.id] = parts
+    }
+  }
+
+  // Historical saves owned one global Vessel, which was constructed in
+  // Emberlight. Every already-lit Beacon is also grandfathered as locally
+  // complete because that crossing has already happened; the current unlit
+  // universe starts its own construction loop from zero.
+  if (!result[DEFAULT_UNIVERSE_ID] && legacy.vesselParts.length > 0) {
+    result[DEFAULT_UNIVERSE_ID] = [...legacy.vesselParts]
+  }
+  const complete = VESSEL_PARTS.map(({ id }) => id)
+  for (const universeId of legacy.beacons) result[universeId] = [...complete]
+  return result
+}
+
 export function convertSaveV13ToV22(value: SaveDataV13): SaveDataV22 {
   const endgame = emptyEndgameState()
   endgame.unlockedConvergences = CONVERGENCES
@@ -1070,7 +1106,7 @@ export function convertSaveV13ToV22(value: SaveDataV13): SaveDataV22 {
 function sanitizeSaveV22(data: unknown): SaveDataV22 | null {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null
   const source = data as Record<string, unknown>
-  if (source.version !== CURRENT_SAVE_VERSION) return null
+  if (source.version !== F5_SAVE_VERSION) return null
   const numeric = sanitizeSaveV13({ ...source, version: NUMERIC_SAVE_VERSION })
   if (!numeric) return null
   const endgame = sanitizeEndgameState(source.endgame)
@@ -1086,7 +1122,7 @@ function sanitizeSaveV22(data: unknown): SaveDataV22 | null {
 export function migrateAndSanitizeSaveV22(data: unknown): SaveDataV22 | null {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null
   const version = (data as Record<string, unknown>).version
-  if (version === CURRENT_SAVE_VERSION) return sanitizeSaveV22(data)
+  if (version === F5_SAVE_VERSION) return sanitizeSaveV22(data)
   const numeric = migrateAndSanitizeSaveV13(data)
   return numeric ? convertSaveV13ToV22(numeric) : null
 }
@@ -1103,5 +1139,48 @@ export function stringifySaveDataV22(value: SaveDataV22): string {
   return JSON.stringify(serializeSaveDataV22(value))
 }
 
-/** Current public reader: every accepted historical save returns the complete v22 snapshot. */
-export const migrateAndSanitizeSave = migrateAndSanitizeSaveV22
+export function convertSaveV22ToV23(value: SaveDataV22): SaveDataV23 {
+  return {
+    ...value,
+    version: 23,
+    vesselPartsByUniverse: sanitizeVesselPartsByUniverse(undefined, value),
+  }
+}
+
+function sanitizeSaveV23(data: unknown): SaveDataV23 | null {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const source = data as Record<string, unknown>
+  if (source.version !== CURRENT_SAVE_VERSION) return null
+  const prior = sanitizeSaveV22({ ...source, version: F5_SAVE_VERSION })
+  if (!prior) return null
+  return {
+    ...prior,
+    version: 23,
+    vesselPartsByUniverse: sanitizeVesselPartsByUniverse(source.vesselPartsByUniverse, prior),
+  }
+}
+
+export function migrateAndSanitizeSaveV23(data: unknown): SaveDataV23 | null {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const version = (data as Record<string, unknown>).version
+  if (version === CURRENT_SAVE_VERSION) return sanitizeSaveV23(data)
+  const prior = migrateAndSanitizeSaveV22(data)
+  return prior ? convertSaveV22ToV23(prior) : null
+}
+
+export function serializeSaveDataV23(value: SaveDataV23): SerializedSaveDataV23 {
+  return {
+    ...serializeSaveDataV22({ ...value, version: 22 }),
+    version: 23,
+    vesselPartsByUniverse: Object.fromEntries(
+      Object.entries(value.vesselPartsByUniverse).map(([id, parts]) => [id, [...parts]]),
+    ),
+  }
+}
+
+export function stringifySaveDataV23(value: SaveDataV23): string {
+  return JSON.stringify(serializeSaveDataV23(value))
+}
+
+/** Current public reader: every accepted historical save returns the complete v23 snapshot. */
+export const migrateAndSanitizeSave = migrateAndSanitizeSaveV23

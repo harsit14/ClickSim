@@ -154,6 +154,6 @@
     cursor: pointer;
   }
   canvas:focus-visible { outline: none; }
-  .keyboard-focus { position: fixed; top: 48%; left: 50%; width: clamp(7rem, 18vw, 12rem); aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; border: 2px solid transparent; border-radius: 50%; opacity: 0; z-index: 1; }
+  .keyboard-focus { position: fixed; top: 48%; left: 50%; width: clamp(9rem, 20vw, 13rem); aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; border: 2px solid transparent; border-radius: 50%; opacity: 0; z-index: 1; }
   canvas:focus-visible + .keyboard-focus { opacity: 1; border-color: #fff; box-shadow: 0 0 0 4px rgba(5,7,14,0.88), 0 0 0 6px var(--gold), 0 0 24px color-mix(in srgb, var(--gold) 55%, transparent); }
 </style>

@@ -17,6 +17,10 @@ import type {
   SalienceRole,
   VisibleSalienceDecision,
 } from './salience-governor'
+import {
+  hudClearanceRect,
+  rectsIntersect,
+} from './hud-clearance'
 
 export interface ManifestViewport {
   readonly width: number
@@ -95,6 +99,7 @@ export interface HiddenManifestObject {
 export type LayoutViolationCode =
   | 'viewport-overflow'
   | 'zone-overflow'
+  | 'hud-obstruction'
   | 'heart-obstruction'
   | 'overlap-collision'
   | 'attention-budget-exceeded'
@@ -108,6 +113,7 @@ export interface LayoutViolation {
 export interface ManifestRenderPlan {
   readonly viewport: ManifestViewport
   readonly zoneRects: Readonly<Record<ScreenZone, LayoutRect>>
+  readonly hudClearance: LayoutRect
   readonly heart: HeartRenderPlan
   readonly objects: readonly ManifestObjectRenderPlan[]
   readonly hidden: readonly HiddenManifestObject[]
@@ -303,13 +309,6 @@ function pointToRectDistance(x: number, y: number, rect: LayoutRect): number {
   return Math.hypot(dx, dy)
 }
 
-function rectsIntersect(left: LayoutRect, right: LayoutRect): boolean {
-  return left.x < right.x + right.width
-    && left.x + left.width > right.x
-    && left.y < right.y + right.height
-    && left.y + left.height > right.y
-}
-
 function overlapAllowed(
   left: Pick<ManifestObjectRenderPlan, 'overlapGroup' | 'canOverlapWith'>,
   right: Pick<ManifestObjectRenderPlan, 'overlapGroup' | 'canOverlapWith'>,
@@ -342,6 +341,13 @@ export function auditManifestRenderPlan(plan: ManifestRenderPlan): readonly Layo
         code: 'zone-overflow',
         objectIds: [object.objectId],
         message: `${object.objectId} extends outside its ${object.screenZone} zone.`,
+      })
+    }
+    if (rectsIntersect(object.rect, plan.hudClearance)) {
+      violations.push({
+        code: 'hud-obstruction',
+        objectIds: [object.objectId],
+        message: `${object.objectId} intrudes into the run-status clearance area.`,
       })
     }
     const requiredDistance = (1 + object.minimumHeartDistance) * plan.heart.radius
@@ -397,6 +403,7 @@ export function planManifestLayout(input: ManifestLayoutInput): ManifestRenderPl
   }
 
   const zones = zoneRects(input.viewport)
+  const hudClearance = hudClearanceRect(input.viewport)
   const heart = heartPlan(input.heart, input.viewport, input.preferences)
   const manifestIds = new Set(input.visual.objects.map((object) => object.id))
   const requestedVisible = new Set(input.state.visibleObjectIds.filter((id) => manifestIds.has(id)))
@@ -470,6 +477,7 @@ export function planManifestLayout(input: ManifestLayoutInput): ManifestRenderPl
       ) {
         continue
       }
+      if (rectsIntersect(rect, hudClearance)) continue
       if (placed.some((other) => rectsIntersect(rect, other.rect) && !overlapAllowed(candidate, other))) {
         continue
       }
@@ -484,6 +492,7 @@ export function planManifestLayout(input: ManifestLayoutInput): ManifestRenderPl
   const incomplete: ManifestRenderPlan = {
     viewport: input.viewport,
     zoneRects: zones,
+    hudClearance,
     heart,
     objects: placed,
     hidden,

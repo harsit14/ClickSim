@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { ACHIEVEMENTS, achievementDisplay } from '../content/achievements'
   import { universeById } from '../content/universes'
+  import { vesselBlueprint, vesselPartIdsFor } from '../content/vessel'
   import { clickFormula, genRate, rateFormula } from '../engine/compute'
   import {
     game,
@@ -43,6 +44,8 @@
   })
 
   const pack = $derived(universeById(game.activeUniverse))
+  const localVessel = $derived(vesselBlueprint(game.activeUniverse))
+  const localVesselParts = $derived(vesselPartIdsFor(game))
   const rate = $derived(ratePerSec(inspectedAt))
   const passiveRate = $derived(passiveRatePerSec(inspectedAt))
   const activeRate = $derived(activeRatePerSec(inspectedAt))
@@ -124,8 +127,8 @@
         <dt>remembrances</dt><dd>{game.remembrances}</dd>
         <dt>memory glow</dt><dd>×{Math.pow(2, game.remembrances)}</dd>
       {/if}
-      {#if game.vesselParts.length > 0}
-        <dt>vessel parts</dt><dd>{game.vesselParts.length} / 5</dd>
+      {#if localVesselParts.length > 0 || game.beacons.length > 0}
+        <dt>{localVessel.name.toLowerCase()}</dt><dd>{localVesselParts.length} / 5 local parts</dd>
       {/if}
       {#if game.beacons.length > 0}
         <dt>beacons lit</dt><dd>{game.beacons.length}</dd>

@@ -21,7 +21,7 @@ export interface GoalLensUiSlot {
 
 export interface GoalLensUiModel {
   readonly visibility: 'hidden' | 'collapsed' | 'expanded'
-  readonly hiddenReason: 'feature-off' | 'minimalist' | null
+  readonly hiddenReason: 'feature-off' | 'minimalist' | 'no-recommendation' | null
   readonly result: GoalLensResult
   readonly slots: readonly GoalLensUiSlot[]
 }
@@ -40,6 +40,9 @@ export function buildGoalLensUiModel(input: GoalLensUiInput): GoalLensUiModel {
   }
   if (input.presentationMode === 'minimalist') {
     return { visibility: 'hidden', hiddenReason: 'minimalist', result, slots }
+  }
+  if (result.status === 'empty') {
+    return { visibility: 'hidden', hiddenReason: 'no-recommendation', result, slots }
   }
   if (input.presentationMode === 'active-rhythm') {
     return { visibility: 'collapsed', hiddenReason: null, result, slots }

@@ -4,10 +4,10 @@ import {
   migrateAndSanitizeSave,
   migrateAndSanitizeSaveV12,
   type SaveDataV12,
-  type SaveDataV22,
+  type SaveDataV23,
 } from './save-data'
 
-export type DevScenario = 'midgame' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'verdance' | 'clockwork' | 'prismata' | 'tempest' | 'canticle' | 'garden' | 'markets'
+export type DevScenario = 'opening' | 'midgame' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'verdance' | 'pruning' | 'clockwork' | 'prismata' | 'tempest' | 'canticle' | 'garden' | 'markets'
 
 const GENERATORS = [
   'spark',
@@ -78,9 +78,11 @@ function emptyScenario(now: number): SaveDataV12 {
 }
 
 /** Deterministic, dev-only states used for manual and browser regression passes. */
-export function createDevScenario(name: string | null, now = Date.now()): SaveDataV22 | null {
-  if (!['midgame', 'endgame', 'question', 'crossing', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle', 'garden', 'markets'].includes(name ?? '')) return null
+export function createDevScenario(name: string | null, now = Date.now()): SaveDataV23 | null {
+  if (!['opening', 'midgame', 'endgame', 'question', 'crossing', 'tidefall', 'verdance', 'pruning', 'clockwork', 'prismata', 'tempest', 'canticle', 'garden', 'markets'].includes(name ?? '')) return null
   const base = emptyScenario(now)
+
+  if (name === 'opening') return migrateAndSanitizeSave(base)
 
   if (name === 'midgame') {
     return migrateAndSanitizeSave({
@@ -151,8 +153,8 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
     })
   }
 
-  if (name === 'verdance' || name === 'clockwork' || name === 'prismata' || name === 'tempest' || name === 'canticle' || name === 'garden') {
-    const universeId = name === 'garden' ? 'canticle' : name
+  if (name === 'verdance' || name === 'pruning' || name === 'clockwork' || name === 'prismata' || name === 'tempest' || name === 'canticle' || name === 'garden') {
+    const universeId = name === 'garden' ? 'canticle' : name === 'pruning' ? 'verdance' : name
     const pack = universeById(universeId)
     const route = ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']
     const priorBeacons = name === 'garden' ? route : route.slice(0, route.indexOf(universeId))
@@ -165,20 +167,22 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
       allTimeEarned: 1e40,
       eraEarned: runCurrency,
       clicks: 12_000,
-      owned: Object.fromEntries(pack.generators.slice(0, 13).map((generator, index) => [
+      owned: Object.fromEntries((name === 'verdance' ? pack.generators : pack.generators.slice(0, 13)).map((generator, index) => [
         generator.id,
-        Math.max(1, 70 - index * 5),
+        Math.max(name === 'verdance' ? 10 : 1, 70 - index * 5),
       ])),
-      upgrades: pack.upgrades.slice(0, 12).map(({ id }) => id),
+      upgrades: name === 'verdance'
+        ? pack.upgrades.filter(({ effects }) => effects.some(({ kind }) => kind === 'synergy')).map(({ id }) => id)
+        : pack.upgrades.slice(0, 12).map(({ id }) => id),
       ui: UI,
       seen: pack.lumen.slice(0, 6).map(({ id }) => id),
       echoes: pack.echoes.slice(0, 5).map(({ id }) => id),
       curiosities: pack.cabinet.items.slice(0, 8).map(({ id }) => id),
       keeperFedUntil: now + 3_600_000,
       snailLastGiftAt: now - 3_600_000,
-      stardust: 35,
-      stardustTotal: 60,
-      supernovae: 4,
+      stardust: name === 'pruning' ? 0 : 35,
+      stardustTotal: name === 'pruning' ? 0 : 60,
+      supernovae: name === 'pruning' ? 0 : 4,
       singularities: 10,
       singTotal: 10,
       collapses: 1,

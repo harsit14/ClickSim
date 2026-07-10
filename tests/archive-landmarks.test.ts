@@ -13,6 +13,8 @@ import { archiveLandmarkDescriptorsFor } from '../src/render/archive-landmark-re
 import type {
   ArchiveLandmarkPresentationDescriptor,
 } from '../src/render/archive-landmarks'
+import { rectIntersectsHudClearance } from '../src/render/hud-clearance'
+import { rectIntersectsHeartTarget } from '../src/render/heart-target'
 
 function descriptorsFor(
   pack: UniversePackV2,
@@ -179,6 +181,32 @@ test('all seven completed Archives render all twelve records with the collection
       assert.equal(new Set(plan.landmarks.map(({ slot }) => slot.y)).size, 12, `${universeId}/${mode} aligned y positions`)
     }
   }
+})
+
+test('archive landmarks remain outside the run-status and Heart interaction areas', () => {
+  const viewport = { width: 740, height: 416 }
+  const pack = V2_UNIVERSE_BY_ID.get('verdance')!
+  const recordIds = pack.archive.records.map(({ id }) => id)
+  const plan = planArchiveLandmarks(
+    pack,
+    recordIds,
+    archiveLandmarkDescriptorsFor(pack.id),
+    'standard',
+    viewport,
+  )
+
+  assert.ok(plan.landmarks.length > 0)
+  assert.ok(plan.hidden.some(({ reason }) => reason === 'placement-budget'))
+  assert.ok(plan.landmarks.every(({ slot }) => {
+    const rect = {
+      x: slot.x * viewport.width - 28,
+      y: slot.y * viewport.height - 28,
+      width: 56,
+      height: 56,
+    }
+    return !rectIntersectsHudClearance(rect, viewport)
+      && !rectIntersectsHeartTarget(rect, viewport)
+  }))
 })
 
 test('unknown and missing IDs are stable diagnostics and never become landmarks', () => {

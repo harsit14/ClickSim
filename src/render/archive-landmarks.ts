@@ -4,6 +4,11 @@ import type {
   UniversePackV2,
   VisualState,
 } from '../content/universes/types'
+import {
+  rectIntersectsHudClearance,
+  type HudClearanceViewport,
+} from './hud-clearance'
+import { rectIntersectsHeartTarget } from './heart-target'
 
 export type ArchiveLandmarkMode = 'standard' | 'reduced-motion' | 'low-quality'
 
@@ -11,6 +16,7 @@ export type ArchiveLandmarkSlotId =
   | 'scatter-01' | 'scatter-02' | 'scatter-03' | 'scatter-04' | 'scatter-05' | 'scatter-06'
   | 'scatter-07' | 'scatter-08' | 'scatter-09' | 'scatter-10' | 'scatter-11' | 'scatter-12'
   | 'scatter-13' | 'scatter-14' | 'scatter-15' | 'scatter-16' | 'scatter-17' | 'scatter-18'
+  | 'scatter-19' | 'scatter-20' | 'scatter-21' | 'scatter-22' | 'scatter-23' | 'scatter-24'
 
 export interface ArchiveLandmarkSlot {
   readonly id: ArchiveLandmarkSlotId
@@ -25,7 +31,7 @@ export interface ArchiveLandmarkSlot {
 }
 
 /**
- * An oversized pool of irregular desktop positions. Each universe deterministically
+ * An oversized pool of irregular stage positions. Each universe deterministically
  * selects twelve, producing a stable scatter without covering the Heart or UI rails.
  */
 export const ARCHIVE_LANDMARK_SLOTS: readonly ArchiveLandmarkSlot[] = [
@@ -48,6 +54,12 @@ export const ARCHIVE_LANDMARK_SLOTS: readonly ArchiveLandmarkSlot[] = [
     ['scatter-16', 'near', 0.13, 0.59],
     ['scatter-17', 'far', 0.40, 0.24],
     ['scatter-18', 'near', 0.64, 0.38],
+    ['scatter-19', 'far', 0.26, 0.55],
+    ['scatter-20', 'near', 0.42, 0.56],
+    ['scatter-21', 'far', 0.52, 0.58],
+    ['scatter-22', 'near', 0.61, 0.60],
+    ['scatter-23', 'far', 0.67, 0.63],
+    ['scatter-24', 'near', 0.16, 0.65],
   ] as const).map(([id, screenZone, x, y]) => ({
     id,
     screenZone,
@@ -238,6 +250,7 @@ function slotFor(
   unit: CandidateUnit,
   universeId: UniversePackV2['id'],
   usedSlotIds: ReadonlySet<ArchiveLandmarkSlotId>,
+  viewport: HudClearanceViewport,
 ): ArchiveLandmarkSlot | null {
   const maximumRequiredClearance = Math.max(
     ...unit.candidates.map(({ record }) => record.object.minimumHeartDistance),
@@ -247,6 +260,15 @@ function slotFor(
     const slot = ARCHIVE_LANDMARK_SLOTS[(offset + step) % ARCHIVE_LANDMARK_SLOTS.length]
     if (usedSlotIds.has(slot.id)) continue
     if (slot.heartClearanceRadii < maximumRequiredClearance) continue
+    const landmarkSize = 3.5 * 16
+    const landmarkRect = {
+      x: slot.x * viewport.width - landmarkSize / 2,
+      y: slot.y * viewport.height - landmarkSize / 2,
+      width: landmarkSize,
+      height: landmarkSize,
+    }
+    if (rectIntersectsHudClearance(landmarkRect, viewport)) continue
+    if (rectIntersectsHeartTarget(landmarkRect, viewport)) continue
     return slot
   }
   return null
@@ -261,6 +283,7 @@ export function planArchiveLandmarks(
   unlockedRecordIds: readonly string[],
   descriptors: readonly ArchiveLandmarkPresentationDescriptor[],
   mode: ArchiveLandmarkMode = 'standard',
+  viewport: HudClearanceViewport = { width: 1280, height: 720 },
 ): ArchiveLandmarkPlan {
   const descriptorByRecord = descriptorMap(descriptors)
   const recordById = new Map(pack.archive.records.map((record) => [record.id, record]))
@@ -291,7 +314,7 @@ export function planArchiveLandmarks(
       hidden.push({ id: unit.id, recordIds, reason: 'attention-budget' })
       continue
     }
-    const slot = slotFor(unit, pack.id, usedSlotIds)
+    const slot = slotFor(unit, pack.id, usedSlotIds, viewport)
     if (!slot) {
       hidden.push({ id: unit.id, recordIds, reason: 'placement-budget' })
       continue

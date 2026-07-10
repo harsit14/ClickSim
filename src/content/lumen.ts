@@ -1,5 +1,6 @@
 import type { GameState } from '../engine/game.svelte'
 import { amountFromNumber, gteAmount } from '../core/numeric/amount'
+import { vesselComplete, vesselPartIdsFor } from './vessel'
 
 export interface LumenLine {
   id: string
@@ -222,12 +223,12 @@ export const LUMEN_LINES: LumenLine[] = [
   {
     id: 'vessel-seen',
     text: 'That shape in the dark is not a shrine. It is a way out.',
-    when: (g) => g.vesselParts.length >= 1,
+    when: (g) => vesselPartIdsFor(g).length >= 1,
   },
   {
     id: 'vessel-whole',
     text: 'All five pieces hold. I have recorded many departures. I have never wanted one to succeed before.',
-    when: (g) => g.vesselParts.length >= 5,
+    when: (g) => vesselComplete(g),
   },
 
   // ── Epilogues ──────────────────────────────────────────────────────────

@@ -144,8 +144,9 @@ version, a migration and rollback plan, reset-preview changes, and separate appr
    or `beacon` as semantic information.
 5. Offline progress applies to the active universe under the current v12 behavior. Parked
    universes do not silently simulate unless a future saved, deterministic project says so.
-6. A Beacon can be lit only once per universe, outside a trial, after the Vessel and the
-   pack's declared requirement are complete.
+6. A Beacon can be lit only once per universe, outside a trial, after that universe's
+   local Vessel and the pack's declared requirement are complete. Vessel parts are
+   recorded per universe; completing Emberlight's Vessel never activates a later world.
 7. A lit Beacon survives Epoch Turns, Deep Collapses, Remembrances, and crossings. It is
    visible at the horizon/map, contributes its declared global law, and can participate
    in Garden and cross-world projects.

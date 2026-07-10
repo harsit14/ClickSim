@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import {
-    VESSEL_PARTS,
+    vesselBlueprint,
     vesselPartComplete,
     vesselPartCurrent,
+    vesselPartIdsFor,
     vesselPartReady,
+    vesselPartsForUniverse,
     vesselProgress,
     vesselStage,
     type VesselPartDef,
@@ -34,6 +36,9 @@
   onMount(() => closeButton.focus())
 
   const activePack = $derived(universeById(game.activeUniverse))
+  const activeBlueprint = $derived(vesselBlueprint(game.activeUniverse))
+  const activeParts = $derived(vesselPartsForUniverse(game.activeUniverse))
+  const activePartIds = $derived(vesselPartIdsFor(game))
 
   function progressText(part: VesselPartDef): string {
     if (part.id === 'archive') return game.ending === null ? 'unanswered' : 'answered'
@@ -45,7 +50,11 @@
     if (vesselComplete()) playCollect()
     else playBuy()
     save()
-    pushToast(vesselPartCopy(part, activePack.id).name, 'The Vessel takes shape in the dark.', 'vessel')
+    pushToast(
+      vesselPartCopy(part, activePack.id).name,
+      vesselComplete() ? activeBlueprint.completion : `${activeBlueprint.name} takes shape in ${activePack.shortName}.`,
+      'vessel',
+    )
   }
 
   function beaconProgress(pack: UniversePack): number {
@@ -73,24 +82,39 @@
 <section class="vessel">
   <header>
     <div>
-      <h2>The Vessel</h2>
+      <span class="overline">{activeBlueprint.overline}</span>
+      <h2>{activeBlueprint.name}</h2>
       <span>{vesselStage(game)}</span>
     </div>
     <button bind:this={closeButton} class="close" aria-label="close the Vessel" onclick={onclose}>✕</button>
   </header>
 
-  <div class="schematic" aria-hidden="true">
-    <span class="keel" class:lit={game.vesselParts.includes('keel-trials')}></span>
-    <span class="hull" class:lit={game.vesselParts.includes('hull-hearths')}></span>
-    <span class="mast"></span>
-    <span class="sail left" class:lit={game.vesselParts.includes('sails-constellation')}></span>
-    <span class="sail right" class:lit={game.vesselParts.includes('sails-constellation')}></span>
-    <span class="heart" class:lit={game.vesselParts.includes('heart-sun')}></span>
-    <span class="archive" class:lit={game.vesselParts.includes('archive')}></span>
+  <p class="blueprint-intro">{activeBlueprint.description}</p>
+
+  <div
+    class="schematic"
+    data-motif={activeBlueprint.motif}
+    style:--vessel-hue={activePack.palette.accentHue}
+    aria-hidden="true"
+  >
+    <span class="motif-field"></span>
+    {#each activeParts as part, index (part.id)}
+      <span
+        class="motif-piece"
+        class:lit={activePartIds.includes(part.id)}
+        class:piece-0={index === 0}
+        class:piece-1={index === 1}
+        class:piece-2={index === 2}
+        class:piece-3={index === 3}
+        class:piece-4={index === 4}
+        style:--piece-hue={part.hue}
+      ><b>{part.glyph}</b></span>
+    {/each}
+    <span class="schematic-label">{activeParts.map(({ short }) => short).join(' · ')}</span>
   </div>
 
   <div class="parts">
-    {#each VESSEL_PARTS as part (part.id)}
+    {#each activeParts as part (part.id)}
       {@const copy = vesselPartCopy(part, activePack.id)}
       {@const complete = vesselPartComplete(game, part.id)}
       {@const ready = vesselPartReady(game, part)}
@@ -181,6 +205,12 @@
         {/each}
       </div>
     </section>
+  {:else}
+    <section class="crossing-gate" aria-label="Wayfinder locked">
+      <span>Wayfinder sealed</span>
+      <strong>Complete {activeBlueprint.name} before leaving {activePack.shortName}.</strong>
+      <p>Each universe must build and activate its own crossing vessel. A Vessel completed in another world cannot carry this world’s laws.</p>
+    </section>
   {/if}
 </section>
 
@@ -220,98 +250,122 @@
     overflow: hidden;
     border-radius: 10px;
     background:
-      radial-gradient(circle at 48% 68%, rgba(255, 217, 138, 0.12), transparent 28%),
-      radial-gradient(circle at 20% 30%, rgba(135, 215, 255, 0.1), transparent 26%),
+      radial-gradient(circle at 50% 50%, hsla(var(--vessel-hue), 78%, 64%, 0.12), transparent 32%),
+      linear-gradient(120deg, hsla(var(--vessel-hue), 65%, 46%, 0.05), transparent 46%),
       rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(170, 220, 255, 0.12);
+    border: 1px solid hsla(var(--vessel-hue), 72%, 72%, 0.16);
   }
-  .schematic::before,
-  .schematic::after {
+  .motif-field {
+    position: absolute;
+    inset: 16% 9% 22%;
+    border: 1px solid hsla(var(--vessel-hue), 70%, 74%, 0.1);
+    border-radius: 50%;
+  }
+  .motif-field::before,
+  .motif-field::after {
     content: '';
     position: absolute;
-    inset: auto 12% 24% 12%;
+    left: 8%;
+    right: 8%;
+    top: 50%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(170, 220, 255, 0.16), transparent);
+    background: linear-gradient(90deg, transparent, hsla(var(--vessel-hue), 76%, 74%, 0.18), transparent);
   }
-  .schematic::after {
-    inset: 24% 18% auto 18%;
-    opacity: 0.45;
-  }
-  .keel,
-  .hull,
-  .mast,
-  .sail,
-  .heart,
-  .archive {
+  .motif-field::after { transform: rotate(90deg); }
+  .motif-piece {
     position: absolute;
-    display: block;
-    opacity: 0.32;
-    transition: opacity 0.2s, filter 0.2s;
+    left: 50%;
+    top: 50%;
+    width: 2.2rem;
+    height: 2.2rem;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    color: hsl(var(--piece-hue), 86%, 75%);
+    border: 1px solid hsla(var(--piece-hue), 78%, 72%, 0.56);
+    background: hsla(var(--piece-hue), 68%, 48%, 0.1);
+    opacity: 0.22;
+    transition: opacity 0.2s, filter 0.2s, background 0.2s;
   }
-  .lit {
+  .motif-piece b {
+    position: relative;
+    z-index: 2;
+    font: 700 0.72rem/1 ui-monospace, monospace;
+  }
+  .motif-piece.lit {
     opacity: 1;
-    filter: drop-shadow(0 0 10px rgba(150, 220, 255, 0.28));
+    background: hsla(var(--piece-hue), 72%, 54%, 0.2);
+    filter: drop-shadow(0 0 10px hsla(var(--piece-hue), 82%, 64%, 0.34));
   }
-  .keel {
-    left: 32%;
-    right: 28%;
-    bottom: 26%;
-    height: 2px;
-    background: #ff8d67;
+  .schematic-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.35rem;
+    text-align: center;
+    color: hsla(var(--vessel-hue), 58%, 78%, 0.48);
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
-  .hull {
-    left: 24%;
-    right: 20%;
-    bottom: 28%;
-    height: 2.8rem;
-    border-bottom: 3px solid #ffc47d;
-    border-radius: 0 0 70% 70%;
-    transform: skewX(-8deg);
-  }
-  .mast {
-    left: 48%;
-    bottom: 29%;
-    width: 2px;
-    height: 4.8rem;
-    background: rgba(205, 238, 255, 0.55);
-    opacity: 0.7;
-  }
-  .sail {
-    bottom: 39%;
-    width: 4.2rem;
-    height: 3.8rem;
-    border: 1px solid rgba(205, 238, 255, 0.75);
-    background: rgba(170, 220, 255, 0.12);
-  }
-  .sail.left {
-    right: 51%;
-    clip-path: polygon(100% 0, 100% 100%, 0 84%);
-  }
-  .sail.right {
-    left: 51%;
-    clip-path: polygon(0 12%, 0 100%, 100% 86%);
-  }
-  .heart {
-    left: 47.5%;
-    bottom: 33%;
-    width: 0.72rem;
-    height: 0.72rem;
-    border-radius: 50%;
-    background: #ffe28d;
-    box-shadow: 0 0 20px rgba(255, 210, 100, 0.55);
-  }
-  .archive {
-    left: 59%;
-    bottom: 35%;
-    width: 0.95rem;
-    height: 1.1rem;
-    border: 1px solid rgba(220, 205, 255, 0.8);
-    border-radius: 3px;
-    background: rgba(220, 205, 255, 0.12);
+
+  [data-motif='starship'] .piece-0 { left: 42%; top: 58%; width: 9rem; height: 2.8rem; border-radius: 0 0 70% 70%; }
+  [data-motif='starship'] .piece-1 { left: 49%; top: 32%; width: 6rem; height: 4.2rem; clip-path: polygon(50% 0, 100% 88%, 50% 72%, 0 88%); }
+  [data-motif='starship'] .piece-2 { left: 50%; top: 58%; width: 1.4rem; height: 1.4rem; border-radius: 50%; }
+  [data-motif='starship'] .piece-3 { left: 45%; top: 72%; width: 9rem; height: 0.45rem; border-radius: 50%; }
+  [data-motif='starship'] .piece-4 { left: 67%; top: 51%; width: 1.5rem; height: 1.8rem; border-radius: 0.25rem; }
+
+  [data-motif='bathysphere'] .motif-field { inset: 9% 25% 20%; border-width: 2px; }
+  [data-motif='bathysphere'] .piece-0 { width: 5.7rem; height: 5.7rem; border-radius: 50%; }
+  [data-motif='bathysphere'] .piece-1 { width: 10rem; height: 2.2rem; clip-path: polygon(0 50%, 25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%); }
+  [data-motif='bathysphere'] .piece-2 { width: 1.8rem; height: 1.8rem; border-radius: 50%; }
+  [data-motif='bathysphere'] .piece-3 { top: 72%; width: 4.5rem; height: 0.55rem; border-radius: 999px; }
+  [data-motif='bathysphere'] .piece-4 { left: 65%; top: 33%; width: 1.7rem; height: 2rem; border-radius: 45% 45% 20% 20%; }
+
+  [data-motif='seed-ark'] .motif-field { inset: 7% 31% 18%; border-radius: 65% 35% 60% 40%; transform: rotate(-16deg); }
+  [data-motif='seed-ark'] .piece-0 { width: 5.3rem; height: 6.2rem; border-radius: 65% 35% 60% 40%; transform: translate(-50%, -50%) rotate(-16deg); }
+  [data-motif='seed-ark'] .piece-1 { left: 38%; top: 31%; width: 3.8rem; height: 1.8rem; border-radius: 100% 0 100% 0; transform: translate(-50%, -50%) rotate(24deg); }
+  [data-motif='seed-ark'] .piece-2 { width: 1.7rem; height: 2.4rem; border-radius: 50%; }
+  [data-motif='seed-ark'] .piece-3 { left: 60%; top: 35%; width: 2.2rem; height: 2.2rem; border-radius: 50%; }
+  [data-motif='seed-ark'] .piece-4 { top: 70%; width: 5rem; height: 1.2rem; border-width: 0 0 1px; border-radius: 50%; }
+
+  [data-motif='clock-engine'] .motif-field { inset: 8% 31% 18%; border: 2px dotted hsla(var(--vessel-hue), 70%, 74%, 0.2); }
+  [data-motif='clock-engine'] .piece-0 { width: 6.2rem; height: 6.2rem; border: 0.45rem double hsla(var(--piece-hue), 78%, 72%, 0.56); border-radius: 50%; }
+  [data-motif='clock-engine'] .piece-1 { width: 4.6rem; height: 4.6rem; border: 0.3rem dashed hsla(var(--piece-hue), 78%, 72%, 0.56); border-radius: 50%; }
+  [data-motif='clock-engine'] .piece-2 { width: 2.3rem; height: 2.3rem; border: 0.35rem double hsla(var(--piece-hue), 78%, 72%, 0.56); border-radius: 50%; }
+  [data-motif='clock-engine'] .piece-3 { width: 0.35rem; height: 4.7rem; transform: translate(-50%, -50%) rotate(32deg); }
+  [data-motif='clock-engine'] .piece-4 { left: 66%; top: 35%; width: 2rem; height: 2.4rem; border-radius: 0.2rem; }
+
+  [data-motif='spectrum-prism'] .motif-field { inset: 11% 29% 21%; border-radius: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  [data-motif='spectrum-prism'] .piece-0 { width: 7rem; height: 5.8rem; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  [data-motif='spectrum-prism'] .piece-1 { left: 72%; width: 7rem; height: 1.4rem; clip-path: polygon(0 35%, 100% 0, 100% 100%, 0 65%); }
+  [data-motif='spectrum-prism'] .piece-2 { width: 2.1rem; height: 2.1rem; transform: translate(-50%, -50%) rotate(45deg); }
+  [data-motif='spectrum-prism'] .piece-3 { left: 27%; width: 6rem; height: 0.55rem; }
+  [data-motif='spectrum-prism'] .piece-4 { top: 72%; width: 3.4rem; height: 1.1rem; border-radius: 999px; }
+
+  [data-motif='storm-conductor'] .motif-field { inset: 22% 22% 30%; border-radius: 50% 50% 42% 42%; }
+  [data-motif='storm-conductor'] .piece-0 { top: 39%; width: 9rem; height: 3.3rem; border-radius: 55% 55% 38% 38%; }
+  [data-motif='storm-conductor'] .piece-1 { top: 62%; width: 2.5rem; height: 4.6rem; clip-path: polygon(55% 0, 100% 0, 63% 43%, 90% 43%, 20% 100%, 39% 55%, 8% 55%); }
+  [data-motif='storm-conductor'] .piece-2 { left: 31%; top: 62%; width: 4rem; height: 0.5rem; transform: translate(-50%, -50%) rotate(24deg); }
+  [data-motif='storm-conductor'] .piece-3 { left: 69%; top: 62%; width: 4rem; height: 0.5rem; transform: translate(-50%, -50%) rotate(-24deg); }
+  [data-motif='storm-conductor'] .piece-4 { width: 2.1rem; height: 2.1rem; border-radius: 50%; }
+
+  [data-motif='resonant-chamber'] .motif-field { inset: 8% 31% 18%; border: 2px solid hsla(var(--vessel-hue), 70%, 74%, 0.14); }
+  [data-motif='resonant-chamber'] .piece-0 { width: 6.3rem; height: 6.3rem; border: 0.35rem double hsla(var(--piece-hue), 78%, 72%, 0.56); border-radius: 50%; }
+  [data-motif='resonant-chamber'] .piece-1 { width: 11rem; height: 2.3rem; border-width: 1px 0; border-radius: 50%; }
+  [data-motif='resonant-chamber'] .piece-2 { left: 38%; width: 1.6rem; height: 1.6rem; border-radius: 50%; }
+  [data-motif='resonant-chamber'] .piece-3 { left: 62%; width: 1.6rem; height: 1.6rem; border-radius: 50%; }
+  [data-motif='resonant-chamber'] .piece-4 { top: 70%; width: 4rem; height: 1.2rem; border-style: dashed; border-radius: 999px; }
+
+  .blueprint-intro {
+    margin: -0.25rem 0 0.65rem;
+    color: var(--dim);
+    font: italic 0.72rem/1.4 Georgia, serif;
   }
   h2 {
     margin: 0;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 600;
     letter-spacing: 0.22em;
     text-transform: uppercase;
@@ -427,6 +481,25 @@
     padding-top: 0.9rem;
     border-top: 1px solid rgba(170, 220, 255, 0.13);
   }
+  .crossing-gate {
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+    margin-top: 0.9rem;
+    padding: 0.78rem 0.85rem;
+    background: color-mix(in srgb, var(--amber) 6%, transparent);
+    border: 1px dashed color-mix(in srgb, var(--amber) 22%, transparent);
+    border-radius: 10px;
+  }
+  .crossing-gate > span {
+    color: var(--dim);
+    font-size: 0.55rem;
+    font-weight: 750;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .crossing-gate strong { color: var(--gold); font-size: 0.78rem; }
+  .crossing-gate p { margin: 0; color: var(--dim); font-size: 0.68rem; line-height: 1.4; }
   .wayfinder-head {
     display: flex;
     align-items: flex-start;

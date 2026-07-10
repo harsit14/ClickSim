@@ -47,6 +47,7 @@ export interface FutureOmenSeed {
   readonly description: string
   readonly silhouette: string
   readonly motion: MotionGrammar['kind']
+  readonly effects: readonly Effect[]
 }
 
 export interface FutureDoctrineSeed {
@@ -54,6 +55,20 @@ export interface FutureDoctrineSeed {
   readonly description: string
   readonly visualSignature: string
   readonly favoredMotivations: DoctrineDef['favoredMotivations']
+  readonly effects: readonly Effect[]
+}
+
+export interface FutureLumenSeed {
+  readonly awake: string
+  readonly first: string
+  readonly law: string
+  readonly civil: string
+  readonly archive: string
+  readonly omen: string
+  readonly epoch: string
+  readonly cosmic: string
+  readonly question: string
+  readonly beacon: string
 }
 
 export interface FutureStorySeed {
@@ -96,12 +111,19 @@ export interface FutureUniverseSpec {
   }
   readonly visualMaterials: readonly string[]
   readonly primarySilhouettes: readonly string[]
+  readonly economy: {
+    readonly costScales: readonly number[]
+    readonly rateScales: readonly number[]
+    readonly costMultiplier: number
+  }
+  readonly signatureUpgrades: (generators: readonly GeneratorDef[]) => readonly UpgradeDef[]
   readonly kindlings: readonly FutureKindlingSeed[]
   readonly archives: readonly FutureArchiveSeed[]
   readonly shelfNames: readonly [string, string, string]
   readonly shelfRewards: readonly [string, string, string]
   readonly omens: readonly FutureOmenSeed[]
   readonly doctrines: readonly FutureDoctrineSeed[]
+  readonly lumen: FutureLumenSeed
   readonly story: readonly FutureStorySeed[]
   readonly physics: UniverseLawHooks
   readonly trials: readonly {
@@ -109,6 +131,7 @@ export interface FutureUniverseSpec {
     readonly failure: string
     readonly rule: string
     readonly accessibility: string
+    readonly rewardEffects: readonly Effect[]
   }[]
   readonly tempo: number
   readonly meter: string
@@ -162,9 +185,9 @@ function makeGenerator(spec: FutureUniverseSpec, seed: FutureKindlingSeed, index
     id: `${spec.prefix}-kindling-${String(index + 1).padStart(2, '0')}`,
     name: seed.name,
     flavor: seed.flavor,
-    baseCost: BASE_COSTS[index],
-    baseRate: BASE_RATES[index],
-    costMult: 1.15,
+    baseCost: Math.round(BASE_COSTS[index] * spec.economy.costScales[index]),
+    baseRate: BASE_RATES[index] * spec.economy.rateScales[index],
+    costMult: spec.economy.costMultiplier,
     tier: index + 1,
     hue: (spec.palette.accentHue + index * 13) % 360,
   }
@@ -212,6 +235,7 @@ function makeUpgrades(spec: FutureUniverseSpec, generators: readonly GeneratorDe
   law('active-discipline', 'Active Discipline', `A deliberate ${spec.primaryVerb} action carries a share of passive production.`, 8_000, { clicks: 180 }, [{ kind: 'clickMult', value: 2 }, { kind: 'clickShare', value: 0.01 }], '⌁')
   law('archive-accord', `${spec.archiveName} Accord`, 'Recorded phenomena become mechanical evidence rather than decoration.', 2e12, { totalEarned: 1e11 }, [{ kind: 'globalMult', value: 1.25 }], spec.archiveGlyph)
   law('beacon-accord', `${spec.beaconName} Accord`, 'The final Kindling teaches every smaller system how to continue.', 1e20, { gen: generators[16].id, count: 1 }, [{ kind: 'globalMult', value: 2 }], spec.routeGlyph)
+  upgrades.push(...spec.signatureUpgrades(generators))
   return upgrades
 }
 
@@ -222,16 +246,16 @@ function makeStory(spec: FutureUniverseSpec, generators: readonly GeneratorDef[]
 } {
   const owns = (owned: Readonly<Record<string, number>>, id: string, count = 1) => (owned[id] ?? 0) >= count
   const lumen: LumenLine[] = [
-    { id: `${spec.prefix}-lumen-awake`, text: `${spec.heartName} answered. This universe calls the gesture “${spec.primaryVerb}.”`, when: (game) => game.clicks >= 1 },
-    { id: `${spec.prefix}-lumen-first`, text: `${generators[0].name}. Small enough to study; strange enough to deserve care.`, when: (game) => owns(game.owned, generators[0].id) },
-    { id: `${spec.prefix}-lumen-law`, text: spec.physics.spectrum ? 'The bands are not decoration. The recipe changes what the world can do.' : spec.physics.charge ? 'Potential is accumulating. Containment and release are both choices now.' : 'The silence is part of the measure. Nothing is missing from it.', when: (game) => owns(game.owned, generators[3].id) },
-    { id: `${spec.prefix}-lumen-civil`, text: `${generators[7].name} is not just production. It is evidence that someone lived inside this law.`, when: (game) => owns(game.owned, generators[7].id) },
-    { id: `${spec.prefix}-lumen-archive`, text: `${spec.archiveName} is arranging observations into an argument.`, when: (game) => game.curiosities.length >= 1 },
-    { id: `${spec.prefix}-lumen-omen`, text: `${spec.omens[0].name} crossed the Heart without asking permission. At least it disclosed the rules.`, when: (game) => game.starsCaught >= 1 },
-    { id: `${spec.prefix}-lumen-epoch`, text: `${spec.epochName} ended the current form and preserved ${spec.epochMatter}. That distinction matters.`, when: (game) => game.supernovae >= 1 },
-    { id: `${spec.prefix}-lumen-cosmic`, text: `${generators[13].name} changes the horizon. The world is becoming legible at its own scale.`, when: (game) => owns(game.owned, generators[13].id) },
-    { id: `${spec.prefix}-lumen-question`, text: spec.question, when: (game) => gteAmount(game.allTimeEarned, amountFromNumber(1e15)) },
-    { id: `${spec.prefix}-lumen-beacon`, text: `${spec.beaconName} can continue without your hand. It still chooses to answer it.`, when: (game) => owns(game.owned, generators[17].id) },
+    { id: `${spec.prefix}-lumen-awake`, text: spec.lumen.awake, when: (game) => game.clicks >= 1 },
+    { id: `${spec.prefix}-lumen-first`, text: spec.lumen.first, when: (game) => owns(game.owned, generators[0].id) },
+    { id: `${spec.prefix}-lumen-law`, text: spec.lumen.law, when: (game) => owns(game.owned, generators[3].id) },
+    { id: `${spec.prefix}-lumen-civil`, text: spec.lumen.civil, when: (game) => owns(game.owned, generators[7].id) },
+    { id: `${spec.prefix}-lumen-archive`, text: spec.lumen.archive, when: (game) => game.curiosities.length >= 1 },
+    { id: `${spec.prefix}-lumen-omen`, text: spec.lumen.omen, when: (game) => game.starsCaught >= 1 },
+    { id: `${spec.prefix}-lumen-epoch`, text: spec.lumen.epoch, when: (game) => game.supernovae >= 1 },
+    { id: `${spec.prefix}-lumen-cosmic`, text: spec.lumen.cosmic, when: (game) => owns(game.owned, generators[13].id) },
+    { id: `${spec.prefix}-lumen-question`, text: spec.lumen.question, when: (game) => gteAmount(game.allTimeEarned, amountFromNumber(1e15)) },
+    { id: `${spec.prefix}-lumen-beacon`, text: spec.lumen.beacon, when: (game) => owns(game.owned, generators[17].id) },
   ]
   const echoes: EchoDef[] = spec.story.map((entry, index) => ({
     id: `${spec.prefix}-echo-${String(index + 1).padStart(2, '0')}`,
@@ -440,7 +464,7 @@ function makeTrials(spec: FutureUniverseSpec): readonly TrialDef[] {
     historicalFailure: trial.failure,
     rules: { constraint: trial.rule, localLawRequired: true },
     goal: { metricId: 'world-currency-earned', target: `${1 + index}e${7 + index}` as `${number}e${number}`, description: `Earn the declared ${spec.currency} target while respecting ${trial.name}.` },
-    rewardEffects: [],
+    rewardEffects: trial.rewardEffects,
     accessibilityDescription: trial.accessibility,
   }))
 }
@@ -459,7 +483,7 @@ function makeV2Supplement(
     name: omen.name,
     description: omen.description,
     spawn: { mode: index === 3 ? 'state-triggered' as const : 'random' as const, baseChance: index === 3 ? undefined : 0.035 - index * 0.005, pityThreshold: 18 + index * 4, oddsVisibleAfterDiscovery: true },
-    rewards: [{ id: `${spec.prefix}-omen-reward-${index + 1}`, description: omen.description, exclusivePermanentPower: false as const, effects: [] }],
+    rewards: [{ id: `${spec.prefix}-omen-reward-${index + 1}`, description: omen.description, exclusivePermanentPower: false as const, effects: omen.effects }],
     object: omenObjects[index],
     accessibilityLabel: `${omen.name} available. ${omen.description}`,
   })) as unknown as AtLeastFour<OmenDef>
@@ -515,7 +539,7 @@ function makeV2Supplement(
     },
     economy: {
       currency: { id: `${spec.prefix}-currency`, canonicalName: 'World Currency', localName: spec.currency, singular: spec.currency, plural: spec.currency, glyph: spec.currencyGlyph, material: spec.currencyMaterial, scope: 'world' },
-      doctrines: spec.doctrines.map((doctrine, index) => ({ id: `${spec.prefix}-doctrine-${index + 1}`, ...doctrine, effects: [] })) as unknown as FourTuple<DoctrineDef>,
+      doctrines: spec.doctrines.map((doctrine, index) => ({ id: `${spec.prefix}-doctrine-${index + 1}`, ...doctrine })) as unknown as FourTuple<DoctrineDef>,
       localPrestige: {
         id: `${spec.prefix}-epoch`,
         canonicalName: 'Epoch Turn',
@@ -603,6 +627,12 @@ export function createFutureUniversePack(spec: FutureUniverseSpec): {
   if (spec.omens.length < 4) throw new TypeError(`${spec.id} requires at least four Omens.`)
   if (spec.doctrines.length !== 4) throw new TypeError(`${spec.id} requires exactly four doctrines.`)
   if (spec.story.length !== 10) throw new TypeError(`${spec.id} requires exactly ten core Echoes.`)
+  if (spec.economy.costScales.length !== 18 || spec.economy.rateScales.length !== 18) {
+    throw new TypeError(`${spec.id} requires eighteen authored cost and rate scales.`)
+  }
+  if (!Number.isFinite(spec.economy.costMultiplier) || spec.economy.costMultiplier <= 1) {
+    throw new TypeError(`${spec.id} requires a finite generator cost multiplier above one.`)
+  }
   const generators = spec.kindlings.map((seed, index) => makeGenerator(spec, seed, index))
   const upgrades = makeUpgrades(spec, generators)
   const { cabinet, items } = makeCabinet(spec)

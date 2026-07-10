@@ -1,5 +1,6 @@
 import { GAME_VERSION } from '../content/credits'
 import { universeById } from '../content/universes'
+import { vesselPartIdsFor } from '../content/vessel'
 import { game, passiveRatePerSec } from '../engine/game.svelte'
 import { CURRENT_SAVE_VERSION } from './save-data'
 import { renderHealth } from './render-health.svelte'
@@ -45,7 +46,8 @@ export function createDiagnosticReport(now = Date.now()) {
       supernovae: game.supernovae,
       deepCollapses: game.collapses,
       trials: game.challengesDone.length,
-      vesselParts: game.vesselParts.length,
+      vesselParts: vesselPartIdsFor(game).length,
+      completedLocalVessels: Object.values(game.vesselPartsByUniverse).filter((parts) => parts.length >= 5).length,
       beacons: game.beacons.length,
     },
   }

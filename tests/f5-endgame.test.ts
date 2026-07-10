@@ -30,7 +30,7 @@ import { WAYFINDER_NODES } from '../src/content/wayfinder'
 import { createDevScenario } from '../src/core/dev-scenarios'
 import {
   migrateAndSanitizeSave,
-  serializeSaveDataV22,
+  serializeSaveDataV23,
 } from '../src/core/save-data'
 import {
   buildLawInteractionMatrix,
@@ -113,7 +113,7 @@ test('Garden requires seven Beacons and exposes reconciliation only after all an
   assert.ok(gardenCredits('continue').at(-1)?.includes('permanent continuation'))
 })
 
-test('v22 save migration preserves F5 records and strips forged progression metadata', () => {
+test('v23 save migration preserves F5 records and strips forged progression metadata', () => {
   const scenario = createDevScenario('garden', 50_000)
   assert.ok(scenario)
   const route = generateAtlasRoute(5021, 'canticle')
@@ -125,7 +125,7 @@ test('v22 save migration preserves F5 records and strips forged progression meta
     vestmentId: THEMES[0].id, anomalyResponseIds: [], automation: 'idle' as const,
   }
   const enriched = {
-    ...serializeSaveDataV22(scenario),
+    ...serializeSaveDataV23(scenario),
     endgame: {
       ...scenario.endgame,
       beaconNames: { canticle: 'The Answering Rest', exploit: 'bad' },

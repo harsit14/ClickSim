@@ -15,6 +15,7 @@ import {
   planManifestLayout,
   resolveManifestVisualState,
 } from '../src/render/manifest-layout'
+import { rectsIntersect } from '../src/render/hud-clearance'
 import type {
   ManifestLayoutInput,
   ManifestRenderPlan,
@@ -155,6 +156,7 @@ test('dense desktop and mobile fixtures stay deterministic, bounded, and Heart-c
     assert.deepEqual(first, second)
     assert.deepEqual(first.diagnostics, [])
     assert.deepEqual(auditManifestRenderPlan(first), [])
+    assert.ok(first.objects.every((entry) => !rectsIntersect(entry.rect, first.hudClearance)))
     assert.ok(first.objects.length > 0)
     assert.equal(first.objects.filter((entry) => entry.role === 'primary').length, 1)
     assert.ok(first.objects.filter((entry) => entry.role === 'secondary').length <= 3)
@@ -221,6 +223,27 @@ test('layout audit detects Heart obstruction and viewport overflow in machine fi
   const codes = new Set(auditManifestRenderPlan(corrupted).map((entry) => entry.code))
   assert.ok(codes.has('heart-obstruction'))
   assert.ok(codes.has('viewport-overflow'))
+})
+
+test('layout audit reports objects forced into the reserved run-status area', () => {
+  const plan = planManifestLayout(input(denseObjects().slice(0, 12), { width: 1280, height: 720 }))
+  assert.ok(plan.objects.length > 0)
+  const corrupted: ManifestRenderPlan = {
+    ...plan,
+    objects: [{
+      ...plan.objects[0],
+      rect: {
+        x: plan.hudClearance.x + 8,
+        y: plan.hudClearance.y + 8,
+        width: 24,
+        height: 24,
+      },
+    }],
+    hidden: [],
+    diagnostics: [],
+  }
+
+  assert.ok(auditManifestRenderPlan(corrupted).some(({ code }) => code === 'hud-obstruction'))
 })
 
 test('Heart clearance is measured outward from the hit-target boundary', () => {

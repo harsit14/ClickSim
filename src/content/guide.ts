@@ -274,22 +274,22 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     id: 'multiverse',
     nav: 'The Vessel',
     eyebrow: 'prestige layer three',
-    title: 'The Vessel, Beacons, and the Dark Between',
-    summary: 'The Vessel turns an ending into a departure, allowing completed universes to illuminate and strengthen one another.',
+    title: 'Local Vessels, Beacons, and the Dark Between',
+    summary: 'Each universe turns its own mastered laws into a crossing vessel before its Beacon can open the next route.',
     keywords: ['vessel', 'multiverse', 'crossing', 'beacon', 'dark between', 'wayfinder', 'route', 'parts'],
     blocks: [
       {
-        heading: 'Building the Vessel',
+        heading: 'Building each universe’s Vessel',
         paragraphs: [
-          'The Vessel appears after sufficiently vast progress. Its five parts ask for mastery of different systems rather than one additional currency wall. Completed parts remain recorded while you finish the others.',
-          'One part consumes one hundred tier-ten generators when assembled. The interface states the sacrifice using the active universe’s material: Suns in Emberlight or Drowned Beacons in Tidefall. The final Archive part requires choosing an answer to The Question.',
+          'The Vessel appears after sufficiently vast progress. Every universe owns a different five-part design tied to its local physics: Tidefall seals a pressure ark, Verdance grows a Seed Ark from aged cohorts, Prismata routes every band, Tempest proves a chosen discharge can end, and Canticle composes a chamber with deliberate rests.',
+          'Vessel completion is local to the active universe. Parts built in Emberlight remain recorded there, but they do not activate Tidefall’s Ark or any later crossing craft. Requirements, consumed materials, construction actions, and the visible schematic all change with the world.',
         ],
       },
       {
         heading: 'Crossings and Beacons',
         paragraphs: [
-          'A completed Vessel can follow an unlocked route. Crossing parks the current universe, restores the destination if previously visited, and begins a first visit from that universe’s own opening state.',
-          'Reaching the destination’s Beacon requirement lights that universe across the multiverse. Beacons multiply production globally and award Dark Between, which is spent on permanent Wayfinder laws.',
+          'Only the active universe’s completed Vessel can open the Wayfinder. Crossing parks the current universe, restores the destination if previously visited, and seals the Wayfinder again until that destination builds and activates its own Vessel.',
+          'After the local Vessel is active, reaching the world’s Beacon requirement can light that universe across the multiverse and unlock the next route. Beacons multiply production globally and award Dark Between, which is spent on permanent Wayfinder laws.',
         ],
       },
     ],

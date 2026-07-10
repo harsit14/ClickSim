@@ -13,6 +13,7 @@
 
   const pack = $derived(universeById(game.activeUniverse))
   const tidefall = $derived(pack.id === 'tidefall')
+  const verdance = $derived(pack.id === 'verdance')
   const resonances = $derived(
     pack.upgrades.flatMap((upgrade): Resonance[] =>
       upgrade.effects
@@ -21,6 +22,7 @@
     ),
   )
   const ownedCount = $derived(resonances.filter(({ upgrade }) => game.upgrades.includes(upgrade.id)).length)
+  const availableCount = $derived(resonances.filter((resonance) => state(resonance) === 'available').length)
   const resonanceScale = $derived(synergyBonusMult(game))
 
   function position(id: string): { x: number; y: number } {
@@ -40,18 +42,29 @@
     if (!game.upgrades.includes(resonance.upgrade.id)) return 1
     return 1 + resonance.effect.value * (game.owned[resonance.effect.per] ?? 0) * resonanceScale
   }
+
+  function formatMultiplier(value: number): string {
+    if (value >= 1_000) return format(value)
+    return value
+      .toFixed(value < 10 ? 2 : 1)
+      .replace(/\.0+$|(?<=\.[0-9])0$/, '')
+  }
 </script>
 
-<section class="atlas" class:tidefall aria-labelledby="resonance-title">
+<section class="atlas" class:tidefall class:verdance aria-labelledby="resonance-title">
   <header>
     <div>
-      <span>{tidefall ? 'the current beneath every current' : 'the economy beneath the economy'}</span>
-      <h3 id="resonance-title">{tidefall ? 'Current Atlas' : 'Resonance Atlas'}</h3>
+      <span>{tidefall ? 'the current beneath every current' : verdance ? 'the roots beneath every root' : 'the economy beneath the economy'}</span>
+      <h3 id="resonance-title">{tidefall ? 'Current Atlas' : verdance ? 'Rhizome Atlas' : 'Resonance Atlas'}</h3>
     </div>
-    <strong>{ownedCount}/{resonances.length} links awake</strong>
+    <strong>
+      {ownedCount}/{resonances.length} links awake
+      {#if availableCount > 0}<small>{availableCount} ready to awaken</small>{/if}
+    </strong>
   </header>
   <p>
-    {tidefall ? 'No current travels alone. Each sounding makes one source stronger for every glow feeding it upstream.' : 'Kindlings do not work alone. Each line makes one source stronger for every unit owned at its other end.'}
+    {tidefall ? 'No current travels alone. Each sounding makes one source stronger for every glow feeding it upstream.' : verdance ? 'No grove grows alone. Each graft makes one Kindling stronger for every living unit at its other end.' : 'Kindlings do not work alone. Each line makes one source stronger for every unit owned at its other end.'}
+    <b> Ownership reveals a link; buying its upgrade awakens it.</b>
     {#if resonanceScale > 1}<b> Small Vessels doubles every live resonance.</b>{/if}
   </p>
 
@@ -99,7 +112,7 @@
         <em>{resonance.upgrade.flavor}</em>
         <span class="formula">+{(resonance.effect.value * 100).toFixed(1)}% per {source.name}</span>
         {#if status === 'owned'}
-          <span class="live">×{format(liveMultiplier(resonance))} now · {game.owned[source.id] ?? 0} feeding</span>
+          <span class="live">×{formatMultiplier(liveMultiplier(resonance))} now · {game.owned[source.id] ?? 0} feeding</span>
         {:else if status === 'available'}
           <span class="price">discovered · {pack.currencyGlyph} {format(resonance.upgrade.cost)}</span>
         {:else}
@@ -140,7 +153,9 @@
     font-size: 0.7rem;
     color: #bfeaff;
     font-variant-numeric: tabular-nums;
+    text-align: right;
   }
+  header strong small { display: block; margin-top: 0.16rem; color: #7797a7; font-size: 0.56rem; font-weight: 550; }
   p {
     margin: 0.55rem 0 0.7rem;
     font-family: Georgia, serif;
@@ -201,6 +216,21 @@
   .tidefall .legend .owned::before { border-color: #8dfff0; }
   .tidefall article.owned { border-color: rgba(88, 222, 216, 0.28); background: rgba(42, 160, 163, 0.045); }
   .tidefall .live { color: #b9fff2; }
+  .atlas.verdance { border-color: rgba(117, 201, 137, 0.24); background: radial-gradient(ellipse at 50% 0%, rgba(88, 174, 104, 0.11), transparent 46%), rgba(4, 15, 9, 0.58); }
+  .verdance header span { color: rgba(171, 218, 151, 0.68); }
+  .verdance h3, .verdance header strong { color: #d5ef9b; }
+  .verdance header strong small { color: rgba(171, 218, 151, 0.7); }
+  .verdance p { color: #a9c8ad; }
+  .verdance .chart { background: radial-gradient(ellipse at 50% 50%, rgba(83, 165, 94, 0.1), transparent 62%), rgba(2, 10, 6, 0.64); }
+  .verdance .guide { stroke: rgba(117, 201, 137, 0.06); }
+  .verdance .link.available { stroke: rgba(143, 224, 147, 0.56); }
+  .verdance .link.owned { stroke: #d5ef9b; filter: drop-shadow(0 0 4px rgba(173, 231, 123, 0.7)); }
+  .verdance .legend .owned::before { border-color: #d5ef9b; }
+  .verdance .legend .available::before { border-color: rgba(143, 224, 147, 0.72); }
+  .verdance article.owned { border-color: rgba(188, 229, 133, 0.3); background: rgba(110, 174, 83, 0.055); }
+  .verdance article.available { border-color: rgba(117, 201, 137, 0.24); }
+  .verdance .formula { color: #a9dca9; }
+  .verdance .live { color: #d5ef9b; }
   @media (max-width: 620px) {
     .links { grid-template-columns: 1fr; }
     header { align-items: start; }

@@ -4,12 +4,20 @@ import type {
   ResetCategory,
   ResetComparison,
   RecoveryEstimateInputs,
+  ResetScope,
 } from './reset-comparison'
+
+export interface ResetComparisonScopeGroup {
+  readonly scope: ResetScope
+  readonly labelKey: string
+  readonly items: readonly ResetCategory[]
+}
 
 export interface ResetComparisonSection {
   readonly id: 'lost' | 'temporarily-replaced' | 'retained' | 'parked'
   readonly labelKey: string
   readonly items: readonly ResetCategory[]
+  readonly groups: readonly ResetComparisonScopeGroup[]
 }
 
 export interface ResetRecoveryUiModel {
@@ -29,6 +37,23 @@ export interface ResetComparisonCardModel {
 
 export type ResetCardAction = 'confirm' | 'cancel'
 
+const SCOPE_ORDER: readonly ResetScope[] = ['world', 'epoch', 'deep-history', 'between', 'external']
+
+function groupByScope(items: readonly ResetCategory[]): readonly ResetComparisonScopeGroup[] {
+  return SCOPE_ORDER.flatMap((scope) => {
+    const scoped = items.filter((item) => item.scope === scope)
+    return scoped.length > 0 ? [{ scope, labelKey: `reset.scope.${scope}`, items: scoped }] : []
+  })
+}
+
+function section(
+  id: ResetComparisonSection['id'],
+  labelKey: string,
+  items: readonly ResetCategory[],
+): ResetComparisonSection {
+  return { id, labelKey, items, groups: groupByScope(items) }
+}
+
 export interface ResetCardDecision {
   readonly action: ResetCardAction
   readonly boundary: ResetComparison['boundary']
@@ -45,14 +70,14 @@ export function buildResetComparisonCardModel(
     resultKey: comparison.resultKey,
     requiresExplicitConfirmation: comparison.requiresExplicitConfirmation,
     sections: [
-      { id: 'lost', labelKey: 'reset.section.lost', items: comparison.lost },
-      {
-        id: 'temporarily-replaced',
-        labelKey: 'reset.section.temporarily-replaced',
-        items: comparison.temporarilyReplaced,
-      },
-      { id: 'retained', labelKey: 'reset.section.retained', items: comparison.retained },
-      { id: 'parked', labelKey: 'reset.section.parked', items: comparison.parked },
+      section('lost', 'reset.section.lost', comparison.lost),
+      section(
+        'temporarily-replaced',
+        'reset.section.temporarily-replaced',
+        comparison.temporarilyReplaced,
+      ),
+      section('retained', 'reset.section.retained', comparison.retained),
+      section('parked', 'reset.section.parked', comparison.parked),
     ],
     recovery: comparison.recovery,
   }

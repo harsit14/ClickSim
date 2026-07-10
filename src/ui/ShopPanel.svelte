@@ -150,7 +150,10 @@
         >
           <span class="dot" style:--hue={g.hue}></span>
           <span class="info">
-            <span class="name">{g.name}{#if p.count > 1}&nbsp;<small>×{p.count}</small>{/if}</span>
+            <span class="name">
+              <span class="name-label">{g.name}</span>
+              {#if p.count > 1}<small>×{p.count}</small>{/if}
+            </span>
             <span class="meta">{pack.currencyGlyph} {format(p.cost)} · +{format(unitRate(game, g))}/s</span>
             {#if cohort && owned > 0}
               <span class="cohort">{cohort.stageLabel} · ×{cohort.multiplier.toFixed(2)} · {cohortTiming(cohort)}</span>
@@ -162,7 +165,7 @@
       {#if teased}
         <div class="row teased">
           <span class="dot mystery"></span>
-          <span class="info"><span class="name">???</span></span>
+          <span class="info"><span class="name"><span class="name-label">???</span></span></span>
         </div>
       {/if}
     </div>
@@ -313,13 +316,22 @@
     flex: 1;
   }
   .name {
+    display: flex;
+    align-items: baseline;
+    gap: 0.28rem;
+    min-width: 0;
     font-size: 0.92rem;
     font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.12;
+  }
+  .name-label {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
   .name small {
+    flex: none;
+    white-space: nowrap;
     color: var(--amber);
     font-weight: 700;
   }

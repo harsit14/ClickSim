@@ -11,6 +11,16 @@ import {
 } from '../core/preferences'
 import { reportRenderHealth } from '../core/render-health.svelte'
 import {
+  circleIntersectsHudClearance,
+  rectIntersectsHudClearance,
+} from './hud-clearance'
+import {
+  HEART_GROWTH_RADIUS_CAP,
+  heartBaseRadius,
+  pointInsideHeartTarget,
+  heartTargetCenter,
+} from './heart-target'
+import {
   ONE_AMOUNT,
   addAmounts,
   amountFromNumber,
@@ -113,7 +123,7 @@ export class World {
   }
 
   get center() {
-    return { x: this.width / 2, y: this.height * 0.48 }
+    return heartTargetCenter({ width: this.width, height: this.height })
   }
 
   private currentRenderProfile(): RenderProfile {
@@ -194,7 +204,9 @@ export class World {
   /** Current visual radius of the ember core; grows with everything ever earned. */
   emberRadius(now: number): number {
     const growth = Math.pow(amountLog10(addAmounts(ONE_AMOUNT, game.totalEarned)), 1.2) * 6
-    const base = 24 + Math.min(growth, 70)
+    // Start large enough to read as the primary action, then preserve a bounded
+    // progression swell without letting late-game Hearts consume the stage.
+    const base = heartBaseRadius(this.width, this.height) + Math.min(growth, HEART_GROWTH_RADIUS_CAP)
     const motion = this.motionScale()
     const breath = 1 + (0.028 * Math.sin(now / 900) + 0.012 * Math.sin(now / 233)) * motion
     const squash = 1 + this.pulse * 0.16 * motion
@@ -203,9 +215,11 @@ export class World {
   }
 
   isOnEmber(x: number, y: number, now: number): boolean {
-    const c = this.center
-    const r = this.emberRadius(now) * 1.6
-    return (x - c.x) ** 2 + (y - c.y) ** 2 <= r * r
+    return pointInsideHeartTarget(
+      { x, y },
+      this.center,
+      this.emberRadius(now),
+    )
   }
 
   clickPulse() {
@@ -377,13 +391,20 @@ export class World {
       // low tiers settle near the ground, middle tiers hang mid-void, stars fill the sky
       const [yMin, yMax] = tier <= 6 ? [0.62, 0.95] : tier <= 12 ? [0.3, 0.58] : [0.04, 0.26]
       while (list.length < want) {
-        list.push({
+        const glimmer = {
           x: 0.05 + rand() * 0.9,
           y: yMin + rand() * (yMax - yMin),
           size: 1 + rand() * 2 + tier * 0.12,
           hue,
           phase: rand() * Math.PI * 2,
-        })
+        }
+        if (circleIntersectsHudClearance(
+          glimmer.x * this.width,
+          glimmer.y * this.height,
+          glimmer.size + 4,
+          { width: this.width, height: this.height },
+        )) continue
+        list.push(glimmer)
       }
     }
     return list.slice(0, want)
@@ -1031,6 +1052,12 @@ export class World {
       for (const gl of this.glimmersFor(g.id, owned, g.hue, g.tier)) {
         const tw = reduced ? 0.72 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now / 700 + gl.phase))
         const size = gl.size * ownedScale * tierScale
+        if (circleIntersectsHudClearance(
+          gl.x * width,
+          gl.y * height,
+          size + 2,
+          { width, height },
+        )) continue
         ctx.beginPath()
         ctx.fillStyle = `hsla(${gl.hue}, 90%, 70%, ${0.22 * tw * collapseFade})`
         ctx.arc(gl.x * width, gl.y * height, size * tw + 0.4, 0, Math.PI * 2)
@@ -1168,6 +1195,7 @@ export class World {
     // sparks
     for (const p of this.particles) {
       const fade = 1 - p.life / p.maxLife
+      if (circleIntersectsHudClearance(p.x, p.y, p.size + 2, { width, height })) continue
       ctx.beginPath()
       ctx.fillStyle = `hsla(${p.hue}, 100%, ${p.light}%, ${fade})`
       ctx.arc(p.x, p.y, p.size * fade + 0.3, 0, Math.PI * 2)
@@ -1181,6 +1209,12 @@ export class World {
     for (const f of this.floats) {
       const age = f.life / f.maxLife
       const fade = age < 0.62 ? 1 : 1 - (age - 0.62) / 0.38
+      if (rectIntersectsHudClearance({
+        x: f.x - 4.5 * f.text.length,
+        y: f.y - 20,
+        width: Math.max(28, 9 * f.text.length),
+        height: 26,
+      }, { width, height })) continue
       ctx.lineWidth = 4
       ctx.strokeStyle = `rgba(4, 5, 12, ${fade * 0.85})`
       ctx.strokeText(f.text, f.x, f.y)

@@ -35,8 +35,8 @@
   let {
     onclose,
     averagedRhythm = false,
-    goalLensEnabled = true,
-    promptsEnabled = true,
+    goalLensEnabled = false,
+    promptsEnabled = false,
     onaveragedrhythmchange,
     ongoallenschange,
     onpromptschange,
@@ -260,7 +260,7 @@
       onclick={() => ongoallenschange?.(!goalLensEnabled)}
     >
       <span><i></i><strong>Goal Lens</strong></span>
-      <small>Shows optional next-useful, next-discovery, and pinned recommendations.</small>
+      <small>Opt in to next-useful, next-discovery, and pinned recommendations.</small>
     </button>
 
     <button
@@ -270,7 +270,7 @@
       onclick={() => onpromptschange?.(!promptsEnabled)}
     >
       <span><i></i><strong>Contextual prompts</strong></span>
-      <small>Shows at most one dismissible first-use explanation.</small>
+      <small>Opt in to dismissible first-use explanations. These never appear automatically.</small>
     </button>
   </section>
 
