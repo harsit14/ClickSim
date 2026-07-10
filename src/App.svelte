@@ -340,6 +340,7 @@
     <ManifestWorldLayer
       pack={activeV2Pack}
       owned={game.owned}
+      archiveItems={activePack.cabinet.items}
       unlockedArchiveIds={game.curiosities}
       litBeaconUniverseIds={game.beacons}
       onarchiveopen={toggleCuriosities}

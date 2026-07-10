@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
+import { V2_UNIVERSE_BY_ID, universeById } from '../src/content/universes'
 import { EMBERLIGHT_V2 } from '../src/content/universes/emberlight-v2'
 import { TIDEFALL_V2_PACK } from '../src/content/universes/tidefall-v2'
 import type { UniversePackV2 } from '../src/content/universes/types'
@@ -7,6 +9,7 @@ import {
   ARCHIVE_LANDMARK_SLOTS,
   planArchiveLandmarks,
 } from '../src/render/archive-landmarks'
+import { archiveLandmarkDescriptorsFor } from '../src/render/archive-landmark-registry'
 import type {
   ArchiveLandmarkPresentationDescriptor,
 } from '../src/render/archive-landmarks'
@@ -60,24 +63,19 @@ test('Emberlight archive landmarks preserve record meaning, identity, themed cop
   )
 
   assert.equal(plan.universeId, 'emberlight')
-  assert.equal(plan.attentionLimit, 3)
-  assert.equal(plan.visibleInteractiveCount, 3)
-  assert.equal(plan.landmarks.length, 3)
-  assert.equal(plan.hidden.length, 1)
-  assert.deepEqual(plan.hidden[0], {
-    id: `archive-record:${recordIds[3]}`,
-    recordIds: [recordIds[3]],
-    reason: 'attention-budget',
-  })
-  assert.equal(new Set(plan.landmarks.map(({ slot }) => slot.id)).size, 3)
+  assert.equal(plan.attentionLimit, 12)
+  assert.equal(plan.visibleInteractiveCount, 4)
+  assert.equal(plan.landmarks.length, 4)
+  assert.equal(plan.hidden.length, 0)
+  assert.equal(new Set(plan.landmarks.map(({ slot }) => slot.id)).size, 4)
 
   for (const landmark of plan.landmarks) {
     assert.equal(landmark.interactive, true)
     assert.equal(landmark.grouped, false)
     assert.ok(ARCHIVE_LANDMARK_SLOTS.includes(landmark.slot))
     assert.deepEqual(landmark.slot.avoids, ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui'])
-    assert.ok(landmark.slot.x >= 0.24 && landmark.slot.x <= 0.76)
-    assert.ok(landmark.slot.y >= 0.24 && landmark.slot.y <= 0.73)
+    assert.ok(landmark.slot.x >= 0.31 && landmark.slot.x <= 0.69)
+    assert.ok(landmark.slot.y >= 0.34 && landmark.slot.y <= 0.70)
     const requiredHeartClearance = Math.max(...landmark.recordIds.map((recordId) => {
       const record = EMBERLIGHT_V2.archive.records.find(({ id }) => id === recordId)
       assert.ok(record)
@@ -87,13 +85,7 @@ test('Emberlight archive landmarks preserve record meaning, identity, themed cop
     assert.match(landmark.hoverDescription, /Emberlight field trace/)
     assert.match(landmark.accessibleDescription, /Astral Cabinet landmark/)
   }
-  for (const recordId of recordIds.slice(0, 3)) assertSemanticIdentity(EMBERLIGHT_V2, recordId, plan)
-
-  const zoneCounts = new Map<'near' | 'far', number>()
-  for (const { slot } of plan.landmarks) zoneCounts.set(slot.screenZone, (zoneCounts.get(slot.screenZone) ?? 0) + 1)
-  for (const zone of ['near', 'far'] as const) {
-    assert.ok((zoneCounts.get(zone) ?? 0) <= EMBERLIGHT_V2.visual.zones[zone].maximumInteractiveObjects)
-  }
+  for (const recordId of recordIds) assertSemanticIdentity(EMBERLIGHT_V2, recordId, plan)
 })
 
 test('Tidefall archive landmarks use Pelagic presentation descriptors without Emberlight assumptions', () => {
@@ -133,7 +125,7 @@ test('selection, diagnostics, and placement are invariant to unlocked-ID and des
   assert.deepEqual(reversed, forward)
 })
 
-test('standard mode caps individual landmarks while fallback modes group authored shelves', () => {
+test('all modes preserve every individual record while changing only fallback rendering', () => {
   const recordIds = EMBERLIGHT_V2.archive.records.slice(0, 8).map(({ id }) => id)
   const descriptors = descriptorsFor(
     EMBERLIGHT_V2,
@@ -144,12 +136,12 @@ test('standard mode caps individual landmarks while fallback modes group authore
   const reduced = planArchiveLandmarks(EMBERLIGHT_V2, recordIds, descriptors, 'reduced-motion')
   const low = planArchiveLandmarks(EMBERLIGHT_V2, recordIds, descriptors, 'low-quality')
 
-  assert.equal(standard.landmarks.length, 3)
-  assert.equal(standard.hidden.length, 5)
+  assert.equal(standard.landmarks.length, 8)
+  assert.equal(standard.hidden.length, 0)
   assert.ok(standard.landmarks.every(({ grouped }) => !grouped))
-  assert.equal(reduced.landmarks.length, 2)
+  assert.equal(reduced.landmarks.length, 8)
   assert.equal(reduced.hidden.length, 0)
-  assert.ok(reduced.landmarks.every(({ grouped, records }) => grouped && records.length === 4))
+  assert.ok(reduced.landmarks.every(({ grouped, records }) => !grouped && records.length === 1))
   assert.deepEqual(
     reduced.landmarks.map(({ id, recordIds: ids, slot }) => ({ id, ids, slot: slot.id })),
     low.landmarks.map(({ id, recordIds: ids, slot }) => ({ id, ids, slot: slot.id })),
@@ -158,6 +150,33 @@ test('standard mode caps individual landmarks while fallback modes group authore
     reduced.landmarks.flatMap(({ recordIds: ids }) => ids).sort(),
     [...recordIds].sort(),
   )
+})
+
+test('all seven completed Archives render all twelve records with the collection-card art contract', () => {
+  const cabinetSource = readFileSync('src/ui/CuriosityCabinet.svelte', 'utf8')
+  const worldSource = readFileSync('src/ui/ManifestWorldLayer.svelte', 'utf8')
+  assert.match(cabinetSource, /ArchiveRecordArt/)
+  assert.match(worldSource, /ArchiveRecordArt/)
+
+  for (const [universeId, pack] of V2_UNIVERSE_BY_ID) {
+    const recordIds = pack.archive.records.map(({ id }) => id)
+    const cabinetIds = universeById(universeId).cabinet.items.map(({ id }) => id)
+    assert.deepEqual(cabinetIds, recordIds, `${universeId} Cabinet and Archive identities drifted`)
+
+    for (const mode of ['standard', 'reduced-motion', 'low-quality'] as const) {
+      const plan = planArchiveLandmarks(
+        pack,
+        recordIds,
+        archiveLandmarkDescriptorsFor(universeId),
+        mode,
+      )
+      assert.equal(plan.landmarks.length, 12, `${universeId}/${mode} hid records`)
+      assert.equal(plan.visibleInteractiveCount, 12)
+      assert.equal(plan.hidden.length, 0)
+      assert.equal(new Set(plan.landmarks.map(({ slot }) => slot.id)).size, 12)
+      assert.deepEqual(plan.landmarks.flatMap(({ recordIds: ids }) => ids).sort(), [...recordIds].sort())
+    }
+  }
 })
 
 test('unknown and missing IDs are stable diagnostics and never become landmarks', () => {

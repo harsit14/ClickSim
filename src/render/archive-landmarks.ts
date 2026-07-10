@@ -8,10 +8,18 @@ import type {
 export type ArchiveLandmarkMode = 'standard' | 'reduced-motion' | 'low-quality'
 
 export type ArchiveLandmarkSlotId =
-  | 'far-upper-left'
-  | 'far-upper-right'
-  | 'near-lower-left'
-  | 'near-lower-right'
+  | 'left-outer-upper'
+  | 'left-outer-middle'
+  | 'left-outer-lower'
+  | 'left-inner-upper'
+  | 'left-inner-middle'
+  | 'left-inner-lower'
+  | 'right-inner-upper'
+  | 'right-inner-middle'
+  | 'right-inner-lower'
+  | 'right-outer-upper'
+  | 'right-outer-middle'
+  | 'right-outer-lower'
 
 export interface ArchiveLandmarkSlot {
   readonly id: ArchiveLandmarkSlotId
@@ -25,43 +33,29 @@ export interface ArchiveLandmarkSlot {
   readonly avoids: readonly ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui']
 }
 
-/**
- * Four authored placement slots outside the central Heart target and common desktop UI
- * rails. A plan uses at most three of them so an archive reveal never fills the stage.
- */
+/** Twelve compact desktop slots form two record rails around the Heart. */
 export const ARCHIVE_LANDMARK_SLOTS: readonly ArchiveLandmarkSlot[] = [
-  {
-    id: 'far-upper-left',
-    screenZone: 'far',
-    x: 0.26,
-    y: 0.24,
+  ...([
+    ['left-outer-upper', 'far', 0.31, 0.34],
+    ['left-inner-upper', 'near', 0.36, 0.34],
+    ['right-inner-upper', 'near', 0.64, 0.34],
+    ['right-outer-upper', 'far', 0.69, 0.34],
+    ['left-outer-middle', 'far', 0.31, 0.52],
+    ['left-inner-middle', 'near', 0.36, 0.52],
+    ['right-inner-middle', 'near', 0.64, 0.52],
+    ['right-outer-middle', 'far', 0.69, 0.52],
+    ['left-outer-lower', 'far', 0.31, 0.70],
+    ['left-inner-lower', 'near', 0.36, 0.70],
+    ['right-inner-lower', 'near', 0.64, 0.70],
+    ['right-outer-lower', 'far', 0.69, 0.70],
+  ] as const).map(([id, screenZone, x, y]) => ({
+    id,
+    screenZone,
+    x,
+    y,
     heartClearanceRadii: 1.75,
-    avoids: ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui'],
-  },
-  {
-    id: 'far-upper-right',
-    screenZone: 'far',
-    x: 0.74,
-    y: 0.24,
-    heartClearanceRadii: 1.75,
-    avoids: ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui'],
-  },
-  {
-    id: 'near-lower-left',
-    screenZone: 'near',
-    x: 0.26,
-    y: 0.73,
-    heartClearanceRadii: 1.75,
-    avoids: ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui'],
-  },
-  {
-    id: 'near-lower-right',
-    screenZone: 'near',
-    x: 0.74,
-    y: 0.73,
-    heartClearanceRadii: 1.75,
-    avoids: ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui'],
-  },
+    avoids: ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui'] as const,
+  })),
 ]
 
 export interface ArchiveLandmarkPresentationDescriptor {
@@ -72,10 +66,7 @@ export interface ArchiveLandmarkPresentationDescriptor {
   readonly hoverTheme: string
   /** Universe-authored prefix for screen-reader copy. */
   readonly accessibleTheme: string
-  /**
-   * Records with one fallback group ID collapse into one landmark in reduced-motion
-   * and low-quality modes. Standard mode always presents records individually.
-   */
+  /** Records keep their shelf relationship without collapsing their visible identity. */
   readonly fallbackGroupId: string
   readonly fallbackGroupLabel: string
 }
@@ -225,62 +216,25 @@ function recordPresentation(
   }
 }
 
-function candidateUnits(candidates: readonly Candidate[], mode: ArchiveLandmarkMode): CandidateUnit[] {
-  if (mode === 'standard') {
-    return candidates.map((candidate) => ({
-      id: `archive-record:${candidate.record.id}`,
-      label: candidate.record.name,
-      priority: candidate.descriptor.priority,
-      candidates: [candidate],
-    }))
-  }
-
-  const groups = new Map<string, Candidate[]>()
-  for (const candidate of candidates) {
-    const group = groups.get(candidate.descriptor.fallbackGroupId) ?? []
-    group.push(candidate)
-    groups.set(candidate.descriptor.fallbackGroupId, group)
-  }
-
-  return [...groups.entries()].map(([groupId, members]) => {
-    members.sort(compareCandidates)
-    const label = members[0].descriptor.fallbackGroupLabel
-    if (members.some(({ descriptor }) => descriptor.fallbackGroupLabel !== label)) {
-      throw new TypeError(`Fallback group ${groupId} has conflicting labels.`)
-    }
-    return {
-      id: `archive-group:${groupId}`,
-      label,
-      priority: members[0].descriptor.priority,
-      candidates: members,
-    }
-  })
-}
-
-function stableHash(value: string): number {
-  let hash = 2_166_136_261
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index)
-    hash = Math.imul(hash, 16_777_619)
-  }
-  return hash >>> 0
+function candidateUnits(candidates: readonly Candidate[]): CandidateUnit[] {
+  return candidates.map((candidate) => ({
+    id: `archive-record:${candidate.record.id}`,
+    label: candidate.record.name,
+    priority: candidate.descriptor.priority,
+    candidates: [candidate],
+  }))
 }
 
 function slotFor(
   unit: CandidateUnit,
-  pack: UniversePackV2,
   usedSlotIds: ReadonlySet<ArchiveLandmarkSlotId>,
-  zoneCounts: ReadonlyMap<'near' | 'far', number>,
 ): ArchiveLandmarkSlot | null {
   const maximumRequiredClearance = Math.max(
     ...unit.candidates.map(({ record }) => record.object.minimumHeartDistance),
   )
-  const offset = stableHash(unit.id) % ARCHIVE_LANDMARK_SLOTS.length
-  for (let step = 0; step < ARCHIVE_LANDMARK_SLOTS.length; step += 1) {
-    const slot = ARCHIVE_LANDMARK_SLOTS[(offset + step) % ARCHIVE_LANDMARK_SLOTS.length]
+  for (const slot of ARCHIVE_LANDMARK_SLOTS) {
     if (usedSlotIds.has(slot.id)) continue
     if (slot.heartClearanceRadii < maximumRequiredClearance) continue
-    if ((zoneCounts.get(slot.screenZone) ?? 0) >= pack.visual.zones[slot.screenZone].maximumInteractiveObjects) continue
     return slot
   }
   return null
@@ -311,15 +265,11 @@ export function planArchiveLandmarks(
     return record && descriptor ? [{ record, descriptor }] : []
   }).sort(compareCandidates)
 
-  const units = candidateUnits(candidates, mode).sort((left, right) => (
+  const units = candidateUnits(candidates).sort((left, right) => (
     right.priority - left.priority || compareText(left.id, right.id)
   ))
-  const attentionLimit = Math.min(
-    3,
-    Math.max(0, Math.floor(pack.visual.attentionBudget.secondaryInteractiveObjects)),
-  )
+  const attentionLimit = ARCHIVE_LANDMARK_SLOTS.length
   const usedSlotIds = new Set<ArchiveLandmarkSlotId>()
-  const zoneCounts = new Map<'near' | 'far', number>()
   const landmarks: VisibleArchiveLandmark[] = []
   const hidden: HiddenArchiveLandmark[] = []
 
@@ -329,7 +279,7 @@ export function planArchiveLandmarks(
       hidden.push({ id: unit.id, recordIds, reason: 'attention-budget' })
       continue
     }
-    const slot = slotFor(unit, pack, usedSlotIds, zoneCounts)
+    const slot = slotFor(unit, usedSlotIds)
     if (!slot) {
       hidden.push({ id: unit.id, recordIds, reason: 'placement-budget' })
       continue
@@ -337,7 +287,6 @@ export function planArchiveLandmarks(
     const records = unit.candidates.map((candidate) => recordPresentation(candidate, mode))
     const representative = records[0]
     usedSlotIds.add(slot.id)
-    zoneCounts.set(slot.screenZone, (zoneCounts.get(slot.screenZone) ?? 0) + 1)
     landmarks.push({
       id: unit.id,
       interactive: true,

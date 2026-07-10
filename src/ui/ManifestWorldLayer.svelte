@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import type { UniversePackV2, WorldObjectManifest } from '../content/universes'
+  import type { CuriosityDef } from '../content/curiosities'
   import {
     planManifestLayout,
     type ManifestObjectRenderPlan,
@@ -10,20 +11,20 @@
   import {
     planArchiveLandmarks,
     type ArchiveLandmarkMode,
-    type VisibleArchiveLandmark,
   } from '../render/archive-landmarks'
   import { archiveLandmarkDescriptorsFor } from '../render/archive-landmark-registry'
-  import { heartPresentationStateKey, type PresentationState } from '../render/presentation-contract'
+  import { heartPresentationStateKey } from '../render/presentation-contract'
   import {
     presentationWorldStateAt,
     universePresentationById,
   } from '../render/presentation-registry'
-  import PresentationShape from './PresentationShape.svelte'
+  import ArchiveRecordArt from './ArchiveRecordArt.svelte'
 
   interface Props {
     pack: UniversePackV2
     owned: Readonly<Record<string, number>>
     preferences: ManifestRenderPreferences
+    archiveItems?: readonly CuriosityDef[]
     unlockedArchiveIds?: readonly string[]
     litBeaconUniverseIds?: readonly string[]
     activeOmenIds?: readonly string[]
@@ -52,6 +53,7 @@
     pack,
     owned,
     preferences,
+    archiveItems = [],
     unlockedArchiveIds = [],
     litBeaconUniverseIds = [],
     activeOmenIds = [],
@@ -99,6 +101,7 @@
     preferences.reducedMotion ? 'reduced-motion' : preferences.quality === 'low' ? 'low-quality' : 'standard',
   )
   const archiveRecordById = $derived(new Map(pack.archive.records.map((record) => [record.id, record])))
+  const archiveItemById = $derived(new Map(archiveItems.map((item) => [item.id, item])))
   const archiveLandmarkPlan = $derived(planArchiveLandmarks(
     pack,
     unlockedArchiveIds,
@@ -125,13 +128,6 @@
     if (sourceKind === 'omen') return 'Omen active'
     if (sourceKind === 'story') return 'World landmark formed'
     return countLabel(count)
-  }
-
-  function landmarkState(landmark: VisibleArchiveLandmark): PresentationState | null {
-    const record = archiveRecordById.get(landmark.representativeRecordId)
-    const descriptor = record ? presentation?.objects[record.object.id] : null
-    if (!descriptor) return null
-    return descriptor.states[archiveMode === 'standard' ? 'base' : archiveMode]
   }
 
   onMount(() => {
@@ -261,8 +257,8 @@
     >
       {#each archiveLandmarkPlan.landmarks as landmark (landmark.id)}
         {@const record = archiveRecordById.get(landmark.representativeRecordId)}
-        {@const state = landmarkState(landmark)}
-        {#if record && state}
+        {@const item = archiveItemById.get(landmark.representativeRecordId)}
+        {#if record}
           <button
             type="button"
             class="archive-landmark"
@@ -274,7 +270,11 @@
             onclick={onarchiveopen}
           >
             <span class="archive-sigil" aria-hidden="true">
-              <PresentationShape {state} palette={presentation.palette} />
+              <ArchiveRecordArt
+                id={record.id}
+                hue={item?.hue ?? (landmark.priority * 31) % 360}
+                universeId={pack.id}
+              />
             </span>
             <span class="archive-hint" role="tooltip">
               <small>{pack.archive.localName}</small>
@@ -636,8 +636,8 @@
     position: absolute;
     left: var(--landmark-x);
     top: var(--landmark-y);
-    width: 4.6rem;
-    height: 4.6rem;
+    width: 3.15rem;
+    height: 3.15rem;
     padding: 0;
     color: var(--gold);
     background: transparent;
@@ -660,59 +660,10 @@
   }
   .archive-sigil {
     position: absolute;
-    inset: 0.25rem;
-    display: block;
+    inset: 0;
+    display: grid;
+    place-items: center;
     border-radius: 50%;
-  }
-  .verdance .archive-sigil {
-    overflow: hidden;
-    border-radius: 72% 28% 72% 28%;
-    transform: rotate(-18deg);
-  }
-  .verdance .archive-landmark:nth-child(2) .archive-sigil { transform: rotate(12deg); }
-  .verdance .archive-landmark:nth-child(3) .archive-sigil { transform: rotate(-34deg); }
-  .emberlight .archive-sigil::before,
-  .tidefall .archive-sigil::before,
-  .verdance .archive-sigil::before,
-  .clockwork .archive-sigil::before {
-    content: '';
-    position: absolute;
-    pointer-events: none;
-  }
-  .prismata .archive-sigil::before,
-  .tempest .archive-sigil::before,
-  .canticle .archive-sigil::before {
-    content: '';
-    position: absolute;
-    inset: 0.08rem;
-    pointer-events: none;
-  }
-  .prismata .archive-sigil::before { border: 1px solid color-mix(in srgb, var(--gold) 36%, transparent); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
-  .tempest .archive-sigil::before { border-top: 1px solid color-mix(in srgb, var(--gold) 44%, transparent); border-left: 1px solid color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 50%; transform: rotate(-24deg); }
-  .canticle .archive-sigil::before { border: 1px dashed color-mix(in srgb, var(--gold) 34%, transparent); border-radius: 50%; transform: scaleX(1.28); }
-  .emberlight .archive-sigil::before {
-    inset: -0.12rem;
-    border-top: 1px solid color-mix(in srgb, var(--gold) 52%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--gold) 16%, transparent);
-    border-radius: 50%;
-    transform: rotate(-18deg);
-  }
-  .tidefall .archive-sigil::before {
-    inset: 0.15rem -0.4rem;
-    border-top: 1px solid color-mix(in srgb, var(--gold) 42%, transparent);
-    border-radius: 50%;
-  }
-  .verdance .archive-sigil::before {
-    inset: 0.1rem;
-    border-left: 1px solid color-mix(in srgb, var(--gold) 48%, transparent);
-    border-radius: 65% 35% 65% 35%;
-    transform: rotate(38deg);
-  }
-  .clockwork .archive-sigil::before {
-    inset: -0.08rem;
-    border: 1px dashed color-mix(in srgb, var(--gold) 38%, transparent);
-    border-radius: 50%;
-    transform: rotate(8deg);
   }
   .archive-hint {
     position: absolute;
