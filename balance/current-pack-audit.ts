@@ -35,7 +35,7 @@ export interface CurrentPackAuditEvent {
 
 export interface CurrentPackAuditResult {
   readonly source: 'current-engine-compute-v13'
-  readonly universeId: 'emberlight' | 'tidefall'
+  readonly universeId: UniverseId
   readonly profileId: SimulatorProfile['id']
   readonly horizonMs: number
   readonly events: readonly CurrentPackAuditEvent[]
@@ -108,7 +108,7 @@ export function generatorPurchaseIncomeDelta(
 
 /** Migrated legacy curve audit: actual packs, costs, upgrades, and compute pipeline. */
 export function runCurrentPackAudit(
-  universeId: 'emberlight' | 'tidefall',
+  universeId: UniverseId,
   profile: SimulatorProfile,
   horizonHours = AUDIT_HORIZON_HOURS,
 ): CurrentPackAuditResult {
@@ -222,7 +222,7 @@ export function runCurrentPackAudit(
 export function runAllCurrentPackAudits(): readonly CurrentPackAuditResult[] {
   const legacyProfiles = SIMULATOR_PROFILES.filter((profile) =>
     profile.id === 'casual-one-click-per-second' || profile.id === 'active-six-clicks-per-second')
-  return (['emberlight', 'tidefall'] as const).flatMap((universeId) =>
+  return (['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle'] as const).flatMap((universeId) =>
     legacyProfiles.map((profile) => runCurrentPackAudit(universeId, profile)),
   )
 }

@@ -68,11 +68,35 @@ const CLOCKWORK_ARCHIVE_LANDMARKS = descriptors(
   ],
 )
 
+const PRISMATA_ARCHIVE_LANDMARKS = descriptors(
+  Array.from({ length: 12 }, (_value, index) => `u5-archive-${String(index + 1).padStart(2, '0')}`),
+  'Spectrum Vault optic',
+  'Visible Spectrum Vault landmark',
+  [['prismata-separation', 'Separation optical array'], ['prismata-transmission', 'Transmission lens array'], ['prismata-reunion', 'Reunion synthesis array']],
+)
+
+const TEMPEST_ARCHIVE_LANDMARKS = descriptors(
+  Array.from({ length: 12 }, (_value, index) => `u6-archive-${String(index + 1).padStart(2, '0')}`),
+  'Storm Almanac instrument',
+  'Visible Storm Almanac landmark',
+  [['tempest-formation', 'Formation weather station'], ['tempest-discharge', 'Discharge path station'], ['tempest-aftermath', 'Aftermath fulgurite field']],
+)
+
+const CANTICLE_ARCHIVE_LANDMARKS = descriptors(
+  Array.from({ length: 12 }, (_value, index) => `u7-archive-${String(index + 1).padStart(2, '0')}`),
+  'Resonant Memory instrument',
+  'Visible Resonant Memory landmark',
+  [['canticle-voice', 'Voice chamber'], ['canticle-memory', 'Memory chamber'], ['canticle-relationship', 'Relationship chamber']],
+)
+
 const ARCHIVE_LANDMARKS_BY_UNIVERSE: Readonly<Record<string, readonly ArchiveLandmarkPresentationDescriptor[]>> = {
   emberlight: EMBERLIGHT_ARCHIVE_LANDMARKS,
   tidefall: TIDEFALL_ARCHIVE_LANDMARKS,
   verdance: VERDANCE_ARCHIVE_LANDMARKS,
   clockwork: CLOCKWORK_ARCHIVE_LANDMARKS,
+  prismata: PRISMATA_ARCHIVE_LANDMARKS,
+  tempest: TEMPEST_ARCHIVE_LANDMARKS,
+  canticle: CANTICLE_ARCHIVE_LANDMARKS,
 }
 
 /** Explicit authored registry; missing worlds fail closed instead of borrowing another universe's language. */

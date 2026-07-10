@@ -13,6 +13,13 @@ import {
   verdanceCohortRuntimeSummary,
 } from '../content/universes/verdance/runtime'
 import {
+  advanceF4LawState,
+  dischargeTempest,
+  selectCanticleMeasure,
+  selectPrismataRecipe,
+  selectTempestPath,
+} from '../content/universes/f4-runtime'
+import {
   DEEP_WORK_BY_ID,
   STARDUST_WORK_BY_ID,
   singularityYieldMult,
@@ -456,6 +463,9 @@ export function universeRouteUnlocked(id: string): boolean {
   if (id === 'tidefall') return game.beacons.includes(DEFAULT_UNIVERSE_ID)
   if (id === 'verdance') return game.beacons.includes('tidefall')
   if (id === 'clockwork') return game.beacons.includes('verdance')
+  if (id === 'prismata') return game.beacons.includes('clockwork')
+  if (id === 'tempest') return game.beacons.includes('prismata')
+  if (id === 'canticle') return game.beacons.includes('tempest')
   return false
 }
 
@@ -679,11 +689,13 @@ export function buyCuriosity(id: string): boolean {
 }
 
 export function protostarFueled(now = Date.now()): boolean {
-  return hasCuriosity('hearthkeeper') && game.keeperFedUntil > now
+  const fuelItem = universeById(game.activeUniverse).cabinet.items.find(({ kind }) => kind === 'hearthkeeper')
+  return !!fuelItem && hasCuriosity(fuelItem.id) && game.keeperFedUntil > now
 }
 
 export function fuelProtostar(): boolean {
-  if (game.challenge || !hasCuriosity('hearthkeeper')) return false
+  const fuelItem = universeById(game.activeUniverse).cabinet.items.find(({ kind }) => kind === 'hearthkeeper')
+  if (game.challenge || !fuelItem || !hasCuriosity(fuelItem.id)) return false
   const cost = protostarFuelCost(passiveRatePerSec())
   if (!gteAmount(game.light, cost)) return false
   game.light = subtractAmounts(game.light, cost)
@@ -832,8 +844,25 @@ export function tick(dtSeconds: number) {
       dtSeconds * 1_000,
     )
   }
+  advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, dtSeconds)
   const rate = passiveRatePerSec()
   if (!isZeroAmount(rate)) earn(multiplyAmountByNumber(rate, dtSeconds))
+}
+
+/** Free, local reconfiguration for the active F4 world law. */
+export function configureUniverseLaw(index: number): boolean {
+  if (game.challenge) return false
+  if (game.activeUniverse === 'prismata') return selectPrismataRecipe(game.numericLawState, index)
+  if (game.activeUniverse === 'tempest') return selectTempestPath(game.numericLawState, index)
+  if (game.activeUniverse === 'canticle') return selectCanticleMeasure(game.numericLawState, index)
+  return false
+}
+
+/** Executes an active law action; currently Tempest owns the deliberate discharge verb. */
+export function activateUniverseLaw(): boolean {
+  return game.challenge === null && game.activeUniverse === 'tempest'
+    ? dischargeTempest(game.numericLawState)
+    : false
 }
 
 export function wipe() {

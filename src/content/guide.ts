@@ -125,7 +125,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     eyebrow: 'different laws, different senses',
     title: 'Universe identities and physics',
     summary: 'A crossing changes far more than color: economy names, living physics, music, clicks, events, collections, lore, and world rendering all belong to the destination.',
-    keywords: ['universe', 'emberlight', 'tidefall', 'physics', 'tide', 'music', 'crossing', 'world'],
+    keywords: ['universe', 'emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle', 'physics', 'tide', 'cohort', 'spectrum', 'charge', 'measure', 'music', 'crossing', 'world'],
     blocks: [
       {
         heading: 'Emberlight',
@@ -138,6 +138,14 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         paragraphs: [
           'Tidefall is a moonless cosmic ocean. Production rises and falls from ×0.60 to ×1.40 over a ninety-second tide, and the HUD reports whether the tide is rising, high, falling, or low. Buying during a low tide is often efficient; evaluating production during a high tide reveals the run’s peak.',
           'Its music slows to a submerged 60 BPM pulse, clicks sound like pressure-drops, wandering blessings rise as bubbles, and the Pelagic Archive replaces Emberlight’s astronomical cabinet. The Steady Keel Wayfinder law makes the swing gentler without changing its average.',
+        ],
+      },
+      {
+        heading: 'The five farther worlds',
+        paragraphs: [
+          'Verdance ages each Kindling through new, rooted, mature, and ancient growth; old cohorts produce more and contribute Memory Seeds during Pruning. Clockwork removes random economics and asks you to inspect deterministic transmission routes and scheduled Maintenance Signals.',
+          'Prismata freely switches between Coherence, White Synthesis, Fluorescence, and Diffraction recipes. Tempest fills a bounded potential meter, then releases it through a chosen Conductor, Supercell, Jetstream, or Stormchaser path. Canticle arranges production into a visible repeating measure where pulses, drones, counterpoint, echoes, and strategic rests all have mechanical roles.',
+          'Every timing or color state has text and shape equivalents. Canticle remains mechanically complete when muted, and Prismata labels bands by geometry and pattern as well as hue.',
         ],
       },
       {

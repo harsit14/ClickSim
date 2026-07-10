@@ -93,7 +93,7 @@
     if (!fuelProtostar()) return
     playBuy()
     save()
-    pushToast(`${cabinet.itemById.get('hearthkeeper')?.name ?? 'Nursery'} sustained`, `Core stable for ${cabinet.fuelHours} hours.`, cabinet.title)
+    pushToast(`${cabinet.items.find(({ kind }) => kind === 'hearthkeeper')?.name ?? 'Nursery'} sustained`, `Core stable for ${cabinet.fuelHours} hours.`, cabinet.title)
   }
 
   function tryCollectComet() {

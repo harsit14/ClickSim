@@ -7,7 +7,7 @@ import {
   type SaveDataV13,
 } from './save-data'
 
-export type DevScenario = 'midgame' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'verdance' | 'clockwork' | 'markets'
+export type DevScenario = 'midgame' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'verdance' | 'clockwork' | 'prismata' | 'tempest' | 'canticle' | 'markets'
 
 const GENERATORS = [
   'spark',
@@ -79,7 +79,7 @@ function emptyScenario(now: number): SaveDataV12 {
 
 /** Deterministic, dev-only states used for manual and browser regression passes. */
 export function createDevScenario(name: string | null, now = Date.now()): SaveDataV13 | null {
-  if (!['midgame', 'endgame', 'question', 'crossing', 'tidefall', 'verdance', 'clockwork', 'markets'].includes(name ?? '')) return null
+  if (!['midgame', 'endgame', 'question', 'crossing', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle', 'markets'].includes(name ?? '')) return null
   const base = emptyScenario(now)
 
   if (name === 'midgame') {
@@ -151,18 +151,18 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
     })
   }
 
-  if (name === 'verdance' || name === 'clockwork') {
+  if (name === 'verdance' || name === 'clockwork' || name === 'prismata' || name === 'tempest' || name === 'canticle') {
     const pack = universeById(name)
-    const priorBeacons = name === 'verdance'
-      ? ['emberlight', 'tidefall']
-      : ['emberlight', 'tidefall', 'verdance']
+    const route = ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']
+    const priorBeacons = route.slice(0, route.indexOf(name))
+    const runCurrency = route.indexOf(name) >= 4 ? 1e24 : 1e18
     return migrateAndSanitizeSave({
       ...base,
       activeUniverse: name,
-      light: 1e16,
-      totalEarned: 1e18,
+      light: runCurrency / 100,
+      totalEarned: runCurrency,
       allTimeEarned: 1e40,
-      eraEarned: 1e18,
+      eraEarned: runCurrency,
       clicks: 12_000,
       owned: Object.fromEntries(pack.generators.slice(0, 13).map((generator, index) => [
         generator.id,

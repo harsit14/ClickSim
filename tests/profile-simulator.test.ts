@@ -68,12 +68,14 @@ test('all 168 profile projections are deterministic, valid, and finite for five 
   assert.deepEqual(simulateProfileCase(cases[37]), simulateProfileCase(cases[37]))
 })
 
-test('profile fixtures label real-pack projections and synthetic future contracts explicitly', () => {
+test('profile fixtures label all seven integrated packs as current projections', () => {
   assert.equal(universeSimulationFixture('emberlight').source, 'current-pack-profile-projection')
   assert.equal(universeSimulationFixture('tidefall').source, 'current-pack-profile-projection')
   assert.equal(universeSimulationFixture('verdance').source, 'current-pack-profile-projection')
   assert.equal(universeSimulationFixture('clockwork').source, 'current-pack-profile-projection')
-  assert.equal(universeSimulationFixture('canticle').source, 'future-contract-fixture')
+  assert.equal(universeSimulationFixture('prismata').source, 'current-pack-profile-projection')
+  assert.equal(universeSimulationFixture('tempest').source, 'current-pack-profile-projection')
+  assert.equal(universeSimulationFixture('canticle').source, 'current-pack-profile-projection')
 })
 
 test('Beacon revisit and accessibility profile behavior match the recorded inputs', () => {

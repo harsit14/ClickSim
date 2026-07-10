@@ -25,6 +25,24 @@
   const localPrestige = $derived(universeV2ById(game.activeUniverse)?.economy.localPrestige)
   const rewardGlyph = $derived(localPrestige?.rewardCurrency.glyph ?? '✧')
   const rewardName = $derived(localPrestige?.rewardCurrency.localName ?? 'Stardust')
+  const aftermathText = $derived(
+    game.activeUniverse === 'tidefall' ? 'the tide returned as memory'
+      : game.activeUniverse === 'verdance' ? 'the released growth became inheritance'
+        : game.activeUniverse === 'clockwork' ? 'one perfected interval remained'
+          : game.activeUniverse === 'prismata' ? 'the spectrum crystallized without losing its names'
+            : game.activeUniverse === 'tempest' ? 'the chosen path remained in glass'
+              : game.activeUniverse === 'canticle' ? 'the final relationship remained as an overtone'
+                : 'the dark kept nothing',
+  )
+  const beginText = $derived(
+    game.activeUniverse === 'tidefall' ? 'begin at low tide'
+      : game.activeUniverse === 'verdance' ? 'plant the next season'
+        : game.activeUniverse === 'clockwork' ? 'wind the next interval'
+          : game.activeUniverse === 'prismata' ? 'focus the next spectrum'
+            : game.activeUniverse === 'tempest' ? 'form the next storm'
+              : game.activeUniverse === 'canticle' ? 'begin the next measure'
+                : 'begin again',
+  )
 
   $effect(() => {
     if (phase !== 'after') return
@@ -45,7 +63,7 @@
     worldRef()?.beginCollapse()
     const timers = [
       setTimeout(() => (phase = 'void'), 3_000),
-      setTimeout(() => playSupernova(tidefall ? 'tidefall' : 'emberlight'), 3_400),
+      setTimeout(() => playSupernova(game.activeUniverse as Parameters<typeof playSupernova>[0]), 3_400),
       setTimeout(() => {
         gained = doReset()
         worldRef()?.endCollapse()
@@ -61,6 +79,7 @@
   bind:this={scene}
   class="scene {phase}"
   class:tidefall
+  data-universe={game.activeUniverse}
   role="dialog"
   aria-modal="true"
   aria-label={ritualName}
@@ -81,9 +100,9 @@
         >{rewardGlyph}</span>
       {/each}
       <div class="result">
-        <p class="whisper">{tidefall ? 'the tide returned as memory' : 'the dark kept nothing'}</p>
+        <p class="whisper">{aftermathText}</p>
         <p class="dust">{rewardGlyph} {format(gained)} {rewardName}</p>
-        <button bind:this={againButton} class="again" onclick={onfinished}>{tidefall ? 'begin at low tide' : 'begin again'}</button>
+        <button bind:this={againButton} class="again" onclick={onfinished}>{beginText}</button>
       </div>
     </div>
   {/if}
@@ -109,7 +128,7 @@
   .flash {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 48%, #fff8e8, #ffe1ad 35%, rgba(255, 190, 120, 0.6) 60%, transparent 85%);
+    background: radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--gold) 90%, white), var(--gold) 35%, color-mix(in srgb, var(--amber) 62%, transparent) 60%, transparent 85%);
     opacity: 0;
     pointer-events: none;
   }

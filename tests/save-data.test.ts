@@ -200,17 +200,28 @@ test('crossing and Tidefall scenarios expose the multiverse layer safely', () =>
   assert.deepEqual(tidefall.echoes, ['tide-moon-ledger'])
 })
 
-test('Verdance and Clockwork scenarios preserve their local content', () => {
+test('F3 and F4 scenarios preserve every universe-local content namespace', () => {
   const verdance = createDevScenario('verdance', 10_000)
   const clockwork = createDevScenario('clockwork', 10_000)
-  assert.ok(verdance)
-  assert.ok(clockwork)
+  const prismata = createDevScenario('prismata', 10_000)
+  const tempest = createDevScenario('tempest', 10_000)
+  const canticle = createDevScenario('canticle', 10_000)
+  assert.ok(verdance && clockwork && prismata && tempest && canticle)
   assert.equal(verdance.activeUniverse, 'verdance')
   assert.equal(clockwork.activeUniverse, 'clockwork')
   assert.ok(Object.keys(verdance.owned).every((id) => id.startsWith('u3-')))
   assert.ok(Object.keys(clockwork.owned).every((id) => id.startsWith('u4-')))
   assert.ok(verdance.curiosities.length >= 3)
   assert.ok(clockwork.curiosities.length >= 3)
+  assert.equal(prismata.activeUniverse, 'prismata')
+  assert.equal(tempest.activeUniverse, 'tempest')
+  assert.equal(canticle.activeUniverse, 'canticle')
+  assert.ok(Object.keys(prismata.owned).every((id) => id.startsWith('u5-')))
+  assert.ok(Object.keys(tempest.owned).every((id) => id.startsWith('u6-')))
+  assert.ok(Object.keys(canticle.owned).every((id) => id.startsWith('u7-')))
+  assert.deepEqual(prismata.beacons, ['emberlight', 'tidefall', 'verdance', 'clockwork'])
+  assert.deepEqual(tempest.beacons, ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata'])
+  assert.deepEqual(canticle.beacons, ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest'])
 })
 
 test('markets scenario exposes both completed repeatable economies', () => {

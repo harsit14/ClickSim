@@ -73,7 +73,7 @@
       ? subtractAmounts(afterRate, beforeRate)
       : ZERO_AMOUNT
     const announcement = v2Pack.accessibility.announcements.find(
-      ({ messageKey }) => messageKey === 'emberlight.announcement.purchase',
+      ({ messageKey }) => messageKey.endsWith('.announcement.purchase'),
     )
     const [event] = aggregatePurchaseFeedback({
       eventId: `${v2Pack.id}-purchase-${g.id}-${Math.floor(occurredAtMs)}`,

@@ -29,7 +29,7 @@ if (process.argv.includes('--json')) {
     `config: numeric=${suite.config.numericContract} rng=${suite.config.rngAlgorithm} horizon=${suite.config.horizonMs}ms step=${suite.config.stepMs}ms`,
   )
 
-  for (const universeId of ['emberlight', 'tidefall'] as const) {
+  for (const universeId of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle'] as const) {
     const fixture = universeSimulationFixture(universeId)
     console.log(`\n${universeId} (${fixture.source}, base ${fixture.basePassiveRate}/s)`)
     const cases = suite.cases.filter((result) =>

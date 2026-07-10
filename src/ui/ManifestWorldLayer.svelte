@@ -149,6 +149,9 @@
   class:tidefall={pack.id === 'tidefall'}
   class:verdance={pack.id === 'verdance'}
   class:clockwork={pack.id === 'clockwork'}
+  class:prismata={pack.id === 'prismata'}
+  class:tempest={pack.id === 'tempest'}
+  class:canticle={pack.id === 'canticle'}
   class:motion-paused={preferences.reducedMotion}
   aria-label={`${pack.identity.shortName} authored world`}
   data-universe-v2={pack.id}
@@ -208,6 +211,27 @@
         <div class="clockwork-gear gear-secondary"></div>
         <div class="clockwork-chapter-ring"></div>
         <div class="clockwork-power-train"><i></i><i></i><i></i><i></i><i></i></div>
+      {:else if pack.id === 'prismata'}
+        <div class="prismata-bench"></div>
+        <div class="prismata-lens lens-near"></div>
+        <div class="prismata-lens lens-far"></div>
+        <div class="prismata-spectrum"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="prismata-caustic"></div>
+      {:else if pack.id === 'tempest'}
+        <div class="tempest-depth"></div>
+        <div class="tempest-cell cell-left"></div>
+        <div class="tempest-cell cell-right"></div>
+        <div class="tempest-front"></div>
+        <div class="tempest-leader"></div>
+        <div class="tempest-magnetosphere"></div>
+      {:else if pack.id === 'canticle'}
+        <div class="canticle-chamber"></div>
+        <div class="canticle-node node-one"></div>
+        <div class="canticle-node node-two"></div>
+        <div class="canticle-node node-three"></div>
+        <div class="canticle-wave wave-one"></div>
+        <div class="canticle-wave wave-two"></div>
+        <div class="canticle-rest"></div>
       {/if}
     </div>
 
@@ -304,6 +328,60 @@
     position: absolute;
     inset: 0;
   }
+
+  /* Prismata: a functional optical bench whose component paths remain separate. */
+  .prismata-bench {
+    position: absolute;
+    left: 9%; right: 9%; top: 53%; height: 1px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 30%, transparent) 8% 92%, transparent);
+    box-shadow: 0 0 2.2rem color-mix(in srgb, var(--amber) 8%, transparent);
+  }
+  .prismata-lens {
+    position: absolute; top: 53%; width: 7.5rem; height: 18rem;
+    border: 1px solid color-mix(in srgb, var(--gold) 32%, transparent);
+    border-radius: 50%;
+    background: radial-gradient(ellipse, color-mix(in srgb, var(--amber) 8%, transparent), transparent 68%);
+    transform: translateY(-50%);
+  }
+  .lens-near { left: 29%; transform: translateY(-50%) rotate(-7deg); }
+  .lens-far { right: 29%; transform: translateY(-50%) rotate(7deg); }
+  .prismata-spectrum { position: absolute; inset: 0; }
+  .prismata-spectrum i {
+    position: absolute; left: 8%; right: 8%; top: calc(45% + var(--offset, 0) * 3.2%); height: 1px;
+    background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--gold) 32%, transparent) 0 6px, transparent 6px 10px);
+    transform: rotate(calc((var(--offset, 0) - 2.5) * 1.2deg));
+    opacity: calc(0.25 + var(--offset, 0) * 0.055);
+  }
+  .prismata-spectrum i:nth-child(1) { --offset: 0; }
+  .prismata-spectrum i:nth-child(2) { --offset: 1; }
+  .prismata-spectrum i:nth-child(3) { --offset: 2; }
+  .prismata-spectrum i:nth-child(4) { --offset: 3; }
+  .prismata-spectrum i:nth-child(5) { --offset: 4; }
+  .prismata-spectrum i:nth-child(6) { --offset: 5; }
+  .prismata-caustic {
+    position: absolute; left: 50%; top: 53%; width: min(30vw, 26rem); aspect-ratio: 2.4;
+    transform: translate(-50%, -50%); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    background: radial-gradient(ellipse, color-mix(in srgb, var(--gold) 13%, transparent), transparent 68%);
+    border: 1px solid color-mix(in srgb, var(--gold) 20%, transparent);
+  }
+
+  /* Tempest: bounded cells, a declared leader, and a legible pressure horizon. */
+  .tempest-depth { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 52%, color-mix(in srgb, var(--amber) 9%, transparent), transparent 36%), linear-gradient(180deg, color-mix(in srgb, var(--gold) 3%, transparent), transparent 40% 72%, color-mix(in srgb, var(--panel) 24%, transparent)); }
+  .tempest-cell { position: absolute; top: 38%; width: 28%; height: 30%; border: 1px solid color-mix(in srgb, var(--gold) 16%, transparent); border-radius: 50%; background: radial-gradient(ellipse, color-mix(in srgb, var(--amber) 9%, transparent), transparent 68%); filter: blur(0.2px); }
+  .cell-left { left: 12%; transform: rotate(-8deg); }
+  .cell-right { right: 12%; transform: rotate(9deg); }
+  .tempest-front { position: absolute; left: -4%; right: -4%; top: 66%; height: 18%; border-top: 1px solid color-mix(in srgb, var(--gold) 26%, transparent); border-radius: 50%; transform: rotate(-1deg); }
+  .tempest-leader { position: absolute; left: 50%; top: 24%; width: 1px; height: 56%; background: color-mix(in srgb, var(--gold) 42%, transparent); clip-path: polygon(0 0, 100% 0, 100% 34%, 0 48%, 100% 62%, 0 78%, 100% 100%, 0 100%); box-shadow: -3rem 5rem 0 color-mix(in srgb, var(--amber) 18%, transparent), 3.4rem 8rem 0 color-mix(in srgb, var(--amber) 16%, transparent); }
+  .tempest-magnetosphere { position: absolute; left: 50%; top: 53%; width: min(72vw, 66rem); aspect-ratio: 2.6; transform: translate(-50%, -50%); border: 1px solid color-mix(in srgb, var(--gold) 16%, transparent); border-left-color: transparent; border-radius: 50%; }
+
+  /* Canticle: two waveform voices share architecture and leave one visible rest. */
+  .canticle-chamber { position: absolute; left: 10%; right: 10%; top: 28%; bottom: 16%; border: 1px solid color-mix(in srgb, var(--gold) 14%, transparent); border-radius: 50% 50% 14% 14%; background: repeating-radial-gradient(ellipse at 50% 52%, transparent 0 8%, color-mix(in srgb, var(--amber) 5%, transparent) 8.2% 8.5%, transparent 8.7% 16%); }
+  .canticle-node { position: absolute; top: 53%; width: 0.72rem; aspect-ratio: 1; border: 1px solid color-mix(in srgb, var(--gold) 48%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--bg) 82%, transparent); box-shadow: 0 0 1.2rem color-mix(in srgb, var(--amber) 26%, transparent); }
+  .node-one { left: 24%; } .node-two { left: 50%; transform: translateX(-50%); } .node-three { right: 24%; }
+  .canticle-wave { position: absolute; left: 12%; right: 12%; top: 49%; height: 8%; border-top: 1px solid color-mix(in srgb, var(--gold) 34%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--amber) 12%, transparent); border-radius: 50%; }
+  .wave-one { transform: rotate(3deg); }
+  .wave-two { transform: rotate(-3deg) translateY(2.6rem); opacity: 0.6; }
+  .canticle-rest { position: absolute; left: 50%; top: 53%; width: min(14vw, 10rem); height: 5.4rem; transform: translate(-50%, -50%); border: 1px dashed color-mix(in srgb, var(--gold) 24%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--bg) 42%, transparent); }
 
   /* Clockwork: one inspectable civic transmission centered on the Heart. */
   .clockwork-depth {
@@ -601,6 +679,17 @@
     position: absolute;
     pointer-events: none;
   }
+  .prismata .archive-sigil::before,
+  .tempest .archive-sigil::before,
+  .canticle .archive-sigil::before {
+    content: '';
+    position: absolute;
+    inset: 0.08rem;
+    pointer-events: none;
+  }
+  .prismata .archive-sigil::before { border: 1px solid color-mix(in srgb, var(--gold) 36%, transparent); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+  .tempest .archive-sigil::before { border-top: 1px solid color-mix(in srgb, var(--gold) 44%, transparent); border-left: 1px solid color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 50%; transform: rotate(-24deg); }
+  .canticle .archive-sigil::before { border: 1px dashed color-mix(in srgb, var(--gold) 34%, transparent); border-radius: 50%; transform: scaleX(1.28); }
   .emberlight .archive-sigil::before {
     inset: -0.12rem;
     border-top: 1px solid color-mix(in srgb, var(--gold) 52%, transparent);

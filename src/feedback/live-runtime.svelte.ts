@@ -62,6 +62,7 @@ const audioSink: SemanticAudioSink = {
     const gainScale = 10 ** ((request.appliedPeakDb - request.cue.targetPeakDb) / 20)
     if (request.cue.synthesisKey === 'ember-purchase-interval') return playBuy(gainScale, 'emberlight')
     if (request.cue.synthesisKey === 'tide-purchase-minor-seventh-rise') return playBuy(gainScale, 'tidefall')
+    if (request.cue.bus === 'purchase') return playBuy(gainScale, request.event.source.universeId)
     return false
   },
   presentVisualFallback(request) {

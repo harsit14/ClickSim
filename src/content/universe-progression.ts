@@ -435,11 +435,265 @@ const CLOCKWORK_PROGRESSION: UniverseProgressionIdentity = {
   },
 }
 
+function futureProgression(config: {
+  overline: string
+  observatoryTitle: string
+  mapTitle: string
+  currency: string
+  epoch: string
+  matter: string
+  epochVerb: string
+  warning: string
+  deepTitle: string
+  deepVerb: string
+  trialsTitle: string
+  circleNames: [string, string]
+  nodes: Record<string, ProgressionCopy>
+  works: Record<string, ProgressionCopy>
+  deepUpgrades: Record<string, ProgressionCopy>
+  deepWorks: Record<string, ProgressionCopy>
+  challenges: Record<string, ProgressionCopy>
+}): UniverseProgressionIdentity {
+  const mapName = config.mapTitle.replace(/^The /, '')
+  return {
+    observatory: {
+      ...EMBERLIGHT_PROGRESSION.observatory,
+      overline: config.overline,
+      title: config.observatoryTitle,
+      mapTitle: config.mapTitle,
+      trialWait: `A local trial is underway — ${config.observatoryTitle} holds its current state.`,
+      firstText: `When this world has gathered enough {currency}, perform ${config.epoch} and preserve ${config.matter}.`,
+      needsText: `The next ${config.epoch} needs more {currency}.`,
+      readyText: `${config.epoch} is ready. Inspect the boundary before committing.`,
+      warningText: config.warning,
+      collapseName: config.epoch,
+      goText: config.epochVerb,
+      ownedText: `preserved as ${config.matter}`,
+      eternalEyebrow: `after the first ${config.epoch}`,
+      eternalTitle: `The Continuing ${mapName}`,
+      eternalIntro: `These works consume unspent ${config.matter}. Their ranks survive ${config.epoch} and fold only at the local Deep boundary.`,
+      eternalEmpty: `Complete ${config.mapTitle}. Its finished relationships open repeatable ${config.matter} works.`,
+      workVerb: config.epochVerb.toLowerCase(),
+      nodes: config.nodes,
+      works: config.works,
+    },
+    deep: {
+      ...EMBERLIGHT_PROGRESSION.deep,
+      overline: `beneath ${config.overline.split(' · ')[0]}`,
+      title: config.deepTitle,
+      trialWait: `A local trial is underway. ${config.deepTitle} waits.`,
+      gatherText: `Gather ${config.matter}; ${config.deepTitle} accepts complete epochs.`,
+      readyText: `Compress the finished ${config.currency} era into ◉.`,
+      warningText: `${config.matter}, the local build map, and the era’s {currency} enter ${config.deepTitle}. Singularities and deeper records remain.`,
+      collapseName: config.deepTitle,
+      goText: config.deepVerb,
+      worksTitle: `${config.deepTitle} works`,
+      recursiveEyebrow: 'after the local law learns recursion',
+      recursiveTitle: `The Recursive ${config.deepTitle}`,
+      recursiveIntro: `Singularities repeat the local law without erasing its authored constraints.`,
+      recursiveEmpty: `Acquire every local Deep work before recursion begins.`,
+      workVerb: config.deepVerb.toLowerCase(),
+      trialsTitle: config.trialsTitle,
+      trialsNote: 'historical failures rehearsed until another strategy becomes possible',
+      circleNames: config.circleNames,
+      circleNotes: ['the foundational form of the local law', 'the civilization’s failure transformed into a tool'],
+      toastTitle: `${config.deepTitle} opens`,
+      toastBody: 'one authored world law, compressed without becoming generic',
+      upgrades: config.deepUpgrades,
+      works: config.deepWorks,
+      challenges: config.challenges,
+    },
+  }
+}
+
+const PRISMATA_PROGRESSION = futureProgression({
+  overline: 'prismata · every wavelength keeps its name',
+  observatoryTitle: 'The Refraction Bench',
+  mapTitle: 'The Spectrum Assembly',
+  currency: 'Chroma',
+  epoch: 'Refraction',
+  matter: 'Facets',
+  epochVerb: 'Crystallize the spectrum',
+  warning: 'Chroma, present optical Kindlings, and ordinary refinements return to darkness. Facets, recipes, Archives, and deeper laws remain.',
+  deepTitle: 'The Dark Line',
+  deepVerb: 'Enter the absorption line',
+  trialsTitle: 'Trials of Separation',
+  circleNames: ['The Visible Bench', 'The Invisible Bench'],
+  nodes: {
+    'forge-1': { name: 'Source Aperture', flavor: 'One labeled band enters without surrendering its wavelength.' },
+    'forge-2': { name: 'Complementary Pair', flavor: 'Difference becomes brighter when the paths remain inspectable.' },
+    'forge-3': { name: 'White-Light Foundry', flavor: 'Many bands resolve into power without becoming anonymous.' },
+    'hand-1': { name: 'Focusing Touch', flavor: 'A small alignment gives the ray a deliberate destination.' },
+    'hand-2': { name: 'Caustic Palm', flavor: 'The focused path carries the whole bench through one bright crossing.' },
+    'hand-3': { name: 'Master Lenswright', flavor: 'The hand preserves every source label while changing the result.' },
+    'sky-1': { name: 'Open Slit', flavor: 'Unfamiliar radiation is invited through a measurable opening.' },
+    'sky-2': { name: 'Long Exposure', flavor: 'A quiet detector keeps gathering what the eye cannot hold.' },
+    'sky-3': { name: 'Caustic Season', flavor: 'Aligned events arrive as a readable family of paths.' },
+    'root-1': { name: 'Fluorescent Store', flavor: 'Absorbed light waits in another wavelength.' },
+    'root-2': { name: 'Patient Phosphor', flavor: 'Delayed release is still part of the optical argument.' },
+    'root-3': { name: 'Facet Memory', flavor: 'A solved relationship survives the dark between exposures.' },
+    corona: { name: 'White Star', flavor: 'Every surviving band shares one sky without losing its name.' },
+  },
+  works: {
+    'continuing-corona': { name: 'The Continuing Spectrum', flavor: 'Every resolved band reveals another useful separation.', effect: 'all production ×1.30 per alignment this absorption era' },
+    'parallax-engine': { name: 'Reunion Engine', flavor: 'Each Refraction gives the next lens a more honest angle.', effect: 'Facet gain +15% per alignment this absorption era' },
+  },
+  deepUpgrades: {
+    'auto-kindler': { name: 'Automatic Aperture', flavor: 'The bench opens the most useful labeled path.', effect: 'automatically focuses the most efficient Kindling, every 2s' },
+    'auto-stoker': { name: 'Recipe Scribe', flavor: 'Calibration records the next useful refinement.', effect: 'automatically inscribes the cheapest available law, every 2s' },
+    'nova-engine': { name: 'Refraction Engine', flavor: 'The spectrum crystallizes only at the declared Facet threshold.', effect: 'automatically triggers Refraction at your Facet threshold' },
+    'dawn-memory': { name: 'White-Light Memory', flavor: 'The source remembers a calibrated beginning.', effect: 'every new spectrum begins with a measured head start' },
+    'event-horizon': { name: 'Absorption Horizon', flavor: 'Missing light returns as evidence.', effect: 'Facet gain ×2' },
+    'deep-resonance': { name: 'Spectral Resonance', flavor: 'Every world answers through its own visible band.', effect: 'all Chroma ×2, forever, everywhere' },
+  },
+  deepWorks: {
+    'worldseed-compression': { name: 'Spectrum Compression', flavor: 'A complete instrument folded into one transparent relation.', effect: 'all production ×2 per layer until Remembrance' },
+    'recursive-abyss': { name: 'The Recursive Prism', flavor: 'Every white output becomes another spectrum to inspect.', effect: 'Dark Line yield +25% per layer until Remembrance' },
+  },
+  challenges: {
+    silence: { name: 'Dark Detector', flavor: 'The spectrum must remain legible when its music disappears.' },
+    entropy: { name: 'Scattering Loss', flavor: 'Every careless surface taxes the paths that follow.' },
+    'bare-hands': { name: 'Unaided Eye', flavor: 'The first distinction must be made without an instrument.' },
+    drought: { name: 'Blackout Exposure', flavor: 'Stored fluorescence must carry an interrupted source.' },
+    'half-light': { name: 'Neutral Density', flavor: 'A dimmed bench must preserve the same relationships.' },
+    swarm: { name: 'Three Broad Bands', flavor: 'Only the first spectral families may build white.' },
+    'glass-ceiling': { name: 'Aperture Limit', flavor: 'Breadth continues where intensity has been bounded.' },
+    'ashen-touch': { name: 'Defocused Touch', flavor: 'The Heart answers through a deliberately weak focus.' },
+    unwritten: { name: 'Unlabeled Spectrum', flavor: 'No saved recipe may decide the next alignment.' },
+    'broken-ladder': { name: 'Missing Lines', flavor: 'Every second wavelength family is absent.' },
+    'single-voice': { name: 'Monochrome', flavor: 'One band must reveal a world built for plurality.' },
+    'small-vessels': { name: 'Pocket Spectroscope', flavor: 'A complete sky must fit inside ten of everything.' },
+  },
+})
+
+const TEMPEST_PROGRESSION = futureProgression({
+  overline: 'tempest · every path leaves evidence',
+  observatoryTitle: 'The Grounding Field',
+  mapTitle: 'The Storm Map',
+  currency: 'Charge',
+  epoch: 'Grounding',
+  matter: 'Fulgurites',
+  epochVerb: 'Ground the storm',
+  warning: 'Charge, present storm cells, and ordinary refinements return to calm. Fulgurites, saved paths, Archives, and deeper laws remain.',
+  deepTitle: 'The Quiet Eye',
+  deepVerb: 'Cross the eye wall',
+  trialsTitle: 'Trials of Release',
+  circleNames: ['The Pressure Wall', 'The Final Climate'],
+  nodes: {
+    'forge-1': { name: 'First Gradient', flavor: 'A useful difference appears between two measured points.' },
+    'forge-2': { name: 'Coupled Cells', flavor: 'Pressure becomes weather when neighboring volumes answer.' },
+    'forge-3': { name: 'Front Foundry', flavor: 'A planetary circulation carries local work across the horizon.' },
+    'hand-1': { name: 'Leader Touch', flavor: 'Intention gives the branching path its next candidate.' },
+    'hand-2': { name: 'Static Palm', flavor: 'A dry snap joins separated regions without hiding the route.' },
+    'hand-3': { name: 'Path Conductor', flavor: 'The hand knows when stored potential should become consequence.' },
+    'sky-1': { name: 'Open Cell', flavor: 'The atmosphere leaves room for an unfamiliar formation.' },
+    'sky-2': { name: 'Long Forecast', flavor: 'Circulation persists across an unattended watch.' },
+    'sky-3': { name: 'Sprite Season', flavor: 'High events arrive as a linked forecast instead of a surprise.' },
+    'root-1': { name: 'Storm Battery', flavor: 'Separated charge waits behind a visible safety mark.' },
+    'root-2': { name: 'Patient Front', flavor: 'Contained pressure remains motion, even while unattended.' },
+    'root-3': { name: 'Fulgurite Memory', flavor: 'A completed path survives as glassed evidence.' },
+    corona: { name: 'Planetary Dynamo', flavor: 'Every front resolves into one stable auroral column.' },
+  },
+  works: {
+    'continuing-corona': { name: 'The Continuing Climate', flavor: 'Every grounded path leaves another useful pressure route.', effect: 'all production ×1.30 per grounding this quiet era' },
+    'parallax-engine': { name: 'Forecast Engine', flavor: 'Each storm makes the next threshold easier to read.', effect: 'Fulgurite gain +15% per grounding this quiet era' },
+  },
+  deepUpgrades: {
+    'auto-kindler': { name: 'Cell Seeder', flavor: 'The dynamo feeds the most efficient connected storm cell.', effect: 'automatically charges the most efficient Kindling, every 2s' },
+    'auto-stoker': { name: 'Almanac Relay', flavor: 'The forecast records the next useful atmospheric refinement.', effect: 'automatically records the cheapest available law, every 2s' },
+    'nova-engine': { name: 'Grounding Relay', flavor: 'The route fires only at the declared Fulgurite threshold.', effect: 'automatically triggers Grounding at your Fulgurite threshold' },
+    'dawn-memory': { name: 'Pressure Memory', flavor: 'The new atmosphere remembers a stable starting gradient.', effect: 'every new climate begins with a bounded head start' },
+    'event-horizon': { name: 'Eye Wall', flavor: 'No useful potential crosses the calm center unmeasured.', effect: 'Fulgurite gain ×2' },
+    'deep-resonance': { name: 'Planetary Circulation', flavor: 'Every world contributes to a larger weather system.', effect: 'all Charge ×2, forever, everywhere' },
+  },
+  deepWorks: {
+    'worldseed-compression': { name: 'Climate Compression', flavor: 'A planetary circulation sealed inside one readable path.', effect: 'all production ×2 per layer until Remembrance' },
+    'recursive-abyss': { name: 'The Recursive Eye', flavor: 'Every calm center opens into another bounded storm.', effect: 'Quiet Eye yield +25% per layer until Remembrance' },
+  },
+  challenges: {
+    silence: { name: 'Silent Pressure', flavor: 'The storm must remain legible when every rumble is muted.' },
+    entropy: { name: 'Turbulent Debt', flavor: 'Every inefficient cell taxes the fronts that follow.' },
+    'bare-hands': { name: 'Unseeded Sky', flavor: 'The first gradient forms without autonomous weather.' },
+    drought: { name: 'Dry Thunder', flavor: 'The discharge path must form without its expected rain.' },
+    'half-light': { name: 'Weak Potential', flavor: 'A smaller gradient must still choose a useful route.' },
+    swarm: { name: 'Local Cells', flavor: 'Only the first formations may carry a global climate.' },
+    'glass-ceiling': { name: 'Pressure Cap', flavor: 'Circulation continues while each cell remains bounded.' },
+    'ashen-touch': { name: 'Grounded Hand', flavor: 'The Heart answers through reduced leader influence.' },
+    unwritten: { name: 'Unforecast', flavor: 'No saved path may decide where the storm travels.' },
+    'broken-ladder': { name: 'Broken Front', flavor: 'Every second atmospheric layer is absent.' },
+    'single-voice': { name: 'One Supercell', flavor: 'One dominant storm must carry a world of connected weather.' },
+    'small-vessels': { name: 'Storm in Glass', flavor: 'A planetary climate held inside ten of everything.' },
+  },
+})
+
+const CANTICLE_PROGRESSION = futureProgression({
+  overline: 'canticle · every voice leaves room to answer',
+  observatoryTitle: 'The Refrain Hall',
+  mapTitle: 'The Living Measure',
+  currency: 'Resonance',
+  epoch: 'Refrain',
+  matter: 'Overtones',
+  epochVerb: 'Complete the refrain',
+  warning: 'Resonance, present voices, and ordinary refinements return to rest. Overtones, measures, Resonant Memory, and deeper laws remain.',
+  deepTitle: 'The Perfect Rest',
+  deepVerb: 'Hold the rest',
+  trialsTitle: 'Trials of Relationship',
+  circleNames: ['The First Measure', 'The Second Voice'],
+  nodes: {
+    'forge-1': { name: 'First Pulse', flavor: 'One event gives the measure a place to begin.' },
+    'forge-2': { name: 'Answering Pair', flavor: 'Two distinct voices share time without becoming unison.' },
+    'forge-3': { name: 'Harmonic Loom', flavor: 'Many roles become a movement whose sources remain audible.' },
+    'hand-1': { name: 'Opening Strike', flavor: 'The membrane remembers a deliberate and gentle beginning.' },
+    'hand-2': { name: 'Syncopated Touch', flavor: 'The hand places emphasis where expectation left room.' },
+    'hand-3': { name: 'Second Conductor', flavor: 'The gesture invites an answer instead of demanding imitation.' },
+    'sky-1': { name: 'Open Measure', flavor: 'One empty slot remains available to an unfamiliar voice.' },
+    'sky-2': { name: 'Long Sustain', flavor: 'A relationship persists across an unattended phrase.' },
+    'sky-3': { name: 'Refrain Season', flavor: 'Returning events arrive as variations rather than copies.' },
+    'root-1': { name: 'Drone Memory', flavor: 'A sustained voice holds context beneath the active phrase.' },
+    'root-2': { name: 'Patient Rest', flavor: 'Silence carries structure while nothing is struck.' },
+    'root-3': { name: 'Overtone Memory', flavor: 'The strongest relationship survives the completed measure.' },
+    corona: { name: 'Second Voice', flavor: 'The whole choir leaves enough room for an unscripted answer.' },
+  },
+  works: {
+    'continuing-corona': { name: 'The Continuing Measure', flavor: 'Every completed phrase opens another useful rest.', effect: 'all production ×1.30 per refrain this silent era' },
+    'parallax-engine': { name: 'Counterpoint Engine', flavor: 'Each ending gives the next voice a clearer entrance.', effect: 'Overtone gain +15% per refrain this silent era' },
+  },
+  deepUpgrades: {
+    'auto-kindler': { name: 'Measure Keeper', flavor: 'The chamber sounds the most useful available role.', effect: 'automatically voices the most efficient Kindling, every 2s' },
+    'auto-stoker': { name: 'Score Scribe', flavor: 'The notation marks the next useful refinement.', effect: 'automatically inscribes the cheapest available law, every 2s' },
+    'nova-engine': { name: 'Refrain Keeper', flavor: 'The measure completes only at the declared Overtone threshold.', effect: 'automatically triggers Refrain at your Overtone threshold' },
+    'dawn-memory': { name: 'Opening Memory', flavor: 'The first pulse remembers how the prior measure began.', effect: 'every new composition begins with a measured head start' },
+    'event-horizon': { name: 'Perfect Rest', flavor: 'Nothing sounds, but every relationship remains present.', effect: 'Overtone gain ×2' },
+    'deep-resonance': { name: 'World Resonance', flavor: 'Every universe answers without losing its voice.', effect: 'all Resonance ×2, forever, everywhere' },
+  },
+  deepWorks: {
+    'worldseed-compression': { name: 'Movement Compression', flavor: 'A whole composition folded into one audible relationship.', effect: 'all production ×2 per layer until Remembrance' },
+    'recursive-abyss': { name: 'The Recursive Refrain', flavor: 'Every ending becomes another voice’s entrance.', effect: 'Perfect Rest yield +25% per layer until Remembrance' },
+  },
+  challenges: {
+    silence: { name: 'Audible Silence', flavor: 'The structure must remain playable with every sound muted.' },
+    entropy: { name: 'Dissonance Debt', flavor: 'Each careless interval taxes the voices that follow.' },
+    'bare-hands': { name: 'Unaccompanied', flavor: 'The first measure begins without an autonomous voice.' },
+    drought: { name: 'Broken Sustain', flavor: 'The phrase must continue after its expected drone ends.' },
+    'half-light': { name: 'Faint Voice', flavor: 'A reduced signal must still remain individually legible.' },
+    swarm: { name: 'Chamber Ensemble', flavor: 'Only the first voices may carry the whole movement.' },
+    'glass-ceiling': { name: 'Eight Slots', flavor: 'Variation continues inside a strictly bounded measure.' },
+    'ashen-touch': { name: 'Muted Strike', flavor: 'The Heart answers a deliberately softened gesture.' },
+    unwritten: { name: 'Improvised Score', flavor: 'No saved preset may decide the next phrase.' },
+    'broken-ladder': { name: 'Missing Beats', flavor: 'Every second role in the measure is absent.' },
+    'single-voice': { name: 'Solo Choir', flavor: 'One source must prove that relationship still matters.' },
+    'small-vessels': { name: 'Pocket Canticle', flavor: 'A complete movement held inside ten of everything.' },
+  },
+})
+
 const PROGRESSION_BY_UNIVERSE: Record<string, UniverseProgressionIdentity> = {
   emberlight: EMBERLIGHT_PROGRESSION,
   tidefall: TIDEFALL_PROGRESSION,
   verdance: VERDANCE_PROGRESSION,
   clockwork: CLOCKWORK_PROGRESSION,
+  prismata: PRISMATA_PROGRESSION,
+  tempest: TEMPEST_PROGRESSION,
+  canticle: CANTICLE_PROGRESSION,
 }
 
 export function progressionIdentity(universeId: string): UniverseProgressionIdentity {

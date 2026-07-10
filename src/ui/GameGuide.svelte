@@ -258,12 +258,13 @@
                 <div class="reference-title"><span>known routes</span><h4>Universe identity ledger</h4></div>
                 <div class="universe-grid">
                   {#each UNIVERSES as universe (universe.id)}
+                    {@const v2 = universeV2ById(universe.id)}
                     <article class:current={universe.id === game.activeUniverse} style:--world-hue={universe.palette.accentHue}>
                       <div class="universe-head"><span>{universe.route.glyph}</span><div><small>{universe.id === game.activeUniverse ? 'current universe' : universe.route.epithet}</small><strong>{universe.name}</strong></div></div>
                       <p>{universe.description}</p>
                       <dl>
                         <div><dt>physics</dt><dd>{universe.twist.name}</dd></div>
-                        <div><dt>music</dt><dd>{universe.audio.music === 'tidefall' ? '60 BPM submerged' : '72 BPM warm'}</dd></div>
+                        <div><dt>music</dt><dd>{v2 ? `${v2.audio.tempoBpm} BPM · ${v2.audio.meter}` : universe.audio.music}</dd></div>
                         <div><dt>active omen</dt><dd>{universe.events.noun}</dd></div>
                         <div><dt>archive</dt><dd>{universe.cabinet.title}</dd></div>
                         <div><dt>currency</dt><dd>{universe.currencyGlyph} {universe.currency}</dd></div>

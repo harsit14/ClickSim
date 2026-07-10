@@ -214,7 +214,7 @@ export const VERDANCE: UniversePack = {
   echoes: VERDANCE_ECHOES,
   palette: { theme: 'verdance', accentHue: 104, vars: { '--bg': '#07100b', '--amber': '#75c989', '--gold': '#d5ef9b', '--panel': 'rgba(10, 28, 18, 0.82)' } },
   // Temporary bridge: legacy playback has only two families. Semantic V2 audio below owns the real identity.
-  audio: { music: 'emberlight', click: 'emberlight', event: 'emberlight' },
+  audio: { music: 'verdance', click: 'verdance', event: 'verdance' },
   events: {
     noun: 'golden pollinator',
     motion: 'meteor',

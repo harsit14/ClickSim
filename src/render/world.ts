@@ -284,6 +284,15 @@ export class World {
     if (game.activeUniverse === 'clockwork') {
       return { c0: '255, 244, 210', c1: '239, 199, 116', c2: '194, 135, 62', c3: '105, 72, 42', halo: '216, 168, 78', mid: '118, 143, 158' }
     }
+    if (game.activeUniverse === 'prismata') {
+      return { c0: '255, 252, 255', c1: '215, 198, 255', c2: '156, 116, 239', c3: '66, 45, 126', halo: '166, 140, 255', mid: '96, 197, 230' }
+    }
+    if (game.activeUniverse === 'tempest') {
+      return { c0: '235, 252, 255', c1: '151, 221, 246', c2: '71, 155, 213', c3: '35, 73, 126', halo: '112, 201, 238', mid: '103, 121, 222' }
+    }
+    if (game.activeUniverse === 'canticle') {
+      return { c0: '255, 245, 251', c1: '230, 189, 218', c2: '185, 118, 170', c3: '85, 49, 96', halo: '216, 155, 199', mid: '120, 161, 198' }
+    }
     switch (game.ending) {
       case 'warden':
         return { c0: '255, 252, 240', c1: '255, 238, 185', c2: '255, 205, 110', c3: '255, 175, 80', halo: '255, 215, 130', mid: '255, 190, 100' }
@@ -1084,6 +1093,61 @@ export class World {
           ctx.lineTo(Math.cos(angle) * r * 0.94, Math.sin(angle) * r * 0.94)
           ctx.stroke()
         }
+        ctx.restore()
+      } else if (game.activeUniverse === 'prismata') {
+        ctx.save()
+        ctx.translate(c.x, c.y)
+        ctx.strokeStyle = `rgba(${pal.c0}, 0.7)`
+        ctx.lineWidth = 1.3
+        ctx.beginPath()
+        ctx.ellipse(0, 0, r * 0.7, r * 1.04, -0.18, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.ellipse(0, 0, r * 0.7, r * 1.04, 0.18, 0, Math.PI * 2)
+        ctx.stroke()
+        for (let band = -2; band <= 2; band++) {
+          ctx.beginPath()
+          ctx.moveTo(r * 0.55, band * r * 0.16)
+          ctx.lineTo(r * 1.2, band * r * 0.28)
+          ctx.stroke()
+        }
+        ctx.restore()
+      } else if (game.activeUniverse === 'tempest') {
+        ctx.save()
+        ctx.strokeStyle = `rgba(${pal.c0}, 0.64)`
+        ctx.lineWidth = 1.25
+        for (let turn = 0; turn < 3; turn++) {
+          ctx.beginPath()
+          ctx.arc(c.x, c.y, r * (0.34 + turn * 0.22), -0.7 + turn * 0.4, 4.2 + turn * 0.3)
+          ctx.stroke()
+        }
+        ctx.beginPath()
+        ctx.moveTo(c.x, c.y + r * 0.25)
+        ctx.lineTo(c.x - r * 0.18, c.y + r * 0.62)
+        ctx.lineTo(c.x + r * 0.06, c.y + r * 0.52)
+        ctx.lineTo(c.x - r * 0.08, c.y + r * 0.92)
+        ctx.stroke()
+        ctx.restore()
+      } else if (game.activeUniverse === 'canticle') {
+        ctx.save()
+        ctx.translate(c.x, c.y)
+        ctx.strokeStyle = `rgba(${pal.c0}, 0.65)`
+        ctx.lineWidth = 1.15
+        ctx.beginPath()
+        for (let node = 0; node < 6; node++) {
+          const angle = (node / 6) * Math.PI * 2 - Math.PI / 2
+          const x = Math.cos(angle) * r * 0.72
+          const y = Math.sin(angle) * r * 0.72
+          if (node === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+          ctx.moveTo(x + 2, y)
+          ctx.arc(x, y, 2, 0, Math.PI * 2)
+        }
+        ctx.closePath()
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.ellipse(0, 0, r * 0.78, r * 0.34, 0, 0, Math.PI * 2)
+        ctx.stroke()
         ctx.restore()
       }
     }

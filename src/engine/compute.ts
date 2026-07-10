@@ -9,6 +9,7 @@ import {
 } from '../content/curiosities'
 import { universeById } from '../content/universes'
 import { verdanceGeneratorCohortStatus } from '../content/universes/verdance/runtime'
+import { f4ClickMultiplier, f4RateMultiplier } from '../content/universes/f4-runtime'
 import { wayfinderProductionMult, wayfinderTideAmplitude } from '../content/wayfinder'
 import { deepProductionMult, stardustProductionMult } from '../content/repeatables'
 import type { EconomyAmount, UniverseId } from '../content/universes/types'
@@ -210,7 +211,8 @@ export function globalMult(s: EcoState, now = Date.now()): EconomyAmount {
   multiplier = multiplyAmountByNumber(multiplier, stardustProductionMult(s.stardustWorks))
   multiplier = multiplyAmountByNumber(multiplier, deepProductionMult(s.deepWorks))
   multiplier = multiplyAmountByNumber(multiplier, curiosityProductionMult(s.curiosities, universe.cabinet))
-  if (s.curiosities.includes('hearthkeeper') && s.keeperFedUntil > now) {
+  const fuelItemId = universe.cabinet.items.find(({ kind }) => kind === 'hearthkeeper')?.id
+  if (fuelItemId && s.curiosities.includes(fuelItemId) && s.keeperFedUntil > now) {
     multiplier = multiplyAmountByNumber(multiplier, universe.cabinet.fuelProductionMult)
   }
   if (s.ending === 'warden') multiplier = multiplyAmountByNumber(multiplier, 1.25)
@@ -223,6 +225,9 @@ export function globalMult(s: EcoState, now = Date.now()): EconomyAmount {
 
 /** The active universe's living physics at a specific moment. */
 export function universeRateMult(s: EcoState, now = Date.now()): number {
+  if (s.activeUniverse === 'prismata' || s.activeUniverse === 'tempest' || s.activeUniverse === 'canticle') {
+    return f4RateMultiplier(s.activeUniverse, s.numericLawState, s.owned, now)
+  }
   const raw = universeById(s.activeUniverse).twist.rateMultiplier?.(now) ?? 1
   return s.activeUniverse === 'tidefall'
     ? 1 + (raw - 1) * wayfinderTideAmplitude(s.wayfinder)
@@ -295,7 +300,10 @@ export function clickPower(s: EcoState, rateMult = 1, now = Date.now()): Economy
   const cabinet = universeById(s.activeUniverse).cabinet
   return multiplyAmountByNumber(
     maxAmount(amountFromNumber(mult), ratePower),
-    hunger * curiosityClickMult(s.curiosities, cabinet) * (challengeMods(s).clickScale ?? 1),
+    hunger
+      * curiosityClickMult(s.curiosities, cabinet)
+      * (challengeMods(s).clickScale ?? 1)
+      * f4ClickMultiplier(s.activeUniverse, s.numericLawState, s.owned, now),
   )
 }
 
@@ -343,11 +351,12 @@ function globalFormulaTerms(s: EcoState, now: number, prefix: string): FormulaNo
     formulaTerm(`${prefix}:archive`, 'archive', universe.cabinet.id, universe.cabinet.title, formulaScalar('multiplier', curiosityProductionMult(s.curiosities, universe.cabinet)), universe.id),
   ]
 
-  if (s.curiosities.includes('hearthkeeper') && s.keeperFedUntil > now) {
+  const fuelItemId = universe.cabinet.items.find(({ kind }) => kind === 'hearthkeeper')?.id
+  if (fuelItemId && s.curiosities.includes(fuelItemId) && s.keeperFedUntil > now) {
     terms.push(formulaTerm(
       `${prefix}:archive-fuel`,
       'archive',
-      'hearthkeeper-fuel',
+      `${fuelItemId}-fuel`,
       'Fueled archive object',
       formulaScalar('multiplier', universe.cabinet.fuelProductionMult),
       universe.id,
@@ -627,6 +636,7 @@ export function clickFormula(
   const cabinetMultiplier = curiosityClickMult(s.curiosities, universe.cabinet)
   const challengeMultiplier = challengeMods(s).clickScale ?? 1
   const hungerMultiplier = s.ending === 'hunger' ? 2 : 1
+  const lawClickMultiplier = f4ClickMultiplier(s.activeUniverse, s.numericLawState, s.owned, evaluatedAtMs)
   const resultAmount = multiplyAmountByNumber(clickPower(s, rateMultiplier, evaluatedAtMs), outputMultiplier)
   const root: FormulaNode = {
     kind: 'operation',
@@ -659,6 +669,7 @@ export function clickFormula(
       formulaTerm('click:hunger', 'doctrine', s.ending === 'hunger' ? 'hunger' : 'no-hunger', 'Hunger answer', formulaScalar('multiplier', hungerMultiplier)),
       formulaTerm('click:archive', 'archive', universe.cabinet.id, universe.cabinet.title, formulaScalar('multiplier', cabinetMultiplier), universe.id),
       formulaTerm('click:challenge', 'system', s.challenge ?? 'no-challenge', s.challenge ? 'Trial click rule' : 'No trial click penalty', formulaScalar('multiplier', challengeMultiplier), universe.id),
+      formulaTerm('click:universe-law', 'universe-law', `${universe.id}-click-law`, universe.twist.name, formulaScalar('multiplier', lawClickMultiplier), universe.id),
       formulaTerm('click:omen', 'omen', 'active-click-effect', 'Active click effect', formulaScalar('multiplier', outputMultiplier), universe.id),
     ],
     result: formulaAmount(resultAmount),

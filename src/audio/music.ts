@@ -4,14 +4,20 @@
  * are owned. The beat grid is exposed for the rhythm-combo system.
  */
 import { getAudio } from './sfx'
+import type { UniverseId } from '../content/universes/types'
 
 const LOOKAHEAD_SEC = 0.35
 
-export type MusicMode = 'emberlight' | 'tidefall'
+export type MusicMode = UniverseId
 
 const MUSIC_BPM: Record<MusicMode, number> = {
   emberlight: 72,
   tidefall: 60,
+  verdance: 84,
+  clockwork: 90,
+  prismata: 96,
+  tempest: 108,
+  canticle: 72,
 }
 
 // C — G/B — Am — F, voiced low and close
@@ -188,7 +194,7 @@ function tone(
 }
 
 function scheduleBar(ctx: AudioContext, bar: number) {
-  if (musicMode === 'tidefall') {
+  if (musicMode === 'tidefall' || musicMode === 'tempest') {
     scheduleTidefallBar(ctx, bar)
     return
   }

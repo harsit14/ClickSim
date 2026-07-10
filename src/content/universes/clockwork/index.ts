@@ -94,7 +94,7 @@ export const CLOCKWORK: UniversePack = {
     },
   },
   // The frozen legacy selector has only current-world identities. V2 owns Clockwork audio.
-  audio: { music: 'emberlight', click: 'emberlight', event: 'emberlight' },
+  audio: { music: 'clockwork', click: 'clockwork', event: 'clockwork' },
   events: {
     noun: 'Maintenance Signal',
     motion: 'meteor',

@@ -10,6 +10,11 @@
   } from '../content/universes/verdance'
   import { format } from '../core/format'
   import { isZeroAmount } from '../core/numeric/amount'
+  import {
+    canticleStatus,
+    prismataStatus,
+    tempestStatus,
+  } from '../content/universes/f4-runtime'
 
   let now = $state(Date.now())
   const pack = $derived(universeById(game.activeUniverse))
@@ -20,6 +25,9 @@
   const clickRate = $derived(recentClickRatePerSec())
   const tidefall = $derived(pack.id === 'tidefall')
   const verdance = $derived(pack.id === 'verdance')
+  const prismata = $derived(pack.id === 'prismata' ? prismataStatus(game.numericLawState, game.owned) : null)
+  const tempest = $derived(pack.id === 'tempest' ? tempestStatus(game.numericLawState) : null)
+  const canticle = $derived(pack.id === 'canticle' ? canticleStatus(game.numericLawState, game.owned, now) : null)
   const tide = $derived(universeRateMult(game, now))
   const tideNext = $derived(universeRateMult(game, now + 500))
   const tideLabel = $derived(
@@ -74,6 +82,24 @@
         </span>
         <strong>×{growth.multiplier.toFixed(2)}</strong>
       </div>
+    {:else if prismata}
+      <div class="law-state prismata" aria-label={`${prismata.recipe.name}; ${prismata.activeBands} of 6 bands active; production ×${prismata.multiplier.toFixed(2)}`}>
+        <span>{prismata.recipe.glyph} {prismata.recipe.name}</span>
+        <i aria-hidden="true">{prismata.activeBands}/6 bands</i>
+        <strong>×{prismata.multiplier.toFixed(2)}</strong>
+      </div>
+    {:else if tempest}
+      <div class="law-state tempest" aria-label={`${tempest.path.name}; ${Math.round(tempest.charge)} percent charge; production ×${tempest.multiplier.toFixed(2)}`}>
+        <span>{tempest.path.glyph} {tempest.boostRemainingSec > 0 ? 'discharging' : tempest.ready ? 'path ready' : 'potential building'}</span>
+        <i aria-hidden="true">{Math.round(tempest.charge)}%</i>
+        <strong>×{tempest.multiplier.toFixed(2)}</strong>
+      </div>
+    {:else if canticle}
+      <div class="law-state canticle" aria-label={`${canticle.measure.name}; slot ${canticle.slotIndex + 1}, ${canticle.role}; production ×${canticle.multiplier.toFixed(2)}`}>
+        <span>{canticle.measure.glyph} {canticle.role}</span>
+        <i aria-hidden="true">slot {canticle.slotIndex + 1}/8</i>
+        <strong>×{canticle.multiplier.toFixed(2)}</strong>
+      </div>
     {/if}
     {#if !isZeroAmount(game.stardustTotal) || !isZeroAmount(game.singTotal)}
       <div class="dust" aria-label={`${format(game.stardust)} ${epochMatterName}`}>
@@ -122,6 +148,19 @@
     font-variant-numeric: tabular-nums;
     animation: fade-in-plain 1s ease both;
   }
+  .law-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    margin-top: 0.14rem;
+    color: var(--dim);
+    font: 650 0.61rem/1 ui-sans-serif, system-ui;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .law-state i { color: color-mix(in srgb, var(--gold) 58%, transparent); font-style: normal; }
+  .law-state strong { color: var(--gold); font-variant-numeric: tabular-nums; }
   .tide {
     width: 13rem;
     display: grid;

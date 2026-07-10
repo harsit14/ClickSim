@@ -29,6 +29,7 @@
   import ResetComparisonCard from './ui/ResetComparisonCard.svelte'
   import ManifestWorldLayer from './ui/ManifestWorldLayer.svelte'
   import PurchaseCeremonyLayer from './ui/PurchaseCeremonyLayer.svelte'
+  import UniverseLawPanel from './ui/UniverseLawPanel.svelte'
   import {
     game,
     hasUi,
@@ -310,11 +311,12 @@
 
   const anyOf = (ids: string[]) => ids.some((id) => (game.owned[id] ?? 0) > 0)
   $effect(() => {
+    const ids = activePack.generators.map(({ id }) => id)
     setStems({
-      mallets: anyOf(['hearth', 'kiln', 'forge']),
-      bass: anyOf(['beacon', 'titan', 'starseed']),
-      strings: anyOf(['protostar', 'sun', 'binary', 'constellation']),
-      choir: anyOf(['nebula', 'galaxy', 'supercluster', 'web', 'loom', 'ember2']),
+      mallets: anyOf(ids.slice(0, 5)),
+      bass: anyOf(ids.slice(5, 9)),
+      strings: anyOf(ids.slice(9, 13)),
+      choir: anyOf(ids.slice(13)),
     })
   })
 </script>
@@ -343,6 +345,7 @@
     <Hud />
     <BuffBar />
     <ChallengeBanner />
+    <UniverseLawPanel />
     {#if !utilityPanelOpen}
       <UpgradeBar />
     {/if}

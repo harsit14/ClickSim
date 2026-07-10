@@ -2,6 +2,7 @@ import { game, ratePerSec, snapshotUniverseRun, type RunSnapshot } from '../engi
 import { perkBonus } from '../content/constellation'
 import { universeById } from '../content/universes'
 import { advanceVerdanceCohortLawState } from '../content/universes/verdance/runtime'
+import { advanceF4LawState } from '../content/universes/f4-runtime'
 import {
   migrateAndSanitizeSave,
   stringifySaveDataV13,
@@ -382,6 +383,12 @@ export function load(): EconomyAmount {
     advanceVerdanceCohortLawState(game.numericLawState, game.owned, generatorIds, counted * 500)
     const midpointRate = ratePerSec()
     advanceVerdanceCohortLawState(game.numericLawState, game.owned, generatorIds, counted * 500)
+    return multiplyAmountByNumber(midpointRate, counted * Math.min(1, efficiency))
+  }
+  if (game.activeUniverse === 'prismata' || game.activeUniverse === 'tempest') {
+    advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5)
+    const midpointRate = ratePerSec()
+    advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5)
     return multiplyAmountByNumber(midpointRate, counted * Math.min(1, efficiency))
   }
   return multiplyAmountByNumber(ratePerSec(), counted * Math.min(1, efficiency))

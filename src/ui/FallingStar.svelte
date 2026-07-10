@@ -12,7 +12,7 @@
   import { curiosityStarRateBonus } from '../content/curiosities'
   import { universeById } from '../content/universes'
   import type { UniversePowerUp } from '../content/universes'
-  import type { EconomyAmount } from '../content/universes/types'
+  import type { EconomyAmount, UniverseId } from '../content/universes/types'
   import {
     ZERO_AMOUNT,
     amountFromNumber,
@@ -44,7 +44,7 @@
     power: UniversePowerUp
     motion: 'meteor' | 'bubble'
     eventNoun: string
-    audioMode: 'emberlight' | 'tidefall'
+    audioMode: UniverseId
     x: number
     y: number
     vx: number

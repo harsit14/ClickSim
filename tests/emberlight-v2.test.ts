@@ -11,6 +11,9 @@ import type { UniversePackV2Supplement } from '../src/content/universes/legacy-v
 import { TIDEFALL_V2_PACK } from '../src/content/universes/tidefall-v2'
 import { VERDANCE_V2_PACK } from '../src/content/universes/verdance'
 import { CLOCKWORK_V2_PACK } from '../src/content/universes/clockwork'
+import { PRISMATA_V2_PACK } from '../src/content/universes/prismata'
+import { TEMPEST_V2_PACK } from '../src/content/universes/tempest'
+import { CANTICLE_V2_PACK } from '../src/content/universes/canticle'
 import { universeV2ById, V2_UNIVERSE_BY_ID } from '../src/content/universes'
 import { planManifestLayout } from '../src/render/manifest-layout'
 import { validateUniversePackV2 } from '../src/render/manifest-validator'
@@ -37,11 +40,14 @@ test('Emberlight crosses the temporary bridge as one complete validated V2 pack'
 })
 
 test('the lead registry exposes only approved V2 packs and never falls back across worlds', () => {
-  assert.equal(V2_UNIVERSE_BY_ID.size, 4)
+  assert.equal(V2_UNIVERSE_BY_ID.size, 7)
   assert.strictEqual(universeV2ById('emberlight'), EMBERLIGHT_V2)
   assert.strictEqual(universeV2ById('tidefall'), TIDEFALL_V2_PACK)
   assert.strictEqual(universeV2ById('verdance'), VERDANCE_V2_PACK)
   assert.strictEqual(universeV2ById('clockwork'), CLOCKWORK_V2_PACK)
+  assert.strictEqual(universeV2ById('prismata'), PRISMATA_V2_PACK)
+  assert.strictEqual(universeV2ById('tempest'), TEMPEST_V2_PACK)
+  assert.strictEqual(universeV2ById('canticle'), CANTICLE_V2_PACK)
   assert.equal(universeV2ById('unknown'), null)
   assert.equal(universeV2ById(null), null)
 })

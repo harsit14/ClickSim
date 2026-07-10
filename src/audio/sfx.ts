@@ -1,3 +1,5 @@
+import type { UniverseId } from '../content/universes/types'
+
 let ctx: AudioContext | null = null
 let master: GainNode | null = null
 let volume = 0.5
@@ -28,9 +30,13 @@ function audio(): { ctx: AudioContext; master: GainNode } | null {
 }
 
 /** Warm, woody thump — pitch-randomized so rapid clicking never grates. */
-export function playClick(mode: 'emberlight' | 'tidefall' = 'emberlight') {
+export function playClick(mode: UniverseId = 'emberlight') {
   if (mode === 'tidefall') {
     playTidefallClick()
+    return
+  }
+  if (mode === 'prismata' || mode === 'tempest' || mode === 'canticle') {
+    playFutureClick(mode)
     return
   }
   const a = audio()
@@ -63,6 +69,28 @@ export function playClick(mode: 'emberlight' | 'tidefall' = 'emberlight') {
   filter.frequency.value = 3000
   noise.connect(filter).connect(nGain).connect(a.master)
   noise.start(t)
+}
+
+function playFutureClick(mode: 'prismata' | 'tempest' | 'canticle') {
+  const a = audio()
+  if (!a) return
+  const t = a.ctx.currentTime
+  const oscillator = a.ctx.createOscillator()
+  const gain = a.ctx.createGain()
+  const filter = a.ctx.createBiquadFilter()
+  oscillator.type = mode === 'prismata' ? 'triangle' : mode === 'tempest' ? 'sawtooth' : 'sine'
+  const start = mode === 'prismata' ? 980 : mode === 'tempest' ? 260 : 330
+  const end = mode === 'prismata' ? 620 : mode === 'tempest' ? 82 : 185
+  oscillator.frequency.setValueAtTime(start, t)
+  oscillator.frequency.exponentialRampToValueAtTime(end, t + (mode === 'canticle' ? 0.2 : 0.09))
+  filter.type = mode === 'tempest' ? 'highpass' : 'lowpass'
+  filter.frequency.value = mode === 'tempest' ? 700 : 2_400
+  gain.gain.setValueAtTime(0.0001, t)
+  gain.gain.exponentialRampToValueAtTime(mode === 'tempest' ? 0.16 : 0.24, t + 0.008)
+  gain.gain.exponentialRampToValueAtTime(0.001, t + (mode === 'canticle' ? 0.24 : 0.14))
+  oscillator.connect(filter).connect(gain).connect(a.master)
+  oscillator.start(t)
+  oscillator.stop(t + 0.26)
 }
 
 /** A rounded droplet with a soft underwater pressure tail. */
@@ -102,9 +130,10 @@ function playTidefallClick() {
 /** Authored local purchase interval. Returns false when Web Audio is unavailable. */
 export function playBuy(
   gainScale = 1,
-  mode: 'emberlight' | 'tidefall' = 'emberlight',
+  mode: UniverseId = 'emberlight',
 ): boolean {
   if (mode === 'tidefall') return playTidefallBuy(gainScale)
+  if (mode !== 'emberlight') return playFutureBuy(gainScale, mode)
   const a = audio()
   if (!a) return false
   const t = a.ctx.currentTime
@@ -124,6 +153,36 @@ export function playBuy(
     osc.connect(gain).connect(routedGain)
     osc.start(start)
     osc.stop(start + 0.4)
+  })
+  return true
+}
+
+function playFutureBuy(gainScale: number, mode: Exclude<UniverseId, 'emberlight' | 'tidefall'>): boolean {
+  const a = audio()
+  if (!a) return false
+  const t = a.ctx.currentTime
+  const pairs: Record<typeof mode, readonly [number, number]> = {
+    verdance: [293.66, 440],
+    clockwork: [330, 495],
+    prismata: [659.25, 987.77],
+    tempest: [196, 392],
+    canticle: [220, 329.63],
+  }
+  const routedGain = a.ctx.createGain()
+  routedGain.gain.value = Math.max(0, Math.min(2, gainScale))
+  routedGain.connect(a.master)
+  pairs[mode].forEach((frequency, index) => {
+    const oscillator = a.ctx.createOscillator()
+    const gain = a.ctx.createGain()
+    oscillator.type = mode === 'tempest' ? 'sawtooth' : mode === 'prismata' ? 'triangle' : 'sine'
+    oscillator.frequency.value = frequency
+    const start = t + index * 0.075
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(0.13, start + 0.014)
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.38)
+    oscillator.connect(gain).connect(routedGain)
+    oscillator.start(start)
+    oscillator.stop(start + 0.42)
   })
   return true
 }
@@ -158,9 +217,13 @@ function playTidefallBuy(gainScale = 1): boolean {
 }
 
 /** A local Epoch Turn ceremony: stellar bloom or Tidefall pressure reversal. */
-export function playSupernova(mode: 'emberlight' | 'tidefall' = 'emberlight') {
+export function playSupernova(mode: UniverseId = 'emberlight') {
   if (mode === 'tidefall') {
     playUndertow()
+    return
+  }
+  if (mode !== 'emberlight') {
+    playFutureEpoch(mode)
     return
   }
   const a = audio()
@@ -191,6 +254,34 @@ export function playSupernova(mode: 'emberlight' | 'tidefall' = 'emberlight') {
     osc.connect(gain).connect(a.master)
     osc.start(start)
     osc.stop(start + 2.8)
+  })
+}
+
+function playFutureEpoch(mode: Exclude<UniverseId, 'emberlight' | 'tidefall'>) {
+  const a = audio()
+  if (!a) return
+  const t = a.ctx.currentTime
+  const roots: Record<typeof mode, number> = {
+    verdance: 146.83,
+    clockwork: 165,
+    prismata: 261.63,
+    tempest: 73.42,
+    canticle: 110,
+  }
+  const root = roots[mode]
+  const intervals = mode === 'prismata' ? [1, 1.25, 1.5, 2] : mode === 'canticle' ? [1, 1.5, 2, 3] : [1, 4 / 3, 1.75, 2]
+  intervals.forEach((interval, index) => {
+    const oscillator = a.ctx.createOscillator()
+    const gain = a.ctx.createGain()
+    oscillator.type = mode === 'tempest' ? 'sawtooth' : mode === 'clockwork' ? 'square' : 'sine'
+    oscillator.frequency.value = root * interval
+    const start = t + index * 0.18
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(mode === 'tempest' ? 0.07 : 0.1, start + 0.08)
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 1.8)
+    oscillator.connect(gain).connect(a.master)
+    oscillator.start(start)
+    oscillator.stop(start + 1.9)
   })
 }
 
@@ -233,8 +324,12 @@ function playUndertow() {
 }
 
 /** Sparkling ascent for catching a falling star. */
-export function playStarCatch(mode: 'emberlight' | 'tidefall' = 'emberlight') {
+export function playStarCatch(mode: UniverseId = 'emberlight') {
   if (mode === 'tidefall') {
+    playTidefallCatch()
+    return
+  }
+  if (mode === 'tempest') {
     playTidefallCatch()
     return
   }

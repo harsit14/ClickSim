@@ -613,9 +613,9 @@ export interface UniversePackV2 {
 }
 
 export interface UniverseAudioIdentity {
-  music: 'emberlight' | 'tidefall'
-  click: 'emberlight' | 'tidefall'
-  event: 'emberlight' | 'tidefall'
+  music: UniverseId
+  click: UniverseId
+  event: UniverseId
 }
 
 export interface UniversePowerUp {

@@ -40,7 +40,10 @@
     universeId === 'tidefall' ? '≈'
       : universeId === 'verdance' ? '❧'
         : universeId === 'clockwork' ? '⌁'
-          : '✦',
+          : universeId === 'prismata' ? '◇'
+            : universeId === 'tempest' ? 'ϟ'
+              : universeId === 'canticle' ? '◌'
+                : '✦',
   )
 
   onMount(() => cancelButton.focus({ preventScroll: true }))
@@ -187,6 +190,21 @@
       radial-gradient(circle at 50% 46%, rgba(183, 137, 72, 0.09), transparent 48%),
       rgba(4, 5, 7, 0.9);
   }
+  .scrim[data-universe='prismata'] {
+    --turn-accent: #f4edff;
+    --turn-warm: #a68cff;
+    background: repeating-linear-gradient(166deg, transparent 0 8%, rgba(166, 140, 255, 0.022) 8.2% 8.5%, transparent 8.7% 16%), rgba(4, 4, 12, 0.9);
+  }
+  .scrim[data-universe='tempest'] {
+    --turn-accent: #e3f7ff;
+    --turn-warm: #70c9ee;
+    background: radial-gradient(ellipse at 50% 45%, rgba(112, 201, 238, 0.12), transparent 48%), linear-gradient(180deg, rgba(3, 8, 14, 0.88), rgba(5, 15, 24, 0.94));
+  }
+  .scrim[data-universe='canticle'] {
+    --turn-accent: #fff0f7;
+    --turn-warm: #d89bc7;
+    background: repeating-radial-gradient(ellipse at 50% 48%, transparent 0 5rem, rgba(216, 155, 199, 0.018) 5.05rem 5.12rem, transparent 5.18rem 8rem), rgba(9, 4, 11, 0.91);
+  }
   .reset-card {
     position: relative;
     width: min(49rem, 100%);
@@ -225,6 +243,19 @@
       repeating-linear-gradient(90deg, transparent 0 4.8rem, color-mix(in srgb, var(--turn-accent) 3%, transparent) 4.84rem 4.9rem),
       linear-gradient(118deg, color-mix(in srgb, var(--panel) 94%, #0c0d10), color-mix(in srgb, var(--panel) 82%, transparent));
   }
+  [data-universe='prismata'] .reset-card {
+    border-radius: 0.2rem;
+    clip-path: polygon(1.2% 0, 98.8% 0, 100% 3%, 100% 97%, 98.8% 100%, 1.2% 100%, 0 97%, 0 3%);
+    background: repeating-linear-gradient(166deg, transparent 0 7rem, color-mix(in srgb, var(--turn-warm) 4%, transparent) 7.05rem 7.12rem), linear-gradient(118deg, color-mix(in srgb, var(--panel) 94%, #080814), color-mix(in srgb, var(--panel) 82%, transparent));
+  }
+  [data-universe='tempest'] .reset-card {
+    border-radius: 1.8rem 0.3rem 1.5rem 0.3rem;
+    background: radial-gradient(ellipse at 8% 10%, color-mix(in srgb, var(--turn-warm) 11%, transparent), transparent 26%), linear-gradient(128deg, color-mix(in srgb, var(--panel) 94%, #06101a), color-mix(in srgb, var(--panel) 80%, transparent));
+  }
+  [data-universe='canticle'] .reset-card {
+    border-radius: 2.2rem 2.2rem 0.5rem 0.5rem;
+    background: repeating-radial-gradient(ellipse at 4% 9%, transparent 0 2.5rem, color-mix(in srgb, var(--turn-warm) 4%, transparent) 2.55rem 2.62rem, transparent 2.7rem 4.2rem), linear-gradient(118deg, color-mix(in srgb, var(--panel) 94%, #120713), color-mix(in srgb, var(--panel) 82%, transparent));
+  }
   .reset-card.destructive { border-color: color-mix(in srgb, var(--turn-accent) 34%, transparent); }
   .turn-header {
     display: grid;
@@ -261,6 +292,12 @@
   [data-universe='verdance'] .turn-orbit { inset: -0.3rem; border-right: 1px solid color-mix(in srgb, var(--turn-accent) 28%, transparent); transform: rotate(38deg); }
   [data-universe='clockwork'] .turn-mark { outline: 1px dashed color-mix(in srgb, var(--turn-accent) 24%, transparent); outline-offset: 0.28rem; }
   [data-universe='clockwork'] .turn-orbit { inset: 0.3rem; border: 1px dashed color-mix(in srgb, var(--turn-accent) 35%, transparent); transform: rotate(8deg); }
+  [data-universe='prismata'] .turn-mark { border-radius: 0; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+  [data-universe='prismata'] .turn-orbit { inset: 0.15rem -0.4rem; border-radius: 0; transform: rotate(45deg); }
+  [data-universe='tempest'] .turn-mark { border-radius: 52% 48% 64% 36%; }
+  [data-universe='tempest'] .turn-orbit { inset: -0.2rem; border-left-style: dashed; transform: rotate(-38deg); }
+  [data-universe='canticle'] .turn-mark { border-style: dashed; }
+  [data-universe='canticle'] .turn-orbit { inset: 0.45rem -0.35rem; transform: scaleX(1.28); }
   .eyebrow {
     color: color-mix(in srgb, var(--turn-accent) 72%, var(--dim));
     font-size: 0.62rem;

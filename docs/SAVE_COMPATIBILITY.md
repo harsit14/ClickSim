@@ -36,17 +36,19 @@ does not authorize a worker to edit `src/core/save-data.ts` or emit the version 
 | 12 | Phase 5 baseline | Current finite JavaScript-number save and presentation preferences |
 | 13 | F1 numeric integration | Canonical scientific-string economy amounts, numeric law-state envelope, and pre-v13 rollback snapshot |
 | 14 | F1 cohesion integration | Persisted Goal Lens/accessibility preferences if required; otherwise an explicit no-op bridge before v15 |
-| 15 | F3 Verdance | `verdance` parked run, cohort/age state, graft/loadout state, local Archive/Beacon data |
-| 16 | F3 Clockwork | `clockwork` parked run, routing graph, scheduled-signal state, route loadouts |
-| 17 | F4 Prismata | `prismata` parked run, spectrum routes/recipes, optical loadouts |
-| 18 | F4 Tempest | `tempest` parked run, charge cells, saved discharge paths |
-| 19 | F4 Canticle | `canticle` parked run, sequence slots/presets, silent-equivalence state |
+| 15 | F3 Verdance | Superseded: v13 `universeRuns` + `numericLawState` already carries cohort age and parked local state; no schema bump emitted |
+| 16 | F3 Clockwork | Superseded: v13 generic parked-run envelope already carries deterministic local state; no schema bump emitted |
+| 17 | F4 Prismata | Superseded: v13 generic parked-run envelope carries the selected recipe and fluorescence state; no schema bump emitted |
+| 18 | F4 Tempest | Superseded: v13 generic parked-run envelope carries charge, path, and active discharge state; no schema bump emitted |
+| 19 | F4 Canticle | Superseded: v13 generic parked-run envelope carries the selected measure; silent equivalence is a presentation preference, not new save state |
 | 20 | F5 Chronicle/loadouts | Chronicle records, personal bests, Beacon names, validated build-code metadata |
 | 21 | F5 Garden | Garden state graph, doctrine reconciliation, authored closure and transition state |
 | 22 | F5 Atlas | Atlas law library/version, seeded route state, deterministic replay data, permanent Convergence archive |
 
-If a reserved feature needs no serialized data, its migration is an explicit no-op that
-advances the chain and is covered by a fixture. Version numbers are not reassigned.
+Versions 15–19 were retired before emission because v13 deliberately introduced a
+bounded, sanitized generic envelope for parked worlds and numeric law state. Historical
+saves never contained versions 15–19, so no migration steps or no-op version churn are
+required. Those numbers remain retired and are never reassigned.
 Schema changes discovered within one feature use that feature's reserved version when
 they can migrate atomically; otherwise Agent 00 reserves the next unclaimed integer.
 

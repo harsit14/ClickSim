@@ -156,10 +156,82 @@ const CLOCKWORK_COPY: Readonly<Record<string, string>> = {
   'reset.recovery.epoch-projection': 'Projection assumes the earned Mainsprings and current permanent bonuses.',
 }
 
+const PRISMATA_COPY: Readonly<Record<string, string>> = {
+  'reset-comparison.eyebrow': 'Before the Refraction',
+  'goal-lens.title': 'Spectrum Finder',
+  'goal-lens.turn-off-label': 'Turn off the Spectrum Finder',
+  'goal-lens.open-label': 'Open the Spectrum Finder',
+  'goal-lens.close-label': 'Close the Spectrum Finder',
+  'goal-lens.chart-label': 'Three optical paths',
+  'goal-lens.collapsed-active-rhythm': 'Holding the spectrum in focus.',
+  'goal-lens.slot.now': 'Ready to focus',
+  'goal-lens.slot.soon': 'Next wavelength',
+  'goal-lens.slot.pinned': 'Held alignment',
+  'goal-lens.reason.supernova': 'Resolve this spectrum into lasting Facets.',
+  'goal-lens.supernova': 'Preview the Refraction',
+  'prompt.supernova.title': 'Inspect the Refraction before committing',
+  'reset.action.cancel': 'Keep this spectrum',
+  'reset.action.epoch-turn': 'Refraction',
+  'reset.result.epoch-matter-and-starting-kindlings': 'Chroma, Kindlings, ordinary upgrades, and buy mode return; Facets and permanent systems remain.',
+  'reset.category.world-currency': 'Chroma (World currency)',
+  'reset.category.epoch-matter': 'Facets (Epoch Matter)',
+  'reset.category.local-archive': 'Spectrum Vault (Field Archive)',
+  'reset.recovery.epoch-projection': 'Projection assumes the earned Facets and current permanent bonuses.',
+}
+
+const TEMPEST_COPY: Readonly<Record<string, string>> = {
+  'reset-comparison.eyebrow': 'Before the Grounding',
+  'goal-lens.title': 'Pressure Forecast',
+  'goal-lens.turn-off-label': 'Turn off the Pressure Forecast',
+  'goal-lens.open-label': 'Open the Pressure Forecast',
+  'goal-lens.close-label': 'Close the Pressure Forecast',
+  'goal-lens.chart-label': 'Three forecast paths',
+  'goal-lens.collapsed-active-rhythm': 'Holding the discharge route.',
+  'goal-lens.slot.now': 'Ready to discharge',
+  'goal-lens.slot.soon': 'Next front',
+  'goal-lens.slot.pinned': 'Held forecast',
+  'goal-lens.reason.supernova': 'Ground this storm into lasting Fulgurites.',
+  'goal-lens.supernova': 'Preview the Grounding',
+  'prompt.supernova.title': 'Read the Grounding before committing',
+  'reset.action.cancel': 'Keep this storm',
+  'reset.action.epoch-turn': 'Grounding',
+  'reset.result.epoch-matter-and-starting-kindlings': 'Charge, Kindlings, ordinary upgrades, and buy mode return; Fulgurites and permanent systems remain.',
+  'reset.category.world-currency': 'Charge (World currency)',
+  'reset.category.epoch-matter': 'Fulgurites (Epoch Matter)',
+  'reset.category.local-archive': 'Storm Almanac (Field Archive)',
+  'reset.recovery.epoch-projection': 'Projection assumes the earned Fulgurites and current permanent bonuses.',
+}
+
+const CANTICLE_COPY: Readonly<Record<string, string>> = {
+  'reset-comparison.eyebrow': 'Before the Refrain',
+  'goal-lens.title': 'Measure Guide',
+  'goal-lens.turn-off-label': 'Turn off the Measure Guide',
+  'goal-lens.open-label': 'Open the Measure Guide',
+  'goal-lens.close-label': 'Close the Measure Guide',
+  'goal-lens.chart-label': 'Three answering phrases',
+  'goal-lens.collapsed-active-rhythm': 'Holding the active measure.',
+  'goal-lens.slot.now': 'Ready to sound',
+  'goal-lens.slot.soon': 'Next phrase',
+  'goal-lens.slot.pinned': 'Held refrain',
+  'goal-lens.reason.supernova': 'Complete this measure into lasting Overtones.',
+  'goal-lens.supernova': 'Preview the Refrain',
+  'prompt.supernova.title': 'Hear the Refrain before committing',
+  'reset.action.cancel': 'Keep this measure',
+  'reset.action.epoch-turn': 'Refrain',
+  'reset.result.epoch-matter-and-starting-kindlings': 'Resonance, Kindlings, ordinary upgrades, and buy mode return; Overtones and permanent systems remain.',
+  'reset.category.world-currency': 'Resonance (World currency)',
+  'reset.category.epoch-matter': 'Overtones (Epoch Matter)',
+  'reset.category.local-archive': 'Resonant Memory (Field Archive)',
+  'reset.recovery.epoch-projection': 'Projection assumes the earned Overtones and current permanent bonuses.',
+}
+
 const COPY_BY_UNIVERSE: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   tidefall: TIDEFALL_COPY,
   verdance: VERDANCE_COPY,
   clockwork: CLOCKWORK_COPY,
+  prismata: PRISMATA_COPY,
+  tempest: TEMPEST_COPY,
+  canticle: CANTICLE_COPY,
 }
 
 function humanizeKey(key: string): string {
