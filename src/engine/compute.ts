@@ -7,7 +7,7 @@ import {
   curiosityClickMult,
   curiosityProductionMult,
 } from '../content/curiosities'
-import { universeById } from '../content/universes'
+import { universeById, V2_UNIVERSE_BY_ID } from '../content/universes'
 import { verdanceGeneratorCohortStatus } from '../content/universes/verdance/runtime'
 import { f4ClickMultiplier, f4RateMultiplier } from '../content/universes/f4-runtime'
 import { wayfinderProductionMult, wayfinderTideAmplitude } from '../content/wayfinder'
@@ -32,6 +32,8 @@ import {
   sumAmounts,
   toAmount,
 } from '../core/numeric/amount'
+import { atlasRouteMultiplier, decodeAtlasRoute } from '../endgame/atlas'
+import type { ActiveAtlasRoute, LawLoadout } from '../endgame/types'
 import {
   formulaAmount,
   formulaScalar,
@@ -87,6 +89,10 @@ export interface EcoState {
   vesselParts: string[]
   /** Amount-valued state for universe-specific production laws. */
   numericLawState?: Readonly<Record<string, EconomyAmount>>
+  /** Temporary Atlas route; the parked source run remains outside the route. */
+  activeAtlasRoute?: ActiveAtlasRoute | null
+  lawLoadouts?: readonly LawLoadout[]
+  activeLawLoadoutId?: string | null
 }
 
 const NO_MODS: ChallengeMods = {}
@@ -118,6 +124,11 @@ function* ownedEffects(s: EcoState): Generator<Effect> {
     const c = CHALLENGE_BY_ID.get(id)
     if (c) yield* c.rewardEffects
   }
+  const loadout = s.lawLoadouts?.find((entry) => entry.id === s.activeLawLoadoutId && entry.universeId === s.activeUniverse)
+  const doctrine = loadout
+    ? V2_UNIVERSE_BY_ID.get(loadout.universeId)?.economy.doctrines.find((entry) => entry.id === loadout.doctrineId)
+    : null
+  if (doctrine) yield* doctrine.effects
 }
 
 interface EffectSourceRecord {
@@ -146,6 +157,11 @@ function effectSourceRecords(s: EcoState): EffectSourceRecord[] {
     const challenge = CHALLENGE_BY_ID.get(id)
     if (challenge) records.push({ id, label: challenge.name, kind: 'deep', effects: challenge.rewardEffects })
   }
+  const loadout = s.lawLoadouts?.find((entry) => entry.id === s.activeLawLoadoutId && entry.universeId === s.activeUniverse)
+  const doctrine = loadout
+    ? V2_UNIVERSE_BY_ID.get(loadout.universeId)?.economy.doctrines.find((entry) => entry.id === loadout.doctrineId)
+    : null
+  if (doctrine) records.push({ id: doctrine.id, label: doctrine.name, kind: 'universe-law', effects: doctrine.effects })
   return records
 }
 
@@ -211,6 +227,10 @@ export function globalMult(s: EcoState, now = Date.now()): EconomyAmount {
   multiplier = multiplyAmountByNumber(multiplier, stardustProductionMult(s.stardustWorks))
   multiplier = multiplyAmountByNumber(multiplier, deepProductionMult(s.deepWorks))
   multiplier = multiplyAmountByNumber(multiplier, curiosityProductionMult(s.curiosities, universe.cabinet))
+  const atlasRoute = s.activeAtlasRoute ? decodeAtlasRoute(s.activeAtlasRoute.routeCode) : null
+  if (atlasRoute && atlasRoute.universeId === s.activeUniverse) {
+    multiplier = multiplyAmountByNumber(multiplier, atlasRouteMultiplier(atlasRoute))
+  }
   const fuelItemId = universe.cabinet.items.find(({ kind }) => kind === 'hearthkeeper')?.id
   if (fuelItemId && s.curiosities.includes(fuelItemId) && s.keeperFedUntil > now) {
     multiplier = multiplyAmountByNumber(multiplier, universe.cabinet.fuelProductionMult)

@@ -13,6 +13,7 @@ const REQUIRED_CHAPTERS = [
   'trials',
   'multiverse',
   'story',
+  'legacy',
   'progress',
   'saves-controls',
 ]

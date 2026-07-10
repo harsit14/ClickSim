@@ -8,6 +8,17 @@ import { DEFAULT_UNIVERSE_ID, UNIVERSES, universeById } from '../content/univers
 import { VESSEL_PARTS } from '../content/vessel'
 import { DEEP_WORKS, STARDUST_WORKS } from '../content/repeatables'
 import type { BuyAmount } from '../engine/game.svelte'
+import {
+  atlasReplayDigest,
+  decodeAtlasRoute,
+  CONVERGENCES,
+} from '../endgame/atlas'
+import {
+  cleanBeaconName,
+  cleanPlayerLabel,
+  validateLawLoadout,
+} from '../endgame/chronicle'
+import { emptyEndgameState, type EndgameState, type GardenEnding } from '../endgame/types'
 import type { BeatVisual, MotionPreference, TextScale, VisualQuality } from './preferences'
 import type { Amount, SerializedAmount } from './numeric/amount'
 import {
@@ -19,7 +30,7 @@ import {
   serializeAmount,
 } from './numeric/amount'
 
-export const CURRENT_SAVE_VERSION = 13
+export const CURRENT_SAVE_VERSION = 22
 export const LEGACY_SAVE_VERSION = 12
 export const NUMERIC_SAVE_VERSION = 13
 
@@ -267,6 +278,16 @@ export interface SerializedSaveDataV13 extends Omit<SaveDataV13,
   universeRuns: Record<string, SerializedUniverseRunStateV13>
 }
 
+export interface SaveDataV22 extends Omit<SaveDataV13, 'version'> {
+  version: 22
+  endgame: EndgameState
+}
+
+export interface SerializedSaveDataV22 extends Omit<SerializedSaveDataV13, 'version'> {
+  version: 22
+  endgame: EndgameState
+}
+
 const MIGRATIONS: Record<number, (d: Record<string, unknown>) => Record<string, unknown>> = {
   1: (d) => ({
     ...d,
@@ -374,6 +395,11 @@ const uiIds = new Set(UI_UNLOCKS.map((item) => item.id))
 const universeIds = new Set(UNIVERSES.map((item) => item.id))
 const vesselPartIds = new Set(VESSEL_PARTS.map((item) => item.id))
 const seenIds = new Set(UNIVERSES.flatMap((universe) => universe.lumen.map((item) => item.id)))
+const chronicleMilestones = new Set([
+  'awakening', 'epoch-turn', 'deep-collapse', 'answer', 'beacon', 'garden', 'atlas-route',
+])
+const gardenEndings = new Set<GardenEnding>(['warden', 'hunger', 'companion', 'continue'])
+const convergenceIds = new Set(CONVERGENCES.map((entry) => entry.id))
 
 function numberValue(value: unknown, fallback: number, min = 0, max = Number.MAX_VALUE): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
@@ -412,6 +438,121 @@ function safeIds(value: unknown, max = 128): string[] {
     if (result.length >= max) break
   }
   return result
+}
+
+function sanitizeEndgameState(value: unknown): EndgameState {
+  const empty = emptyEndgameState()
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return empty
+  const source = value as Record<string, unknown>
+
+  const chronicleEvents = Array.isArray(source.chronicleEvents)
+    ? source.chronicleEvents.flatMap((raw) => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return []
+      const event = raw as Record<string, unknown>
+      if (
+        typeof event.id !== 'string' || !SAFE_ID.test(event.id)
+        || typeof event.universeId !== 'string' || !universeIds.has(event.universeId)
+        || typeof event.milestone !== 'string' || !chronicleMilestones.has(event.milestone)
+      ) return []
+      return [{
+        id: event.id,
+        universeId: event.universeId as EndgameState['chronicleEvents'][number]['universeId'],
+        milestone: event.milestone as EndgameState['chronicleEvents'][number]['milestone'],
+        at: integerValue(event.at, 0, 0),
+        detail: cleanPlayerLabel(event.detail, 96),
+      }]
+    }).slice(-512)
+    : []
+
+  const beaconNames: Record<string, string> = {}
+  if (source.beaconNames && typeof source.beaconNames === 'object' && !Array.isArray(source.beaconNames)) {
+    for (const [id, rawName] of Object.entries(source.beaconNames)) {
+      const name = cleanBeaconName(rawName)
+      if (universeIds.has(id) && name) beaconNames[id] = name
+    }
+  }
+
+  const lawLoadouts = Array.isArray(source.lawLoadouts)
+    ? source.lawLoadouts.flatMap((raw) => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return []
+      const item = raw as Record<string, unknown>
+      if (
+        typeof item.id !== 'string' || !SAFE_ID.test(item.id)
+        || typeof item.universeId !== 'string' || !universeIds.has(item.universeId)
+      ) return []
+      const loadout: EndgameState['lawLoadouts'][number] = {
+        id: item.id,
+        name: cleanPlayerLabel(item.name),
+        universeId: item.universeId as EndgameState['lawLoadouts'][number]['universeId'],
+        doctrineId: typeof item.doctrineId === 'string' ? item.doctrineId : '',
+        wayfinderLawIds: safeIds(item.wayfinderLawIds, 3),
+        archiveShelfId: typeof item.archiveShelfId === 'string' ? item.archiveShelfId : '',
+        vestmentId: typeof item.vestmentId === 'string' ? item.vestmentId : '',
+        anomalyResponseIds: safeIds(item.anomalyResponseIds, 3),
+        automation: item.automation === 'idle' || item.automation === 'balanced' ? item.automation : 'manual',
+      }
+      return validateLawLoadout(loadout).length === 0 ? [loadout] : []
+    }).slice(0, 32)
+    : []
+
+  const chronicleBests = Array.isArray(source.chronicleBests)
+    ? source.chronicleBests.flatMap((raw) => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return []
+      const item = raw as Record<string, unknown>
+      const route = typeof item.routeCode === 'string' ? decodeAtlasRoute(item.routeCode) : null
+      const durationMs = integerValue(item.durationMs, 0, 1)
+      if (!route || durationMs <= 0) return []
+      return [{ routeCode: route.code, durationMs, completedAt: integerValue(item.completedAt, 0, 0) }]
+    }).slice(0, 128)
+    : []
+
+  const atlasCompletions = Array.isArray(source.atlasCompletions)
+    ? source.atlasCompletions.flatMap((raw) => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return []
+      const item = raw as Record<string, unknown>
+      const route = typeof item.routeCode === 'string' ? decodeAtlasRoute(item.routeCode) : null
+      const durationMs = integerValue(item.durationMs, 0, 1)
+      if (!route || durationMs <= 0 || item.replayDigest !== atlasReplayDigest(route)) return []
+      return [{
+        routeCode: route.code,
+        universeId: route.universeId,
+        seed: route.seed,
+        durationMs,
+        completedAt: integerValue(item.completedAt, 0, 0),
+        replayDigest: atlasReplayDigest(route),
+      }]
+    }).slice(-256)
+    : []
+
+  let activeAtlasRoute: EndgameState['activeAtlasRoute'] = null
+  if (source.activeAtlasRoute && typeof source.activeAtlasRoute === 'object' && !Array.isArray(source.activeAtlasRoute)) {
+    const active = source.activeAtlasRoute as Record<string, unknown>
+    const route = typeof active.routeCode === 'string' ? decodeAtlasRoute(active.routeCode) : null
+    if (route) activeAtlasRoute = {
+      routeCode: route.code,
+      universeId: route.universeId,
+      seed: route.seed,
+      startedAt: integerValue(active.startedAt, 0, 0),
+    }
+  }
+
+  return {
+    chronicleEvents,
+    beaconNames,
+    lawLoadouts,
+    activeLawLoadoutId: typeof source.activeLawLoadoutId === 'string'
+      && lawLoadouts.some((loadout) => loadout.id === source.activeLawLoadoutId)
+      ? source.activeLawLoadoutId
+      : null,
+    chronicleBests,
+    atlasCompletions,
+    activeAtlasRoute,
+    unlockedConvergences: knownStrings(source.unlockedConvergences, convergenceIds),
+    gardenEnding: typeof source.gardenEnding === 'string' && gardenEndings.has(source.gardenEnding as GardenEnding)
+      ? source.gardenEnding as GardenEnding
+      : null,
+    gardenSceneSeen: booleanValue(source.gardenSceneSeen, false),
+  }
 }
 
 function ownedRecord(value: unknown, allowed: ReadonlySet<string>): Record<string, number> {
@@ -918,5 +1059,49 @@ export function stringifySaveDataV13(value: SaveDataV13): string {
   return JSON.stringify(serializeSaveDataV13(value))
 }
 
-/** Current public reader: every accepted historical save returns v13 runtime amounts. */
-export const migrateAndSanitizeSave = migrateAndSanitizeSaveV13
+export function convertSaveV13ToV22(value: SaveDataV13): SaveDataV22 {
+  const endgame = emptyEndgameState()
+  endgame.unlockedConvergences = CONVERGENCES
+    .filter((convergence) => value.beacons.length >= convergence.requiredBeacons)
+    .map((convergence) => convergence.id)
+  return { ...value, version: 22, endgame }
+}
+
+function sanitizeSaveV22(data: unknown): SaveDataV22 | null {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const source = data as Record<string, unknown>
+  if (source.version !== CURRENT_SAVE_VERSION) return null
+  const numeric = sanitizeSaveV13({ ...source, version: NUMERIC_SAVE_VERSION })
+  if (!numeric) return null
+  const endgame = sanitizeEndgameState(source.endgame)
+  endgame.unlockedConvergences = [...new Set([
+    ...endgame.unlockedConvergences,
+    ...CONVERGENCES
+      .filter((convergence) => numeric.beacons.length >= convergence.requiredBeacons)
+      .map((convergence) => convergence.id),
+  ])]
+  return { ...numeric, version: 22, endgame }
+}
+
+export function migrateAndSanitizeSaveV22(data: unknown): SaveDataV22 | null {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const version = (data as Record<string, unknown>).version
+  if (version === CURRENT_SAVE_VERSION) return sanitizeSaveV22(data)
+  const numeric = migrateAndSanitizeSaveV13(data)
+  return numeric ? convertSaveV13ToV22(numeric) : null
+}
+
+export function serializeSaveDataV22(value: SaveDataV22): SerializedSaveDataV22 {
+  return {
+    ...serializeSaveDataV13({ ...value, version: 13 }),
+    version: 22,
+    endgame: value.endgame,
+  }
+}
+
+export function stringifySaveDataV22(value: SaveDataV22): string {
+  return JSON.stringify(serializeSaveDataV22(value))
+}
+
+/** Current public reader: every accepted historical save returns the complete v22 snapshot. */
+export const migrateAndSanitizeSave = migrateAndSanitizeSaveV22

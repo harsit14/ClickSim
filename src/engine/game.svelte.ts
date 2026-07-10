@@ -7,7 +7,7 @@ import {
   cometGift,
   protostarFuelCost,
 } from '../content/curiosities'
-import { DEFAULT_UNIVERSE_ID, UNIVERSE_BY_ID, universeById } from '../content/universes'
+import { DEFAULT_UNIVERSE_ID, UNIVERSE_BY_ID, universeById, universeV2ById } from '../content/universes'
 import {
   advanceVerdanceCohortLawState,
   verdanceCohortRuntimeSummary,
@@ -87,6 +87,29 @@ import {
   prepareEarnings,
   preparePrestigeAward,
 } from './economy-transactions'
+import {
+  atlasReplayDigest,
+  decodeAtlasRoute,
+  CONVERGENCES,
+  type AtlasRoute,
+} from '../endgame/atlas'
+import {
+  cleanBeaconName,
+  lawLoadoutOwnershipIssues,
+  recordChronicleEvent,
+  updateChronicleBest,
+  upsertLawLoadout,
+  validateLawLoadout,
+} from '../endgame/chronicle'
+import { THEMES } from '../content/themes'
+import { availableGardenClosures } from '../endgame/garden'
+import {
+  emptyEndgameState,
+  type EndgameState,
+  type ActiveAtlasRoute,
+  type GardenEnding,
+  type LawLoadout,
+} from '../endgame/types'
 
 export type BuyAmount = 1 | 10 | 100 | 'max'
 
@@ -142,7 +165,10 @@ export interface ClickResult {
   critMult: number
 }
 
-export interface GameState extends EcoState {
+export interface GameState extends EcoState, Omit<EndgameState, 'activeAtlasRoute' | 'lawLoadouts' | 'activeLawLoadoutId'> {
+  activeAtlasRoute: ActiveAtlasRoute | null
+  lawLoadouts: LawLoadout[]
+  activeLawLoadoutId: string | null
   ui: string[]
   seen: string[]
   playtime: number
@@ -210,13 +236,14 @@ export function questionReady(): boolean {
 export function chooseEnding(id: 'warden' | 'hunger' | 'companion') {
   if (game.ending !== null) return
   game.ending = id
+  addChronicleMilestone('answer', `Answered ${id}.`)
 }
 
 /** Remembrance — NG+. Everything returns to the first dark pixel, except what
  *  Lumen keeps: the echoes, the record (achievements), and the memory itself,
  *  which doubles all light each time. The question may be answered again. */
 export function performRemembrance(): boolean {
-  if (game.ending === null) return false
+  if (game.ending === null || game.activeAtlasRoute) return false
   game.pastEndings.push(game.ending)
   game.remembrances += 1
   // survives: echoes, achievements, pastEndings, theme, volumes,
@@ -308,7 +335,31 @@ export const game: GameState = $state({
   vesselParts: [],
   universeRuns: {},
   numericLawState: {},
+  ...emptyEndgameState(),
 })
+
+function addChronicleMilestone(
+  milestone: EndgameState['chronicleEvents'][number]['milestone'],
+  detail: string,
+  universeId = game.activeUniverse,
+  at = Date.now(),
+) {
+  game.chronicleEvents = recordChronicleEvent(
+    game.chronicleEvents,
+    universeId as EndgameState['chronicleEvents'][number]['universeId'],
+    milestone,
+    at,
+    detail,
+  )
+}
+
+function syncConvergences() {
+  for (const convergence of CONVERGENCES) {
+    if (game.beacons.length >= convergence.requiredBeacons && !game.unlockedConvergences.includes(convergence.id)) {
+      game.unlockedConvergences.push(convergence.id)
+    }
+  }
+}
 
 function copyChallengeRun(run: RunSnapshot | null): RunSnapshot | null {
   if (!run) return null
@@ -454,6 +505,8 @@ export function igniteCurrentBeacon(): EconomyAmount {
   const nextDarkBetween = prepareBalanceAward(game.darkBetween, reward)
   game.beacons.push(pack.id)
   game.darkBetween = nextDarkBetween
+  addChronicleMilestone('beacon', `${game.beaconNames[pack.id] || pack.name} lit its Beacon.`)
+  syncConvergences()
   return reward
 }
 
@@ -479,13 +532,125 @@ export function buyWayfinder(id: WayfinderId): boolean {
 }
 
 export function crossToUniverse(id: string): boolean {
-  if (game.challenge || id === game.activeUniverse || !universeRouteUnlocked(id)) return false
+  if (game.challenge || game.activeAtlasRoute || id === game.activeUniverse || !universeRouteUnlocked(id)) return false
   game.universeRuns[game.activeUniverse] = snapshotUniverseRun()
   const destination = game.universeRuns[id] ?? freshUniverseRun(id)
   game.activeUniverse = id
   restoreUniverseRun(destination)
+  if (!game.chronicleEvents.some((event) => event.universeId === id && event.milestone === 'awakening')) {
+    addChronicleMilestone('awakening', `${universeById(id).name} awakened.`)
+  }
   clickMeter.samples = []
   return true
+}
+
+export function setBeaconName(universeId: string, name: string): boolean {
+  if (!UNIVERSE_BY_ID.has(universeId) || !game.beacons.includes(universeId)) return false
+  const clean = cleanBeaconName(name)
+  if (!clean) return false
+  game.beaconNames[universeId] = clean
+  return true
+}
+
+export function saveLawLoadout(loadout: LawLoadout): boolean {
+  if (validateLawLoadout(loadout).length > 0) return false
+  game.lawLoadouts = upsertLawLoadout(game.lawLoadouts, loadout)
+  return true
+}
+
+export function activateLawLoadout(id: string): boolean {
+  if (game.challenge || game.activeAtlasRoute) return false
+  const loadout = game.lawLoadouts.find((entry) => entry.id === id && entry.universeId === game.activeUniverse)
+  const unlockedThemes = THEMES.filter((theme) => theme.unlocked(game)).map((theme) => theme.id)
+  if (!loadout || lawLoadoutOwnershipIssues(loadout, game.wayfinder, unlockedThemes).length > 0) return false
+  game.activeLawLoadoutId = loadout.id
+  game.theme = loadout.vestmentId
+  game.autoKindler = loadout.automation !== 'manual'
+  game.autoStoker = loadout.automation !== 'manual'
+  return true
+}
+
+export function beginAtlasRoute(route: AtlasRoute, now = Date.now()): boolean {
+  if (
+    game.beacons.length < 3 || game.challenge || game.activeAtlasRoute
+    || route.universeId !== game.activeUniverse || decodeAtlasRoute(route.code)?.code !== route.code
+    || !Number.isFinite(now) || now < 0
+  ) return false
+  game.universeRuns[game.activeUniverse] = snapshotUniverseRun()
+  restoreUniverseRun(freshUniverseRun(game.activeUniverse))
+  game.activeAtlasRoute = {
+    routeCode: route.code,
+    universeId: route.universeId,
+    seed: route.seed,
+    startedAt: Math.floor(now),
+  }
+  clickMeter.samples = []
+  return true
+}
+
+export function atlasRouteReady(now = Date.now()): boolean {
+  if (!game.activeAtlasRoute || game.activeAtlasRoute.universeId !== game.activeUniverse) return false
+  const pack = universeById(game.activeUniverse)
+  if ((game.owned[pack.beacon.generatorId] ?? 0) < pack.beacon.count) return false
+  const route = decodeAtlasRoute(game.activeAtlasRoute.routeCode)
+  if (!route?.masteryId) return true
+  if (route.masteryId === 'mastery-no-critical') return game.crits === 0
+  if (route.masteryId === 'mastery-one-shelf') {
+    const archive = universeV2ById(game.activeUniverse)?.archive
+    return archive?.shelves.filter((shelf) => shelf.recordIds.every((id) => game.curiosities.includes(id))).length === 1
+  }
+  if (route.masteryId === 'mastery-patient') {
+    return now - game.activeAtlasRoute.startedAt >= 5_000 && clickMeter.samples.length === 0
+  }
+  return route.masteryId === 'mastery-visible-route'
+}
+
+function leaveAtlasRoute() {
+  const returnRun = game.universeRuns[game.activeUniverse]
+  if (returnRun) restoreUniverseRun(returnRun)
+  game.activeAtlasRoute = null
+  clickMeter.samples = []
+}
+
+export function abandonAtlasRoute(): boolean {
+  if (!game.activeAtlasRoute) return false
+  leaveAtlasRoute()
+  return true
+}
+
+export function completeAtlasRoute(now = Date.now()): boolean {
+  const active = game.activeAtlasRoute
+  if (!active || !atlasRouteReady(now) || !Number.isFinite(now) || now <= active.startedAt) return false
+  const route = decodeAtlasRoute(active.routeCode)
+  if (!route) return false
+  const completion = {
+    routeCode: route.code,
+    universeId: route.universeId,
+    seed: route.seed,
+    durationMs: Math.floor(now - active.startedAt),
+    completedAt: Math.floor(now),
+    replayDigest: atlasReplayDigest(route),
+  }
+  leaveAtlasRoute()
+  game.atlasCompletions.push(completion)
+  game.atlasCompletions = game.atlasCompletions.slice(-256)
+  game.chronicleBests = updateChronicleBest(game.chronicleBests, completion)
+  addChronicleMilestone('atlas-route', `Completed ${route.title} in ${completion.durationMs}ms.`, route.universeId, now)
+  return true
+}
+
+export function chooseGardenEnding(id: GardenEnding, now = Date.now()): boolean {
+  if (game.gardenEnding !== null) return false
+  const available = availableGardenClosures(game.beacons, game.pastEndings, game.ending)
+  if (!available.some((closure) => closure.id === id)) return false
+  game.gardenEnding = id
+  syncConvergences()
+  addChronicleMilestone('garden', `The Garden answered: ${id}.`, game.activeUniverse, now)
+  return true
+}
+
+export function markGardenSceneSeen() {
+  if (game.gardenEnding) game.gardenSceneSeen = true
 }
 
 const CLICK_RATE_WINDOW_MS = 3_000
@@ -522,6 +687,9 @@ export const vesselHasReadyPart = () => computeVesselHasReadyPart(game)
 
 export function earn(value: AmountInput) {
   const amount = toAmount(value)
+  if (gtAmount(amount, ZERO_AMOUNT) && !game.chronicleEvents.some((event) => event.universeId === game.activeUniverse && event.milestone === 'awakening')) {
+    addChronicleMilestone('awakening', `${universeById(game.activeUniverse).name} awakened.`)
+  }
   const next = prepareEarnings(game, amount, game.challenge === null)
   game.light = next.light
   game.totalEarned = next.totalEarned
@@ -610,6 +778,8 @@ export function performSupernova(): EconomyAmount {
   game.stardustTotal = next.total
   game.supernovae = next.resetCount
   game.challengeReturn = null
+  const epochName = universeV2ById(game.activeUniverse)?.economy.localPrestige.localName ?? 'Epoch Turn'
+  addChronicleMilestone('epoch-turn', `${epochName} preserved new Epoch Matter.`)
   resetRun(true)
   game.numericLawState = {}
   return gain
@@ -638,6 +808,7 @@ export function performDeepCollapse(): EconomyAmount {
   game.stardustWorks = {}
   game.eraEarned = ZERO_AMOUNT
   game.challengeReturn = null
+  addChronicleMilestone('deep-collapse', 'Entered the local Deep boundary.')
   resetRun(true)
   game.numericLawState = {}
   return gain
@@ -914,4 +1085,5 @@ export function wipe() {
   game.vesselParts = []
   game.universeRuns = {}
   game.numericLawState = {}
+  Object.assign(game, emptyEndgameState())
 }

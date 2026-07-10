@@ -1,11 +1,10 @@
 # Save compatibility, stable ID, and numeric migration plan
 
-Status: **F0.3 approved decision record**
+Status: **F5 implemented decision record**
 
-The Phase 5 baseline reads and writes save version 12 and uses JavaScript `number` for
-all economy values. F0 does not change that runtime behavior. This document reserves the
-next versions and IDs, and defines the numeric project that must land before multi-year
-or Atlas progression.
+The current game reads historical versions 1–13 and writes save version 22. Economy
+amounts use the v13 canonical scientific-string format; v22 adds the non-economic Garden,
+Chronicle, loadout, and Atlas record envelope required for continuing play.
 
 ## 1. Compatibility policy
 
@@ -23,8 +22,7 @@ or Atlas progression.
   rollback snapshot is retained for at least two shipped save versions and at least
   ninety days after the v13 release, whichever is longer.
 
-The **next save version is 13**. Version 13 is reserved for the atomic economy-number
-migration and may not be consumed by an unrelated settings or presentation change.
+Version 13 remains the atomic economy-number boundary. Version 22 is the current writer.
 
 ## 2. Reserved migration versions
 
@@ -41,14 +39,17 @@ does not authorize a worker to edit `src/core/save-data.ts` or emit the version 
 | 17 | F4 Prismata | Superseded: v13 generic parked-run envelope carries the selected recipe and fluorescence state; no schema bump emitted |
 | 18 | F4 Tempest | Superseded: v13 generic parked-run envelope carries charge, path, and active discharge state; no schema bump emitted |
 | 19 | F4 Canticle | Superseded: v13 generic parked-run envelope carries the selected measure; silent equivalence is a presentation preference, not new save state |
-| 20 | F5 Chronicle/loadouts | Chronicle records, personal bests, Beacon names, validated build-code metadata |
-| 21 | F5 Garden | Garden state graph, doctrine reconciliation, authored closure and transition state |
-| 22 | F5 Atlas | Atlas law library/version, seeded route state, deterministic replay data, permanent Convergence archive |
+| 20 | F5 Chronicle/loadouts | Staged into the atomic v22 F5 envelope; never emitted independently |
+| 21 | F5 Garden | Staged into the atomic v22 F5 envelope; never emitted independently |
+| 22 | F5 Atlas and aggregate F5 migration | **Current:** Chronicle records, personal bests, Beacon names, build metadata, Garden closure, seeded route state, replay digests, and Convergence archive |
 
 Versions 15–19 were retired before emission because v13 deliberately introduced a
 bounded, sanitized generic envelope for parked worlds and numeric law state. Historical
 saves never contained versions 15–19, so no migration steps or no-op version churn are
 required. Those numbers remain retired and are never reassigned.
+Versions 20 and 21 were schema review checkpoints rather than public writers. F5 emits
+the three mutually-referencing record groups atomically as v22, so no stored version 20
+or 21 exists and no partial Chronicle/Garden state can overwrite an Atlas-aware save.
 Schema changes discovered within one feature use that feature's reserved version when
 they can migrate atomically; otherwise Agent 00 reserves the next unclaimed integer.
 
@@ -246,8 +247,8 @@ F0 leaves every v12 save byte-compatible. The v13 implementation must:
 
 There is no lossy automatic v13-to-v12 down-conversion. A rollback build restores the
 dedicated raw snapshot and may lose only progress made after the migration; it does not
-guess at values the v12 client cannot represent. Rolling backups created after migration
-remain v13. The dedicated v12 rollback key is not rotated with them.
+guess at values the v12 client cannot represent. Current rolling backups are written as
+v22. The dedicated raw v12 rollback key is not rotated with them.
 
 Numeric-core, v13 migration, and presentation refactors land as separate reviewable
 commits. A failed numeric rollout reverts the v13 writer/reader commits without mixing in
@@ -268,8 +269,8 @@ Permanent migration fixtures must cover:
   balances, future versions, and unknown IDs;
 - each U3–U7 first-visit/parked-run migration as its reserved version lands;
 - rename, merge, split, tombstone, and refund ID mappings before any such mapping ships;
-- Chronicle/loadout validation, Garden closure state, Atlas seed/config replay, and
-  Convergence permanence at v20–v22.
+- v13-to-v22 defaulting plus Chronicle/loadout validation, Garden closure state, Atlas
+  seed/config replay, and Convergence permanence.
 
 Required properties:
 

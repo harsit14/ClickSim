@@ -8,12 +8,19 @@ import {
   universeSimulationFixture,
 } from './profile-simulator'
 import { runAllCurrentPackAudits } from './current-pack-audit'
+import {
+  buildLawInteractionMatrix,
+  detectLawDominance,
+  validateLawInteractionMatrix,
+} from './law-interaction-matrix'
 
 const suite = runSimulationSuite()
 const currentPackAudits = runAllCurrentPackAudits()
+const lawMatrix = buildLawInteractionMatrix()
+const lawMatrixIssues = validateLawInteractionMatrix(lawMatrix)
 
 if (process.argv.includes('--json')) {
-  console.log(JSON.stringify({ currentPackAudits, profileSuite: suite }, null, 2))
+  console.log(JSON.stringify({ currentPackAudits, profileSuite: suite, lawMatrix, lawMatrixIssues }, null, 2))
 } else {
   console.log(`CURRENT PACK CURVE AUDIT · ${currentPackAudits.length} actual compute profiles`)
   for (const audit of currentPackAudits) {
@@ -49,6 +56,8 @@ if (process.argv.includes('--json')) {
       `build ${aggregate.buildId}: leads ${aggregate.caseIdsLed.length} cases across ${aggregate.profileIdsLed.length} profiles; all-context=${aggregate.dominatesIdleActiveOfflineAndAccessibility}`,
     )
   }
+  const dominantLawBuilds = detectLawDominance(lawMatrix).filter((finding) => finding.dominatesEveryContext)
+  console.log(`law interaction matrix: ${lawMatrix.length} cases · ${lawMatrixIssues.length} issues · ${dominantLawBuilds.length} all-context dominant builds`)
 }
 
-if (suite.failedCaseIds.length > 0) process.exitCode = 1
+if (suite.failedCaseIds.length > 0 || lawMatrixIssues.length > 0) process.exitCode = 1

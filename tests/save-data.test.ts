@@ -21,7 +21,7 @@ test('migrates a legacy v1 save through every version', () => {
   })
 
   assert.ok(migrated)
-  assert.equal(migrated.version, 13)
+  assert.equal(migrated.version, 22)
   assert.equal(migrated.activeUniverse, 'emberlight')
   assert.deepEqual(migrated.owned, { spark: 4 })
   assert.deepEqual(migrated.ui, ['counter', 'shop', 'upgrades', 'stats', 'options'])
@@ -42,7 +42,7 @@ test('migrates v11 saves into persistent Phase 5 preferences', () => {
     totalEarned: 10,
   })
   assert.ok(migrated)
-  assert.equal(migrated.version, 13)
+  assert.equal(migrated.version, 22)
   assert.equal(migrated.motionPreference, 'system')
   assert.equal(migrated.visualQuality, 'auto')
   assert.equal(migrated.beatVisual, 'subtle')

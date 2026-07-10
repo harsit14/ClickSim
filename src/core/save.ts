@@ -5,8 +5,8 @@ import { advanceVerdanceCohortLawState } from '../content/universes/verdance/run
 import { advanceF4LawState } from '../content/universes/f4-runtime'
 import {
   migrateAndSanitizeSave,
-  stringifySaveDataV13,
-  type SaveDataV13,
+  stringifySaveDataV22,
+  type SaveDataV22,
 } from './save-data'
 import type { EconomyAmount } from '../content/universes/types'
 import {
@@ -51,9 +51,9 @@ function copyRunSnapshot(snapshot: RunSnapshot | null | undefined): RunSnapshot 
   }
 }
 
-function snapshot(): SaveDataV13 {
+function snapshot(): SaveDataV22 {
   return {
-    version: 13,
+    version: 22,
     savedAt: Date.now(),
     activeUniverse: game.activeUniverse,
     light: game.light,
@@ -108,15 +108,30 @@ function snapshot(): SaveDataV13 {
     darkBetween: game.darkBetween,
     wayfinder: [...game.wayfinder],
     vesselParts: [...game.vesselParts],
-    universeRuns: {
-      ...game.universeRuns,
-      [game.activeUniverse]: snapshotUniverseRun(),
-    },
+    universeRuns: game.activeAtlasRoute
+      ? { ...game.universeRuns }
+      : { ...game.universeRuns, [game.activeUniverse]: snapshotUniverseRun() },
     numericLawState: { ...game.numericLawState },
+    endgame: {
+      chronicleEvents: game.chronicleEvents.map((event) => ({ ...event })),
+      beaconNames: { ...game.beaconNames },
+      lawLoadouts: game.lawLoadouts.map((loadout) => ({
+        ...loadout,
+        wayfinderLawIds: [...loadout.wayfinderLawIds],
+        anomalyResponseIds: [...loadout.anomalyResponseIds],
+      })),
+      activeLawLoadoutId: game.activeLawLoadoutId,
+      chronicleBests: game.chronicleBests.map((best) => ({ ...best })),
+      atlasCompletions: game.atlasCompletions.map((completion) => ({ ...completion })),
+      activeAtlasRoute: game.activeAtlasRoute ? { ...game.activeAtlasRoute } : null,
+      unlockedConvergences: [...game.unlockedConvergences],
+      gardenEnding: game.gardenEnding,
+      gardenSceneSeen: game.gardenSceneSeen,
+    },
   }
 }
 
-function apply(d: SaveDataV13) {
+function apply(d: SaveDataV22) {
   game.activeUniverse = d.activeUniverse
   game.light = d.light
   game.totalEarned = d.totalEarned
@@ -188,9 +203,23 @@ function apply(d: SaveDataV13) {
     }]),
   )
   game.numericLawState = { ...d.numericLawState }
+  game.chronicleEvents = d.endgame.chronicleEvents.map((event) => ({ ...event }))
+  game.beaconNames = { ...d.endgame.beaconNames }
+  game.lawLoadouts = d.endgame.lawLoadouts.map((loadout) => ({
+    ...loadout,
+    wayfinderLawIds: [...loadout.wayfinderLawIds],
+    anomalyResponseIds: [...loadout.anomalyResponseIds],
+  }))
+  game.activeLawLoadoutId = d.endgame.activeLawLoadoutId
+  game.chronicleBests = d.endgame.chronicleBests.map((best) => ({ ...best }))
+  game.atlasCompletions = d.endgame.atlasCompletions.map((completion) => ({ ...completion }))
+  game.activeAtlasRoute = d.endgame.activeAtlasRoute ? { ...d.endgame.activeAtlasRoute } : null
+  game.unlockedConvergences = [...d.endgame.unlockedConvergences]
+  game.gardenEnding = d.endgame.gardenEnding
+  game.gardenSceneSeen = d.endgame.gardenSceneSeen
 }
 
-function parseStored(raw: string | null): SaveDataV13 | null {
+function parseStored(raw: string | null): SaveDataV22 | null {
   if (!raw) return null
   try {
     return migrateAndSanitizeSave(JSON.parse(raw))
@@ -217,7 +246,7 @@ function writeRecentBackup(raw: string) {
     const previous = localStorage.getItem(RECENT_BACKUP_KEYS[index - 1])
     if (previous) localStorage.setItem(RECENT_BACKUP_KEYS[index], previous)
   }
-  localStorage.setItem(RECENT_BACKUP_KEYS[0], stringifySaveDataV13(clean))
+  localStorage.setItem(RECENT_BACKUP_KEYS[0], stringifySaveDataV22(clean))
 }
 
 function maybeBackup(raw: string | null, now: number) {
@@ -262,8 +291,8 @@ export function restoreSaveBackup(id: SaveBackupId): boolean {
     if (!data) return false
     const current = localStorage.getItem(KEY)
     if (current) writeRecentBackup(current)
-    const restored = { ...data, savedAt: Date.now() } satisfies SaveDataV13
-    localStorage.setItem(KEY, stringifySaveDataV13(restored))
+    const restored = { ...data, savedAt: Date.now() } satisfies SaveDataV22
+    localStorage.setItem(KEY, stringifySaveDataV22(restored))
     apply(restored)
     return true
   } catch {
@@ -312,7 +341,7 @@ export function save() {
   try {
     const now = Date.now()
     maybeBackup(localStorage.getItem(KEY), now)
-    localStorage.setItem(KEY, stringifySaveDataV13(snapshot()))
+    localStorage.setItem(KEY, stringifySaveDataV22(snapshot()))
   } catch {
     // storage unavailable (private mode, quota) — play on without persistence
   }
@@ -326,7 +355,7 @@ export function load(): EconomyAmount {
   markActiveSession()
   markPresence()
 
-  let data: SaveDataV13 | null = null
+  let data: SaveDataV22 | null = null
   let recoveredFrom = ''
   let migratedFromV12 = false
   try {
@@ -342,15 +371,17 @@ export function load(): EconomyAmount {
       if (!raw) continue
       const version = storedVersion(raw)
       if (version !== null && version <= 12) {
-        data = commitV13Migration(localStorage, KEY, raw)
+        const numeric = commitV13Migration(localStorage, KEY, raw)
+        data = numeric ? migrateAndSanitizeSave(numeric) : null
         migratedFromV12 = data !== null
+        if (data) localStorage.setItem(KEY, stringifySaveDataV22(data))
       } else {
         data = parseStored(raw)
       }
       if (!data) continue
       if (key !== KEY) {
         recoveredFrom = label
-        if (!migratedFromV12) localStorage.setItem(KEY, stringifySaveDataV13(data))
+        if (!migratedFromV12) localStorage.setItem(KEY, stringifySaveDataV22(data))
       }
       break
     }
@@ -361,7 +392,7 @@ export function load(): EconomyAmount {
   const messages: string[] = []
   if (recoveredFrom) messages.push(`Recovered from the ${recoveredFrom}.`)
   if (migratedFromV12) {
-    messages.push('Save upgraded to v13. Your original v12 save is preserved for recovery and export.')
+    messages.push('Save upgraded through the numeric migration to v22. Your original v12 save is preserved for recovery and export.')
   }
   recoveryMessage = messages.join(' ')
   apply(data)
@@ -395,7 +426,7 @@ export function load(): EconomyAmount {
 }
 
 export function exportSave(): string {
-  const json = stringifySaveDataV13(snapshot())
+  const json = stringifySaveDataV22(snapshot())
   return btoa(unescape(encodeURIComponent(json)))
 }
 
@@ -421,12 +452,14 @@ export function importSave(code: string): boolean {
     const current = localStorage.getItem(KEY)
     if (current) writeRecentBackup(current)
     if (version !== null && version <= 12) {
-      data = commitV13Migration(localStorage, KEY, json, Date.now())
+      const numeric = commitV13Migration(localStorage, KEY, json, Date.now())
+      data = numeric ? migrateAndSanitizeSave(numeric) : null
       if (!data) return false
-      recoveryMessage = 'Imported save upgraded to v13. The original v12 data is preserved for recovery and export.'
+      localStorage.setItem(KEY, stringifySaveDataV22(data))
+      recoveryMessage = 'Imported save upgraded through the numeric migration to v22. The original v12 data is preserved for recovery and export.'
     } else {
       data = { ...data, savedAt: Date.now() }
-      localStorage.setItem(KEY, stringifySaveDataV13(data))
+      localStorage.setItem(KEY, stringifySaveDataV22(data))
       recoveryMessage = ''
     }
     apply(data)
@@ -441,9 +474,9 @@ export function replaceStoredSave(data: unknown): boolean {
   let candidate = data
   if (data && typeof data === 'object' && !Array.isArray(data)) {
     const source = data as Record<string, unknown>
-    if (source.version === 13 && source.light && typeof source.light === 'object') {
+    if (source.version === 22 && source.light && typeof source.light === 'object') {
       try {
-        candidate = JSON.parse(stringifySaveDataV13(data as SaveDataV13))
+        candidate = JSON.parse(stringifySaveDataV22(data as SaveDataV22))
       } catch {
         return false
       }
@@ -452,7 +485,7 @@ export function replaceStoredSave(data: unknown): boolean {
   const clean = migrateAndSanitizeSave(candidate)
   if (!clean) return false
   try {
-    localStorage.setItem(KEY, stringifySaveDataV13(clean))
+    localStorage.setItem(KEY, stringifySaveDataV22(clean))
     return true
   } catch {
     return false

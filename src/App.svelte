@@ -30,6 +30,7 @@
   import ManifestWorldLayer from './ui/ManifestWorldLayer.svelte'
   import PurchaseCeremonyLayer from './ui/PurchaseCeremonyLayer.svelte'
   import UniverseLawPanel from './ui/UniverseLawPanel.svelte'
+  import EndgameHub from './ui/EndgameHub.svelte'
   import {
     game,
     hasUi,
@@ -38,6 +39,7 @@
     supernovaGain,
     vesselHasReadyPart,
     vesselRevealed,
+    atlasRouteReady,
   } from './engine/game.svelte'
   import { clearBuffs } from './systems/buffs.svelte'
   import { combo } from './systems/combo.svelte'
@@ -71,6 +73,7 @@
   let codexOpen = $state(false)
   let deepOpen = $state(false)
   let guideOpen = $state(false)
+  let endgameOpen = $state(false)
   let cutsceneActive = $state(false)
   let questionOpen = $state(false)
   let remembering = $state(false)
@@ -106,8 +109,10 @@
   }))
   const vesselVisible = $derived(vesselRevealed())
   const vesselReady = $derived(vesselHasReadyPart())
+  const endgameVisible = $derived(game.beacons.length > 0 || game.activeAtlasRoute !== null)
+  const endgameReady = $derived(game.activeAtlasRoute !== null && atlasRouteReady())
   const utilityPanelOpen = $derived(
-    statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen || guideOpen,
+    statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen || guideOpen || endgameOpen,
   )
   const storyModalActive = $derived(cutsceneActive || questionOpen || remembering || crossingPrelude)
   const modalActive = $derived(storyModalActive || guideOpen || resetPreviewOpen)
@@ -162,7 +167,7 @@
   })
 
   function closeAll() {
-    statsOpen = optionsOpen = curiositiesOpen = vesselOpen = observatoryOpen = codexOpen = deepOpen = guideOpen = false
+    statsOpen = optionsOpen = curiositiesOpen = vesselOpen = observatoryOpen = codexOpen = deepOpen = guideOpen = endgameOpen = false
   }
   function toggleStats() {
     const next = !statsOpen
@@ -204,6 +209,11 @@
     closeAll()
     guideOpen = next
   }
+  function toggleEndgame() {
+    const next = !endgameOpen
+    closeAll()
+    endgameOpen = next
+  }
 
   function onGlobalKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape' && utilityPanelOpen) {
@@ -225,6 +235,7 @@
     else if (key === 's' && observatoryVisible) toggleObservatory()
     else if (key === 'd' && deepVisible) toggleDeep()
     else if (key === 'e' && game.echoes.length > 0) toggleCodex()
+    else if (key === 'l' && endgameVisible) toggleEndgame()
     else if (key === 'b' && hasUi('bulk')) {
       const amounts = [1, 10, 100, 'max'] as const
       game.buyAmount = amounts[(amounts.indexOf(game.buyAmount) + 1) % amounts.length]
@@ -406,6 +417,9 @@
     {#if game.echoes.length > 0}
       <button class="dock-btn" class:open={codexOpen} onclick={toggleCodex} title="Codex of Echoes · E" data-hint="Codex of Echoes · E" aria-label="Codex of Echoes" aria-keyshortcuts="E">❖</button>
     {/if}
+    {#if endgameVisible}
+      <button class="dock-btn legacy" class:open={endgameOpen} class:ready={endgameReady} onclick={toggleEndgame} title="The Legacy of Light · L" data-hint="Legacy · L" aria-label="The Legacy of Light" aria-keyshortcuts="L">⌘</button>
+    {/if}
   </nav>
 
   {#if statsOpen}
@@ -439,6 +453,9 @@
   {/if}
   {#if deepOpen}
     <TheDeep onclose={() => (deepOpen = false)} />
+  {/if}
+  {#if endgameOpen}
+    <EndgameHub onclose={() => (endgameOpen = false)} />
   {/if}
   <QuestionChip onopen={() => { closeAll(); questionOpen = true }} />
 </div>

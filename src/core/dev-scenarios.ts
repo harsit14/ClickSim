@@ -4,10 +4,10 @@ import {
   migrateAndSanitizeSave,
   migrateAndSanitizeSaveV12,
   type SaveDataV12,
-  type SaveDataV13,
+  type SaveDataV22,
 } from './save-data'
 
-export type DevScenario = 'midgame' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'verdance' | 'clockwork' | 'prismata' | 'tempest' | 'canticle' | 'markets'
+export type DevScenario = 'midgame' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'verdance' | 'clockwork' | 'prismata' | 'tempest' | 'canticle' | 'garden' | 'markets'
 
 const GENERATORS = [
   'spark',
@@ -78,8 +78,8 @@ function emptyScenario(now: number): SaveDataV12 {
 }
 
 /** Deterministic, dev-only states used for manual and browser regression passes. */
-export function createDevScenario(name: string | null, now = Date.now()): SaveDataV13 | null {
-  if (!['midgame', 'endgame', 'question', 'crossing', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle', 'markets'].includes(name ?? '')) return null
+export function createDevScenario(name: string | null, now = Date.now()): SaveDataV22 | null {
+  if (!['midgame', 'endgame', 'question', 'crossing', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle', 'garden', 'markets'].includes(name ?? '')) return null
   const base = emptyScenario(now)
 
   if (name === 'midgame') {
@@ -151,14 +151,15 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
     })
   }
 
-  if (name === 'verdance' || name === 'clockwork' || name === 'prismata' || name === 'tempest' || name === 'canticle') {
-    const pack = universeById(name)
+  if (name === 'verdance' || name === 'clockwork' || name === 'prismata' || name === 'tempest' || name === 'canticle' || name === 'garden') {
+    const universeId = name === 'garden' ? 'canticle' : name
+    const pack = universeById(universeId)
     const route = ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']
-    const priorBeacons = route.slice(0, route.indexOf(name))
-    const runCurrency = route.indexOf(name) >= 4 ? 1e24 : 1e18
+    const priorBeacons = name === 'garden' ? route : route.slice(0, route.indexOf(universeId))
+    const runCurrency = route.indexOf(universeId) >= 4 ? 1e24 : 1e18
     return migrateAndSanitizeSave({
       ...base,
-      activeUniverse: name,
+      activeUniverse: universeId,
       light: runCurrency / 100,
       totalEarned: runCurrency,
       allTimeEarned: 1e40,
@@ -184,6 +185,8 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
       singUpgrades: ['deep-resonance'],
       challengesDone: ['silence', 'entropy', 'bare-hands', 'drought'],
       beacons: priorBeacons,
+      pastEndings: name === 'garden' ? ['warden', 'hunger', 'companion'] : base.pastEndings,
+      ending: name === 'garden' ? 'companion' : null,
       darkBetween: 6,
       vesselParts: ['hull-hearths', 'sails-constellation', 'heart-sun', 'keel-trials', 'archive'],
     })

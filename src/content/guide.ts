@@ -320,6 +320,37 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     ],
   },
   {
+    id: 'legacy',
+    nav: 'Garden & Atlas',
+    eyebrow: 'closure and continuation',
+    title: 'The Chronicle, Garden, and Atlas',
+    summary: 'Seven Beacons complete the authored saga; the Atlas continues with seeded combinations of tested world laws.',
+    keywords: ['chronicle', 'garden', 'atlas', 'convergence', 'loadout', 'build code', 'beacon name', 'route', 'seed', 'closure'],
+    blocks: [
+      {
+        heading: 'The Chronicle and law loadouts',
+        paragraphs: [
+          'The Chronicle records awakenings, Epoch Turns, Deep Collapses, answers, Beacons, Garden closure, and completed Atlas routes. Lit Beacons may be given player-authored names, and the record keeps personal route bests without turning them into mandatory leaderboards.',
+          'A law loadout combines one local doctrine, up to three owned Wayfinder laws, one Archive shelf resonance, a cosmetic Heart vestment, optional anomaly responses, and an automation profile. Short build codes contain configuration only: importing one never imports currencies, Beacons, unlocks, or progression.',
+        ],
+      },
+      {
+        heading: 'The Garden is an ending',
+        paragraphs: [
+          'After all seven Beacons are lit, the Garden places the worlds in relationship rather than opening an eighth generator ladder. Warden, Hunger, and Companion each receive a fulfilled closure. After all three answers have been lived across Remembrances, Continue reconciles them without declaring any one answer false.',
+          'The credits scene is replayable through the permanent record. Choosing closure does not erase the save; it makes the transition from authored saga to continuing mastery explicit.',
+        ],
+      },
+      {
+        heading: 'Seeded Atlas routes and Convergences',
+        paragraphs: [
+          'The Atlas unlocks after three Beacons. Each route combines one universe with compatible, hand-authored environment, economy, and interaction laws, one narrative fragment, and an optional mastery constraint. The seed reproduces the same route and replay log exactly.',
+          'Beginning a route parks the source universe intact and creates a temporary route run. Completion archives the replay and personal time; abandonment restores the source without loss. Convergences are permanent route and story collections. They never expire and have no paid or seasonal reward track.',
+        ],
+      },
+    ],
+  },
+  {
     id: 'progress',
     nav: 'Records & themes',
     eyebrow: 'everything that remembers',
@@ -367,7 +398,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
           'Click or tap the central object to earn currency.',
           'Space or Enter also activates the central object when focus is not inside a control.',
           'Number keys 1–9 buy the matching visible generator.',
-          'G opens this guide; I opens Stats; O opens Options; C opens the active cabinet; V opens the Vessel; S opens the Observatory; D opens the Deep; and E opens the Codex when each system exists.',
+          'G opens this guide; I opens Stats; O opens Options; C opens the active cabinet; V opens the Vessel; S opens the Observatory; D opens the Deep; E opens the Codex; and L opens the Legacy hub when each system exists.',
           'B cycles the 1, 10, 100, and maximum bulk-buy settings. Escape closes any utility panel.',
           'Every major panel, upgrade, shop item, and story choice is keyboard focusable.',
           'Reduced-motion preferences disable or simplify major interface animations.',
