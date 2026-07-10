@@ -58,10 +58,11 @@ function fallbackMessage(request: AudioSinkFallbackRequest): string {
 
 const audioSink: SemanticAudioSink = {
   play(request: AudioSinkPlayRequest): boolean {
-    if (request.cue.synthesisKey !== 'ember-purchase-interval') return false
     // The current synthesized interval is authored at the cue's target peak.
     const gainScale = 10 ** ((request.appliedPeakDb - request.cue.targetPeakDb) / 20)
-    return playBuy(gainScale)
+    if (request.cue.synthesisKey === 'ember-purchase-interval') return playBuy(gainScale, 'emberlight')
+    if (request.cue.synthesisKey === 'tide-purchase-minor-seventh-rise') return playBuy(gainScale, 'tidefall')
+    return false
   },
   presentVisualFallback(request) {
     liveFeedback.visualFallbackEventId = request.event.id

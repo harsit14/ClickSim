@@ -195,7 +195,7 @@ const TIDEFALL_ACHIEVEMENT_COPY: Record<string, AchievementCopy> = {
   exaflare: { name: 'Exatide', flavor: 'Lumen has stopped counting. You have not.' },
   zettashine: { name: 'Zettasheen', flavor: 'Glow beyond bookkeeping.' },
   yottablaze: { name: 'Yottaflood', flavor: 'There is no prefix after this. There will be.' },
-  persistent: { name: 'Persistent', flavor: 'The Tidewell appreciates the attention.' },
+  persistent: { name: 'Persistent', flavor: 'The Tideheart appreciates the attention.' },
   devoted: { name: 'Devoted', flavor: 'Your finger can feel the current now too.' },
   'true-name': { name: 'The Tide Knows Your Name', flavor: 'It will not tell you how it learned it.' },
   'steady-glow': { name: 'Steady Glow', flavor: 'It flows without you now. It still prefers you.' },
@@ -219,8 +219,8 @@ const TIDEFALL_ACHIEVEMENT_COPY: Record<string, AchievementCopy> = {
   'curiosity-all': { name: 'The Ocean Is a Map', flavor: 'Every pelagic object catalogued in one universe.' },
   'an-hour-warm': { name: 'An Hour Afloat', flavor: 'Time flows when you are raising a universe.' },
   'ten-hours-kindled': { name: 'Ten Hours Rising', flavor: 'Lumen made you a mug of something warm. Metaphorically.' },
-  impatience: { name: 'Impatience', flavor: '100 clicks before buying a single thing. The Tidewell admires commitment to the bit.' },
-  'night-reader': { name: 'Night Diver', flavor: 'It is 3 AM. The Tidewell does not judge. Lumen does, a little.' },
+  impatience: { name: 'Impatience', flavor: '100 clicks before buying a single thing. The Tideheart admires commitment to the bit.' },
+  'night-reader': { name: 'Night Diver', flavor: 'It is 3 AM. The Tideheart does not judge. Lumen does, a little.' },
   purist: { name: 'Purist', flavor: 'A million glow and not one upgrade. Why though.' },
   'with-these-hands': { name: 'With These Hands', flavor: 'A million points of glow, every one of them touched.' },
 }
@@ -236,8 +236,8 @@ function tidefallWorldText(text: string): string {
     .replace(/\bpoints of light\b/gi, 'points of glow')
     .replace(/\blight\b/g, 'glow')
     .replace(/\bLight\b/g, 'Glow')
-    .replace(/\bthe ember\b/g, 'the Tidewell')
-    .replace(/\bThe Ember\b/g, 'The Tidewell')
+    .replace(/\bthe ember\b/g, 'the Tideheart')
+    .replace(/\bThe Ember\b/g, 'The Tideheart')
     .replace(/\bember\b/g, 'current')
     .replace(/\bfire\b/g, 'current')
 }

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { GUIDE_CHAPTERS, type GuideChapter } from '../content/guide'
   import { UI_UNLOCKS } from '../content/ui-unlocks'
-  import { UNIVERSES, universeById } from '../content/universes'
+  import { UNIVERSES, universeById, universeV2ById } from '../content/universes'
   import { CONSTELLATION } from '../content/constellation'
   import { DEEP_UPGRADES } from '../content/deep'
   import { STARDUST_WORKS, DEEP_WORKS } from '../content/repeatables'
@@ -35,6 +35,10 @@
   let searchInput: HTMLInputElement
 
   const pack = $derived(universeById(game.activeUniverse))
+  const localPrestige = $derived(universeV2ById(pack.id)?.economy.localPrestige)
+  const epochMatterGlyph = $derived(localPrestige?.rewardCurrency.glyph ?? '✧')
+  const epochMatterName = $derived(localPrestige?.rewardCurrency.localName ?? 'Stardust')
+  const epochTurnName = $derived(localPrestige?.localName ?? 'Supernova')
   const normalizedQuery = $derived(query.trim().toLowerCase())
   const chapters = $derived.by(() => {
     if (!normalizedQuery) return GUIDE_CHAPTERS
@@ -46,7 +50,7 @@
     if (game.beacons.length > 0) return { label: 'Between universes', detail: `${game.beacons.length} Beacon${game.beacons.length === 1 ? '' : 's'} lit; Wayfinder laws now join every world.`, chapter: 'multiverse' }
     if (game.vesselParts.length > 0) return { label: 'The Vessel', detail: `${game.vesselParts.length}/5 parts assembled.`, chapter: 'multiverse' }
     if (game.collapses > 0) return { label: 'The Deep', detail: `${game.collapses} Deep Collapse${game.collapses === 1 ? '' : 's'} and ${game.challengesDone.length}/12 trials endured.`, chapter: 'deep' }
-    if (game.supernovae > 0) return { label: 'Stardust era', detail: `${game.supernovae} Supernova${game.supernovae === 1 ? '' : 'e'} recorded; ${game.constellation.length}/13 constellation nodes drawn.`, chapter: 'supernova' }
+    if (game.supernovae > 0) return { label: `${epochMatterName} era`, detail: `${game.supernovae} ${epochTurnName}${game.supernovae === 1 ? '' : 's'} recorded; ${game.constellation.length}/13 constellation nodes drawn.`, chapter: 'supernova' }
     if (gteAmount(game.totalEarned, amountFromNumber(250_000))) return { label: 'Growing universe', detail: 'Cabinet signals and deeper generator relationships are beginning to resolve.', chapter: 'cabinet' }
     return { label: 'First light', detail: 'Build the interface, buy early kindling, and let the first upgrades teach the loop.', chapter: 'awakening' }
   })
@@ -295,11 +299,11 @@
                 <div class="node-list">
                   {#each CONSTELLATION as node (node.id)}
                     {@const copy = constellationNodeCopy(node, pack.id)}
-                    <article class:owned={game.constellation.includes(node.id)}><span>{node.cost}✧</span><div><small>{node.branch}</small><strong>{copy.name}</strong><p>{[...node.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())), ...node.perks.map((perk) => localize(perk.desc))].join(' · ')}</p></div></article>
+                    <article class:owned={game.constellation.includes(node.id)}><span>{node.cost}{epochMatterGlyph}</span><div><small>{node.branch}</small><strong>{copy.name}</strong><p>{[...node.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())), ...node.perks.map((perk) => localize(perk.desc))].join(' · ')}</p></div></article>
                   {/each}
                 </div>
                 <div class="works-row">
-                  {#each STARDUST_WORKS as work (work.id)}{@const copy = stardustWorkCopy(work, pack.id)}<article><span>{work.glyph}</span><div><strong>{copy.name}</strong><p>{copy.effect ?? work.effect}</p><small>starts at ✧{work.baseCost} · cost growth ×{work.costGrowth}</small></div></article>{/each}
+                  {#each STARDUST_WORKS as work (work.id)}{@const copy = stardustWorkCopy(work, pack.id)}<article><span>{work.glyph}</span><div><strong>{copy.name}</strong><p>{copy.effect ?? work.effect}</p><small>starts at {epochMatterGlyph}{work.baseCost} · cost growth ×{work.costGrowth}</small></div></article>{/each}
                 </div>
               </section>
             {:else if chapter.id === 'deep'}

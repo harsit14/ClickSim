@@ -99,8 +99,12 @@ function playTidefallClick() {
   pressure.stop(t + 0.26)
 }
 
-/** Soft two-note purchase chime. Returns false when Web Audio is unavailable. */
-export function playBuy(gainScale = 1): boolean {
+/** Authored local purchase interval. Returns false when Web Audio is unavailable. */
+export function playBuy(
+  gainScale = 1,
+  mode: 'emberlight' | 'tidefall' = 'emberlight',
+): boolean {
+  if (mode === 'tidefall') return playTidefallBuy(gainScale)
   const a = audio()
   if (!a) return false
   const t = a.ctx.currentTime
@@ -120,6 +124,35 @@ export function playBuy(gainScale = 1): boolean {
     osc.connect(gain).connect(routedGain)
     osc.start(start)
     osc.stop(start + 0.4)
+  })
+  return true
+}
+
+/** A submerged minor-seventh rise with a short pressure return. */
+function playTidefallBuy(gainScale = 1): boolean {
+  const a = audio()
+  if (!a) return false
+  const t = a.ctx.currentTime
+  const routedGain = a.ctx.createGain()
+  routedGain.gain.value = Math.max(0, Math.min(2, gainScale))
+  routedGain.connect(a.master)
+  const notes = [293.66, 523.25]
+  notes.forEach((frequency, index) => {
+    const oscillator = a.ctx.createOscillator()
+    const gain = a.ctx.createGain()
+    const filter = a.ctx.createBiquadFilter()
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(frequency * 1.18, t + index * 0.09)
+    oscillator.frequency.exponentialRampToValueAtTime(frequency, t + 0.22 + index * 0.09)
+    filter.type = 'lowpass'
+    filter.frequency.value = 1_250
+    const start = t + index * 0.09
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(0.17, start + 0.018)
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.48)
+    oscillator.connect(filter).connect(gain).connect(routedGain)
+    oscillator.start(start)
+    oscillator.stop(start + 0.52)
   })
   return true
 }
