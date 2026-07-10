@@ -92,119 +92,323 @@ export interface SemanticFeedbackDescription {
 }
 
 const STABLE_ID = /^[a-z0-9][a-z0-9-]{0,63}$/
+const MIN_AMOUNT_EXPONENT = -2_147_483_648
+const MAX_AMOUNT_EXPONENT = 2_147_483_647
+const UNIVERSE_IDS = new Set([
+  'emberlight',
+  'tidefall',
+  'verdance',
+  'clockwork',
+  'prismata',
+  'tempest',
+  'canticle',
+])
+const SOURCE_KINDS = new Set([
+  'generator',
+  'archive',
+  'omen',
+  'story',
+  'beacon',
+  'heart',
+  'upgrade',
+  'doctrine',
+  'trial',
+  'epoch',
+  'deep',
+  'system',
+])
+const FEEDBACK_KINDS = new Set(Object.keys(SEMANTIC_FEEDBACK_REGISTRY))
+const RHYTHM_BANDS = new Set(['miss', 'near', 'on-beat'])
+const SKILL_RESULTS = new Set(['success', 'near', 'miss'])
+const DISCOVERY_KINDS = new Set(['kindling', 'omen', 'archive', 'echo', 'system'])
+const MASTERY_KINDS = new Set(['trial', 'doctrine', 'vessel', 'beacon'])
+const EPOCH_BOUNDARIES = new Set(['epoch-turn', 'deep-collapse', 'remembrance', 'crossing'])
+const POLITENESS = new Set(['off', 'polite', 'assertive'])
 
-function isNormalizedAmount(value: EconomyAmount): boolean {
-  if (!Number.isFinite(value.mantissa) || !Number.isInteger(value.exponent)) return false
-  if (value.mantissa === 0) return value.exponent === 0 && !Object.is(value.mantissa, -0)
-  return value.mantissa >= 1 && value.mantissa < 10
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function validateAmount(
-  value: EconomyAmount,
+function add(
+  issues: FeedbackValidationIssue[],
+  path: string,
+  code: string,
+  message: string,
+): void {
+  issues.push({ path, code, message })
+}
+
+function validateStableId(
+  value: unknown,
+  path: string,
+  issues: FeedbackValidationIssue[],
+): value is string {
+  if (typeof value !== 'string' || !STABLE_ID.test(value)) {
+    add(issues, path, 'id.invalid', 'Expected a stable lowercase hyphenated ID.')
+    return false
+  }
+  return true
+}
+
+function validateNonEmptyString(
+  value: unknown,
   path: string,
   issues: FeedbackValidationIssue[],
 ): void {
-  if (!isNormalizedAmount(value)) {
-    issues.push({
-      path,
-      code: 'amount.not-normalized',
-      message: 'Expected a nonnegative normalized EconomyAmount (zero or 1 <= mantissa < 10).',
-    })
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    add(issues, path, 'string.empty', 'Expected a non-empty string.')
   }
 }
 
-/** Returns actionable semantic errors without throwing or mutating the event. */
+function hasAtMostFifteenSignificantDigits(value: number): boolean {
+  return Number(value.toPrecision(15)) === value
+}
+
+function validateAmount(
+  value: unknown,
+  path: string,
+  issues: FeedbackValidationIssue[],
+): void {
+  if (!isRecord(value)) {
+    add(issues, path, 'amount.not-object', 'Expected a normalized EconomyAmount object.')
+    return
+  }
+  const mantissa = value.mantissa
+  const exponent = value.exponent
+  if (typeof mantissa !== 'number' || !Number.isFinite(mantissa) || Object.is(mantissa, -0)) {
+    add(
+      issues,
+      `${path}.mantissa`,
+      'amount.mantissa-invalid',
+      'Mantissa must be finite, nonnegative, and cannot be negative zero.',
+    )
+  } else {
+    if (mantissa === 0) {
+      if (exponent !== 0) {
+        add(issues, `${path}.exponent`, 'amount.zero-not-canonical', 'Zero must use exponent 0.')
+      }
+    } else {
+      if (mantissa < 1 || mantissa >= 10) {
+        add(
+          issues,
+          `${path}.mantissa`,
+          'amount.not-normalized',
+          'A nonzero normalized mantissa must satisfy 1 <= mantissa < 10.',
+        )
+      }
+      if (!hasAtMostFifteenSignificantDigits(mantissa)) {
+        add(
+          issues,
+          `${path}.mantissa`,
+          'amount.precision-exceeded',
+          'Mantissa must contain at most fifteen significant decimal digits.',
+        )
+      }
+    }
+  }
+  if (
+    typeof exponent !== 'number'
+    || !Number.isInteger(exponent)
+    || Object.is(exponent, -0)
+    || exponent < MIN_AMOUNT_EXPONENT
+    || exponent > MAX_AMOUNT_EXPONENT
+  ) {
+    add(
+      issues,
+      `${path}.exponent`,
+      'amount.exponent-invalid',
+      'Exponent must be an integer in the signed 32-bit range.',
+    )
+  }
+}
+
+function validateAggregation(
+  value: unknown,
+  rule: SemanticFeedbackRule | null,
+  eventKind: string,
+  issues: FeedbackValidationIssue[],
+): Record<string, unknown> | null {
+  if (!isRecord(value)) {
+    add(issues, 'aggregation', 'aggregation.invalid', 'Expected an aggregation record object.')
+    return null
+  }
+  if (rule?.aggregation === 'never') {
+    add(
+      issues,
+      'aggregation',
+      'aggregation.forbidden',
+      `${eventKind} feedback represents one authored event and cannot be aggregated.`,
+    )
+  }
+  if (typeof value.key !== 'string' || value.key.trim().length === 0) {
+    add(issues, 'aggregation.key', 'aggregation.key-empty', 'Aggregation keys must be non-empty and deterministic.')
+  }
+  if (!Number.isInteger(value.count) || (value.count as number) < 1) {
+    add(issues, 'aggregation.count', 'aggregation.count-invalid', 'Aggregation count must be a positive integer.')
+  }
+  if (!Number.isFinite(value.windowMs) || (value.windowMs as number) < 0) {
+    add(
+      issues,
+      'aggregation.windowMs',
+      'aggregation.window-invalid',
+      'Aggregation window must be a finite duration greater than or equal to zero.',
+    )
+  }
+  return value
+}
+
+function validateAnnouncement(value: unknown, issues: FeedbackValidationIssue[]): void {
+  if (!isRecord(value)) {
+    add(issues, 'announcement', 'announcement.invalid', 'Expected an announcement specification object.')
+    return
+  }
+  validateNonEmptyString(value.messageKey, 'announcement.messageKey', issues)
+  validateNonEmptyString(value.dedupeKey, 'announcement.dedupeKey', issues)
+  if (typeof value.politeness !== 'string' || !POLITENESS.has(value.politeness)) {
+    add(
+      issues,
+      'announcement.politeness',
+      'announcement.politeness-invalid',
+      'Announcement politeness must be off, polite, or assertive.',
+    )
+  }
+  if (!Number.isFinite(value.minimumIntervalMs) || (value.minimumIntervalMs as number) < 0) {
+    add(
+      issues,
+      'announcement.minimumIntervalMs',
+      'announcement.interval-invalid',
+      'Announcement minimum interval must be finite and nonnegative.',
+    )
+  }
+}
+
+/** Returns actionable semantic errors for untrusted boundary input without throwing. */
 export function validateSemanticFeedbackEvent(
-  event: SemanticFeedbackEvent,
+  event: unknown,
 ): readonly FeedbackValidationIssue[] {
   const issues: FeedbackValidationIssue[] = []
-  const rule: SemanticFeedbackRule = SEMANTIC_FEEDBACK_REGISTRY[event.kind]
-
-  if (!STABLE_ID.test(event.id)) {
-    issues.push({ path: 'id', code: 'id.invalid', message: 'Expected a stable lowercase hyphenated ID.' })
+  if (!isRecord(event)) {
+    return [{ path: 'event', code: 'event.invalid', message: 'Expected a semantic feedback event object.' }]
   }
-  if (!Number.isFinite(event.occurredAtMs) || event.occurredAtMs < 0) {
-    issues.push({
-      path: 'occurredAtMs',
-      code: 'time.invalid',
-      message: 'Expected a finite caller-supplied timestamp greater than or equal to zero.',
-    })
-  }
-  if (!rule.allowedTiers.includes(event.tier)) {
-    issues.push({
-      path: 'tier',
-      code: 'tier.invalid-for-kind',
-      message: `${event.kind} feedback allows tier(s) ${rule.allowedTiers.join(', ')}, received ${event.tier}.`,
-    })
-  }
-  if (!STABLE_ID.test(event.source.id)) {
-    issues.push({
-      path: 'source.id',
-      code: 'source.id-invalid',
-      message: 'Expected a stable lowercase hyphenated source ID.',
-    })
+  validateStableId(event.id, 'id', issues)
+  if (!Number.isFinite(event.occurredAtMs) || (event.occurredAtMs as number) < 0) {
+    add(
+      issues,
+      'occurredAtMs',
+      'time.invalid',
+      'Expected a finite caller-supplied timestamp greater than or equal to zero.',
+    )
   }
 
-  if (event.aggregation) {
-    if (rule.aggregation === 'never') {
-      issues.push({
-        path: 'aggregation',
-        code: 'aggregation.forbidden',
-        message: `${event.kind} feedback represents one authored event and cannot be aggregated.`,
-      })
-    }
-    if (event.aggregation.key.trim().length === 0) {
-      issues.push({
-        path: 'aggregation.key',
-        code: 'aggregation.key-empty',
-        message: 'Aggregation keys must be non-empty and deterministic.',
-      })
-    }
-    if (!Number.isInteger(event.aggregation.count) || event.aggregation.count < 1) {
-      issues.push({
-        path: 'aggregation.count',
-        code: 'aggregation.count-invalid',
-        message: 'Aggregation count must be a positive integer.',
-      })
-    }
-    if (!Number.isFinite(event.aggregation.windowMs) || event.aggregation.windowMs < 0) {
-      issues.push({
-        path: 'aggregation.windowMs',
-        code: 'aggregation.window-invalid',
-        message: 'Aggregation window must be a finite duration greater than or equal to zero.',
-      })
-    }
+  let kind: SemanticFeedbackEvent['kind'] | null = null
+  let rule: SemanticFeedbackRule | null = null
+  if (typeof event.kind !== 'string' || !FEEDBACK_KINDS.has(event.kind)) {
+    add(issues, 'kind', 'kind.invalid', `Unknown semantic feedback kind "${String(event.kind)}".`)
+  } else {
+    kind = event.kind as SemanticFeedbackEvent['kind']
+    rule = SEMANTIC_FEEDBACK_REGISTRY[kind]
   }
 
-  switch (event.kind) {
+  const tierIsValid = Number.isInteger(event.tier)
+    && (event.tier as number) >= 0
+    && (event.tier as number) <= 5
+  if (!tierIsValid) {
+    add(issues, 'tier', 'tier.invalid', 'Feedback tier must be an integer from 0 through 5.')
+  } else if (rule && !rule.allowedTiers.includes(event.tier as FeedbackTier)) {
+    add(
+      issues,
+      'tier',
+      'tier.invalid-for-kind',
+      `${String(event.kind)} feedback allows tier(s) ${rule.allowedTiers.join(', ')}, received ${String(event.tier)}.`,
+    )
+  }
+
+  if (!isRecord(event.source)) {
+    add(issues, 'source', 'source.invalid', 'Expected a semantic feedback source object.')
+  } else {
+    if (typeof event.source.universeId !== 'string' || !UNIVERSE_IDS.has(event.source.universeId)) {
+      add(issues, 'source.universeId', 'source.universe-invalid', 'Source universe is not one of the seven frozen IDs.')
+    }
+    if (typeof event.source.kind !== 'string' || !SOURCE_KINDS.has(event.source.kind)) {
+      add(issues, 'source.kind', 'source.kind-invalid', 'Source kind is not part of the frozen feedback grammar.')
+    }
+    validateStableId(event.source.id, 'source.id', issues)
+  }
+
+  if (event.audioCue !== undefined) validateStableId(event.audioCue, 'audioCue', issues)
+  if (event.announcement !== undefined) validateAnnouncement(event.announcement, issues)
+  const aggregation = event.aggregation === undefined
+    ? null
+    : validateAggregation(event.aggregation, rule, String(event.kind), issues)
+
+  switch (kind) {
     case 'passive':
-    case 'touch':
       validateAmount(event.amount, 'amount', issues)
       break
-    case 'purchase':
-      if (!Number.isInteger(event.quantity) || event.quantity < 1) {
-        issues.push({
-          path: 'quantity',
-          code: 'purchase.quantity-invalid',
-          message: 'Purchase quantity must be a positive integer.',
-        })
+    case 'touch':
+      validateAmount(event.amount, 'amount', issues)
+      if (typeof event.critical !== 'boolean') {
+        add(issues, 'critical', 'touch.critical-invalid', 'Touch critical must be a boolean.')
       }
-      if (event.aggregation && event.aggregation.count !== event.quantity) {
-        issues.push({
-          path: 'aggregation.count',
-          code: 'purchase.aggregation-count-mismatch',
-          message: `Aggregation count ${event.aggregation.count} must equal purchase quantity ${event.quantity}.`,
-        })
+      if (event.rhythmBand !== null && (typeof event.rhythmBand !== 'string' || !RHYTHM_BANDS.has(event.rhythmBand))) {
+        add(issues, 'rhythmBand', 'touch.rhythm-band-invalid', 'Rhythm band must be miss, near, on-beat, or null.')
+      }
+      break
+    case 'purchase':
+      if (!Number.isInteger(event.quantity) || (event.quantity as number) < 1) {
+        add(issues, 'quantity', 'purchase.quantity-invalid', 'Purchase quantity must be a positive integer.')
+      }
+      if (aggregation && aggregation.count !== event.quantity) {
+        add(
+          issues,
+          'aggregation.count',
+          'purchase.aggregation-count-mismatch',
+          `Aggregation count ${String(aggregation.count)} must equal purchase quantity ${String(event.quantity)}.`,
+        )
       }
       validateAmount(event.cost, 'cost', issues)
       validateAmount(event.rateDelta, 'rateDelta', issues)
       break
+    case 'skill':
+      validateStableId(event.skillId, 'skillId', issues)
+      if (typeof event.result !== 'string' || !SKILL_RESULTS.has(event.result)) {
+        add(issues, 'result', 'skill.result-invalid', 'Skill result must be success, near, or miss.')
+      }
+      break
+    case 'discovery':
+      if (typeof event.discoveryKind !== 'string' || !DISCOVERY_KINDS.has(event.discoveryKind)) {
+        add(
+          issues,
+          'discoveryKind',
+          'discovery.kind-invalid',
+          'Discovery kind must be kindling, omen, archive, echo, or system.',
+        )
+      }
+      validateStableId(event.discoveredId, 'discoveredId', issues)
+      break
+    case 'mastery':
+      if (typeof event.masteryKind !== 'string' || !MASTERY_KINDS.has(event.masteryKind)) {
+        add(
+          issues,
+          'masteryKind',
+          'mastery.kind-invalid',
+          'Mastery kind must be trial, doctrine, vessel, or beacon.',
+        )
+      }
+      validateStableId(event.masteredId, 'masteredId', issues)
+      break
     case 'epoch':
+      if (typeof event.boundary !== 'string' || !EPOCH_BOUNDARIES.has(event.boundary)) {
+        add(
+          issues,
+          'boundary',
+          'epoch.boundary-invalid',
+          'Epoch boundary must be epoch-turn, deep-collapse, remembrance, or crossing.',
+        )
+      }
       validateAmount(event.gained, 'gained', issues)
       break
-    case 'skill':
-    case 'discovery':
-    case 'mastery':
+    case null:
       break
   }
 

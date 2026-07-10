@@ -5,6 +5,7 @@ import type {
   FeedbackSource,
   PurchaseFeedbackEvent,
 } from '../content/universes/types'
+import { validateSemanticFeedbackEvent } from './semantic-registry'
 
 export type PurchaseActionMode = 'one' | 'ten' | 'max'
 
@@ -23,8 +24,22 @@ export interface PurchaseFeedbackInput {
 }
 
 const PURCHASE_SOURCE_KINDS = new Set(['generator', 'upgrade', 'doctrine', 'archive'])
+const PURCHASE_MODES = new Set(['one', 'ten', 'max'])
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
 function assertPurchaseInput(input: PurchaseFeedbackInput): void {
+  if (!isRecord(input)) {
+    throw new TypeError('Purchase feedback input must be an object.')
+  }
+  if (!isRecord(input.source)) {
+    throw new TypeError('Purchase feedback source must be an object.')
+  }
+  if (typeof input.mode !== 'string' || !PURCHASE_MODES.has(input.mode)) {
+    throw new RangeError(`Unknown purchase feedback mode "${String(input.mode)}".`)
+  }
   if (!PURCHASE_SOURCE_KINDS.has(input.source.kind)) {
     throw new RangeError(`Purchase feedback cannot use source kind "${input.source.kind}".`)
   }
@@ -71,8 +86,14 @@ export function aggregatePurchaseFeedback(
           windowMs: 0,
         },
       }),
-    ...(input.audioCue ? { audioCue: input.audioCue } : {}),
-    ...(input.announcement ? { announcement: input.announcement } : {}),
+    ...(input.audioCue !== undefined ? { audioCue: input.audioCue } : {}),
+    ...(input.announcement !== undefined ? { announcement: input.announcement } : {}),
+  }
+
+  const issues = validateSemanticFeedbackEvent(event)
+  if (issues.length > 0) {
+    const detail = issues.map((entry) => `${entry.path}: ${entry.message}`).join('\n')
+    throw new TypeError(`Invalid purchase feedback input:\n${detail}`)
   }
 
   return [event]
