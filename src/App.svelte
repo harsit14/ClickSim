@@ -24,6 +24,11 @@
   import RemembranceOverlay from './ui/RemembranceOverlay.svelte'
   import CrossingPrelude from './ui/CrossingPrelude.svelte'
   import GameGuide from './ui/GameGuide.svelte'
+  import GoalLens from './ui/GoalLens.svelte'
+  import ContextualPrompts from './ui/ContextualPrompts.svelte'
+  import ResetComparisonCard from './ui/ResetComparisonCard.svelte'
+  import ManifestWorldLayer from './ui/ManifestWorldLayer.svelte'
+  import PurchaseCeremonyLayer from './ui/PurchaseCeremonyLayer.svelte'
   import {
     game,
     hasUi,
@@ -38,12 +43,20 @@
   import { save } from './core/save'
   import { isPlaying, setMusicMode, setStems, startMusic } from './audio/music'
   import { THEME_BY_ID, themeVarsForUniverse } from './content/themes'
-  import { universeById } from './content/universes'
+  import { universeById, universeV2ById } from './content/universes'
   import { acquireGamePause } from './core/pause.svelte'
   import { worldRef } from './render/world-ref'
   import { clearToasts } from './systems/toasts.svelte'
   import type { EconomyAmount } from './content/universes/types'
   import { amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
+  import { resolveVisualQuality } from './core/preferences'
+  import { buildEmberGoalCandidates, previewSupernovaRecovery } from './experience/ember-cohesion'
+  import { formatGoalDuration, resolveEmberUiText } from './experience/ember-ui-text'
+  import { compareProgressionBoundary } from './experience/reset-comparison'
+  import type { ResetComparison } from './experience/reset-comparison'
+  import type { ResetCardDecision } from './experience/reset-comparison-ui'
+  import type { ContextualPromptCandidate, ContextualPromptState } from './experience/contextual-prompts'
+  import type { FocusReturnDescriptor } from './accessibility/focus'
 
   let { offlineGain }: { offlineGain: EconomyAmount } = $props()
 
@@ -60,6 +73,12 @@
   let remembering = $state(false)
   let crossingPrelude = $state(false)
   let crossingTarget = $state<string | null>(null)
+  let resetPreviewOpen = $state(false)
+  let resetComparison = $state<ResetComparison | null>(null)
+  let goalLensEnabled = $state(true)
+  let pinnedGoalId = $state<string | null>(null)
+  let averagedRhythm = $state(false)
+  let promptState = $state<ContextualPromptState>({ enabled: true, dismissedIds: [] })
   let resumeMusicAfterNova = false
 
   const novaReady = $derived(!isZeroAmount(supernovaGain()))
@@ -72,16 +91,63 @@
   const deepReady = $derived(game.challenge === null && gteAmount(game.stardustTotal, amountFromNumber(20)))
   const curiositiesVisible = $derived(game.curiosities.length > 0 || gteAmount(game.totalEarned, amountFromNumber(250_000)))
   const activePack = $derived(universeById(game.activeUniverse))
+  const activeV2Pack = $derived(universeV2ById(game.activeUniverse))
+  const effectiveQuality = $derived(resolveVisualQuality(game.visualQuality, {
+    width: window.innerWidth,
+    devicePixelRatio: window.devicePixelRatio || 1,
+    hardwareConcurrency: navigator.hardwareConcurrency || 8,
+  }))
   const vesselVisible = $derived(vesselRevealed())
   const vesselReady = $derived(vesselHasReadyPart())
   const utilityPanelOpen = $derived(
     statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen || guideOpen,
   )
   const storyModalActive = $derived(cutsceneActive || questionOpen || remembering || crossingPrelude)
-  const modalActive = $derived(storyModalActive || guideOpen)
+  const modalActive = $derived(storyModalActive || guideOpen || resetPreviewOpen)
+  const goalCandidates = $derived(buildEmberGoalCandidates(game, novaReady, Date.now()))
+  const goalLensInput = $derived({
+    enabled: goalLensEnabled,
+    candidates: goalCandidates,
+    pinnedGoalId,
+  })
+  const goalPresentation = $derived(
+    !averagedRhythm && combo.streak >= 4 ? 'active-rhythm' as const : 'standard' as const,
+  )
+  const contextualPrompts = $derived([
+    {
+      id: 'first-kindling',
+      titleKey: 'prompt.kindling.title',
+      bodyKey: 'prompt.kindling.body',
+      actionLabelKey: 'prompt.kindling.action',
+      announcementKey: 'prompt.kindling.announcement',
+      priority: 20,
+      available: hasUi('shop') && Object.keys(game.owned).length === 0,
+    },
+    {
+      id: 'first-supernova-preview',
+      titleKey: 'prompt.supernova.title',
+      bodyKey: 'prompt.supernova.body',
+      actionLabelKey: 'prompt.supernova.action',
+      announcementKey: 'prompt.supernova.announcement',
+      priority: 30,
+      available: novaReady,
+    },
+  ] satisfies readonly ContextualPromptCandidate[])
+  const confirmResetFocus: FocusReturnDescriptor = {
+    reason: 'boundary-completed',
+    preferred: { region: 'heart', purpose: 'context' },
+    fallbacks: [{ region: 'application', purpose: 'application-start' }],
+    preventScroll: true,
+  }
+  const cancelResetFocus: FocusReturnDescriptor = {
+    reason: 'flow-cancelled',
+    preferred: { region: 'heart', purpose: 'context' },
+    fallbacks: [{ region: 'application', purpose: 'application-start' }],
+    preventScroll: true,
+  }
 
   $effect(() => {
-    if (!storyModalActive) return
+    if (!storyModalActive && !resetPreviewOpen) return
     return acquireGamePause('story scene')
   })
 
@@ -159,8 +225,27 @@
 
   function beginSupernova() {
     closeAll()
+    resetComparison = compareProgressionBoundary({
+      boundary: 'epoch-turn',
+      recovery: previewSupernovaRecovery(game, supernovaGain(), Date.now()),
+    })
+    resetPreviewOpen = true
+  }
+
+  function handleResetDecision(decision: ResetCardDecision) {
+    resetPreviewOpen = false
+    resetComparison = null
+    if (decision.action === 'cancel') {
+      requestAnimationFrame(() => document.querySelector<HTMLCanvasElement>('[data-focus-region="heart"]')?.focus({ preventScroll: true }))
+      return
+    }
     resumeMusicAfterNova = isPlaying()
     cutsceneActive = true
+  }
+
+  function handlePromptAction(promptId: string) {
+    if (promptId === 'first-supernova-preview') toggleObservatory()
+    else if (promptId === 'first-kindling') closeAll()
   }
 
   function resetForSupernova(): EconomyAmount {
@@ -228,7 +313,20 @@
 <svelte:window onkeydown={onGlobalKeydown} />
 
 <div class="game-shell" inert={modalActive} aria-hidden={modalActive}>
-  <EmberCanvas />
+  <EmberCanvas {averagedRhythm} />
+  {#if activeV2Pack}
+    <ManifestWorldLayer
+      pack={activeV2Pack}
+      owned={game.owned}
+      preferences={{
+        reducedMotion: game.motionPreference === 'reduced',
+        quality: effectiveQuality,
+        minimal: false,
+        panelOpen: utilityPanelOpen,
+      }}
+    />
+  {/if}
+  <PurchaseCeremonyLayer />
   <section class="top-stack" aria-label="Run status and upgrades">
     <Hud />
     <BuffBar />
@@ -237,6 +335,27 @@
       <UpgradeBar />
     {/if}
   </section>
+  {#if activeV2Pack && !utilityPanelOpen}
+    <section class="cohesion-stack" aria-label="Optional guidance">
+      <GoalLens
+        id="emberlight-goal-lens"
+        goals={goalLensInput}
+        presentationMode={goalPresentation}
+        resolveText={resolveEmberUiText}
+        formatDuration={formatGoalDuration}
+        onpinchange={(goalId) => (pinnedGoalId = goalId)}
+        ondisable={() => (goalLensEnabled = false)}
+      />
+      <ContextualPrompts
+        id="emberlight-contextual-prompt"
+        candidates={contextualPrompts}
+        state={promptState}
+        resolveText={resolveEmberUiText}
+        onstatechange={(state) => (promptState = state)}
+        onaction={handlePromptAction}
+      />
+    </section>
+  {/if}
   <ShopPanel suppressed={utilityPanelOpen} />
   <UiChips />
   <ComboMeter />
@@ -276,7 +395,15 @@
     <StatsPanel onclose={() => (statsOpen = false)} />
   {/if}
   {#if optionsOpen}
-    <OptionsPanel onclose={() => (optionsOpen = false)} />
+    <OptionsPanel
+      onclose={() => (optionsOpen = false)}
+      {averagedRhythm}
+      {goalLensEnabled}
+      promptsEnabled={promptState.enabled}
+      onaveragedrhythmchange={(enabled) => (averagedRhythm = enabled)}
+      ongoallenschange={(enabled) => (goalLensEnabled = enabled)}
+      onpromptschange={(enabled) => (promptState = { ...promptState, enabled })}
+    />
   {/if}
   {#if curiositiesOpen}
     <CuriosityCabinet onclose={() => (curiositiesOpen = false)} />
@@ -298,6 +425,17 @@
   {/if}
   <QuestionChip onopen={() => { closeAll(); questionOpen = true }} />
 </div>
+{#if resetPreviewOpen && resetComparison}
+  <ResetComparisonCard
+    id="supernova-reset-preview"
+    comparison={resetComparison}
+    confirmFocusReturn={confirmResetFocus}
+    cancelFocusReturn={cancelResetFocus}
+    resolveText={resolveEmberUiText}
+    formatDuration={formatGoalDuration}
+    ondecision={handleResetDecision}
+  />
+{/if}
 {#if guideOpen}
   <GameGuide onclose={() => (guideOpen = false)} />
 {/if}
@@ -331,6 +469,17 @@
     transform: translateX(-50%);
     pointer-events: none;
     z-index: 8;
+  }
+  .cohesion-stack {
+    position: fixed;
+    top: clamp(7.2rem, 17vh, 9.2rem);
+    left: 1rem;
+    width: min(34rem, calc(100vw - 19rem));
+    display: grid;
+    gap: 0.5rem;
+    transform: none;
+    pointer-events: auto;
+    z-index: 5;
   }
   .dock {
     position: fixed;
@@ -396,6 +545,15 @@
     to { opacity: 1; transform: translateY(0); }
   }
   @media (max-width: 720px) {
+    .cohesion-stack {
+      top: 7.35rem;
+      left: 4rem;
+      right: 0.5rem;
+      width: auto;
+      max-height: 23vh;
+      overflow-y: auto;
+      transform: none;
+    }
     .dock {
       bottom: auto;
       top: 10rem;

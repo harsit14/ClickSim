@@ -99,11 +99,14 @@ function playTidefallClick() {
   pressure.stop(t + 0.26)
 }
 
-/** Soft two-note purchase chime. */
-export function playBuy() {
+/** Soft two-note purchase chime. Returns false when Web Audio is unavailable. */
+export function playBuy(gainScale = 1): boolean {
   const a = audio()
-  if (!a) return
+  if (!a) return false
   const t = a.ctx.currentTime
+  const routedGain = a.ctx.createGain()
+  routedGain.gain.value = Math.max(0, Math.min(2, gainScale))
+  routedGain.connect(a.master)
   const notes = [523.25, 783.99]
   notes.forEach((freq, i) => {
     const osc = a.ctx.createOscillator()
@@ -114,10 +117,11 @@ export function playBuy() {
     gain.gain.setValueAtTime(0.0001, start)
     gain.gain.exponentialRampToValueAtTime(0.18, start + 0.015)
     gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35)
-    osc.connect(gain).connect(a.master)
+    osc.connect(gain).connect(routedGain)
     osc.start(start)
     osc.stop(start + 0.4)
   })
+  return true
 }
 
 /** The supernova: a deep boom, then a long shimmering bloom. */

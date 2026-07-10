@@ -5,6 +5,7 @@
   import { universeById } from '../content/universes'
   import {
     exportSave,
+    exportV12Rollback,
     importSave,
     hardReset,
     listSaveBackups,
@@ -21,7 +22,25 @@
   import { renderHealth } from '../core/render-health.svelte'
   import { diagnosticReportText } from '../core/diagnostics'
 
-  let { onclose }: { onclose: () => void } = $props()
+  interface Props {
+    onclose: () => void
+    averagedRhythm?: boolean
+    goalLensEnabled?: boolean
+    promptsEnabled?: boolean
+    onaveragedrhythmchange?: (enabled: boolean) => void
+    ongoallenschange?: (enabled: boolean) => void
+    onpromptschange?: (enabled: boolean) => void
+  }
+
+  let {
+    onclose,
+    averagedRhythm = false,
+    goalLensEnabled = true,
+    promptsEnabled = true,
+    onaveragedrhythmchange,
+    ongoallenschange,
+    onpromptschange,
+  }: Props = $props()
   let closeButton: HTMLButtonElement
 
   let exportCode = $state('')
@@ -92,6 +111,21 @@
       message = 'Copied to clipboard.'
     } catch {
       message = 'Copy the code below.'
+    }
+  }
+
+  async function doRollbackExport() {
+    const rollback = exportV12Rollback()
+    if (!rollback) {
+      message = 'No pre-v13 rollback snapshot is available.'
+      return
+    }
+    exportCode = rollback
+    try {
+      await navigator.clipboard.writeText(rollback)
+      message = 'Original v12 rollback copied. It does not include progress made after migration.'
+    } catch {
+      message = 'Copy the original v12 rollback code below. It does not include later progress.'
     }
   }
 
@@ -208,6 +242,36 @@
       <span><i></i><strong>High contrast</strong></span>
       <small>Brightens secondary text and control boundaries.</small>
     </button>
+
+    <button
+      class="toggle-card"
+      class:active={averagedRhythm}
+      aria-pressed={averagedRhythm}
+      onclick={() => onaveragedrhythmchange?.(!averagedRhythm)}
+    >
+      <span><i></i><strong>Averaged rhythm</strong></span>
+      <small>Uses a consistent non-timed reward at 87.5% of competent rhythm play for this session.</small>
+    </button>
+
+    <button
+      class="toggle-card"
+      class:active={goalLensEnabled}
+      aria-pressed={goalLensEnabled}
+      onclick={() => ongoallenschange?.(!goalLensEnabled)}
+    >
+      <span><i></i><strong>Goal Lens</strong></span>
+      <small>Shows optional next-useful, next-discovery, and pinned recommendations.</small>
+    </button>
+
+    <button
+      class="toggle-card"
+      class:active={promptsEnabled}
+      aria-pressed={promptsEnabled}
+      onclick={() => onpromptschange?.(!promptsEnabled)}
+    >
+      <span><i></i><strong>Contextual prompts</strong></span>
+      <small>Shows at most one dismissible first-use explanation.</small>
+    </button>
   </section>
 
   <section class="settings-section">
@@ -252,6 +316,7 @@
     <div class="action-row">
       <button class="action" onclick={doExport}>Copy export</button>
       <button class="action" onclick={doDownload}>Download file</button>
+      <button class="action" onclick={doRollbackExport}>Copy pre-v13 rollback</button>
     </div>
     {#if exportCode}
       <textarea aria-label="exported save code" readonly rows="3" value={exportCode} onclick={(e) => (e.target as HTMLTextAreaElement).select()}></textarea>

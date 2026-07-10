@@ -382,6 +382,19 @@ export function exportSave(): string {
   return btoa(unescape(encodeURIComponent(json)))
 }
 
+/** Exports the exact dedicated pre-v13 rollback snapshot without converting it down. */
+export function exportV12Rollback(): string | null {
+  try {
+    const raw = localStorage.getItem(V12_ROLLBACK_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as { version?: unknown }
+    if (!parsed || typeof parsed !== 'object' || parsed.version !== 12) return null
+    return btoa(unescape(encodeURIComponent(raw)))
+  } catch {
+    return null
+  }
+}
+
 export function importSave(code: string): boolean {
   try {
     const json = decodeURIComponent(escape(atob(code.trim())))

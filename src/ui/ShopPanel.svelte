@@ -1,6 +1,6 @@
 <script lang="ts">
   import { shownAt, teasedAt, type GeneratorDef } from '../content/generators'
-  import { universeById } from '../content/universes'
+  import { universeById, universeV2ById } from '../content/universes'
   import {
     unitRate,
     bulkCost,
@@ -10,12 +10,17 @@
     genDisabled,
     genPurchaseDisabled,
     challengeMods,
+    totalRate,
   } from '../engine/compute'
   import { game, hasUi, buyGenerator, type BuyAmount } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { playBuy } from '../audio/sfx'
   import type { EconomyAmount } from '../content/universes/types'
   import { amountFromNumber, gteAmount, ltAmount } from '../core/numeric/amount'
+  import { subtractAmounts, ZERO_AMOUNT } from '../core/numeric/amount'
+  import { aggregatePurchaseFeedback } from '../feedback'
+  import { publishLivePurchase } from '../feedback/live-runtime.svelte'
+  import { resolveVisualQuality } from '../core/preferences'
 
   const AMOUNTS: BuyAmount[] = [1, 10, 100, 'max']
 
@@ -24,6 +29,7 @@
 
   const visible = $derived(hasUi('shop'))
   const pack = $derived(universeById(game.activeUniverse))
+  const v2Pack = $derived(universeV2ById(game.activeUniverse))
   const generators = $derived(pack.generators)
   const shown = $derived(generators.filter((g) => gteAmount(game.totalEarned, amountFromNumber(shownAt(g)))))
   const teased = $derived(
@@ -44,7 +50,49 @@
   }
 
   function tryBuy(g: GeneratorDef) {
-    if (buyGenerator(g) > 0) playBuy()
+    const ownedBefore = game.owned[g.id] ?? 0
+    const planned = purchase(g)
+    const beforeRate = totalRate(game)
+    const occurredAtMs = performance.now()
+    const bought = buyGenerator(g)
+    if (bought <= 0) return
+    if (!v2Pack) {
+      playBuy()
+      return
+    }
+
+    const exactCost = bought === planned.count
+      ? planned.cost
+      : bulkCost(g, ownedBefore, bought, costMultOf(game, g), costScaleOf(game))
+    const afterRate = totalRate(game)
+    const rateDelta = gteAmount(afterRate, beforeRate)
+      ? subtractAmounts(afterRate, beforeRate)
+      : ZERO_AMOUNT
+    const announcement = v2Pack.accessibility.announcements.find(
+      ({ messageKey }) => messageKey === 'emberlight.announcement.purchase',
+    )
+    const [event] = aggregatePurchaseFeedback({
+      eventId: `${v2Pack.id}-purchase-${g.id}-${Math.floor(occurredAtMs)}`,
+      occurredAtMs,
+      source: { universeId: v2Pack.id, kind: 'generator', id: g.id },
+      mode: bought === 1 ? 'one' : bought === 10 ? 'ten' : 'max',
+      quantity: bought,
+      totalCost: exactCost,
+      totalRateDelta: rateDelta,
+      audioCue: v2Pack.audio.purchaseIntervalCue,
+      ...(announcement ? { announcement } : {}),
+    })
+    const quality = resolveVisualQuality(game.visualQuality, {
+      width: window.innerWidth,
+      devicePixelRatio: window.devicePixelRatio || 1,
+      hardwareConcurrency: navigator.hardwareConcurrency || 8,
+    })
+    publishLivePurchase(event, v2Pack, {
+      reducedMotion: game.motionPreference === 'reduced'
+        || window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      quality,
+      audio: { silence: game.sfxVolume <= 0 },
+    })
   }
 </script>
 
@@ -67,6 +115,7 @@
           {#each AMOUNTS as a (a)}
             <button
               class="amt"
+              data-buy-mode={a}
               class:active={game.buyAmount === a}
               aria-label={a === 'max' ? 'maximum' : `buy ${a}`}
               aria-pressed={game.buyAmount === a}
@@ -84,6 +133,7 @@
         {@const owned = game.owned[g.id] ?? 0}
         <button
           class="row"
+          data-generator-id={g.id}
           class:unaffordable={ltAmount(game.light, p.cost) || genPurchaseDisabled(game, g)}
           onclick={() => tryBuy(g)}
           title={genDisabled(game, g) ? 'silenced by the trial' : genPurchaseDisabled(game, g) ? 'limited by the trial' : g.flavor}

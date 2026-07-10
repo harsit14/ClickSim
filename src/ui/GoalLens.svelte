@@ -197,7 +197,24 @@
   .pin[aria-pressed='true']::before { content: '✓ '; }
   .empty { padding: 0.75rem 0 0.25rem; }
   @media (max-width: 720px) {
-    .slots { grid-template-columns: 1fr; }
+    .expanded { padding: 0.5rem; }
+    .slots {
+      display: flex;
+      gap: 0.35rem;
+      margin-top: 0.35rem;
+      overflow-x: auto;
+      scroll-snap-type: x proximity;
+    }
+    .slot {
+      flex: 0 0 9.4rem;
+      padding: 0.45rem;
+      scroll-snap-align: start;
+    }
+    .reason { display: none; }
+    .estimate,
+    .empty-slot { margin-top: 0.2rem; font-size: 0.68rem; }
+    .pin { min-height: 2rem; margin-top: 0.35rem; }
+    header button { min-height: 2rem; }
   }
   @media (prefers-reduced-motion: reduce) {
     .reduced-motion-safe, .reduced-motion-safe * {
