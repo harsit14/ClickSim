@@ -3,6 +3,8 @@ import { tidefallTideState } from '../content/universes/tidefall/tide-state'
 import { EMBERLIGHT_PRESENTATION } from './emberlight/presentation'
 import type { UniversePresentation, WorldStatePresentation } from './presentation-contract'
 import { TIDEFALL_PRESENTATION } from './tidefall/presentation'
+import { VERDANCE_PRESENTATION } from './verdance/presentation'
+import { CLOCKWORK_PRESENTATION } from './clockwork/presentation'
 
 export interface ResolvedPresentationWorldState {
   readonly key: string
@@ -15,6 +17,8 @@ type WorldStateResolver = (nowMs: number) => { readonly key: string; readonly la
 export const PRESENTATION_BY_UNIVERSE_ID: ReadonlyMap<UniverseId, UniversePresentation> = new Map<UniverseId, UniversePresentation>([
   ['emberlight', EMBERLIGHT_PRESENTATION],
   ['tidefall', TIDEFALL_PRESENTATION],
+  ['verdance', VERDANCE_PRESENTATION],
+  ['clockwork', CLOCKWORK_PRESENTATION],
 ])
 
 const WORLD_STATE_RESOLVERS: Readonly<Partial<Record<UniverseId, WorldStateResolver>>> = {

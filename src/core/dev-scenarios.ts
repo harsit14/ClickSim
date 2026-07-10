@@ -1,4 +1,5 @@
 import { DEEP_UPGRADES } from '../content/deep'
+import { universeById } from '../content/universes'
 import {
   migrateAndSanitizeSave,
   migrateAndSanitizeSaveV12,
@@ -6,7 +7,7 @@ import {
   type SaveDataV13,
 } from './save-data'
 
-export type DevScenario = 'midgame' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'markets'
+export type DevScenario = 'midgame' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'verdance' | 'clockwork' | 'markets'
 
 const GENERATORS = [
   'spark',
@@ -78,7 +79,7 @@ function emptyScenario(now: number): SaveDataV12 {
 
 /** Deterministic, dev-only states used for manual and browser regression passes. */
 export function createDevScenario(name: string | null, now = Date.now()): SaveDataV13 | null {
-  if (!['midgame', 'endgame', 'question', 'crossing', 'tidefall', 'markets'].includes(name ?? '')) return null
+  if (!['midgame', 'endgame', 'question', 'crossing', 'tidefall', 'verdance', 'clockwork', 'markets'].includes(name ?? '')) return null
   const base = emptyScenario(now)
 
   if (name === 'midgame') {
@@ -146,6 +147,44 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
       challengesDone: ['silence', 'entropy', 'bare-hands', 'drought', 'half-light', 'swarm'],
       beacons: ['emberlight'],
       darkBetween: 3,
+      vesselParts: ['hull-hearths', 'sails-constellation', 'heart-sun', 'keel-trials', 'archive'],
+    })
+  }
+
+  if (name === 'verdance' || name === 'clockwork') {
+    const pack = universeById(name)
+    const priorBeacons = name === 'verdance'
+      ? ['emberlight', 'tidefall']
+      : ['emberlight', 'tidefall', 'verdance']
+    return migrateAndSanitizeSave({
+      ...base,
+      activeUniverse: name,
+      light: 1e16,
+      totalEarned: 1e18,
+      allTimeEarned: 1e40,
+      eraEarned: 1e18,
+      clicks: 12_000,
+      owned: Object.fromEntries(pack.generators.slice(0, 13).map((generator, index) => [
+        generator.id,
+        Math.max(1, 70 - index * 5),
+      ])),
+      upgrades: pack.upgrades.slice(0, 12).map(({ id }) => id),
+      ui: UI,
+      seen: pack.lumen.slice(0, 6).map(({ id }) => id),
+      echoes: pack.echoes.slice(0, 5).map(({ id }) => id),
+      curiosities: pack.cabinet.items.slice(0, 8).map(({ id }) => id),
+      keeperFedUntil: now + 3_600_000,
+      snailLastGiftAt: now - 3_600_000,
+      stardust: 35,
+      stardustTotal: 60,
+      supernovae: 4,
+      singularities: 10,
+      singTotal: 10,
+      collapses: 1,
+      singUpgrades: ['deep-resonance'],
+      challengesDone: ['silence', 'entropy', 'bare-hands', 'drought'],
+      beacons: priorBeacons,
+      darkBetween: 6,
       vesselParts: ['hull-hearths', 'sails-constellation', 'heart-sun', 'keel-trials', 'archive'],
     })
   }

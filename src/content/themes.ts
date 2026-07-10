@@ -31,6 +31,16 @@ export const THEMES: ThemeDef[] = [
         '--gold': '#b9fff2',
         '--panel': 'rgba(7, 24, 34, 0.82)',
       },
+      verdance: {
+        '--amber': '#75c989',
+        '--gold': '#d5ef9b',
+        '--panel': 'rgba(10, 28, 18, 0.82)',
+      },
+      clockwork: {
+        '--amber': '#d8a84e',
+        '--gold': '#ffe1a3',
+        '--panel': 'rgba(18, 21, 25, 0.88)',
+      },
     },
   },
   {
@@ -49,6 +59,16 @@ export const THEMES: ThemeDef[] = [
         '--amber': '#9ccfbf',
         '--gold': '#e4e0bd',
         '--panel': 'rgba(17, 31, 31, 0.84)',
+      },
+      verdance: {
+        '--amber': '#9dbd78',
+        '--gold': '#edf0c1',
+        '--panel': 'rgba(22, 34, 21, 0.84)',
+      },
+      clockwork: {
+        '--amber': '#c7a568',
+        '--gold': '#f3e2bb',
+        '--panel': 'rgba(31, 29, 25, 0.86)',
       },
     },
   },
@@ -69,6 +89,16 @@ export const THEMES: ThemeDef[] = [
         '--gold': '#c9d5ff',
         '--panel': 'rgba(10, 18, 42, 0.84)',
       },
+      verdance: {
+        '--amber': '#7fae9f',
+        '--gold': '#c9e5d5',
+        '--panel': 'rgba(12, 29, 27, 0.86)',
+      },
+      clockwork: {
+        '--amber': '#7f9db0',
+        '--gold': '#d4e3e8',
+        '--panel': 'rgba(17, 24, 30, 0.88)',
+      },
     },
   },
   {
@@ -87,6 +117,16 @@ export const THEMES: ThemeDef[] = [
         '--amber': '#f08f7b',
         '--gold': '#ffd0aa',
         '--panel': 'rgba(33, 20, 27, 0.84)',
+      },
+      verdance: {
+        '--amber': '#c77a52',
+        '--gold': '#efd197',
+        '--panel': 'rgba(36, 23, 17, 0.86)',
+      },
+      clockwork: {
+        '--amber': '#c77b4a',
+        '--gold': '#f3c793',
+        '--panel': 'rgba(34, 22, 18, 0.88)',
       },
     },
   },

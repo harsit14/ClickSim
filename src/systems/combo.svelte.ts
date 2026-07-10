@@ -48,10 +48,15 @@ function rhythmReward() {
     reward.duration,
   )
 
-  if (reward.star && summonFallingStar()) {
-    const events = universeById(game.activeUniverse).events
+  const universe = universeById(game.activeUniverse)
+  if (reward.star && universe.twist.randomnessAllowed && summonFallingStar()) {
+    const events = universe.events
     pushToast(
-      game.activeUniverse === 'tidefall' ? 'The current answers' : 'The sky answers',
+      game.activeUniverse === 'tidefall'
+        ? 'The current answers'
+        : game.activeUniverse === 'verdance'
+          ? 'The canopy answers'
+          : 'The sky answers',
       `Your rhythm pulls a ${events.noun} into reach.`,
       'beat streak',
     )

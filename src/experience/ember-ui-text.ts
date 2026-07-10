@@ -40,7 +40,7 @@ const COPY: Readonly<Record<string, string>> = {
   'prompt.supernova.title': 'Preview the turn before committing',
   'prompt.supernova.body': 'The comparison shows exactly what returns and what remains. Cancelling changes nothing.',
   'prompt.supernova.action': 'Open Observatory',
-  'reset-comparison.eyebrow': 'Before the boundary',
+  'reset-comparison.eyebrow': 'Before the Supernova',
   'reset.action.cancel': 'Keep this era',
   'reset.action.confirm': 'Confirm {action}',
   'reset.action.epoch-turn': 'Supernova',
@@ -88,6 +88,7 @@ const COPY: Readonly<Record<string, string>> = {
 }
 
 const TIDEFALL_COPY: Readonly<Record<string, string>> = {
+  'reset-comparison.eyebrow': 'Before the Undertow',
   'goal-lens.title': 'Current Chart',
   'goal-lens.turn-off-label': 'Turn off the Current Chart',
   'goal-lens.open-label': 'Open the Current Chart',
@@ -107,6 +108,58 @@ const TIDEFALL_COPY: Readonly<Record<string, string>> = {
   'reset.category.epoch-matter': 'Moon Salt (Epoch Matter)',
   'reset.category.local-archive': 'Pelagic Archive (Field Archive)',
   'reset.recovery.epoch-projection': 'Projection assumes the earned Moon Salt and current permanent bonuses.',
+}
+
+const VERDANCE_COPY: Readonly<Record<string, string>> = {
+  'reset-comparison.eyebrow': 'Before the Pruning',
+  'goal-lens.title': 'Growth Compass',
+  'goal-lens.turn-off-label': 'Turn off the Growth Compass',
+  'goal-lens.open-label': 'Open the Growth Compass',
+  'goal-lens.close-label': 'Close the Growth Compass',
+  'goal-lens.chart-label': 'Three growth paths',
+  'goal-lens.collapsed-active-rhythm': 'Following the living ring.',
+  'goal-lens.slot.now': 'Ready to root',
+  'goal-lens.slot.soon': 'Next season',
+  'goal-lens.slot.pinned': 'Held cutting',
+  'goal-lens.reason.supernova': 'Prune this growth into lasting Memory Seeds.',
+  'goal-lens.supernova': 'Preview the Pruning',
+  'prompt.supernova.title': 'Preview the Pruning before committing',
+  'reset.action.cancel': 'Keep this season',
+  'reset.action.epoch-turn': 'Pruning',
+  'reset.result.epoch-matter-and-starting-kindlings': 'Sap, Kindlings, ordinary upgrades, and buy mode return; Memory Seeds and permanent systems remain.',
+  'reset.category.world-currency': 'Sap (World currency)',
+  'reset.category.epoch-matter': 'Memory Seeds (Epoch Matter)',
+  'reset.category.local-archive': 'Impossible Herbarium (Field Archive)',
+  'reset.recovery.epoch-projection': 'Projection assumes the earned Memory Seeds and current permanent bonuses.',
+}
+
+const CLOCKWORK_COPY: Readonly<Record<string, string>> = {
+  'reset-comparison.eyebrow': 'Before the Rewinding',
+  'goal-lens.title': 'Route Inspector',
+  'goal-lens.turn-off-label': 'Turn off the Route Inspector',
+  'goal-lens.open-label': 'Open the Route Inspector',
+  'goal-lens.close-label': 'Close the Route Inspector',
+  'goal-lens.chart-label': 'Three inspected routes',
+  'goal-lens.collapsed-active-rhythm': 'Holding the declared route.',
+  'goal-lens.slot.now': 'Ready to engage',
+  'goal-lens.slot.soon': 'Next transmission',
+  'goal-lens.slot.pinned': 'Held schedule',
+  'goal-lens.reason.supernova': 'Rewind this interval into lasting Mainsprings.',
+  'goal-lens.supernova': 'Preview the Rewinding',
+  'prompt.supernova.title': 'Inspect the Rewinding before committing',
+  'reset.action.cancel': 'Keep this interval',
+  'reset.action.epoch-turn': 'Rewinding',
+  'reset.result.epoch-matter-and-starting-kindlings': 'Ticks, Kindlings, ordinary upgrades, and buy mode return; Mainsprings and permanent systems remain.',
+  'reset.category.world-currency': 'Ticks (World currency)',
+  'reset.category.epoch-matter': 'Mainsprings (Epoch Matter)',
+  'reset.category.local-archive': 'Patent Ledger (Field Archive)',
+  'reset.recovery.epoch-projection': 'Projection assumes the earned Mainsprings and current permanent bonuses.',
+}
+
+const COPY_BY_UNIVERSE: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  tidefall: TIDEFALL_COPY,
+  verdance: VERDANCE_COPY,
+  clockwork: CLOCKWORK_COPY,
 }
 
 function humanizeKey(key: string): string {
@@ -132,9 +185,8 @@ export function resolveUniverseUiText(
   key: string,
   parameters: Readonly<Record<string, UiTextParameter>> = {},
 ): string {
-  const template = universeId === 'tidefall' && TIDEFALL_COPY[key]
-    ? TIDEFALL_COPY[key]
-    : COPY[key] ?? humanizeKey(key)
+  const localCopy = COPY_BY_UNIVERSE[universeId]
+  const template = localCopy?.[key] ?? COPY[key] ?? humanizeKey(key)
   return template.replace(/\{([a-zA-Z0-9_-]+)\}/g, (_match, name: string) => (
     parameterText(parameters[name])
   ))

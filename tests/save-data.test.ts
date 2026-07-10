@@ -200,6 +200,19 @@ test('crossing and Tidefall scenarios expose the multiverse layer safely', () =>
   assert.deepEqual(tidefall.echoes, ['tide-moon-ledger'])
 })
 
+test('Verdance and Clockwork scenarios preserve their local content', () => {
+  const verdance = createDevScenario('verdance', 10_000)
+  const clockwork = createDevScenario('clockwork', 10_000)
+  assert.ok(verdance)
+  assert.ok(clockwork)
+  assert.equal(verdance.activeUniverse, 'verdance')
+  assert.equal(clockwork.activeUniverse, 'clockwork')
+  assert.ok(Object.keys(verdance.owned).every((id) => id.startsWith('u3-')))
+  assert.ok(Object.keys(clockwork.owned).every((id) => id.startsWith('u4-')))
+  assert.ok(verdance.curiosities.length >= 3)
+  assert.ok(clockwork.curiosities.length >= 3)
+})
+
 test('markets scenario exposes both completed repeatable economies', () => {
   const markets = createDevScenario('markets', 10_000)
   assert.ok(markets)

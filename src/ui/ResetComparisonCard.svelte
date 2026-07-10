@@ -11,6 +11,7 @@
 
   interface Props {
     id: string
+    universeId: string
     comparison: ResetComparison
     confirmFocusReturn: FocusReturnDescriptor
     cancelFocusReturn: FocusReturnDescriptor
@@ -21,6 +22,7 @@
 
   let {
     id,
+    universeId,
     comparison,
     confirmFocusReturn,
     cancelFocusReturn,
@@ -34,6 +36,12 @@
   const model = $derived(buildResetComparisonCardModel(comparison))
   const titleId = $derived(`${id}-title`)
   const descriptionId = $derived(`${id}-description`)
+  const turnGlyph = $derived(
+    universeId === 'tidefall' ? '≈'
+      : universeId === 'verdance' ? '❧'
+        : universeId === 'clockwork' ? '⌁'
+          : '✦',
+  )
 
   onMount(() => cancelButton.focus({ preventScroll: true }))
 
@@ -63,7 +71,7 @@
   }
 </script>
 
-<div class="scrim reduced-motion-safe">
+<div class="scrim reduced-motion-safe" data-universe={universeId}>
   <div
     class="reset-card"
     class:destructive={comparison.kind === 'destructive'}
@@ -74,10 +82,16 @@
     aria-describedby={descriptionId}
     onkeydown={onDialogKeydown}
   >
-    <header>
-      <span>{resolveText('reset-comparison.eyebrow')}</span>
-      <h2 id={titleId}>{resolveText(model.actionLabelKey)}</h2>
-      <p id={descriptionId}>{resolveText(model.resultKey)}</p>
+    <header class="turn-header">
+      <div class="turn-mark" aria-hidden="true">
+        <span class="turn-orbit"></span>
+        <strong>{turnGlyph}</strong>
+      </div>
+      <div class="turn-copy">
+        <span class="eyebrow">{resolveText('reset-comparison.eyebrow')}</span>
+        <h2 id={titleId}>{resolveText(model.actionLabelKey)}</h2>
+        <p id={descriptionId}>{resolveText(model.resultKey)}</p>
+      </div>
     </header>
 
     <div class="comparison-grid">
@@ -88,6 +102,7 @@
             <ul>
               {#each section.items as item (item.id)}
                 <li>
+                  <span class="state-mark" aria-hidden="true">{section.id === 'lost' ? '↺' : section.id === 'retained' ? '◆' : '◇'}</span>
                   <span class="state-word">{resolveText(`reset.state.${section.id}`)}</span>
                   <span>{resolveText(item.labelKey)}</span>
                 </li>
@@ -99,7 +114,10 @@
     </div>
 
     <section class="recovery" aria-labelledby={`${id}-recovery`}>
-      <h3 id={`${id}-recovery`}>{resolveText('reset.recovery.title')}</h3>
+      <div class="recovery-heading">
+        <span aria-hidden="true">⌁</span>
+        <h3 id={`${id}-recovery`}>{resolveText('reset.recovery.title')}</h3>
+      </div>
       {#if model.recovery.status === 'estimated' && model.recovery.inputs}
         <dl>
           <div><dt>{resolveText('reset.recovery.current-rate')}</dt><dd>{model.recovery.inputs.currentFrontierRate}</dd></div>
@@ -121,7 +139,7 @@
     </section>
 
     {#if model.requiresExplicitConfirmation}
-      <p class="confirmation-note">{resolveText('reset.confirmation.explicit-required')}</p>
+      <p class="confirmation-note"><span aria-hidden="true">◇</span>{resolveText('reset.confirmation.explicit-required')}</p>
     {/if}
     <footer>
       <button bind:this={cancelButton} type="button" class="cancel" onclick={() => decide('cancel')}>
@@ -136,93 +154,170 @@
 
 <style>
   .scrim {
+    --turn-accent: var(--gold, #ffd98a);
+    --turn-warm: var(--amber, #ffb35c);
     position: fixed;
     inset: 0;
     z-index: 20;
     display: grid;
     place-items: center;
     padding: 1rem;
-    background: rgba(2, 3, 8, 0.78);
+    background:
+      radial-gradient(ellipse at 50% 44%, color-mix(in srgb, var(--turn-warm) 7%, transparent), transparent 44%),
+      rgba(2, 3, 8, 0.84);
+    backdrop-filter: blur(12px);
   }
+  .scrim[data-universe='tidefall'] {
+    background:
+      radial-gradient(ellipse at 50% 58%, color-mix(in srgb, var(--turn-warm) 9%, transparent), transparent 50%),
+      linear-gradient(180deg, rgba(1, 6, 12, 0.84), rgba(2, 12, 18, 0.9));
+  }
+  .scrim[data-universe='verdance'] { --turn-accent: #d5ef9b; --turn-warm: #75c989; }
+  .scrim[data-universe='clockwork'] { --turn-accent: #f0cc83; --turn-warm: #b78948; }
   .reset-card {
-    width: min(54rem, 100%);
+    position: relative;
+    width: min(49rem, 100%);
     max-height: calc(100vh - 2rem);
     overflow: auto;
-    padding: 1rem;
+    padding: 1.1rem 1.15rem 1rem;
     color: var(--text, #f6efe3);
-    background: var(--panel, #11131f);
-    border: 2px solid currentColor;
-    border-radius: 0.85rem;
+    background:
+      linear-gradient(118deg, color-mix(in srgb, var(--panel) 90%, #05070d), color-mix(in srgb, var(--panel) 76%, transparent));
+    border: 1px solid color-mix(in srgb, var(--turn-accent) 25%, transparent);
+    border-radius: 0.35rem 1.3rem 1.3rem 0.35rem;
+    box-shadow: 0 1.8rem 6rem rgba(0, 0, 0, 0.5), inset 3px 0 var(--turn-warm);
+    scrollbar-width: thin;
   }
-  .reset-card.destructive { border-style: double; border-width: 4px; }
-  header span {
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
+  [data-universe='tidefall'] .reset-card {
+    border-radius: 1.5rem 0.4rem 1.5rem 0.4rem;
+    background:
+      radial-gradient(ellipse at 8% 18%, color-mix(in srgb, var(--turn-warm) 10%, transparent), transparent 28%),
+      linear-gradient(118deg, color-mix(in srgb, var(--panel) 88%, #031018), color-mix(in srgb, var(--panel) 78%, transparent));
+  }
+  .reset-card.destructive { border-color: color-mix(in srgb, var(--turn-accent) 34%, transparent); }
+  .turn-header {
+    display: grid;
+    grid-template-columns: 4.4rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.15rem 0 0.9rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--turn-accent) 16%, transparent);
+  }
+  .turn-mark {
+    position: relative;
+    width: 3.8rem;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    color: var(--turn-accent);
+    border: 1px solid color-mix(in srgb, var(--turn-accent) 38%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 1.6rem color-mix(in srgb, var(--turn-warm) 20%, transparent);
+  }
+  .turn-mark strong { font-size: 1.25rem; font-weight: 520; }
+  .turn-orbit {
+    position: absolute;
+    inset: -0.35rem 0.25rem;
+    border-top: 1px solid color-mix(in srgb, var(--turn-accent) 52%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--turn-accent) 18%, transparent);
+    border-radius: 50%;
+    transform: rotate(-14deg);
+  }
+  [data-universe='tidefall'] .turn-mark { border-radius: 54% 46% 58% 42%; }
+  [data-universe='tidefall'] .turn-orbit { inset: 0.45rem -0.45rem; transform: none; }
+  .eyebrow {
+    color: color-mix(in srgb, var(--turn-accent) 72%, var(--dim));
+    font-size: 0.62rem;
+    font-weight: 720;
+    letter-spacing: 0.17em;
     text-transform: uppercase;
   }
   h2, h3, p { margin: 0; }
-  h2 { margin-top: 0.2rem; }
-  header p, .recovery p { margin-top: 0.4rem; color: var(--dim, #c4bdaf); }
+  h2 { margin-top: 0.15rem; font-size: 1.45rem; font-weight: 590; letter-spacing: -0.025em; }
+  .turn-copy p,
+  .recovery p { margin-top: 0.28rem; color: var(--dim, #c4bdaf); font-size: 0.76rem; line-height: 1.42; }
   .comparison-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.65rem;
-    margin-top: 1rem;
+    gap: 0 1.25rem;
+    margin-top: 0.72rem;
   }
-  .impact, .recovery {
-    padding: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.32);
-    border-radius: 0.55rem;
-  }
-  .impact h3, .recovery h3 { font-size: 0.82rem; }
-  ul { margin: 0.55rem 0 0; padding: 0; list-style: none; }
-  li { display: flex; gap: 0.45rem; margin-top: 0.3rem; }
-  .state-word {
-    flex: none;
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
+  .impact { min-width: 0; padding: 0.2rem 0 0.55rem; }
+  .impact h3,
+  .recovery h3 {
+    color: color-mix(in srgb, var(--turn-accent) 74%, var(--dim));
+    font-size: 0.64rem;
+    letter-spacing: 0.13em;
     text-transform: uppercase;
   }
-  .recovery { margin-top: 0.65rem; }
-  dl { margin: 0.5rem 0 0; }
-  dl div {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.25rem 0;
+  ul { margin: 0.35rem 0 0; padding: 0; list-style: none; }
+  li {
+    display: grid;
+    grid-template-columns: 1rem 4.1rem minmax(0, 1fr);
+    gap: 0.35rem;
+    align-items: baseline;
+    padding: 0.28rem 0;
+    border-top: 1px solid color-mix(in srgb, var(--turn-accent) 9%, transparent);
+    font-size: 0.72rem;
   }
-  dt { color: var(--dim, #c4bdaf); }
-  dd { margin: 0; font-variant-numeric: tabular-nums; }
-  .confirmation-note { margin-top: 0.75rem; font-weight: 700; }
-  footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.6rem;
-    margin-top: 1rem;
+  .state-mark { color: var(--turn-accent); }
+  .state-word {
+    color: var(--dim);
+    font-size: 0.57rem;
+    font-weight: 760;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
   }
+  .recovery {
+    margin-top: 0.25rem;
+    padding: 0.72rem 0.85rem;
+    background: color-mix(in srgb, var(--turn-warm) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--turn-accent) 15%, transparent);
+    border-radius: 0.25rem 0.8rem 0.8rem 0.25rem;
+  }
+  .recovery-heading { display: flex; align-items: center; gap: 0.45rem; }
+  .recovery-heading > span { color: var(--turn-accent); }
+  dl { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.4rem; margin: 0.52rem 0 0; }
+  dl div { min-width: 0; padding-right: 0.4rem; border-right: 1px solid color-mix(in srgb, var(--turn-accent) 12%, transparent); }
+  dl div:last-child { border-right: 0; }
+  dt { color: var(--dim, #c4bdaf); font-size: 0.6rem; line-height: 1.25; }
+  dd { margin: 0.18rem 0 0; color: color-mix(in srgb, var(--turn-accent) 70%, white); font-size: 0.72rem; font-variant-numeric: tabular-nums; }
+  .confirmation-note {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    margin-top: 0.65rem;
+    color: var(--dim);
+    font-size: 0.68rem;
+  }
+  .confirmation-note span { color: var(--turn-accent); }
+  footer { display: flex; justify-content: flex-end; gap: 0.55rem; margin-top: 0.8rem; }
   button {
-    min-height: 2.75rem;
-    padding: 0.5rem 1rem;
+    min-height: 2.35rem;
+    padding: 0.42rem 0.82rem;
     font: inherit;
-    color: inherit;
+    color: color-mix(in srgb, var(--turn-accent) 72%, var(--text));
     background: transparent;
-    border: 2px solid currentColor;
-    border-radius: 0.45rem;
+    border: 1px solid color-mix(in srgb, var(--turn-accent) 28%, transparent);
+    border-radius: 999px;
     cursor: pointer;
   }
-  button:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
-  .confirm { font-weight: 800; }
+  button:focus-visible { outline: 2px solid var(--turn-accent); outline-offset: 3px; }
+  .confirm {
+    color: #070a0f;
+    background: color-mix(in srgb, var(--turn-accent) 80%, white);
+    border-color: transparent;
+    font-weight: 760;
+  }
   @media (max-width: 720px) {
     .comparison-grid { grid-template-columns: 1fr; }
+    dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    dl div { border-right: 0; }
     footer { flex-direction: column-reverse; }
     button { width: 100%; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .reduced-motion-safe, .reduced-motion-safe * {
-      animation: none !important;
-      transition: none !important;
-      scroll-behavior: auto !important;
-    }
+    .reduced-motion-safe,
+    .reduced-motion-safe * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   }
 </style>

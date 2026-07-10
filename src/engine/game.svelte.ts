@@ -447,6 +447,8 @@ export function universeRouteUnlocked(id: string): boolean {
   if (!UNIVERSE_BY_ID.has(id) || !computeVesselComplete(game)) return false
   if (id === DEFAULT_UNIVERSE_ID || universeVisited(id)) return true
   if (id === 'tidefall') return game.beacons.includes(DEFAULT_UNIVERSE_ID)
+  if (id === 'verdance') return game.beacons.includes('tidefall')
+  if (id === 'clockwork') return game.beacons.includes('verdance')
   return false
 }
 
@@ -739,7 +741,8 @@ export function buyNode(id: string): boolean {
 
 /** extraMult carries the rhythm-combo multiplier from the UI layer. */
 export function clickEmber(extraMult = 1): ClickResult {
-  const roll = Math.random()
+  const randomAllowed = universeById(game.activeUniverse).twist.randomnessAllowed
+  const roll = randomAllowed ? Math.random() : 1
   const chance = critChance()
   const crit = roll < chance
   const mult = crit ? critMult() : 1

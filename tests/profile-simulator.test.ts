@@ -71,7 +71,8 @@ test('all 168 profile projections are deterministic, valid, and finite for five 
 test('profile fixtures label real-pack projections and synthetic future contracts explicitly', () => {
   assert.equal(universeSimulationFixture('emberlight').source, 'current-pack-profile-projection')
   assert.equal(universeSimulationFixture('tidefall').source, 'current-pack-profile-projection')
-  assert.equal(universeSimulationFixture('verdance').source, 'future-contract-fixture')
+  assert.equal(universeSimulationFixture('verdance').source, 'current-pack-profile-projection')
+  assert.equal(universeSimulationFixture('clockwork').source, 'current-pack-profile-projection')
   assert.equal(universeSimulationFixture('canticle').source, 'future-contract-fixture')
 })
 
@@ -93,7 +94,7 @@ test('Beacon revisit and accessibility profile behavior match the recorded input
 })
 
 test('additive current-pack audit runs the actual compute pipeline and pack ids', () => {
-  for (const universeId of ['emberlight', 'tidefall'] as const) {
+  for (const universeId of ['emberlight', 'tidefall', 'verdance', 'clockwork'] as const) {
     const result = runCurrentPackAudit(universeId, casual, 0.25)
     const pack = universeById(universeId)
     assert.equal(result.source, 'current-engine-compute-v13')

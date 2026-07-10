@@ -69,12 +69,12 @@ const FIXTURES: Readonly<Record<UniverseId, UniverseSimulationFixture>> = Object
     purchasesPerDay: 304, epochRecoveryDays: 0.2, deepRecoveryDays: 0.88,
   },
   verdance: {
-    universeId: 'verdance', source: 'future-contract-fixture', basePassiveRate: '1.1e-1', dailyGrowth: 1.5,
+    universeId: 'verdance', source: 'current-pack-profile-projection', basePassiveRate: '1.1e-1', dailyGrowth: 1.5,
     mechanicPotential: 0.32, omenPotential: 0.07, archivePotential: 0.18, crossWorldPotential: 3.2,
     purchasesPerDay: 302, epochRecoveryDays: 0.22, deepRecoveryDays: 0.92,
   },
   clockwork: {
-    universeId: 'clockwork', source: 'future-contract-fixture', basePassiveRate: '9e-2', dailyGrowth: 1.57,
+    universeId: 'clockwork', source: 'current-pack-profile-projection', basePassiveRate: '9e-2', dailyGrowth: 1.57,
     mechanicPotential: 0.28, omenPotential: 0.06, archivePotential: 0.15, crossWorldPotential: 2.9,
     purchasesPerDay: 316, epochRecoveryDays: 0.16, deepRecoveryDays: 0.74,
   },

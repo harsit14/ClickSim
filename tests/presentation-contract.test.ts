@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { EMBERLIGHT_V2 } from '../src/content/universes/emberlight-v2'
 import { TIDEFALL_V2_PACK } from '../src/content/universes/tidefall-v2'
+import { VERDANCE_V2_PACK } from '../src/content/universes/verdance'
+import { CLOCKWORK_V2_PACK } from '../src/content/universes/clockwork'
 import { EMBERLIGHT_PRESENTATION } from '../src/render/emberlight/presentation'
 import {
   objectPresentationStateKey,
@@ -12,13 +14,18 @@ import {
   universePresentationById,
 } from '../src/render/presentation-registry'
 import { TIDEFALL_PRESENTATION } from '../src/render/tidefall/presentation'
+import { VERDANCE_PRESENTATION } from '../src/render/verdance/presentation'
+import { CLOCKWORK_PRESENTATION } from '../src/render/clockwork/presentation'
 
 test('both F2 worlds satisfy the lead-owned presentation contract exactly', () => {
   assert.deepEqual(validateUniversePresentation(EMBERLIGHT_V2, EMBERLIGHT_PRESENTATION), [])
   assert.deepEqual(validateUniversePresentation(TIDEFALL_V2_PACK, TIDEFALL_PRESENTATION), [])
   assert.equal(universePresentationById('emberlight'), EMBERLIGHT_PRESENTATION)
   assert.equal(universePresentationById('tidefall'), TIDEFALL_PRESENTATION)
-  assert.equal(universePresentationById('verdance'), null)
+  assert.deepEqual(validateUniversePresentation(VERDANCE_V2_PACK, VERDANCE_PRESENTATION), [])
+  assert.equal(universePresentationById('verdance'), VERDANCE_PRESENTATION)
+  assert.deepEqual(validateUniversePresentation(CLOCKWORK_V2_PACK, CLOCKWORK_PRESENTATION), [])
+  assert.equal(universePresentationById('clockwork'), CLOCKWORK_PRESENTATION)
 })
 
 test('resolved manifest states map directly to frozen presentation keys', () => {

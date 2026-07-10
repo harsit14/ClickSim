@@ -26,4 +26,8 @@ test('Tidefall presents its local Epoch names without changing canonical keys', 
   assert.equal(resolveUniverseUiText('tidefall', 'goal-lens.title'), 'Current Chart')
   assert.equal(resolveUniverseUiText('tidefall', 'goal-lens.supernova'), 'Preview the Undertow')
   assert.equal(resolveUniverseUiText('emberlight', 'reset.action.epoch-turn'), 'Supernova')
+  assert.equal(resolveUniverseUiText('verdance', 'reset.action.epoch-turn'), 'Pruning')
+  assert.equal(resolveUniverseUiText('verdance', 'goal-lens.title'), 'Growth Compass')
+  assert.equal(resolveUniverseUiText('clockwork', 'reset.action.epoch-turn'), 'Rewinding')
+  assert.equal(resolveUniverseUiText('clockwork', 'goal-lens.title'), 'Route Inspector')
 })

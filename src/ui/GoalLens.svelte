@@ -34,6 +34,12 @@
   const titleId = $derived(`${id}-title`)
   const chartId = $derived(`${id}-chart`)
   const primaryRecommendation = $derived(model.result.now ?? model.result.soon ?? model.result.pinned)
+  const lensGlyph = $derived(
+    universeId === 'tidefall' ? '≈'
+      : universeId === 'verdance' ? '❧'
+        : universeId === 'clockwork' ? '⌁'
+          : '✦',
+  )
 
   function goalLabel(recommendation: GoalRecommendation): string {
     return recommendation.labelKey
@@ -60,7 +66,7 @@
     aria-label={resolveText('goal-lens.title')}
     data-state="active-rhythm-collapsed"
   >
-    <span class="sigil" aria-hidden="true">{universeId === 'tidefall' ? '≈' : '✦'}</span>
+    <span class="sigil" aria-hidden="true">{lensGlyph}</span>
     <span class="rhythm-copy">
       <strong>{resolveText('goal-lens.title')}</strong>
       <small>{resolveText('goal-lens.collapsed-active-rhythm')}</small>
@@ -82,7 +88,7 @@
       aria-label={resolveText(disclosed ? 'goal-lens.close-label' : 'goal-lens.open-label')}
       onclick={() => (disclosed = !disclosed)}
     >
-      <span class="sigil" aria-hidden="true">{universeId === 'tidefall' ? '≈' : '✦'}</span>
+      <span class="sigil" aria-hidden="true">{lensGlyph}</span>
       <span class="summary-copy">
         <span class="eyebrow" id={titleId}>{resolveText('goal-lens.title')}</span>
         {#if primaryRecommendation}
@@ -185,6 +191,19 @@
       radial-gradient(ellipse at 12% 50%, color-mix(in srgb, var(--lens-warm) 14%, transparent), transparent 34%),
       linear-gradient(105deg, color-mix(in srgb, var(--panel) 72%, #031018), color-mix(in srgb, var(--panel) 92%, transparent));
   }
+  .goal-lens[data-universe='verdance'] {
+    border-radius: 1.15rem 0.35rem 1.3rem 0.4rem;
+    background:
+      radial-gradient(ellipse at 8% 50%, color-mix(in srgb, var(--lens-warm) 15%, transparent), transparent 32%),
+      linear-gradient(105deg, color-mix(in srgb, var(--panel) 80%, #07150c), color-mix(in srgb, var(--panel) 92%, transparent));
+    box-shadow: 0 0.8rem 2.8rem rgba(0, 0, 0, 0.2), inset 2px 0 color-mix(in srgb, var(--lens-warm) 78%, transparent);
+  }
+  .goal-lens[data-universe='clockwork'] {
+    border-radius: 0.2rem 0.8rem 0.2rem 0.8rem;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 2.8rem, color-mix(in srgb, var(--lens-accent) 4%, transparent) 2.82rem 2.88rem),
+      linear-gradient(105deg, color-mix(in srgb, var(--panel) 84%, #0c0d10), color-mix(in srgb, var(--panel) 94%, transparent));
+  }
   .goal-lens::after {
     content: '';
     position: absolute;
@@ -202,6 +221,17 @@
     border-radius: 50%;
     background: transparent;
   }
+  .goal-lens[data-universe='verdance']::after {
+    height: 0.5rem;
+    border-top: 1px solid color-mix(in srgb, var(--lens-accent) 34%, transparent);
+    border-radius: 50%;
+    background: transparent;
+  }
+  .goal-lens[data-universe='clockwork']::after {
+    left: 3.6rem;
+    height: 1px;
+    background: repeating-linear-gradient(90deg, var(--lens-warm) 0 0.25rem, transparent 0.25rem 0.48rem);
+  }
   .summary {
     width: 100%;
     min-height: 4.15rem;
@@ -217,6 +247,7 @@
     cursor: pointer;
   }
   .sigil {
+    position: relative;
     width: 2.2rem;
     aspect-ratio: 1;
     display: grid;
@@ -230,6 +261,23 @@
   [data-universe='tidefall'] .sigil {
     border-radius: 55% 45% 55% 45%;
     transform: rotate(-8deg);
+  }
+  [data-universe='verdance'] .sigil {
+    border-radius: 60% 40% 60% 40%;
+    transform: rotate(-8deg);
+  }
+  [data-universe='verdance'] .sigil::after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 1.25rem;
+    background: color-mix(in srgb, var(--lens-accent) 42%, transparent);
+    transform: rotate(38deg);
+  }
+  [data-universe='clockwork'] .sigil {
+    border-radius: 50%;
+    outline: 1px dashed color-mix(in srgb, var(--lens-accent) 22%, transparent);
+    outline-offset: 0.18rem;
   }
   .summary-copy,
   .rhythm-copy {

@@ -81,6 +81,8 @@ test('achievements and vestments adopt the active universe identity', () => {
   const tidefallAccents = THEMES.map((theme) => themeVarsForUniverse(theme, 'tidefall')['--amber'])
   assert.equal(new Set(tidefallAccents).size, THEMES.length)
   assert.ok(THEMES.every((theme) => themeVarsForUniverse(theme, 'tidefall')['--amber'] !== theme.vars['--amber']))
+  assert.ok(THEMES.every((theme) => themeVarsForUniverse(theme, 'verdance')['--amber'] !== theme.vars['--amber']))
+  assert.ok(THEMES.every((theme) => themeVarsForUniverse(theme, 'clockwork')['--amber'] !== theme.vars['--amber']))
 })
 
 test('Vessel and prestige layers use Tidefall-specific fiction without changing stable ids', () => {
@@ -93,10 +95,14 @@ test('Vessel and prestige layers use Tidefall-specific fiction without changing 
   assert.equal(progressionIdentity('emberlight').observatory.title, 'The Observatory')
   assert.equal(progressionIdentity('tidefall').observatory.title, 'The Moonless Chart')
   assert.equal(progressionIdentity('tidefall').deep.title, 'The Hadal Archive')
+  assert.equal(progressionIdentity('verdance').observatory.collapseName, 'Pruning')
+  assert.equal(progressionIdentity('clockwork').observatory.collapseName, 'Rewinding')
   assert.notEqual(
     constellationNodeCopy(CONSTELLATION[0], 'tidefall').name,
     constellationNodeCopy(CONSTELLATION[0], 'emberlight').name,
   )
+  assert.equal(constellationNodeCopy(CONSTELLATION[0], 'verdance').name, 'First Root')
+  assert.equal(constellationNodeCopy(CONSTELLATION[0], 'clockwork').name, 'First Tooth')
   assert.notEqual(
     deepUpgradeCopy(DEEP_UPGRADES[0], 'tidefall').name,
     deepUpgradeCopy(DEEP_UPGRADES[0], 'emberlight').name,

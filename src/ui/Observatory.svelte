@@ -112,7 +112,7 @@
   }
 </script>
 
-<section class="observatory" class:tidefall>
+<section class="observatory" class:tidefall class:verdance={pack.id === 'verdance'} class:clockwork={pack.id === 'clockwork'}>
   <header>
     <div class="title-block">
       <span>{identity.overline}</span>
@@ -130,7 +130,7 @@
     </div>
   {/if}
 
-  <div class="nova" class:ready={!isZeroAmount(gain)}>
+  <div class="nova" class:ready={!isZeroAmount(gain)} class:armed data-universe={pack.id}>
     {#if game.challenge}
       <p class="nova-text">{identity.trialWait}</p>
     {:else if game.supernovae === 0 && isZeroAmount(gain)}
@@ -330,16 +330,43 @@
   .current-track i { position: absolute; top: 50%; width: 0.5rem; height: 0.5rem; transform: translate(-50%, -50%); border: 1px solid #d7fffa; border-radius: 50%; background: #58ded8; box-shadow: 0 0 12px rgba(88, 222, 216, 0.8); }
 
   .nova {
-    padding: 0.7rem 0.9rem;
+    position: relative;
+    padding: 0.72rem 1rem;
     margin-bottom: 0.6rem;
-    border: 1px solid rgba(255, 179, 92, 0.16);
-    border-radius: 12px;
-    background: rgba(255, 179, 92, 0.04);
+    border-top: 1px solid color-mix(in srgb, var(--gold) 16%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold) 10%, transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--amber) 4%, transparent) 18% 82%, transparent);
     text-align: center;
   }
   .nova.ready {
-    border-color: rgba(255, 200, 110, 0.45);
-    box-shadow: 0 0 28px rgba(255, 179, 92, 0.12) inset;
+    border-top-color: color-mix(in srgb, var(--gold) 34%, transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--amber) 7%, transparent) 18% 82%, transparent);
+  }
+  .nova.armed {
+    min-height: 4.4rem;
+    display: grid;
+    grid-template-columns: 2.55rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.68rem 0.2rem;
+    text-align: left;
+  }
+  .nova.armed::before {
+    content: '✦';
+    width: 2.25rem;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    color: var(--gold);
+    border: 1px solid color-mix(in srgb, var(--gold) 34%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 1.2rem color-mix(in srgb, var(--amber) 14%, transparent);
+  }
+  .nova.armed[data-universe='tidefall']::before { content: '≈'; border-radius: 58% 42% 58% 42%; }
+  .nova.armed[data-universe='verdance']::before { content: '❧'; border-radius: 60% 40% 60% 40%; }
+  .nova.armed[data-universe='clockwork']::before { content: '⌁'; outline: 1px dashed color-mix(in srgb, var(--gold) 20%, transparent); outline-offset: 0.16rem; }
+  .nova.armed .nova-text {
+    margin: 0;
   }
   .nova-text {
     margin: 0 0 0.4rem;
@@ -355,12 +382,12 @@
     color: var(--dim);
   }
   .nova-text.warn {
-    color: #ffcf9e;
+    color: color-mix(in srgb, var(--gold) 76%, var(--text));
   }
   .confirm {
     display: flex;
     gap: 0.5rem;
-    justify-content: center;
+    justify-content: flex-end;
   }
   .nova-btn {
     padding: 0.45rem 1.3rem;
@@ -549,5 +576,60 @@
   .tidefall .work-copy span { color: #a8ddd9; }
   .tidefall .work-copy b,
   .tidefall .eternal-head > strong { color: #b9fff2; }
+  .observatory.verdance,
+  .observatory.clockwork {
+    border-color: color-mix(in srgb, var(--gold) 22%, transparent);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.56), inset 0 1px color-mix(in srgb, var(--gold) 4%, transparent);
+  }
+  .observatory.verdance {
+    background:
+      radial-gradient(ellipse at 50% -8%, color-mix(in srgb, var(--amber) 15%, transparent), transparent 38%),
+      linear-gradient(180deg, color-mix(in srgb, var(--panel) 96%, #06100a), color-mix(in srgb, var(--panel) 92%, #030905));
+  }
+  .observatory.clockwork {
+    background:
+      repeating-linear-gradient(90deg, transparent 0 4.9rem, color-mix(in srgb, var(--gold) 3%, transparent) 4.92rem 4.98rem),
+      linear-gradient(180deg, color-mix(in srgb, var(--panel) 97%, #0b0d10), color-mix(in srgb, var(--panel) 92%, #05070a));
+  }
+  :is(.verdance, .clockwork) .title-block > span,
+  :is(.verdance, .clockwork) .eternal-head span,
+  :is(.verdance, .clockwork) .work-copy small { color: color-mix(in srgb, var(--amber) 78%, var(--dim)); }
+  :is(.verdance, .clockwork) h2,
+  :is(.verdance, .clockwork) .balance,
+  :is(.verdance, .clockwork) .eternal h3,
+  :is(.verdance, .clockwork) .work-copy strong,
+  :is(.verdance, .clockwork) .detail strong { color: color-mix(in srgb, var(--gold) 82%, white); }
+  :is(.verdance, .clockwork) .balance { text-shadow: 0 0 16px color-mix(in srgb, var(--amber) 42%, transparent); }
+  :is(.verdance, .clockwork) .map {
+    margin: 0.2rem 0;
+    border: 1px solid color-mix(in srgb, var(--gold) 10%, transparent);
+    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--amber) 5%, transparent), transparent 56%);
+  }
+  .verdance .map { border-radius: 52% 48% 58% 42% / 12% 16% 84% 88%; }
+  .clockwork .map {
+    border-radius: 0.2rem;
+    background:
+      linear-gradient(90deg, transparent 49.9%, color-mix(in srgb, var(--gold) 8%, transparent) 50%, transparent 50.1%),
+      radial-gradient(circle at center, color-mix(in srgb, var(--amber) 6%, transparent), transparent 58%);
+  }
+  :is(.verdance, .clockwork) .edge { stroke: color-mix(in srgb, var(--amber) 18%, transparent); }
+  :is(.verdance, .clockwork) .edge.lit { stroke: color-mix(in srgb, var(--gold) 72%, transparent); filter: drop-shadow(0 0 1.5px color-mix(in srgb, var(--amber) 75%, transparent)); }
+  :is(.verdance, .clockwork) .node .halo { fill: color-mix(in srgb, var(--amber) 6%, transparent); }
+  :is(.verdance, .clockwork) .node .core { fill: color-mix(in srgb, var(--amber) 32%, var(--bg)); }
+  :is(.verdance, .clockwork) .node text { fill: color-mix(in srgb, var(--gold) 46%, transparent); }
+  :is(.verdance, .clockwork) .node.owned .core { fill: color-mix(in srgb, var(--gold) 88%, white); filter: drop-shadow(0 0 2px color-mix(in srgb, var(--amber) 88%, transparent)); }
+  :is(.verdance, .clockwork) .node.owned text,
+  :is(.verdance, .clockwork) .node.ready text { fill: color-mix(in srgb, var(--gold) 88%, white); }
+  :is(.verdance, .clockwork) .node.ready .core { fill: var(--amber); filter: drop-shadow(0 0 2px color-mix(in srgb, var(--amber) 92%, transparent)); }
+  :is(.verdance, .clockwork) .detail,
+  :is(.verdance, .clockwork) .eternal,
+  :is(.verdance, .clockwork) .work { border-color: color-mix(in srgb, var(--gold) 18%, transparent); background: color-mix(in srgb, var(--amber) 5%, transparent); }
+  :is(.verdance, .clockwork) .detail ul,
+  :is(.verdance, .clockwork) .work-copy span { color: color-mix(in srgb, var(--gold) 68%, var(--dim)); }
+  :is(.verdance, .clockwork) .work-glyph { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 24%, transparent); }
+  :is(.verdance, .clockwork) .work-copy b,
+  :is(.verdance, .clockwork) .eternal-head > strong { color: var(--gold); }
+  :is(.verdance, .clockwork) .buy,
+  :is(.verdance, .clockwork) .work button { color: var(--bg); background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 88%, white), var(--amber)); }
   @media (max-width: 620px) { .work-grid { grid-template-columns: 1fr; } }
 </style>

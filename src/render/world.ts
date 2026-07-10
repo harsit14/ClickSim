@@ -278,6 +278,12 @@ export class World {
     if (game.activeUniverse === 'tidefall') {
       return { c0: '235, 255, 252', c1: '158, 244, 232', c2: '67, 190, 199', c3: '36, 91, 139', halo: '76, 220, 215', mid: '54, 145, 185' }
     }
+    if (game.activeUniverse === 'verdance') {
+      return { c0: '246, 255, 216', c1: '191, 235, 145', c2: '91, 184, 112', c3: '35, 102, 61', halo: '117, 201, 137', mid: '76, 154, 96' }
+    }
+    if (game.activeUniverse === 'clockwork') {
+      return { c0: '255, 244, 210', c1: '239, 199, 116', c2: '194, 135, 62', c3: '105, 72, 42', halo: '216, 168, 78', mid: '118, 143, 158' }
+    }
     switch (game.ending) {
       case 'warden':
         return { c0: '255, 252, 240', c1: '255, 238, 185', c2: '255, 205, 110', c3: '255, 175, 80', halo: '255, 215, 130', mid: '255, 190, 100' }
@@ -1050,8 +1056,37 @@ export class World {
     core.addColorStop(1, `rgba(${pal.c3}, 0)`)
     ctx.fillStyle = core
     ctx.beginPath()
-    ctx.arc(c.x, c.y, r, 0, Math.PI * 2)
-    ctx.fill()
+    if (game.activeUniverse === 'verdance') {
+      ctx.save()
+      ctx.translate(c.x, c.y)
+      ctx.rotate(-0.16)
+      ctx.ellipse(0, 0, r * 0.78, r * 1.08, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.strokeStyle = `rgba(${pal.mid}, 0.42)`
+      ctx.lineWidth = 1.2
+      ctx.beginPath()
+      ctx.moveTo(0, -r * 0.72)
+      ctx.bezierCurveTo(-r * 0.16, -r * 0.18, r * 0.14, r * 0.22, 0, r * 0.74)
+      ctx.stroke()
+      ctx.restore()
+    } else {
+      ctx.arc(c.x, c.y, r, 0, Math.PI * 2)
+      ctx.fill()
+      if (game.activeUniverse === 'clockwork') {
+        ctx.save()
+        ctx.translate(c.x, c.y)
+        ctx.strokeStyle = `rgba(${pal.c0}, 0.56)`
+        ctx.lineWidth = 1.15
+        for (let tooth = 0; tooth < 15; tooth++) {
+          const angle = (tooth / 15) * Math.PI * 2 - Math.PI / 2
+          ctx.beginPath()
+          ctx.moveTo(Math.cos(angle) * r * 0.72, Math.sin(angle) * r * 0.72)
+          ctx.lineTo(Math.cos(angle) * r * 0.94, Math.sin(angle) * r * 0.94)
+          ctx.stroke()
+        }
+        ctx.restore()
+      }
+    }
 
     // beat rings — the click window made visible
     for (const born of this.rings) {
