@@ -94,11 +94,11 @@ function eligibleCandidates(
   candidates: readonly GoalCandidate[],
   slot: GoalSlot,
   horizonSeconds: number,
-  excludedId?: string,
+  excludedIds: readonly string[] = [],
 ): GoalCandidate[] {
   return candidates
     .filter((candidate) => (
-      candidate.id !== excludedId
+      !excludedIds.includes(candidate.id)
       && candidate.state === 'available'
       && candidate.meaningful
       && candidate.eligibleSlots.includes(slot)
@@ -179,8 +179,21 @@ export function recommendGoals(input: GoalLensInput): GoalLensResult {
     nowHorizon,
     validHorizon(input.soonHorizonSeconds, DEFAULT_SOON_HORIZON_SECONDS),
   )
-  const nowCandidate = eligibleCandidates(input.candidates, 'now', nowHorizon)[0]
-  const soonCandidate = eligibleCandidates(input.candidates, 'soon', soonHorizon, nowCandidate?.id)[0]
+  const pinnedId = input.pinnedGoalId || null
+  const nowCandidate = eligibleCandidates(
+    input.candidates,
+    'now',
+    nowHorizon,
+    pinnedId ? [pinnedId] : [],
+  )[0]
+  const excludedFromSoon = [pinnedId, nowCandidate?.id]
+    .filter((id): id is string => id !== null && id !== undefined)
+  const soonCandidate = eligibleCandidates(
+    input.candidates,
+    'soon',
+    soonHorizon,
+    excludedFromSoon,
+  )[0]
   const pinned = pinnedRecommendation(input.candidates, input.pinnedGoalId)
   const now = nowCandidate ? recommend(nowCandidate, 'now') : null
   const soon = soonCandidate ? recommend(soonCandidate, 'soon') : null

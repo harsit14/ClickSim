@@ -45,6 +45,30 @@ test('Goal Lens deterministically exposes now, soon, and the explicit pin', () =
   assert.equal(first.pinned?.estimate?.estimatedSeconds, 20_000)
 })
 
+test('pinned goals remain distinct from now and soon through deterministic replacement', () => {
+  const candidates = [
+    goal({ id: 'alpha', estimate: { estimatedSeconds: 0, basis: 'declared', detailKey: 'estimate.ready' } }),
+    goal({ id: 'beta', eligibleSlots: ['now'], estimate: { estimatedSeconds: 10, basis: 'simulation', detailKey: 'estimate.action' } }),
+    goal({ id: 'gamma', eligibleSlots: ['soon'], estimate: { estimatedSeconds: 300, basis: 'simulation', detailKey: 'estimate.discovery' } }),
+  ]
+
+  const withAlphaPinned = recommendGoals({ enabled: true, candidates, pinnedGoalId: 'alpha' })
+  assert.deepEqual(
+    [withAlphaPinned.now?.goalId, withAlphaPinned.soon?.goalId, withAlphaPinned.pinned?.goalId],
+    ['beta', 'gamma', 'alpha'],
+  )
+
+  const replacement = togglePinnedGoal('alpha', 'beta')
+  assert.equal(replacement, 'beta')
+  const withBetaPinned = recommendGoals({ enabled: true, candidates, pinnedGoalId: replacement })
+  const repeated = recommendGoals({ enabled: true, candidates, pinnedGoalId: replacement })
+  assert.deepEqual(repeated, withBetaPinned)
+  assert.deepEqual(
+    [withBetaPinned.now?.goalId, withBetaPinned.soon?.goalId, withBetaPinned.pinned?.goalId],
+    ['alpha', 'gamma', 'beta'],
+  )
+})
+
 test('disabled Goal Lens is completely off, including pinned output', () => {
   assert.deepEqual(
     recommendGoals({ enabled: false, candidates: [goal({ id: 'ready' })], pinnedGoalId: 'ready' }),
