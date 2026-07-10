@@ -4,11 +4,11 @@
   import { playCollect } from '../audio/sfx'
   import { universeById } from '../content/universes'
   import type { EconomyAmount } from '../content/universes/types'
-  import { isZeroAmount } from '../core/numeric/amount'
+  import { welcomeBackEligible } from './welcome-back-model'
 
   let { amount }: { amount: EconomyAmount } = $props()
   let dismissed = $state(false)
-  const open = $derived(!isZeroAmount(amount) && !dismissed)
+  const open = $derived(welcomeBackEligible(amount) && !dismissed)
   const pack = $derived(universeById(game.activeUniverse))
 
   function collect() {

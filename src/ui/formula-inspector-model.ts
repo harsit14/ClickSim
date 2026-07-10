@@ -1,10 +1,32 @@
 import { format } from '../core/format'
 import { parseAmount } from '../core/numeric/amount'
 import type {
+  FormulaBreakdown,
   FormulaNode,
   FormulaOperator,
   FormulaValue,
 } from '../core/numeric/formula-breakdown'
+
+export type FormulaTabKey = 'ArrowLeft' | 'ArrowRight' | 'Home' | 'End'
+
+export function nextFormulaTabId(
+  breakdowns: readonly FormulaBreakdown[],
+  currentId: string,
+  key: FormulaTabKey,
+): string {
+  if (breakdowns.length === 0) return ''
+  const currentIndex = Math.max(0, breakdowns.findIndex((item) => item.formulaId === currentId))
+  if (key === 'Home') return breakdowns[0].formulaId
+  if (key === 'End') return breakdowns[breakdowns.length - 1].formulaId
+  const direction = key === 'ArrowRight' ? 1 : -1
+  return breakdowns[(currentIndex + direction + breakdowns.length) % breakdowns.length].formulaId
+}
+
+export const formulaTabDomId = (formulaId: string): string =>
+  `formula-tab-${formulaId.replace(/[^a-z0-9-]/gi, '-')}`
+
+export const formulaPanelDomId = (formulaId: string): string =>
+  `formula-panel-${formulaId.replace(/[^a-z0-9-]/gi, '-')}`
 
 export interface FormulaDisplayRow {
   readonly node: FormulaNode

@@ -6,7 +6,11 @@
   import {
     formulaDisplayRows,
     formulaOperatorSymbol,
+    formulaPanelDomId,
+    formulaTabDomId,
     formulaValueText,
+    nextFormulaTabId,
+    type FormulaTabKey,
   } from './formula-inspector-model'
 
   let { breakdowns }: { breakdowns: readonly FormulaBreakdown[] } = $props()
@@ -15,6 +19,13 @@
   const issues = $derived(active ? validateFormulaBreakdown(active) : [])
   const rows = $derived(active && issues.length === 0 ? formulaDisplayRows(active.root) : [])
   const subjectLabel = (breakdown: FormulaBreakdown) => breakdown.subject.kind === 'click' ? 'Click power' : 'Passive rate'
+
+  function changeTab(event: KeyboardEvent) {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+    event.preventDefault()
+    activeId = nextFormulaTabId(breakdowns, active.formulaId, event.key as FormulaTabKey)
+    requestAnimationFrame(() => document.getElementById(formulaTabDomId(activeId))?.focus())
+  }
 </script>
 
 {#if active}
@@ -31,30 +42,41 @@
         <button
           type="button"
           role="tab"
+          id={formulaTabDomId(breakdown.formulaId)}
+          aria-controls={formulaPanelDomId(breakdown.formulaId)}
           aria-selected={active.formulaId === breakdown.formulaId}
+          tabindex={active.formulaId === breakdown.formulaId ? 0 : -1}
+          onkeydown={changeTab}
           class:active={active.formulaId === breakdown.formulaId}
           onclick={() => (activeId = breakdown.formulaId)}
         >{subjectLabel(breakdown)}</button>
       {/each}
     </div>
-    {#if issues.length > 0}
-      <p class="formula-error">Formula unavailable: {issues[0].message}</p>
-    {:else}
-      <div class="formula-tree">
-        {#each rows as row (row.node.id)}
-          <div class="formula-row" class:operation={row.node.kind === 'operation'} style:--depth={row.depth}>
-            <span class="formula-mark">
-              {row.node.kind === 'operation' ? formulaOperatorSymbol(row.node.operator) : '·'}
-            </span>
-            <span class="formula-label">
-              <strong>{row.node.kind === 'operation' ? row.node.label : row.node.source.label}</strong>
-              {#if row.node.kind === 'term' && row.node.detail}<small>{row.node.detail}</small>{/if}
-            </span>
-            <span class="formula-value">{formulaValueText(row.node.kind === 'operation' ? row.node.result : row.node.value)}</span>
-          </div>
-        {/each}
-      </div>
-    {/if}
+    <div
+      role="tabpanel"
+      id={formulaPanelDomId(active.formulaId)}
+      aria-labelledby={formulaTabDomId(active.formulaId)}
+      tabindex="0"
+    >
+      {#if issues.length > 0}
+        <p class="formula-error">Formula unavailable: {issues[0].message}</p>
+      {:else}
+        <div class="formula-tree">
+          {#each rows as row (row.node.id)}
+            <div class="formula-row" class:operation={row.node.kind === 'operation'} style:--depth={row.depth}>
+              <span class="formula-mark">
+                {row.node.kind === 'operation' ? formulaOperatorSymbol(row.node.operator) : '·'}
+              </span>
+              <span class="formula-label">
+                <strong>{row.node.kind === 'operation' ? row.node.label : row.node.source.label}</strong>
+                {#if row.node.kind === 'term' && row.node.detail}<small>{row.node.detail}</small>{/if}
+              </span>
+              <span class="formula-value">{formulaValueText(row.node.kind === 'operation' ? row.node.result : row.node.value)}</span>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </div>
   </section>
 {/if}
 
