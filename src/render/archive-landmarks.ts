@@ -8,18 +8,9 @@ import type {
 export type ArchiveLandmarkMode = 'standard' | 'reduced-motion' | 'low-quality'
 
 export type ArchiveLandmarkSlotId =
-  | 'left-outer-upper'
-  | 'left-outer-middle'
-  | 'left-outer-lower'
-  | 'left-inner-upper'
-  | 'left-inner-middle'
-  | 'left-inner-lower'
-  | 'right-inner-upper'
-  | 'right-inner-middle'
-  | 'right-inner-lower'
-  | 'right-outer-upper'
-  | 'right-outer-middle'
-  | 'right-outer-lower'
+  | 'scatter-01' | 'scatter-02' | 'scatter-03' | 'scatter-04' | 'scatter-05' | 'scatter-06'
+  | 'scatter-07' | 'scatter-08' | 'scatter-09' | 'scatter-10' | 'scatter-11' | 'scatter-12'
+  | 'scatter-13' | 'scatter-14' | 'scatter-15' | 'scatter-16' | 'scatter-17' | 'scatter-18'
 
 export interface ArchiveLandmarkSlot {
   readonly id: ArchiveLandmarkSlotId
@@ -33,21 +24,30 @@ export interface ArchiveLandmarkSlot {
   readonly avoids: readonly ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui']
 }
 
-/** Twelve compact desktop slots form two record rails around the Heart. */
+/**
+ * An oversized pool of irregular desktop positions. Each universe deterministically
+ * selects twelve, producing a stable scatter without covering the Heart or UI rails.
+ */
 export const ARCHIVE_LANDMARK_SLOTS: readonly ArchiveLandmarkSlot[] = [
   ...([
-    ['left-outer-upper', 'far', 0.31, 0.34],
-    ['left-inner-upper', 'near', 0.36, 0.34],
-    ['right-inner-upper', 'near', 0.64, 0.34],
-    ['right-outer-upper', 'far', 0.69, 0.34],
-    ['left-outer-middle', 'far', 0.31, 0.52],
-    ['left-inner-middle', 'near', 0.36, 0.52],
-    ['right-inner-middle', 'near', 0.64, 0.52],
-    ['right-outer-middle', 'far', 0.69, 0.52],
-    ['left-outer-lower', 'far', 0.31, 0.70],
-    ['left-inner-lower', 'near', 0.36, 0.70],
-    ['right-inner-lower', 'near', 0.64, 0.70],
-    ['right-outer-lower', 'far', 0.69, 0.70],
+    ['scatter-01', 'far', 0.32, 0.27],
+    ['scatter-02', 'near', 0.43, 0.31],
+    ['scatter-03', 'far', 0.57, 0.26],
+    ['scatter-04', 'near', 0.70, 0.34],
+    ['scatter-05', 'far', 0.31, 0.41],
+    ['scatter-06', 'near', 0.71, 0.46],
+    ['scatter-07', 'far', 0.18, 0.52],
+    ['scatter-08', 'near', 0.30, 0.57],
+    ['scatter-09', 'far', 0.69, 0.61],
+    ['scatter-10', 'near', 0.09, 0.69],
+    ['scatter-11', 'far', 0.22, 0.76],
+    ['scatter-12', 'near', 0.36, 0.72],
+    ['scatter-13', 'far', 0.47, 0.82],
+    ['scatter-14', 'near', 0.59, 0.74],
+    ['scatter-15', 'far', 0.73, 0.83],
+    ['scatter-16', 'near', 0.13, 0.59],
+    ['scatter-17', 'far', 0.40, 0.24],
+    ['scatter-18', 'near', 0.64, 0.38],
   ] as const).map(([id, screenZone, x, y]) => ({
     id,
     screenZone,
@@ -225,14 +225,26 @@ function candidateUnits(candidates: readonly Candidate[]): CandidateUnit[] {
   }))
 }
 
+function stableHash(value: string): number {
+  let hash = 2_166_136_261
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 16_777_619)
+  }
+  return hash >>> 0
+}
+
 function slotFor(
   unit: CandidateUnit,
+  universeId: UniversePackV2['id'],
   usedSlotIds: ReadonlySet<ArchiveLandmarkSlotId>,
 ): ArchiveLandmarkSlot | null {
   const maximumRequiredClearance = Math.max(
     ...unit.candidates.map(({ record }) => record.object.minimumHeartDistance),
   )
-  for (const slot of ARCHIVE_LANDMARK_SLOTS) {
+  const offset = stableHash(`${universeId}:${unit.id}`) % ARCHIVE_LANDMARK_SLOTS.length
+  for (let step = 0; step < ARCHIVE_LANDMARK_SLOTS.length; step += 1) {
+    const slot = ARCHIVE_LANDMARK_SLOTS[(offset + step) % ARCHIVE_LANDMARK_SLOTS.length]
     if (usedSlotIds.has(slot.id)) continue
     if (slot.heartClearanceRadii < maximumRequiredClearance) continue
     return slot
@@ -268,7 +280,7 @@ export function planArchiveLandmarks(
   const units = candidateUnits(candidates).sort((left, right) => (
     right.priority - left.priority || compareText(left.id, right.id)
   ))
-  const attentionLimit = ARCHIVE_LANDMARK_SLOTS.length
+  const attentionLimit = Math.min(12, ARCHIVE_LANDMARK_SLOTS.length)
   const usedSlotIds = new Set<ArchiveLandmarkSlotId>()
   const landmarks: VisibleArchiveLandmark[] = []
   const hidden: HiddenArchiveLandmark[] = []
@@ -279,7 +291,7 @@ export function planArchiveLandmarks(
       hidden.push({ id: unit.id, recordIds, reason: 'attention-budget' })
       continue
     }
-    const slot = slotFor(unit, usedSlotIds)
+    const slot = slotFor(unit, pack.id, usedSlotIds)
     if (!slot) {
       hidden.push({ id: unit.id, recordIds, reason: 'placement-budget' })
       continue

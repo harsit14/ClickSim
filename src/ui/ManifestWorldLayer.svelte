@@ -264,6 +264,7 @@
             class="archive-landmark"
             data-record-id={record.id}
             data-slot={landmark.slot.id}
+            data-side={landmark.slot.x >= 0.58 ? 'right' : landmark.slot.x <= 0.22 ? 'left-edge' : 'center'}
             data-motion={landmark.visual.motion.kind}
             style={`--landmark-x:${landmark.slot.x * 100}%;--landmark-y:${landmark.slot.y * 100}%`}
             aria-label={`${landmark.accessibleDescription}. Open ${pack.archive.localName}.`}
@@ -685,19 +686,26 @@
     pointer-events: none;
     text-align: left;
   }
-  [data-slot*='right'] .archive-hint {
+  [data-side='right'] .archive-hint {
     left: auto;
     right: -0.4rem;
     transform: translate(0, 0.3rem) scale(0.94);
     transform-origin: 100% 100%;
+  }
+  [data-side='left-edge'] .archive-hint {
+    left: -0.4rem;
+    transform: translate(0, 0.3rem) scale(0.94);
+    transform-origin: 0 100%;
   }
   .archive-landmark:hover .archive-hint,
   .archive-landmark:focus-visible .archive-hint {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
   }
-  [data-slot*='right']:hover .archive-hint,
-  [data-slot*='right']:focus-visible .archive-hint { transform: translate(0, 0) scale(1); }
+  [data-side='right']:hover .archive-hint,
+  [data-side='right']:focus-visible .archive-hint,
+  [data-side='left-edge']:hover .archive-hint,
+  [data-side='left-edge']:focus-visible .archive-hint { transform: translate(0, 0) scale(1); }
   .archive-hint small {
     color: color-mix(in srgb, var(--gold) 72%, var(--dim));
     font-size: 0.52rem;
