@@ -204,7 +204,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
           'The Corona is the expensive capstone reached through developed Forge and Hand paths.',
         ],
         paragraphs: [
-          'The same permanent choices are interpreted by each universe rather than copied verbatim. Emberlight draws a stellar Constellation in the Observatory; Tidefall sounds a Current Chart in the Moonless Chart, with local node names, lore, layout, and Moonfall ritual.',
+          'The same permanent choices are interpreted by each universe rather than copied verbatim. Emberlight draws a stellar Constellation in the Observatory; Tidefall sounds a Current Chart in the Moonless Chart, with local node names, lore, layout, and Undertow ritual.',
           'Once every node is owned, a repeatable Stardust market appears. Emberlight calls it the Eternal Observatory; Tidefall calls it the Returning Ocean. Both provide an endless production sink and increased Stardust yield until the next layer-two collapse.',
         ],
       },

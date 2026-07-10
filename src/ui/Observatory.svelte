@@ -6,7 +6,7 @@
   import { buyStardustWork, stardustMarketComplete } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { playBuy } from '../audio/sfx'
-  import { universeById } from '../content/universes'
+  import { universeById, universeV2ById } from '../content/universes'
   import {
     STARDUST_WORKS,
     stardustProductionMult,
@@ -52,6 +52,9 @@
   const pack = $derived(universeById(game.activeUniverse))
   const identity = $derived(progressionIdentity(pack.id).observatory)
   const tidefall = $derived(pack.id === 'tidefall')
+  const epochMatter = $derived(universeV2ById(pack.id)?.economy.localPrestige.rewardCurrency)
+  const epochMatterGlyph = $derived(epochMatter?.glyph ?? (tidefall ? '◇' : '✧'))
+  const epochMatterName = $derived(epochMatter?.localName ?? (tidefall ? 'Moon Salt' : 'Stardust'))
   const marketComplete = $derived(stardustMarketComplete())
   const tideRate = $derived(universeRateMult(game, now))
   const tideNext = $derived(universeRateMult(game, now + 500))
@@ -115,7 +118,7 @@
       <span>{identity.overline}</span>
       <h2>{identity.title}</h2>
     </div>
-    <span class="balance">✧ {format(game.stardust)} <em>stardust</em></span>
+    <span class="balance">{epochMatterGlyph} {format(game.stardust)} <em>{epochMatterName}</em></span>
     <button bind:this={closeButton} class="close" aria-label={`close ${identity.title}`} onclick={onclose}>✕</button>
   </header>
 
@@ -132,16 +135,16 @@
       <p class="nova-text">{identity.trialWait}</p>
     {:else if game.supernovae === 0 && isZeroAmount(gain)}
       <p class="nova-text">
-        {worldText(identity.firstText)} <em>first ✧ at {format(stardustTargetFor(1))} {pack.currency.toLowerCase()} this era ({format(game.eraEarned)} so far)</em>
+        {worldText(identity.firstText)} <em>first {epochMatterGlyph} at {format(stardustTargetFor(1))} {pack.currency.toLowerCase()} this era ({format(game.eraEarned)} so far)</em>
       </p>
     {:else if isZeroAmount(gain)}
       <p class="nova-text">
-        {worldText(identity.needsText)} <em>✧{format(addAmounts(game.stardustTotal, ONE_AMOUNT))} at
+        {worldText(identity.needsText)} <em>{epochMatterGlyph}{format(addAmounts(game.stardustTotal, ONE_AMOUNT))} at
         {format(stardustTargetFor(addAmounts(game.stardustTotal, ONE_AMOUNT)))} {pack.currency.toLowerCase()} this era ({format(game.eraEarned)} so far)</em>
       </p>
     {:else if !armed}
       <p class="nova-text">{identity.readyText}</p>
-      <button class="nova-btn" onclick={() => (armed = true)}>{identity.collapseName} &nbsp;·&nbsp; gain ✧{format(gain)}</button>
+      <button class="nova-btn" onclick={() => (armed = true)}>{identity.collapseName} &nbsp;·&nbsp; gain {epochMatterGlyph}{format(gain)}</button>
     {:else}
       <p class="nova-text warn">{worldText(identity.warningText)}</p>
       <div class="confirm">
@@ -200,19 +203,19 @@
         <span class="locked-tag">requires {requiredNames(selected)}</span>
       {:else}
         <button class="buy" disabled={state !== 'ready'} onclick={() => tryBuy(selected)}>
-          ✧ {selected.cost}
+          {epochMatterGlyph} {selected.cost}
         </button>
       {/if}
     </div>
   {/if}
 
-  <section class="eternal" class:locked={!marketComplete} aria-label="Repeatable Stardust works">
+  <section class="eternal" class:locked={!marketComplete} aria-label={`Repeatable ${epochMatterName} works`}>
     <div class="eternal-head">
       <div>
         <span>{identity.eternalEyebrow}</span>
         <h3>{identity.eternalTitle}</h3>
       </div>
-      {#if marketComplete}<strong>✧ repeats forever</strong>{/if}
+      {#if marketComplete}<strong>{epochMatterGlyph} repeats forever</strong>{/if}
     </div>
     {#if marketComplete}
       <p>{identity.eternalIntro}</p>
@@ -231,7 +234,7 @@
               <b>{workStatus(work.id)}</b>
             </div>
             <button disabled={cost === null || !gteAmount(game.stardust, cost)} onclick={() => tryBuyWork(work.id)}>
-              {cost === null ? 'mastered' : `${identity.workVerb} · ✧ ${format(cost)}`}
+              {cost === null ? 'mastered' : `${identity.workVerb} · ${epochMatterGlyph} ${format(cost)}`}
             </button>
           </article>
         {/each}
