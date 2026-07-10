@@ -1,15 +1,12 @@
 /**
- * SIM-001 pure contract proposal.
- *
- * This file does not replace or import the current simulator. It defines the
- * deterministic case matrix and serializable output expected from a future
- * multi-profile simulator implementation.
+ * SIM-001 frozen multi-profile contract, consumed by the F1b profile engine.
+ * The additive current-pack curve audit remains separate from this schema.
  */
-import type { UniverseId } from '../src/content/universes/types'
-import {
-  parseScientificPairSpike,
-  type CanonicalScientificStringSpike,
-} from '../src/core/numeric/scientific-pair-spike'
+import type {
+  SerializedEconomyAmount,
+  UniverseId,
+} from '../src/content/universes/types'
+import { parseAmount } from '../src/core/numeric/amount'
 
 export const SIMULATOR_CONTRACT_VERSION = 'multi-profile-simulator-v1' as const
 export const SIMULATOR_RNG_ALGORITHM = 'indexed-mix32-v1' as const
@@ -147,7 +144,7 @@ export const SIMULATOR_PROGRESSION_STATES = [
 
 export interface SimulatorMilestoneTarget {
   readonly id: string
-  readonly amount: CanonicalScientificStringSpike
+  readonly amount: SerializedEconomyAmount
 }
 
 export interface SimulatorContractConfig {
@@ -221,7 +218,7 @@ function assertConfig(config: SimulatorContractConfig): void {
     if (milestone.id.trim().length === 0) throw new RangeError('Milestone ids must not be empty')
     if (milestoneIds.has(milestone.id)) throw new RangeError(`Duplicate milestone id ${milestone.id}`)
     milestoneIds.add(milestone.id)
-    parseScientificPairSpike(milestone.amount)
+    parseAmount(milestone.amount)
   })
 }
 
@@ -277,7 +274,7 @@ export function createSimulatorCases(
 
 export interface MilestoneTimeOutput {
   readonly id: string
-  readonly target: CanonicalScientificStringSpike
+  readonly target: SerializedEconomyAmount
   readonly reachedAtMs: number | null
 }
 
@@ -297,13 +294,13 @@ export type RateComponent =
   | 'cross-world'
 
 export interface RateComponentOutput {
-  readonly amountPerSecond: CanonicalScientificStringSpike
+  readonly amountPerSecond: SerializedEconomyAmount
   readonly share: number
 }
 
 export interface ResetRecoveryOutput {
   readonly boundary: 'epoch-turn' | 'deep-collapse'
-  readonly priorFrontierRate: CanonicalScientificStringSpike
+  readonly priorFrontierRate: SerializedEconomyAmount
   readonly recoveredAtMs: number | null
   readonly recoveryDurationMs: number | null
   readonly rateRatioAtHorizon: number
@@ -312,7 +309,7 @@ export interface ResetRecoveryOutput {
 export interface BuildCandidateOutput {
   readonly buildId: string
   readonly milestoneScoreMs: number | null
-  readonly finalRate: CanonicalScientificStringSpike
+  readonly finalRate: SerializedEconomyAmount
   readonly viable: boolean
 }
 
@@ -331,7 +328,7 @@ export interface NumericHealthOutput {
   readonly nonFiniteValue: boolean
   readonly invalidCanonicalAmount: boolean
   readonly stalledComparison: boolean
-  readonly lastValidAmount: CanonicalScientificStringSpike
+  readonly lastValidAmount: SerializedEconomyAmount
   readonly diagnostics: readonly string[]
 }
 
@@ -387,12 +384,12 @@ function isNonnegativeFinite(value: number): boolean {
 }
 
 function validateAmount(
-  amount: CanonicalScientificStringSpike,
+  amount: SerializedEconomyAmount,
   path: string,
   issues: SimulatorResultIssue[],
 ): void {
   try {
-    parseScientificPairSpike(amount)
+    parseAmount(amount)
   } catch {
     issues.push({ path, message: 'Expected a canonical scientific economy amount' })
   }
