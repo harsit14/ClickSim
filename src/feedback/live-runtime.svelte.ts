@@ -20,34 +20,25 @@ import {
 } from '../accessibility/announcements'
 import {
   dispatchSemanticFeedback,
-  INITIAL_PURCHASE_CEREMONY_TIMELINE,
-  schedulePurchaseCeremony,
   type FeedbackDispatchResult,
-  type PurchaseCeremonyPlan,
-  type PurchaseCeremonyTimelineState,
 } from './index'
 
 export interface LiveFeedbackPreferences {
-  readonly reducedMotion: boolean
-  readonly quality: 'high' | 'balanced' | 'low'
   readonly audio: SemanticAudioRuntimePreferences
 }
 
 export interface LiveFeedbackState {
-  ceremonies: PurchaseCeremonyPlan[]
   announcement: string
   visualFallbackEventId: string | null
   lastDispatch: FeedbackDispatchResult | null
 }
 
 export const liveFeedback: LiveFeedbackState = $state({
-  ceremonies: [],
   announcement: '',
   visualFallbackEventId: null,
   lastDispatch: null,
 })
 
-let ceremonyTimeline: PurchaseCeremonyTimelineState = INITIAL_PURCHASE_CEREMONY_TIMELINE
 let audioState: SemanticAudioRuntimeState = EMPTY_SEMANTIC_AUDIO_RUNTIME_STATE
 let announcementState: AnnouncementGateState = EMPTY_ANNOUNCEMENT_STATE
 
@@ -101,40 +92,13 @@ function announce(event: SemanticFeedbackEvent, pack: UniversePackV2) {
     : `${sourceName(event, pack)} changed.`
 }
 
-function schedule(event: PurchaseFeedbackEvent, pack: UniversePackV2, preferences: LiveFeedbackPreferences) {
-  const object = pack.visual.objects.find((candidate) => (
-    candidate.sourceKind === event.source.kind && candidate.sourceId === event.source.id
-  ))
-  const scheduled = schedulePurchaseCeremony(event, ceremonyTimeline, {
-    destination: object
-      ? { kind: 'world-object', id: object.id }
-      : { kind: 'none', reason: 'The active V2 pack has no visible object for this purchase source.' },
-    reducedMotion: preferences.reducedMotion,
-    quality: preferences.quality,
-  })
-  ceremonyTimeline = scheduled.nextState
-  liveFeedback.ceremonies = [...liveFeedback.ceremonies, scheduled.ceremony].slice(-8)
-  const delay = Math.max(0, scheduled.ceremony.endsAtMs - performance.now() + 80)
-  window.setTimeout(() => {
-    liveFeedback.ceremonies = liveFeedback.ceremonies.filter(
-      ({ ceremonyId }) => ceremonyId !== scheduled.ceremony.ceremonyId,
-    )
-  }, delay)
-}
-
-/** Fans one completed economy purchase into independent visual, audio, and a11y consumers. */
+/** Fans one completed economy purchase into independent audio and a11y consumers. */
 export function publishLivePurchase(
   event: PurchaseFeedbackEvent,
   pack: UniversePackV2,
   preferences: LiveFeedbackPreferences,
 ): FeedbackDispatchResult {
   const dispatch = dispatchSemanticFeedback([event], [
-    {
-      id: 'manifest-purchase-ceremony',
-      consume(candidate) {
-        if (candidate.kind === 'purchase') schedule(candidate, pack, preferences)
-      },
-    },
     {
       id: 'semantic-audio',
       consume(candidate) {
@@ -160,10 +124,8 @@ export function publishLivePurchase(
 
 /** Test/dev reset; it never changes progression state. */
 export function resetLiveFeedbackRuntime() {
-  ceremonyTimeline = INITIAL_PURCHASE_CEREMONY_TIMELINE
   audioState = EMPTY_SEMANTIC_AUDIO_RUNTIME_STATE
   announcementState = EMPTY_ANNOUNCEMENT_STATE
-  liveFeedback.ceremonies = []
   liveFeedback.announcement = ''
   liveFeedback.visualFallbackEventId = null
   liveFeedback.lastDispatch = null

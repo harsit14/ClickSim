@@ -630,7 +630,7 @@
     }
   }
   .game-shell.comparative-blind > :global(.keyboard-focus),
-  .game-shell.comparative-blind > :global(.ceremony-layer),
+  .game-shell.comparative-blind > :global(.feedback-layer),
   .game-shell.comparative-blind > :global(.sr-live),
   .game-shell.comparative-blind > :global(.top-stack),
   .game-shell.comparative-blind > :global(.cohesion-stack),

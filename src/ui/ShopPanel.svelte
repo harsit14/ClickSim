@@ -20,7 +20,6 @@
   import { subtractAmounts, ZERO_AMOUNT } from '../core/numeric/amount'
   import { aggregatePurchaseFeedback } from '../feedback'
   import { publishLivePurchase } from '../feedback/live-runtime.svelte'
-  import { resolveVisualQuality } from '../core/preferences'
   import {
     verdanceGeneratorCohortStatus,
     type VerdanceGeneratorCohortStatus,
@@ -86,15 +85,7 @@
       audioCue: v2Pack.audio.purchaseIntervalCue,
       ...(announcement ? { announcement } : {}),
     })
-    const quality = resolveVisualQuality(game.visualQuality, {
-      width: window.innerWidth,
-      devicePixelRatio: window.devicePixelRatio || 1,
-      hardwareConcurrency: navigator.hardwareConcurrency || 8,
-    })
     publishLivePurchase(event, v2Pack, {
-      reducedMotion: game.motionPreference === 'reduced'
-        || window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-      quality,
       audio: { silence: game.sfxVolume <= 0 },
     })
   }
