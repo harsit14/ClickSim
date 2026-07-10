@@ -165,11 +165,14 @@ export function validateUniversePresentation(
   for (const descriptorId of Object.keys(presentation.objects)) {
     if (!manifestIds.has(descriptorId)) issues.push({ path: `objects.${descriptorId}`, message: 'Presentation descriptor does not belong to the pack manifest.' })
   }
-  for (const [stateId, state] of Object.entries(presentation.worldStates)) {
-    if (state.id !== stateId) issues.push({ path: `worldStates.${stateId}.id`, message: `Expected world-state ID ${stateId}.` })
-    if (!DEPTHS.has(state.depth)) issues.push({ path: `worldStates.${stateId}.depth`, message: 'Unknown presentation depth.' })
-    if (!state.occlusion.trim()) issues.push({ path: `worldStates.${stateId}.occlusion`, message: 'Occlusion rule must not be empty.' })
-    validateState(state, `worldStates.${stateId}`, issues)
+  const worldStateIds = new Set<string>()
+  for (const [stateKey, state] of Object.entries(presentation.worldStates)) {
+    if (!state.id.trim()) issues.push({ path: `worldStates.${stateKey}.id`, message: 'World-state ID must not be empty.' })
+    else if (worldStateIds.has(state.id)) issues.push({ path: `worldStates.${stateKey}.id`, message: `Duplicate world-state ID ${state.id}.` })
+    else worldStateIds.add(state.id)
+    if (!DEPTHS.has(state.depth)) issues.push({ path: `worldStates.${stateKey}.depth`, message: 'Unknown presentation depth.' })
+    if (!state.occlusion.trim()) issues.push({ path: `worldStates.${stateKey}.occlusion`, message: 'Occlusion rule must not be empty.' })
+    validateState(state, `worldStates.${stateKey}`, issues)
   }
   return issues
 }
