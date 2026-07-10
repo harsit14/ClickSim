@@ -23,6 +23,13 @@
     stardustWorkCopy,
   } from '../content/universe-progression'
   import { universeRateMult } from '../engine/compute'
+  import {
+    ONE_AMOUNT,
+    addAmounts,
+    amountFromNumber,
+    gteAmount,
+    isZeroAmount,
+  } from '../core/numeric/amount'
 
   let {
     onclose,
@@ -56,7 +63,7 @@
   function nodeState(n: StarNode): 'owned' | 'ready' | 'reachable' | 'locked' {
     if (game.constellation.includes(n.id)) return 'owned'
     if (!nodeAvailable(game.constellation, n)) return 'locked'
-    return game.stardust >= n.cost ? 'ready' : 'reachable'
+    return gteAmount(game.stardust, amountFromNumber(n.cost)) ? 'ready' : 'reachable'
   }
 
   function tryBuy(n: StarNode) {
@@ -108,7 +115,7 @@
       <span>{identity.overline}</span>
       <h2>{identity.title}</h2>
     </div>
-    <span class="balance">✧ {game.stardust} <em>stardust</em></span>
+    <span class="balance">✧ {format(game.stardust)} <em>stardust</em></span>
     <button bind:this={closeButton} class="close" aria-label={`close ${identity.title}`} onclick={onclose}>✕</button>
   </header>
 
@@ -120,17 +127,17 @@
     </div>
   {/if}
 
-  <div class="nova" class:ready={gain >= 1}>
+  <div class="nova" class:ready={!isZeroAmount(gain)}>
     {#if game.challenge}
       <p class="nova-text">{identity.trialWait}</p>
-    {:else if game.supernovae === 0 && gain < 1}
+    {:else if game.supernovae === 0 && isZeroAmount(gain)}
       <p class="nova-text">
         {worldText(identity.firstText)} <em>first ✧ at {format(stardustTargetFor(1))} {pack.currency.toLowerCase()} this era ({format(game.eraEarned)} so far)</em>
       </p>
-    {:else if gain < 1}
+    {:else if isZeroAmount(gain)}
       <p class="nova-text">
-        {worldText(identity.needsText)} <em>✧{game.stardustTotal + 1} at
-        {format(stardustTargetFor(game.stardustTotal + 1))} {pack.currency.toLowerCase()} this era ({format(game.eraEarned)} so far)</em>
+        {worldText(identity.needsText)} <em>✧{format(addAmounts(game.stardustTotal, ONE_AMOUNT))} at
+        {format(stardustTargetFor(addAmounts(game.stardustTotal, ONE_AMOUNT)))} {pack.currency.toLowerCase()} this era ({format(game.eraEarned)} so far)</em>
       </p>
     {:else if !armed}
       <p class="nova-text">{identity.readyText}</p>
@@ -223,8 +230,8 @@
               <span>{copy.effect ?? work.effect}</span>
               <b>{workStatus(work.id)}</b>
             </div>
-            <button disabled={!Number.isFinite(cost) || game.stardust < cost} onclick={() => tryBuyWork(work.id)}>
-              {Number.isFinite(cost) ? `${identity.workVerb} · ✧ ${cost}` : 'mastered'}
+            <button disabled={cost === null || !gteAmount(game.stardust, cost)} onclick={() => tryBuyWork(work.id)}>
+              {cost === null ? 'mastered' : `${identity.workVerb} · ✧ ${format(cost)}`}
             </button>
           </article>
         {/each}

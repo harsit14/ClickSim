@@ -70,9 +70,12 @@ export function workRank(ranks: Readonly<Record<string, number>>, id: string): n
   return Math.max(0, Math.floor(ranks[id] ?? 0))
 }
 
-export function workCost(work: RepeatableWork, rank: number): number {
-  if (rank >= work.maxRank) return Number.POSITIVE_INFINITY
-  return Math.min(Number.MAX_SAFE_INTEGER, Math.ceil(work.baseCost * work.costGrowth ** rank))
+export function workCost(work: RepeatableWork, rank: number): EconomyAmount | null {
+  if (rank >= work.maxRank) return null
+  return ceilAmount(multiplyAmounts(
+    amountFromNumber(work.baseCost),
+    powAmount(amountFromNumber(work.costGrowth), rank),
+  ))
 }
 
 export function stardustProductionMult(ranks: Readonly<Record<string, number>>): number {
@@ -90,4 +93,11 @@ export function deepProductionMult(ranks: Readonly<Record<string, number>>): num
 export function singularityYieldMult(ranks: Readonly<Record<string, number>>): number {
   return 1 + 0.25 * workRank(ranks, 'recursive-abyss')
 }
+import type { EconomyAmount } from './universes/types'
+import {
+  amountFromNumber,
+  ceilAmount,
+  multiplyAmounts,
+  powAmount,
+} from '../core/numeric/amount'
 

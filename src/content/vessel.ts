@@ -15,18 +15,30 @@ export type VesselPartId =
   | 'keel-trials'
   | 'archive'
 
-export interface VesselPartDef {
+interface VesselPartBase {
   id: VesselPartId
   name: string
   short: string
   flavor: string
   requirement: string
   hue: number
-  target: EconomyAmount
   action: string
   consumes?: { gen: string; count: number }
+}
+
+export interface VesselAmountPartDef extends VesselPartBase {
+  progressKind: 'amount'
+  target: EconomyAmount
   current: (g: GameState) => EconomyAmount
 }
+
+export interface VesselCountPartDef extends VesselPartBase {
+  progressKind: 'count'
+  target: number
+  current: (g: GameState) => number
+}
+
+export type VesselPartDef = VesselAmountPartDef | VesselCountPartDef
 
 export const VESSEL_REVEAL_AT = amountFromNumber(1e21)
 
@@ -38,6 +50,7 @@ export const VESSEL_PARTS: VesselPartDef[] = [
     flavor: 'A thousand warm places, bent into one shelter.',
     requirement: '1e24 light this era',
     hue: 24,
+    progressKind: 'amount',
     target: amountFromNumber(1e24),
     action: 'set the hull',
     current: (g) => g.eraEarned,
@@ -49,9 +62,10 @@ export const VESSEL_PARTS: VesselPartDef[] = [
     flavor: 'Charts that learned to pull against the dark.',
     requirement: '9 constellation nodes',
     hue: 214,
-    target: amountFromNumber(9),
+    progressKind: 'count',
+    target: 9,
     action: 'raise the sails',
-    current: (g) => amountFromNumber(g.constellation.length),
+    current: (g) => g.constellation.length,
   },
   {
     id: 'heart-sun',
@@ -60,10 +74,11 @@ export const VESSEL_PARTS: VesselPartDef[] = [
     flavor: 'A star given up so the vessel may keep beating.',
     requirement: '100 Suns to sacrifice',
     hue: 48,
-    target: amountFromNumber(100),
+    progressKind: 'count',
+    target: 100,
     action: 'give 100 Suns',
     consumes: { gen: 'sun', count: 100 },
-    current: (g) => amountFromNumber(g.owned['sun'] ?? 0),
+    current: (g) => g.owned['sun'] ?? 0,
   },
   {
     id: 'keel-trials',
@@ -72,9 +87,10 @@ export const VESSEL_PARTS: VesselPartDef[] = [
     flavor: 'Every rehearsal becomes a rib of the ship.',
     requirement: '4 trials completed',
     hue: 12,
-    target: amountFromNumber(4),
+    progressKind: 'count',
+    target: 4,
     action: 'lay the keel',
-    current: (g) => amountFromNumber(g.challengesDone.length),
+    current: (g) => g.challengesDone.length,
   },
   {
     id: 'archive',
@@ -83,9 +99,10 @@ export const VESSEL_PARTS: VesselPartDef[] = [
     flavor: 'Lumen will not let you cross alone.',
     requirement: 'an answer chosen',
     hue: 260,
-    target: amountFromNumber(1),
+    progressKind: 'count',
+    target: 1,
     action: 'bring the archive',
-    current: (g) => amountFromNumber(g.ending === null ? 0 : 1),
+    current: (g) => g.ending === null ? 0 : 1,
   },
 ]
 
@@ -99,15 +116,21 @@ export function vesselPartComplete(g: GameState, id: VesselPartId): boolean {
   return g.vesselParts.includes(id)
 }
 
-export function vesselPartCurrent(g: GameState, part: VesselPartDef): EconomyAmount {
-  return minAmount(part.current(g), part.target)
+export function vesselPartCurrent(g: GameState, part: VesselPartDef): EconomyAmount | number {
+  return part.progressKind === 'amount'
+    ? minAmount(part.current(g), part.target)
+    : Math.min(part.current(g), part.target)
 }
 
 export function vesselPartReady(g: GameState, part: VesselPartDef): boolean {
-  return !vesselPartComplete(g, part.id) && gteAmount(part.current(g), part.target)
+  const ready = part.progressKind === 'amount'
+    ? gteAmount(part.current(g), part.target)
+    : part.current(g) >= part.target
+  return !vesselPartComplete(g, part.id) && ready
 }
 
 export function vesselProgress(g: GameState, part: VesselPartDef): number {
+  if (part.progressKind === 'count') return Math.min(1, part.current(g) / part.target)
   const ratio = divideAmounts(part.current(g), part.target)
   return ratio.exponent >= 0 ? 1 : Math.min(1, amountToNumber(ratio))
 }

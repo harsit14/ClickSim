@@ -34,6 +34,15 @@
     deepWorkCopy,
     progressionIdentity,
   } from '../content/universe-progression'
+  import {
+    ONE_AMOUNT,
+    amountFromNumber,
+    eqAmount,
+    gteAmount,
+    isZeroAmount,
+    parseAmount,
+    serializeAmount,
+  } from '../core/numeric/amount'
 
   let { onclose }: { onclose: () => void } = $props()
   let armed = $state(false)
@@ -60,18 +69,30 @@
     for (const generator of pack.generators) localized = localized.replaceAll(`{${generator.id}}`, generator.name)
     return localized
   }
-  const warningText = () => localize(identity.warningText).replace('stardust', `✧${game.stardustTotal} stardust`)
+  const warningText = () => localize(identity.warningText).replace('stardust', `✧${format(game.stardustTotal)} stardust`)
 
   function collapse() {
     armed = false
     const gained = performDeepCollapse()
-    if (gained <= 0) return
+    if (isZeroAmount(gained)) return
     clearBuffs()
     combo.streak = 0
     combo.lastRewardAt = 0
     playSupernova()
     save()
-    pushToast(identity.toastTitle, `◉ ${gained} — ${identity.toastBody}.`, 'collapse')
+    pushToast(identity.toastTitle, `◉ ${format(gained)} — ${identity.toastBody}.`, 'collapse')
+  }
+
+  function setAutoNovaThreshold(event: Event) {
+    const input = event.currentTarget as HTMLInputElement
+    try {
+      const value = input.value.includes('e')
+        ? parseAmount(input.value)
+        : amountFromNumber(Number(input.value))
+      game.autoNovaThreshold = gteAmount(value, ONE_AMOUNT) ? value : ONE_AMOUNT
+    } catch {
+      input.value = serializeAmount(game.autoNovaThreshold)
+    }
   }
 
   function tryBuy(id: string) {
@@ -107,7 +128,7 @@
       <span>{identity.overline}</span>
       <h2>{identity.title}</h2>
     </div>
-    <span class="balance">◉ {game.singularities} <em>singularit{game.singularities === 1 ? 'y' : 'ies'}</em></span>
+    <span class="balance">◉ {format(game.singularities)} <em>singularit{eqAmount(game.singularities, ONE_AMOUNT) ? 'y' : 'ies'}</em></span>
     <button bind:this={closeButton} class="close" aria-label={`close ${identity.title}`} onclick={onclose}>✕</button>
   </header>
 
@@ -120,13 +141,13 @@
     </div>
   {/if}
 
-  <div class="fold" class:ready={gain >= 1}>
+  <div class="fold" class:ready={!isZeroAmount(gain)}>
     {#if game.challenge}
       <p class="fold-text">{identity.trialWait}</p>
-    {:else if gain < 1}
+    {:else if isZeroAmount(gain)}
       <p class="fold-text">
         {identity.gatherText}
-        <em>◉1 per ✧{SINGULARITY_COST} gathered this era — ✧{game.stardustTotal} so far</em>
+        <em>◉1 per ✧{SINGULARITY_COST} gathered this era — ✧{format(game.stardustTotal)} so far</em>
       </p>
     {:else if !armed}
       <p class="fold-text">{identity.readyText}</p>
@@ -156,13 +177,13 @@
             {:else if u.id === 'nova-engine'}
               <label class="toggle">
                 <input type="checkbox" bind:checked={game.autoNova} /> at ✧
-                <input class="threshold" type="number" min="1" bind:value={game.autoNovaThreshold} />
+                <input class="threshold" type="text" inputmode="decimal" value={serializeAmount(game.autoNovaThreshold)} onchange={setAutoNovaThreshold} aria-label="automatic supernova threshold" />
               </label>
             {:else}
               <span class="held">held</span>
             {/if}
           {:else}
-            <button class="buy" disabled={game.singularities < u.cost} onclick={() => tryBuy(u.id)}>
+            <button class="buy" disabled={!gteAmount(game.singularities, amountFromNumber(u.cost))} onclick={() => tryBuy(u.id)}>
               ◉ {u.cost}
             </button>
           {/if}
@@ -197,8 +218,8 @@
               <span>{copy.effect ?? work.effect}</span>
               <b>{workStatus(work.id)}</b>
             </div>
-            <button disabled={!Number.isFinite(cost) || game.singularities < cost} onclick={() => tryBuyWork(work.id)}>
-              {Number.isFinite(cost) ? `${identity.workVerb} · ◉ ${cost}` : 'mastered'}
+            <button disabled={cost === null || !gteAmount(game.singularities, cost)} onclick={() => tryBuyWork(work.id)}>
+              {cost === null ? 'mastered' : `${identity.workVerb} · ◉ ${format(cost)}`}
             </button>
           </article>
         {/each}

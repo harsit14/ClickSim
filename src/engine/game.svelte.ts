@@ -45,7 +45,6 @@ import {
   gtAmount,
   gteAmount,
   isZeroAmount,
-  maxAmount,
   multiplyAmountByNumber,
   multiplyAmounts,
   powAmount,
@@ -70,6 +69,12 @@ import {
   upgradeById,
   upgradeUnlocked,
 } from './compute'
+import {
+  prepareBalanceAward,
+  prepareClickCommit,
+  prepareEarnings,
+  preparePrestigeAward,
+} from './economy-transactions'
 
 export type BuyAmount = 1 | 10 | 100 | 'max'
 
@@ -431,9 +436,10 @@ export function universeBeaconReady(id = game.activeUniverse): boolean {
 export function igniteCurrentBeacon(): EconomyAmount {
   if (game.challenge || !computeVesselComplete(game) || !universeBeaconReady()) return ZERO_AMOUNT
   const pack = universeById(game.activeUniverse)
-  game.beacons.push(pack.id)
   const reward = toAmount(pack.beacon.reward)
-  game.darkBetween = addAmounts(game.darkBetween, reward)
+  const nextDarkBetween = prepareBalanceAward(game.darkBetween, reward)
+  game.beacons.push(pack.id)
+  game.darkBetween = nextDarkBetween
   return reward
 }
 
@@ -497,11 +503,11 @@ export const vesselHasReadyPart = () => computeVesselHasReadyPart(game)
 
 export function earn(value: AmountInput) {
   const amount = toAmount(value)
-  game.light = addAmounts(game.light, amount)
-  game.totalEarned = addAmounts(game.totalEarned, amount)
-  game.allTimeEarned = addAmounts(game.allTimeEarned, amount)
-  // Trial light counts for the run, but never becomes stardust.
-  if (!game.challenge) game.eraEarned = addAmounts(game.eraEarned, amount)
+  const next = prepareEarnings(game, amount, game.challenge === null)
+  game.light = next.light
+  game.totalEarned = next.totalEarned
+  game.allTimeEarned = next.allTimeEarned
+  game.eraEarned = next.eraEarned
 }
 
 // ── Supernova (prestige layer 1) ─────────────────────────────────────────
@@ -569,9 +575,10 @@ function restoreRun(snapshot: RunSnapshot) {
 export function performSupernova(): EconomyAmount {
   const gain = supernovaGain()
   if (isZeroAmount(gain)) return ZERO_AMOUNT
-  game.stardust = addAmounts(game.stardust, gain)
-  game.stardustTotal = addAmounts(game.stardustTotal, gain)
-  game.supernovae += 1
+  const next = preparePrestigeAward(game.stardust, game.stardustTotal, game.supernovae, gain)
+  game.stardust = next.balance
+  game.stardustTotal = next.total
+  game.supernovae = next.resetCount
   game.challengeReturn = null
   resetRun(true)
   return gain
@@ -590,9 +597,10 @@ export function deepCollapseGain(): EconomyAmount {
 export function performDeepCollapse(): EconomyAmount {
   const gain = deepCollapseGain()
   if (isZeroAmount(gain)) return ZERO_AMOUNT
-  game.singularities = addAmounts(game.singularities, gain)
-  game.singTotal = addAmounts(game.singTotal, gain)
-  game.collapses += 1
+  const next = preparePrestigeAward(game.singularities, game.singTotal, game.collapses, gain)
+  game.singularities = next.balance
+  game.singTotal = next.total
+  game.collapses = next.resetCount
   game.stardust = ZERO_AMOUNT
   game.stardustTotal = ZERO_AMOUNT
   game.constellation = []
@@ -620,10 +628,8 @@ export function buyStardustWork(id: StardustWorkId): boolean {
   if (!work || !stardustMarketComplete()) return false
   const rank = workRank(game.stardustWorks, id)
   const cost = workCost(work, rank)
-  if (!Number.isFinite(cost)) return false
-  const amount = toAmount(cost)
-  if (!gteAmount(game.stardust, amount)) return false
-  game.stardust = subtractAmounts(game.stardust, amount)
+  if (cost === null || !gteAmount(game.stardust, cost)) return false
+  game.stardust = subtractAmounts(game.stardust, cost)
   game.stardustWorks[id] = rank + 1
   return true
 }
@@ -633,10 +639,8 @@ export function buyDeepWork(id: DeepWorkId): boolean {
   if (!work || !deepMarketComplete()) return false
   const rank = workRank(game.deepWorks, id)
   const cost = workCost(work, rank)
-  if (!Number.isFinite(cost)) return false
-  const amount = toAmount(cost)
-  if (!gteAmount(game.singularities, amount)) return false
-  game.singularities = subtractAmounts(game.singularities, amount)
+  if (cost === null || !gteAmount(game.singularities, cost)) return false
+  game.singularities = subtractAmounts(game.singularities, cost)
   game.deepWorks[id] = rank + 1
   return true
 }
@@ -740,12 +744,14 @@ export function clickEmber(extraMult = 1): ClickResult {
   const crit = roll < chance
   const mult = crit ? critMult() : 1
   const power = multiplyAmountByNumber(clickPower(), extraMult * mult)
-  game.clicks += 1
-  if (crit) {
-    game.crits += 1
-    game.bestCrit = maxAmount(game.bestCrit, power)
-  }
-  earn(power)
+  const next = prepareClickCommit(game, power, crit, game.challenge === null)
+  game.light = next.light
+  game.totalEarned = next.totalEarned
+  game.allTimeEarned = next.allTimeEarned
+  game.eraEarned = next.eraEarned
+  game.clicks = next.clicks
+  game.crits = next.crits
+  game.bestCrit = next.bestCrit
   clickMeter.samples.push({ at: performance.now(), amount: power })
   pruneClickSamples()
   return { amount: power, crit, critMult: mult }
