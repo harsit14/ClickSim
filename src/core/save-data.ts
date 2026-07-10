@@ -11,6 +11,7 @@ import type { BuyAmount } from '../engine/game.svelte'
 import type { BeatVisual, MotionPreference, TextScale, VisualQuality } from './preferences'
 import type { Amount, SerializedAmount } from './numeric/amount'
 import {
+  ONE_AMOUNT,
   amountFromNumber,
   maxAmount,
   minAmount,
@@ -751,7 +752,7 @@ function sanitizeUniverseRunV13(value: unknown, universeId: string): SaveUnivers
     singularities: minAmount(requiredAmount(source, 'singularities'), singTotal),
     singTotal,
     challengeReturn: sanitizeRunSnapshotV13(source.challengeReturn, generatorIds, upgradeIds),
-    autoNovaThreshold: requiredAmount(source, 'autoNovaThreshold'),
+    autoNovaThreshold: maxAmount(ONE_AMOUNT, requiredAmount(source, 'autoNovaThreshold')),
     bestCrit: requiredAmount(source, 'bestCrit'),
     numericLawState: sanitizeNumericLawState(source.numericLawState),
   }
@@ -838,7 +839,7 @@ function sanitizeSaveV13(data: unknown): SaveDataV13 | null {
         new Set(pack.generators.map((item) => item.id)),
         new Set(pack.upgrades.map((item) => item.id)),
       ),
-      autoNovaThreshold: requiredAmount(source, 'autoNovaThreshold'),
+      autoNovaThreshold: maxAmount(ONE_AMOUNT, requiredAmount(source, 'autoNovaThreshold')),
       bestCrit: requiredAmount(source, 'bestCrit'),
       darkBetween: requiredAmount(source, 'darkBetween'),
       numericLawState: sanitizeNumericLawState(source.numericLawState),

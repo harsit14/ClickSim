@@ -116,6 +116,16 @@ test('v13 canonical edges and numeric law-state round-trip exactly', () => {
   assert.equal(stringifySaveDataV13(roundTrip), JSON.stringify(wire))
 })
 
+test('v13 preserves the minimum automatic prestige threshold in active and parked state', () => {
+  const wire = serializeSaveDataV13(migrateAndSanitizeSaveV13(progressedV12())!)
+  wire.autoNovaThreshold = '0'
+  wire.universeRuns.tidefall.autoNovaThreshold = '0'
+  const clean = migrateAndSanitizeSaveV13(wire)
+  assert.ok(clean)
+  assert.equal(serializeAmount(clean.autoNovaThreshold), '1e0')
+  assert.equal(serializeAmount(clean.universeRuns.tidefall.autoNovaThreshold), '1e0')
+})
+
 test('v13 rejects missing, bare-number, noncanonical, nonfinite, and overflowing required amounts', () => {
   const wire = serializeSaveDataV13(migrateAndSanitizeSaveV13(progressedV12())!)
   const failures: unknown[] = [
