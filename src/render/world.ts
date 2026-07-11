@@ -81,7 +81,7 @@ const GROUND_COLORS = {
   verdance: '#1C2415',
   clockwork: '#262019',
   prismata: '#171013',
-  tempest: '#1C2633',
+  tempest: '#0B1530',
   canticle: '#241826',
 } as const
 
@@ -378,7 +378,7 @@ export class World {
       return { c0: '255, 244, 207', c1: '231, 196, 128', c2: '196, 139, 76', c3: '91, 59, 56', halo: '218, 166, 80', mid: '103, 166, 189' }
     }
     if (game.activeUniverse === 'tempest') {
-      return { c0: '235, 252, 255', c1: '151, 221, 246', c2: '71, 155, 213', c3: '35, 73, 126', halo: '112, 201, 238', mid: '103, 121, 222' }
+      return { c0: '255, 242, 199', c1: '171, 202, 220', c2: '82, 118, 185', c3: '28, 48, 102', halo: '219, 180, 92', mid: '93, 154, 157' }
     }
     if (game.activeUniverse === 'canticle') {
       return { c0: '255, 245, 251', c1: '230, 189, 218', c2: '185, 118, 170', c3: '85, 49, 96', halo: '216, 155, 199', mid: '120, 161, 198' }
@@ -1633,18 +1633,18 @@ export class World {
         ctx.restore()
       } else if (game.activeUniverse === 'tempest') {
         ctx.save()
-        ctx.strokeStyle = `rgba(${pal.c0}, 0.64)`
-        ctx.lineWidth = 1.25
-        for (let turn = 0; turn < 3; turn++) {
+        ctx.translate(c.x, c.y)
+        ctx.strokeStyle = `rgba(${pal.c0}, 0.58)`
+        ctx.lineWidth = 1.15
+        for (let current = 0; current < 3; current++) {
           ctx.beginPath()
-          ctx.arc(c.x, c.y, r * (0.34 + turn * 0.22), -0.7 + turn * 0.4, 4.2 + turn * 0.3)
+          ctx.ellipse(0, 0, r * (0.45 + current * 0.18), r * (0.22 + current * 0.08), current * 0.28, -0.35, Math.PI * 1.72)
           ctx.stroke()
         }
+        ctx.strokeStyle = `rgba(${pal.mid}, 0.52)`
         ctx.beginPath()
-        ctx.moveTo(c.x, c.y + r * 0.25)
-        ctx.lineTo(c.x - r * 0.18, c.y + r * 0.62)
-        ctx.lineTo(c.x + r * 0.06, c.y + r * 0.52)
-        ctx.lineTo(c.x - r * 0.08, c.y + r * 0.92)
+        ctx.moveTo(-r * 0.42, r * 0.18)
+        ctx.quadraticCurveTo(0, r * 0.48, r * 0.5, r * 0.12)
         ctx.stroke()
         ctx.restore()
       } else if (game.activeUniverse === 'canticle') {

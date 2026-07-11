@@ -204,14 +204,13 @@
         </div>
         <div class="brahmalok-script"><i></i><i></i><i></i><i></i><i></i></div>
       {:else if pack.id === 'tempest'}
-        <div class="tempest-depth"></div>
-        <div class="tempest-anvil"><i></i><i></i><i></i></div>
-        <div class="tempest-rain"></div>
-        <div class="tempest-charge positive-charge"></div>
-        <div class="tempest-charge negative-charge"></div>
-        <div class="tempest-front"></div>
-        <div class="tempest-leader"><i></i><i></i><i></i></div>
-        <div class="tempest-magnetosphere"></div>
+        <div class="vishnulok-depth"></div>
+        <div class="vishnulok-horizon"></div>
+        <div class="vishnulok-currents"><i></i><i></i><i></i></div>
+        <div class="vishnulok-refuges"><i></i><i></i><i></i><i></i></div>
+        <div class="vishnulok-leaves"><i></i><i></i><i></i></div>
+        <div class="vishnulok-return"><i></i></div>
+        <div class="vishnulok-sounding"></div>
       {:else if pack.id === 'canticle'}
         <div class="canticle-plate"></div>
         <div class="canticle-nodal nodal-one"></div>
@@ -375,21 +374,14 @@
   .brahmalok-script i { width: 12%; border-top: 1px solid color-mix(in srgb, var(--gold) 24%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--amber) 12%, transparent); transform: skewX(-16deg); }
   .motion-paused .brahmalok-lotus { filter: none; }
 
-  /* Tempest: a vertical convective tower with separated charge and a branching leader. */
-  .tempest-depth { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 31%, color-mix(in srgb, var(--amber) 12%, transparent), transparent 42%), linear-gradient(180deg, color-mix(in srgb, var(--gold) 4%, transparent), transparent 42% 68%, color-mix(in srgb, var(--panel) 30%, transparent)); }
-  .tempest-anvil { position: absolute; left: 14%; right: 14%; top: 24%; height: 19%; border-bottom: 1px solid color-mix(in srgb, var(--gold) 28%, transparent); border-radius: 62% 58% 24% 28%; background: radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--gold) 16%, transparent), transparent 68%); box-shadow: 0 2.2rem 4rem color-mix(in srgb, var(--amber) 5%, transparent); }
-  .tempest-anvil i { position: absolute; bottom: -1.1rem; width: 24%; height: 3.4rem; border: 1px solid color-mix(in srgb, var(--gold) 17%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--panel) 58%, transparent); }
-  .tempest-anvil i:nth-child(1) { left: 16%; } .tempest-anvil i:nth-child(2) { left: 39%; width: 28%; height: 4.4rem; } .tempest-anvil i:nth-child(3) { right: 12%; }
-  .tempest-rain { position: absolute; left: 27%; right: 27%; top: 41%; bottom: 18%; background: repeating-linear-gradient(104deg, transparent 0 1.3rem, color-mix(in srgb, var(--gold) 10%, transparent) 1.34rem 1.39rem); -webkit-mask: linear-gradient(transparent, #000 18% 78%, transparent); mask: linear-gradient(transparent, #000 18% 78%, transparent); }
-  .tempest-charge { position: absolute; left: 34%; right: 34%; height: 1.2rem; border-radius: 50%; }
-  .positive-charge { top: 29%; border-top: 1px dashed color-mix(in srgb, white 46%, transparent); box-shadow: 0 -0.7rem 1.4rem color-mix(in srgb, var(--gold) 7%, transparent); }
-  .negative-charge { top: 43%; border-bottom: 1px dashed color-mix(in srgb, var(--amber) 54%, transparent); box-shadow: 0 0.7rem 1.4rem color-mix(in srgb, var(--amber) 7%, transparent); }
-  .tempest-front { position: absolute; left: -4%; right: -4%; top: 72%; height: 18%; border-top: 1px solid color-mix(in srgb, var(--gold) 30%, transparent); border-radius: 50%; transform: rotate(-1deg); }
-  .tempest-leader { position: absolute; left: 50%; top: 39%; width: 2px; height: 37%; transform: translateX(-50%) skewX(-8deg); background: linear-gradient(white, color-mix(in srgb, var(--gold) 22%, transparent)); box-shadow: 0 0 0.85rem color-mix(in srgb, white 46%, transparent); }
-  .tempest-leader::after { content: ''; position: absolute; left: -1.1rem; top: 28%; width: 2.4rem; height: 2px; transform: rotate(-58deg); background: white; box-shadow: 2.6rem 2rem 0 color-mix(in srgb, var(--gold) 46%, transparent), -1.8rem 4rem 0 color-mix(in srgb, var(--amber) 32%, transparent); }
-  .tempest-leader i { position: absolute; width: 4.8rem; height: 1px; background: color-mix(in srgb, var(--gold) 32%, transparent); transform-origin: left center; }
-  .tempest-leader i:nth-child(1) { top: 22%; transform: rotate(-32deg); } .tempest-leader i:nth-child(2) { top: 47%; transform: rotate(38deg); } .tempest-leader i:nth-child(3) { top: 66%; transform: rotate(-52deg); }
-  .tempest-magnetosphere { position: absolute; left: 50%; top: 53%; width: min(76vw, 70rem); aspect-ratio: 2.8; transform: translate(-50%, -50%); border: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); border-left-color: transparent; border-right-color: transparent; border-radius: 50%; }
+  /* Vishnulok: calm cosmic water organized by refuge, return, and responsive order. */
+  .vishnulok-depth { position:absolute;inset:0;background:radial-gradient(ellipse at 50% 62%,color-mix(in srgb,var(--amber) 10%,transparent),transparent 38%),linear-gradient(180deg,color-mix(in srgb,#304c83 8%,transparent),transparent 38%,color-mix(in srgb,#0b2351 20%,transparent)); }
+  .vishnulok-horizon { position:absolute;left:-6%;right:-6%;top:57%;height:26%;border-top:1px solid color-mix(in srgb,var(--gold) 30%,transparent);border-radius:50%;background:repeating-radial-gradient(ellipse at 50% 0,transparent 0 1.6rem,color-mix(in srgb,#7898cc 6%,transparent) 1.65rem 1.72rem); }
+  .vishnulok-currents { position:absolute;inset:0; }.vishnulok-currents i { position:absolute;left:50%;top:56%;width:min(68vw,62rem);aspect-ratio:3;transform:translate(-50%,-50%) rotate(var(--current-angle,0deg));border-top:1px solid color-mix(in srgb,var(--gold) 21%,transparent);border-bottom:1px solid color-mix(in srgb,var(--amber) 9%,transparent);border-radius:50%; }.vishnulok-currents i:nth-child(2){--current-angle:22deg;width:min(52vw,46rem)}.vishnulok-currents i:nth-child(3){--current-angle:-22deg;width:min(52vw,46rem)}
+  .vishnulok-refuges { position:absolute;inset:0; }.vishnulok-refuges i { position:absolute;top:48%;width:clamp(4rem,8vw,7rem);height:3.2rem;border:1px solid color-mix(in srgb,var(--gold) 18%,transparent);border-bottom:0;border-radius:55% 55% 0 0;background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 5%,transparent),transparent); }.vishnulok-refuges i:nth-child(1){left:12%}.vishnulok-refuges i:nth-child(2){left:31%;top:66%;transform:scale(.8)}.vishnulok-refuges i:nth-child(3){right:31%;top:66%;transform:scale(.8)}.vishnulok-refuges i:nth-child(4){right:12%}
+  .vishnulok-leaves { position:absolute;inset:0; }.vishnulok-leaves i { position:absolute;top:68%;width:3.4rem;height:1.35rem;border:1px solid color-mix(in srgb,#85b58d 24%,transparent);border-radius:70% 30% 70% 30%;transform:rotate(var(--leaf-angle,0deg)); }.vishnulok-leaves i:nth-child(1){left:20%;--leaf-angle:-12deg}.vishnulok-leaves i:nth-child(2){left:calc(50% - 1.7rem);top:73%;--leaf-angle:4deg}.vishnulok-leaves i:nth-child(3){right:20%;--leaf-angle:16deg}
+  .vishnulok-return { position:absolute;left:50%;top:56%;width:min(46vw,40rem);aspect-ratio:2.7;transform:translate(-50%,-50%);border:2px solid color-mix(in srgb,var(--amber) 31%,transparent);border-left-color:transparent;border-radius:50%;filter:drop-shadow(0 0 1.2rem color-mix(in srgb,var(--amber) 12%,transparent)); }.vishnulok-return i { position:absolute;right:-.2rem;top:48%;width:.8rem;height:.8rem;border-top:2px solid color-mix(in srgb,var(--gold) 58%,transparent);border-right:2px solid color-mix(in srgb,var(--gold) 58%,transparent);transform:rotate(45deg); }
+  .vishnulok-sounding { position:absolute;left:50%;top:29%;bottom:11%;width:1px;background:linear-gradient(transparent,color-mix(in srgb,var(--gold) 20%,transparent),transparent);box-shadow:-.4rem 1.1rem 0 color-mix(in srgb,var(--gold) 8%,transparent),.4rem 2.2rem 0 color-mix(in srgb,var(--gold) 8%,transparent); }
 
   /* Canticle: a Chladni-like resonant plate with nodal geometry and an explicit rest. */
   .canticle-plate { position: absolute; left: 50%; top: 53%; width: min(64vw, 58rem); aspect-ratio: 1.72; transform: translate(-50%, -50%); border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 50%; background: radial-gradient(ellipse, color-mix(in srgb, var(--amber) 7%, transparent), transparent 66%); box-shadow: inset 0 0 4rem color-mix(in srgb, var(--amber) 4%, transparent); }

@@ -113,7 +113,7 @@ export const CANTICLE_SPEC: FutureUniverseSpec = {
   audioFamilies: ['soft membrane strike', 'open fifth response', 'bounded harmonic accent', 'wandering phrase call', 'refrain final-bar-and-open-rest cadence'],
   silenceState: 'Node position, pulse shape, captions, slot labels, and contrast provide complete mechanical equivalence.',
   fatiguePolicy: 'Touch timbres stay soft and bounded; dense measures reduce high partials; rests subtract sound before any milestone cadence.',
-  routeGlyph: '⌇', routeArrival: 'a membrane waits in perfect silence until a second node answers from beyond it', unlockText: 'light Tempest’s Beacon',
+  routeGlyph: '⌇', routeArrival: 'a membrane waits in perfect silence until a second node answers from beyond it', unlockText: 'complete Vishnulok’s Still Horizon passage',
   beaconName: 'Second Voice Beacon', beaconSilhouette: 'paired nonidentical standing waves sharing one open rest and a common horizon frame', beaconReward: 6,
   nonColorSignals: [
     { id: 'u7-pulse', text: 'pulse', shape: 'filled circle', pattern: 'single expanding ring' },

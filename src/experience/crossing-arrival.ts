@@ -97,9 +97,9 @@ const HABIT_BREAKS: Readonly<Record<UniverseId, readonly CrossingHabitBreak[]>> 
     { id: 'cross-habit-prismata-3', atMs: 540_000, text: 'Leave the center open. Brahmalok calls a creation complete only while revision remains possible.' },
   ],
   tempest: [
-    { id: 'cross-habit-tempest-1', atMs: 75_000, text: 'Stored charge is not production yet. Choose where the discharge is allowed to end.' },
-    { id: 'cross-habit-tempest-2', atMs: 270_000, text: 'A longer path carries more risk because the storm remembers every cell.' },
-    { id: 'cross-habit-tempest-3', atMs: 540_000, text: 'Discharge deliberately. Tempest punishes the old habit of treating release as automatic.' },
+    { id: 'cross-habit-tempest-1', atMs: 75_000, text: 'This ocean does not need conquering or repair. Choose which strained relation the circuit may help sustain.' },
+    { id: 'cross-habit-tempest-2', atMs: 270_000, text: 'A longer circuit carries a wider obligation because every refuge changes what returns.' },
+    { id: 'cross-habit-tempest-3', atMs: 540_000, text: 'Let the correction come home. Vishnulok does not call outward power complete while its aftermath remains elsewhere.' },
   ],
   canticle: [
     { id: 'cross-habit-canticle-1', atMs: 75_000, text: 'A rest is an occupied position here. Silence may be doing more work than the note beside it.' },

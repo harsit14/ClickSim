@@ -40,7 +40,7 @@
       : universeId === 'verdance' ? '❧'
         : universeId === 'clockwork' ? '⌁'
           : universeId === 'prismata' ? '✤'
-            : universeId === 'tempest' ? 'ϟ'
+            : universeId === 'tempest' ? '≈'
               : universeId === 'canticle' ? '◌'
                 : '✦',
   )
@@ -216,7 +216,7 @@
       linear-gradient(105deg, color-mix(in srgb, var(--panel) 84%, #0c0d10), color-mix(in srgb, var(--panel) 94%, transparent));
   }
   .goal-lens[data-universe='prismata'] { border-radius: 0.15rem; clip-path: polygon(1.5% 0, 98.5% 0, 100% 50%, 98.5% 100%, 1.5% 100%, 0 50%); }
-  .goal-lens[data-universe='tempest'] { border-radius: 1.2rem 0.25rem 1.2rem 0.25rem; background: radial-gradient(ellipse at 10% 50%, color-mix(in srgb, var(--lens-warm) 15%, transparent), transparent 34%), linear-gradient(105deg, color-mix(in srgb, var(--panel) 82%, #06111c), color-mix(in srgb, var(--panel) 93%, transparent)); }
+  .goal-lens[data-universe='tempest'] { border-radius: 1.2rem; background: repeating-radial-gradient(ellipse at 8% 50%, transparent 0 0.8rem, color-mix(in srgb, var(--lens-warm) 4%, transparent) 0.84rem 0.88rem, transparent 0.92rem 1.5rem), linear-gradient(105deg, color-mix(in srgb, var(--panel) 84%, #07102d), color-mix(in srgb, var(--panel) 93%, transparent)); }
   .goal-lens[data-universe='canticle'] { border-radius: 50% / 18%; background: repeating-radial-gradient(ellipse at 8% 50%, transparent 0 0.8rem, color-mix(in srgb, var(--lens-warm) 5%, transparent) 0.84rem 0.9rem, transparent 0.96rem 1.5rem), linear-gradient(105deg, color-mix(in srgb, var(--panel) 84%, #120713), color-mix(in srgb, var(--panel) 94%, transparent)); }
   .goal-lens::after {
     content: '';
@@ -294,7 +294,7 @@
     outline-offset: 0.18rem;
   }
   [data-universe='prismata'] .sigil { border-radius: 0; transform: rotate(45deg); }
-  [data-universe='tempest'] .sigil { border-radius: 55% 45% 62% 38%; border-left-style: dashed; }
+  [data-universe='tempest'] .sigil { border-radius: 50%; border-left-style: dashed; border-right-style: dashed; }
   [data-universe='canticle'] .sigil { border-style: dashed; transform: scaleX(1.16); }
   .summary-copy,
   .rhythm-copy {

@@ -418,9 +418,11 @@ Kailash. No live name changes until a replacement passes its full content and ar
       objects, Cabinet, vistas, fallbacks, and internal cultural-guardrail review—before
       enabling its name. External Hindu cultural and South Asian art/iconography review
       remains a public-release gate under `TRIMURTI_REFRAME.md`.
-- [ ] **9.5 Vishnulok:** replace the `u6` destination completely with the Endless Circuit,
+- [x] **9.5 Vishnulok:** replace the `u6` destination completely with the Endless Circuit,
       responsive preservation, calm cosmic-ocean composition, 18 Kindlings, 12 records,
-      story, trials, crossing, audio, fallbacks, and cultural review.
+      story, trials, crossing, audio, fallbacks, and internal cultural-guardrail review.
+      External Hindu cultural and South Asian art/iconography review remains a
+      public-release gate under `TRIMURTI_REFRAME.md`.
 - [ ] **9.6 Kailash:** replace the `u7` destination completely with the Still Point,
       five-act cosmic rhythm, mountain-to-dance-ring progression, 18 Kindlings, 12
       records, story, trials, audio, and a consent-gated dissolution ceremony.

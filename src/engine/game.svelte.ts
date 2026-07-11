@@ -1134,12 +1134,14 @@ export function severVerdanceGrafting(): boolean {
     : false
 }
 
-/** Configures the declared Tempest path length and risk before discharge. */
+/** Configures Vishnulok's declared circuit reach and carried burden. */
 export function configureTempestPath(length: number, riskIndex: number): boolean {
   return game.challenge === null && game.activeUniverse === 'tempest'
     ? configureTempestRoute(game.numericLawState, length, riskIndex)
     : false
 }
+
+export const configureVishnulokRoute = configureTempestPath
 
 /** Advances one editable Canticle slot through the six complete role states. */
 export function editCanticleSlot(slotIndex: number): boolean {
@@ -1148,7 +1150,7 @@ export function editCanticleSlot(slotIndex: number): boolean {
     : false
 }
 
-/** Executes an active law action; currently Tempest owns the deliberate discharge verb. */
+/** Executes the active law action; Vishnulok completes its declared return. */
 export function activateUniverseLaw(): boolean {
   return game.challenge === null && game.activeUniverse === 'tempest'
     ? dischargeTempest(game.numericLawState)

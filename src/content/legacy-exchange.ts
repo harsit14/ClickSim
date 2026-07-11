@@ -53,16 +53,16 @@ export const SUCCESSION_RELAYS: readonly SuccessionRelay[] = [
     sourceUniverseId: 'prismata',
     targetUniverseId: 'tempest',
     name: 'The First Current',
-    description: 'An open manuscript carries one revisable line toward the next unsettled passage.',
-    sourceGift: 'spent margin pressure becomes +12% Tempest production per rank',
+    description: 'Brahmalok’s open margin becomes a route of continuity across Vishnulok’s first harbor.',
+    sourceGift: 'spent margin pressure becomes +12% Vishnulok production per rank',
   },
   {
     id: 'relay-tempest-canticle',
     sourceUniverseId: 'tempest',
     targetUniverseId: 'canticle',
-    name: 'Thunder’s Downbeat',
-    description: 'A bounded discharge arrives in Canticle as the first beat of the measure.',
-    sourceGift: 'spent storm pressure becomes +12% Canticle production per rank',
+    name: 'The Quiet Ascent',
+    description: 'Vishnulok’s completed return leaves one still current approaching the mountain passage.',
+    sourceGift: 'spent continuity pressure becomes +12% Canticle production per rank',
   },
 ]
 

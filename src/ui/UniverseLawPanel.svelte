@@ -51,9 +51,9 @@
       note: 'Mandala changes are free and never consume a Kindling.',
     },
     tempest: {
-      title: 'Reading the storm',
-      steps: ['Choose a discharge path', 'Set leader length and ground condition', 'Let charge reach the threshold, then Discharge'],
-      note: 'Longer, riskier paths ask for more charge and return more power.',
+      title: 'Reading the Endless Circuit',
+      steps: ['Choose a correction circuit', 'Set its reach and the burden it carries', 'Let continuity reach the threshold, then Complete Return'],
+      note: 'Longer, more burdened circuits ask for more continuity and return more sustaining power.',
     },
     canticle: {
       title: 'Reading the score',
@@ -260,63 +260,62 @@
     </div>
   </section>
 {:else if tempest}
-  <section class="law-panel tempest-field" aria-label="Tempest storm field">
-    {@render integratedHeader('LIVE STORM FIELD', `${tempest.path.name} cell`, tempest.boostRemainingSec > 0 ? 'DISCHARGING' : tempest.ready ? 'BREAKDOWN READY' : 'CHARGING', `${Math.round(tempest.charge)}% charge`, tempest.multiplier)}
+  <section class="law-panel vishnulok-circuit" aria-label="Vishnulok Endless Circuit">
+    {@render integratedHeader('THE ENDLESS CIRCUIT', tempest.path.name, tempest.boostRemainingSec > 0 ? 'RETURNING' : tempest.ready ? 'CORRECTION READY' : 'GATHERING', `${Math.round(tempest.charge)}% continuity`, tempest.multiplier)}
     {@render primerStrip()}
 
-    <div class="storm-layout">
-      <div class="charge-column" aria-label={`${Math.round(tempest.charge)} percent atmospheric charge`}>
-        <span>+</span>
+    <div class="ocean-layout">
+      <div class="continuity-column" aria-label={`${Math.round(tempest.charge)} percent continuity reserve`}>
+        <span>FULL</span>
         <div><i style={`height:${tempest.charge}%`}></i><b>{Math.round(tempest.charge)}%</b></div>
-        <span>−</span>
+        <span>OPEN</span>
       </div>
 
-      <div class="storm-map" data-risk={tempest.risk.id}>
-        <div class="anvil-cloud"><i></i><i></i><i></i></div>
-        <div class="charge-layer positive"><span>+ + +</span></div>
-        <div class="charge-layer negative"><span>− − −</span></div>
-        <div class="bolt-network" aria-hidden="true">
+      <div class="circuit-map" data-burden={tempest.risk.id} aria-label={`${tempest.path.name}, ${tempest.length} shelters, ${tempest.risk.name} burden`}>
+        <div class="ocean-horizon"></div>
+        <div class="refuge-center"><span>OPEN REFUGE</span><b>{tempest.risk.glyph}</b></div>
+        <div class="current-network" aria-hidden="true">
           {#each Array(8) as _, index}
-            <i class:lit={index < tempest.length} style={`--branch-index:${index}`}></i>
+            <i class:lit={index < tempest.length} style={`--current-index:${index}`}></i>
           {/each}
         </div>
-        <div class="ground-plane"><span>{tempest.risk.glyph} {tempest.risk.name}</span></div>
-        <div class="storm-threshold" style={`--threshold:${tempest.threshold}%`}><span>{tempest.threshold}% threshold</span></div>
+        <div class="return-line"><span>{tempest.risk.name} burden</span></div>
+        <div class="continuity-threshold" style={`--threshold:${tempest.threshold}%`}><span>{tempest.threshold}% threshold</span></div>
       </div>
 
-      <div class="discharge-stack">
-        <small>EXPECTED RETURN</small>
+      <div class="return-stack">
+        <small>SUSTAINING RETURN</small>
         <strong>×{tempest.boost.toFixed(2)}</strong>
-        <span>{tempest.length} cells · {tempest.durationSec}s</span>
+        <span>{tempest.length} shelters · {tempest.durationSec}s</span>
         <button type="button" disabled={!tempest.ready || tempest.boostRemainingSec > 0} onclick={discharge}>
-          <b>{tempest.boostRemainingSec > 0 ? `${Math.ceil(tempest.boostRemainingSec)}s` : 'ϟ DISCHARGE'}</b>
-          <small>{tempest.ready ? 'break the field' : `${Math.ceil(tempest.threshold - tempest.charge)}% to breakdown`}</small>
+          <b>{tempest.boostRemainingSec > 0 ? `${Math.ceil(tempest.boostRemainingSec)}s` : '↶ COMPLETE RETURN'}</b>
+          <small>{tempest.ready ? 'close without enclosing' : `${Math.ceil(tempest.threshold - tempest.charge)}% continuity needed`}</small>
         </button>
       </div>
     </div>
 
     <p class="law-explanation">{tempest.explanation}</p>
 
-    <div class="storm-controls">
-      <div class="path-cards" role="group" aria-label="discharge path selection">
+    <div class="circuit-controls">
+      <div class="circuit-cards" role="group" aria-label="correction circuit selection">
         {#each TEMPEST_PATHS as path, index}
           <button type="button" aria-pressed={tempest.pathIndex === index} onclick={() => configure(index)} title={path.description}>
             <span>{path.glyph}</span><b>{path.name}</b><small>{path.threshold}% base</small>
           </button>
         {/each}
       </div>
-      <div class="storm-route">
-        <div class="route-scale">
-          <span>LEADER LENGTH</span>
-          <div role="group" aria-label="storm path length">
+      <div class="circuit-route">
+        <div class="reach-scale">
+          <span>CIRCUIT REACH</span>
+          <div role="group" aria-label="correction circuit reach">
             {#each Array(8) as _, index}
               <button type="button" aria-pressed={tempest.length === index + 1} onclick={() => configureStorm(index + 1, tempest.riskIndex)}>{index + 1}</button>
             {/each}
           </div>
         </div>
-        <div class="risk-scale">
-          <span>GROUND CONDITION</span>
-          <div role="group" aria-label="storm path risk">
+        <div class="burden-scale">
+          <span>BURDEN CARRIED</span>
+          <div role="group" aria-label="correction circuit burden">
             {#each TEMPEST_RISKS as risk, index (risk.id)}
               <button type="button" aria-pressed={tempest.riskIndex === index} onclick={() => configureStorm(tempest.length, index)} title={risk.description}>
                 {risk.glyph} {risk.name}
@@ -483,50 +482,28 @@
   .direction-routes button span { margin-right: 0.18rem; color: var(--amber); }
   .direction-routes button[aria-pressed='true'] { color: white; border-color: var(--gold); box-shadow: inset 0 -2px color-mix(in srgb, var(--amber) 72%, transparent); }
 
-  /* Tempest — an atmospheric cross-section, not a recolored optical control panel. */
-  .tempest-field { width: min(45rem, calc(100vw - 29rem)); margin: 0.12rem auto 0; padding: 0.42rem 0.62rem 0.5rem; border-radius: 1.2rem 0.18rem 1.2rem 0.18rem; background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 86%, #071526), color-mix(in srgb, var(--panel) 94%, #03070d)); }
-  .storm-layout { display: grid; grid-template-columns: 2rem minmax(14rem, 1fr) 7rem; align-items: stretch; gap: 0.4rem; height: 4.6rem; margin-top: 0.28rem; }
-  .charge-column { display: grid; grid-template-rows: auto 1fr auto; place-items: center; color: var(--dim); font: 800 0.56rem/1 ui-monospace, monospace; }
-  .charge-column > div { position: relative; width: 1.05rem; height: 3.45rem; overflow: hidden; border: 1px solid color-mix(in srgb, var(--gold) 28%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--bg) 62%, transparent); }
-  .charge-column i { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(0deg, var(--amber), var(--gold)); box-shadow: 0 0 0.8rem color-mix(in srgb, var(--amber) 48%, transparent); }
-  .charge-column b { position: absolute; left: 50%; top: 50%; color: white; font-size: 0.45rem; transform: translate(-50%, -50%) rotate(-90deg); }
-  .storm-map { position: relative; overflow: hidden; border-top: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--gold) 20%, transparent); background: radial-gradient(ellipse at 50% 22%, color-mix(in srgb, var(--amber) 10%, transparent), transparent 56%); }
-  .anvil-cloud { position: absolute; left: 10%; right: 10%; top: 0.1rem; height: 1.55rem; border-bottom: 1px solid color-mix(in srgb, var(--gold) 36%, transparent); border-radius: 55% 58% 30% 26%; background: radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--gold) 13%, transparent), transparent 68%); }
-  .anvil-cloud i { position: absolute; bottom: -0.4rem; width: 2.4rem; aspect-ratio: 1.8; border: 1px solid color-mix(in srgb, var(--gold) 24%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--panel) 84%, transparent); }
-  .anvil-cloud i:nth-child(1) { left: 12%; } .anvil-cloud i:nth-child(2) { left: 42%; width: 3.2rem; } .anvil-cloud i:nth-child(3) { right: 8%; }
-  .charge-layer { position: absolute; left: 17%; right: 17%; height: 1rem; display: grid; place-items: center; border-radius: 50%; font: 780 0.5rem/1 ui-monospace, monospace; }
-  .charge-layer.positive { top: 0.28rem; color: color-mix(in srgb, var(--gold) 74%, white); }
-  .charge-layer.negative { top: 1.45rem; color: var(--amber); }
-  .bolt-network { position: absolute; left: 50%; top: 1.8rem; bottom: 0.65rem; width: 10rem; transform: translateX(-50%); }
-  .bolt-network i { position: absolute; left: 50%; top: calc(var(--branch-index) * 10%); width: calc(0.8rem + var(--branch-index) * 0.55rem); height: 1px; transform: rotate(calc(-56deg + var(--branch-index) * 16deg)); transform-origin: left center; background: color-mix(in srgb, var(--gold) 10%, transparent); }
-  .bolt-network i::after { content: ''; position: absolute; right: 0; width: 0.32rem; height: 0.32rem; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg) translateY(-0.12rem); }
-  .bolt-network i.lit { color: white; background: white; box-shadow: 0 0 0.45rem var(--gold); }
-  .ground-plane { position: absolute; left: 0; right: 0; bottom: 0; height: 0.85rem; display: grid; place-items: center; border-top: 1px solid color-mix(in srgb, var(--gold) 34%, transparent); background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--gold) 8%, transparent) 0 3px, transparent 3px 8px); }
-  .ground-plane span { padding: 0 0.3rem; color: var(--dim); background: var(--panel); font: 720 0.43rem/1 system-ui, sans-serif; text-transform: uppercase; }
-  .storm-threshold { position: absolute; left: 0.25rem; top: calc(100% - var(--threshold)); color: var(--dim); border-top: 1px dashed color-mix(in srgb, var(--amber) 42%, transparent); }
-  .storm-threshold span { display: block; transform: translateY(-0.55rem); font: 650 0.4rem/1 ui-monospace, monospace; }
-  .discharge-stack { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.4rem; text-align: center; border: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); border-radius: 0.2rem 0.8rem 0.2rem 0.8rem; background: color-mix(in srgb, var(--bg) 52%, transparent); }
-  .discharge-stack > small { color: var(--dim); font: 720 0.43rem/1 system-ui, sans-serif; letter-spacing: 0.08em; }
-  .discharge-stack > strong { margin-top: 0.18rem; color: white; font: 800 1.05rem/1 ui-monospace, monospace; }
-  .discharge-stack > span { margin-top: 0.12rem; color: var(--dim); font-size: 0.45rem; }
-  .discharge-stack button { width: 100%; margin-top: 0.45rem; padding: 0.4rem 0.2rem; color: var(--bg); background: linear-gradient(180deg, white, var(--gold)); border: 0; border-radius: 0.45rem; }
-  .discharge-stack button b, .discharge-stack button small { display: block; }
-  .discharge-stack button b { font-size: 0.56rem; }
-  .discharge-stack button small { margin-top: 0.12rem; font-size: 0.4rem; }
-  .storm-controls { display: grid; grid-template-columns: 1fr 1.25fr; gap: 0.45rem; margin-top: 0.3rem; }
-  .path-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.2rem; }
-  .path-cards button { min-width: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.08rem 0.18rem; place-items: center start; padding: 0.22rem 0.2rem; color: var(--dim); background: color-mix(in srgb, var(--bg) 62%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); }
-  .path-cards button span { grid-row: 1 / 3; }
-  .path-cards button span { color: var(--amber); font-size: 0.8rem; }
-  .path-cards button b { font-size: 0.47rem; }
-  .path-cards button small { font-size: 0.4rem; }
-  .path-cards button[aria-pressed='true'] { color: white; border-color: var(--gold); box-shadow: inset 0 -2px var(--amber); }
-  .storm-route { display: grid; align-content: center; gap: 0.32rem; padding-left: 0.5rem; border-left: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); }
-  .route-scale, .risk-scale { display: grid; grid-template-columns: 6rem 1fr; align-items: center; gap: 0.3rem; }
-  .route-scale > span, .risk-scale > span { color: var(--dim); font: 720 0.43rem/1 system-ui, sans-serif; letter-spacing: 0.08em; }
-  .route-scale > div, .risk-scale > div { display: flex; gap: 0.16rem; }
-  .storm-route button { flex: 1; min-width: 0; padding: 0.22rem 0.18rem; color: var(--dim); background: color-mix(in srgb, var(--bg) 62%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); font: 650 0.44rem/1 system-ui, sans-serif; }
-  .storm-route button[aria-pressed='true'] { color: white; border-color: var(--gold); background: color-mix(in srgb, var(--amber) 10%, transparent); }
+  /* Vishnulok — a responsive ocean circuit, with refuge at its open center. */
+  .vishnulok-circuit { width:min(45rem,calc(100vw - 29rem));margin:.12rem auto 0;padding:.42rem .62rem .5rem;border-radius:1.1rem;background:radial-gradient(ellipse at 50% 80%,color-mix(in srgb,#49739c 12%,transparent),transparent 48%),linear-gradient(180deg,color-mix(in srgb,var(--panel) 88%,#08102a),color-mix(in srgb,var(--panel) 95%,#030711)); }
+  .ocean-layout { display: grid; grid-template-columns: 2.2rem minmax(14rem, 1fr) 7.4rem; align-items: stretch; gap: .4rem; height: 4.6rem; margin-top: .28rem; }
+  .continuity-column { display: grid; grid-template-rows: auto 1fr auto; place-items: center; color: var(--dim); font: 720 .34rem/1 system-ui,sans-serif; letter-spacing: .08em; }
+  .continuity-column > div { position: relative; width: 1.15rem; height: 3.4rem; overflow: hidden; border: 1px solid color-mix(in srgb,var(--gold) 24%,transparent); border-radius: 999px; background: color-mix(in srgb,var(--bg) 66%,transparent); }
+  .continuity-column i { position: absolute; inset: auto 0 0; background: linear-gradient(0deg,#315a92,var(--gold)); box-shadow: 0 0 .8rem color-mix(in srgb,var(--amber) 36%,transparent); }
+  .continuity-column b { position:absolute;left:50%;top:50%;color:white;font-size:.42rem;transform:translate(-50%,-50%) rotate(-90deg); }
+  .circuit-map { position:relative;overflow:hidden;border-top:1px solid color-mix(in srgb,var(--gold) 13%,transparent);border-bottom:1px solid color-mix(in srgb,var(--gold) 17%,transparent);background:radial-gradient(ellipse at 50% 58%,color-mix(in srgb,var(--gold) 7%,transparent),transparent 54%); }
+  .ocean-horizon { position:absolute;inset:48% -5% auto;height:42%;border-top:1px solid color-mix(in srgb,var(--gold) 30%,transparent);border-radius:50%;background:repeating-radial-gradient(ellipse at 50% 0,transparent 0 .7rem,color-mix(in srgb,#6a94c8 7%,transparent) .72rem .76rem); }
+  .refuge-center { position:absolute;left:50%;top:48%;z-index:2;width:3.8rem;aspect-ratio:1.45;display:grid;place-items:center;align-content:center;gap:.12rem;transform:translate(-50%,-50%);color:var(--gold);border:1px solid color-mix(in srgb,var(--gold) 28%,transparent);border-radius:55% 55% 18% 18%;background:color-mix(in srgb,var(--bg) 82%,transparent); }
+  .refuge-center span { font:710 .34rem/1 system-ui,sans-serif;letter-spacing:.07em; }.refuge-center b { color:var(--amber);font-size:.72rem; }
+  .current-network { position:absolute;inset:0; }.current-network i { --angle:calc(var(--current-index) * 22deg - 78deg);position:absolute;left:50%;top:50%;width:calc(3rem + var(--current-index) * .45rem);height:calc(1.25rem + var(--current-index) * .08rem);transform:translate(-50%,-50%) rotate(var(--angle));border-top:1px solid color-mix(in srgb,var(--gold) 12%,transparent);border-radius:50%; }
+  .current-network i::after { content:'';position:absolute;right:0;top:-.13rem;width:.28rem;height:.28rem;border-right:1px solid currentColor;border-top:1px solid currentColor;transform:rotate(45deg); }.current-network i.lit { color:var(--gold);border-color:color-mix(in srgb,var(--amber) 58%,transparent);filter:drop-shadow(0 0 .3rem color-mix(in srgb,var(--amber) 28%,transparent)); }
+  .return-line { position:absolute;inset:auto 0 .1rem;display:grid;place-items:center;height:.8rem;border-top:1px solid color-mix(in srgb,var(--gold) 22%,transparent); }.return-line span { padding:0 .3rem;color:var(--dim);background:var(--panel);font:700 .4rem/1 system-ui,sans-serif;text-transform:uppercase; }
+  .continuity-threshold { position:absolute;left:.2rem;top:calc(100% - var(--threshold));color:var(--dim);border-top:1px dashed color-mix(in srgb,var(--amber) 32%,transparent); }.continuity-threshold span { display:block;transform:translateY(-.5rem);font:620 .38rem/1 ui-monospace,monospace; }
+  .return-stack { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.35rem;text-align:center;border:1px solid color-mix(in srgb,var(--gold) 14%,transparent);border-radius:.8rem .8rem .2rem .2rem;background:color-mix(in srgb,var(--bg) 56%,transparent); }
+  .return-stack > small { color:var(--dim);font:720 .4rem/1 system-ui,sans-serif;letter-spacing:.07em; }.return-stack > strong { margin-top:.16rem;color:white;font:780 1rem/1 ui-monospace,monospace; }.return-stack > span { margin-top:.1rem;color:var(--dim);font-size:.42rem; }
+  .return-stack button { width:100%;margin-top:.38rem;padding:.32rem .16rem;color:var(--bg);background:linear-gradient(180deg,var(--gold),var(--amber));border:0;border-radius:.5rem; }.return-stack button b,.return-stack button small { display:block; }.return-stack button b { font-size:.5rem; }.return-stack button small { margin-top:.1rem;font-size:.34rem; }
+  .circuit-controls { display:grid;grid-template-columns:1fr 1.25fr;gap:.45rem;margin-top:.3rem; }.circuit-cards { display:grid;grid-template-columns:repeat(4,1fr);gap:.2rem; }
+  .circuit-cards button { min-width:0;display:grid;grid-template-columns:auto 1fr;gap:.08rem .18rem;place-items:center start;padding:.22rem .2rem;color:var(--dim);text-align:left;background:color-mix(in srgb,var(--bg) 62%,transparent);border:1px solid color-mix(in srgb,var(--gold) 12%,transparent);border-radius:.65rem .2rem .65rem .2rem; }.circuit-cards button span { grid-row:1 / 3;color:var(--amber);font-size:.78rem; }.circuit-cards button b { font-size:.45rem; }.circuit-cards button small { font-size:.38rem; }.circuit-cards button[aria-pressed='true'] { color:white;border-color:var(--gold);box-shadow:inset 0 -2px var(--amber); }
+  .circuit-route { display:grid;align-content:center;gap:.32rem;padding-left:.5rem;border-left:1px solid color-mix(in srgb,var(--gold) 12%,transparent); }.reach-scale,.burden-scale { display:grid;grid-template-columns:6rem 1fr;align-items:center;gap:.3rem; }.reach-scale > span,.burden-scale > span { color:var(--dim);font:720 .4rem/1 system-ui,sans-serif;letter-spacing:.07em; }.reach-scale > div,.burden-scale > div { display:flex;gap:.16rem; }
+  .circuit-route button { flex:1;min-width:0;padding:.22rem .16rem;color:var(--dim);background:color-mix(in srgb,var(--bg) 62%,transparent);border:1px solid color-mix(in srgb,var(--gold) 12%,transparent);font:650 .4rem/1 system-ui,sans-serif; }.circuit-route button[aria-pressed='true'] { color:white;border-color:var(--gold);background:color-mix(in srgb,var(--amber) 9%,transparent); }
 
   /* Canticle — a circular score whose silence is a visible part of the composition. */
   .canticle-score { width: min(42rem, calc(100vw - 29rem)); margin: 0.12rem auto 0; padding: 0.42rem 0.62rem 0.5rem; border-radius: 1.4rem 1.4rem 0.45rem 0.45rem; background: radial-gradient(ellipse at 25% 55%, color-mix(in srgb, var(--amber) 8%, transparent), transparent 32%), color-mix(in srgb, var(--panel) 92%, #0c0710); }
@@ -560,7 +537,7 @@
 
   @media (max-width: 800px) {
     .brahmalok-mandala,
-    .tempest-field,
+    .vishnulok-circuit,
     .canticle-score { width: 100%; margin-top: 0; }
     .integrated-heading {
       grid-template-columns: minmax(0, 1fr) auto 1.4rem;
@@ -601,5 +578,28 @@
     .creation-router label > span { font-size: 0.36rem; }
     .creation-router select { padding: 0.2rem 0.3rem; font-size: 0.44rem; }
     .direction-routes button { font-size: 0.38rem; }
+    .ocean-layout { grid-template-columns: 1.65rem minmax(0, 1fr) 5.2rem; gap: 0.24rem; height: 4.15rem; }
+    .continuity-column { font-size: 0.27rem; letter-spacing: 0.04em; }
+    .continuity-column > div { width: 0.9rem; height: 2.9rem; }
+    .continuity-column b { font-size: 0.34rem; }
+    .refuge-center { width: 3.1rem; }
+    .return-stack { padding: 0.2rem; }
+    .return-stack > small { font-size: 0.31rem; }
+    .return-stack > strong { font-size: 0.68rem; }
+    .return-stack > span { display: none; }
+    .return-stack button { margin-top: 0.25rem; padding: 0.25rem 0.1rem; }
+    .return-stack button b { font-size: 0.39rem; }
+    .return-stack button small { display: none; }
+    .circuit-controls { grid-template-columns: 1fr; gap: 0.25rem; }
+    .circuit-cards button { grid-template-columns: auto 1fr; padding: 0.18rem; }
+    .circuit-cards button span { grid-row: auto; font-size: 0.62rem; }
+    .circuit-cards button b { font-size: 0.36rem; }
+    .circuit-cards button small { display: none; }
+    .circuit-route { gap: 0.2rem; padding-left: 0; padding-top: 0.24rem; border-top: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); border-left: 0; }
+    .reach-scale,
+    .burden-scale { grid-template-columns: 4.35rem 1fr; gap: 0.2rem; }
+    .reach-scale > span,
+    .burden-scale > span { font-size: 0.34rem; }
+    .circuit-route button { padding: 0.19rem 0.1rem; font-size: 0.34rem; }
   }
 </style>

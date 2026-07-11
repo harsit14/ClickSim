@@ -47,12 +47,11 @@
         {#each Array.from({ length: 4 }) as _, index}<i style={`--petal:${index}`}></i>{/each}
       </div>
       <div class="unfolding-center"></div>
-    {:else if vista.id === 'full-discharge'}
-      <div class="discharge-flash"></div>
-      <div class="discharge-bolt"><i></i><i></i><i></i></div>
-      <div class="thunder-ring ring-a"></div>
-      <div class="thunder-ring ring-b"></div>
-      <div class="fulgurite"><i></i><i></i><i></i></div>
+    {:else if vista.id === 'circuit-return'}
+      <div class="return-calm"></div>
+      <div class="return-circuit"><i></i><i></i><i></i></div>
+      <div class="return-refuges"><i></i><i></i><i></i><i></i></div>
+      <div class="return-home"></div>
     {:else}
       <div class="cathedral-nave"></div>
       <div class="cathedral-arch arch-a"></div>
@@ -119,18 +118,13 @@
   .unfolding-lotus i { left: 50%; top: 50%; width: 24%; height: 47%; transform-origin: 0 0; transform: rotate(calc(var(--petal) * 90deg)) translate(-50%, -91%); border: 1px solid color-mix(in srgb, var(--gold) 36%, transparent); border-radius: 78% 18% 78% 18%; background: linear-gradient(180deg, color-mix(in srgb, var(--amber) 10%, transparent), transparent 74%); }
   .unfolding-center { left: 50%; top: 56%; width: 7.2rem; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(45deg); border: 1px dashed color-mix(in srgb, #8ecbe0 38%, transparent); background: transparent; box-shadow: inset 0 0 2rem color-mix(in srgb, var(--bg) 42%, transparent); }
 
-  /* Tempest — the stored field resolves as one ground-seeking discharge. */
-  .full-discharge .discharge-flash { inset: 0; background: radial-gradient(ellipse at 50% 49%, color-mix(in srgb, white 14%, transparent), transparent 48%); animation: storm-flash 4.6s steps(1, end) infinite; }
-  .discharge-bolt { left: 50%; top: 24%; width: 0.25rem; height: 54%; transform: translateX(-50%) skewX(-7deg); background: white; box-shadow: 0 0 0.8rem white, 0 0 2.8rem color-mix(in srgb, var(--gold) 54%, transparent); clip-path: polygon(0 0, 100% 0, 65% 29%, 100% 29%, 28% 62%, 64% 61%, 0 100%, 32% 54%, 0 55%, 70% 24%, 35% 24%); animation: bolt-hold 4.6s steps(1, end) infinite; }
-  .discharge-bolt i { left: 50%; width: min(18vw, 13rem); height: 2px; transform-origin: left center; background: linear-gradient(90deg, white, transparent); }
-  .discharge-bolt i:nth-child(1) { top: 26%; transform: rotate(-39deg); }
-  .discharge-bolt i:nth-child(2) { top: 52%; transform: rotate(28deg); }
-  .discharge-bolt i:nth-child(3) { top: 68%; transform: rotate(-51deg); }
-  .thunder-ring { left: 50%; top: 48%; width: min(50vw, 44rem); aspect-ratio: 3.4; transform: translate(-50%, -50%); border: 1px solid color-mix(in srgb, white 34%, transparent); border-radius: 50%; animation: thunder-expand 4.6s ease-out infinite; }
-  .ring-b { animation-delay: -2.3s; }
-  .fulgurite { left: 50%; bottom: 7%; width: 9rem; height: 8rem; transform: translateX(-50%); border-left: 2px solid color-mix(in srgb, var(--gold) 52%, transparent); filter: drop-shadow(0 0 0.6rem color-mix(in srgb, var(--amber) 38%, transparent)); }
-  .fulgurite i { left: 0; bottom: calc(var(--branch) * 1.5rem); width: 4.8rem; height: 1px; transform-origin: left; transform: rotate(calc(-64deg + var(--branch) * 52deg)); background: color-mix(in srgb, var(--gold) 48%, transparent); }
-  .fulgurite i:nth-child(1) { --branch: 1; } .fulgurite i:nth-child(2) { --branch: 2; } .fulgurite i:nth-child(3) { --branch: 3; }
+  /* Vishnulok — the completed correction comes home without enclosing the ocean. */
+  .circuit-return .return-calm { inset:0;background:radial-gradient(ellipse at 50% 58%,color-mix(in srgb,var(--gold) 13%,transparent),transparent 48%);animation:return-calm 6s ease-in-out infinite alternate; }
+  .return-circuit { left:50%;top:56%;width:min(58vw,52rem);aspect-ratio:2.8;transform:translate(-50%,-50%);border:2px solid color-mix(in srgb,var(--amber) 42%,transparent);border-left-color:transparent;border-radius:50%;filter:drop-shadow(0 0 1.4rem color-mix(in srgb,var(--amber) 18%,transparent)); }
+  .return-circuit::after { content:'';position:absolute;right:-.25rem;top:47%;width:1rem;height:1rem;border-top:2px solid var(--gold);border-right:2px solid var(--gold);transform:rotate(45deg); }
+  .return-circuit i { inset:calc(10% + var(--return-ring,0) * 9%);border-top:1px solid color-mix(in srgb,var(--gold) 22%,transparent);border-radius:50%; }.return-circuit i:nth-child(1){--return-ring:0}.return-circuit i:nth-child(2){--return-ring:1}.return-circuit i:nth-child(3){--return-ring:2}
+  .return-refuges { inset:0; }.return-refuges i { top:52%;width:5rem;height:2.4rem;border:1px solid color-mix(in srgb,var(--gold) 24%,transparent);border-bottom:0;border-radius:55% 55% 0 0;background:color-mix(in srgb,var(--bg) 42%,transparent); }.return-refuges i:nth-child(1){left:17%}.return-refuges i:nth-child(2){left:34%;top:68%;transform:scale(.78)}.return-refuges i:nth-child(3){right:34%;top:68%;transform:scale(.78)}.return-refuges i:nth-child(4){right:17%}
+  .return-home { left:50%;top:56%;width:5rem;aspect-ratio:1.45;transform:translate(-50%,-50%);border:1px dashed color-mix(in srgb,var(--gold) 46%,transparent);border-radius:55% 55% 20% 20%;background:color-mix(in srgb,var(--bg) 76%,transparent);box-shadow:0 0 2rem color-mix(in srgb,var(--bg) 58%,transparent); }
 
   /* Canticle — nodes, rests, and antinodes hold an inhabitable acoustic form. */
   .standing-wave-cathedral .cathedral-nave { left: 50%; top: 20%; bottom: 13%; width: min(54vw, 48rem); transform: translateX(-50%); background: radial-gradient(ellipse at 50% 90%, color-mix(in srgb, var(--gold) 12%, transparent), transparent 65%); border-bottom: 1px solid color-mix(in srgb, var(--gold) 40%, transparent); perspective: 40rem; }
@@ -147,7 +141,6 @@
 
   [data-vista-quality='low'] .dawn-rays i:nth-child(n+4),
   [data-vista-quality='low'] .unfolding-courts,
-  [data-vista-quality='low'] .ring-b,
   [data-vista-quality='low'] .arch-b { display: none; }
   .motion-paused,
   .motion-paused * { animation: none !important; }
@@ -155,9 +148,7 @@
   @keyframes dawn-open { to { opacity: 0.72; transform: translateX(-50%) scaleX(1.04); } }
   @keyframes dawn-turn { to { transform: rotate(360deg); } }
   @keyframes lotus-breathe { to { transform: translate(-50%, -50%) scale(1.045); opacity: .78; } }
-  @keyframes storm-flash { 0%, 8%, 11%, 100% { opacity: 0.16; } 3%, 10% { opacity: 1; } }
-  @keyframes bolt-hold { 0%, 8%, 11%, 100% { opacity: 0.34; } 3%, 10% { opacity: 1; } }
-  @keyframes thunder-expand { from { opacity: 0.48; transform: translate(-50%, -50%) scale(0.35); } to { opacity: 0; transform: translate(-50%, -50%) scale(1.35); } }
+  @keyframes return-calm { to { opacity:.72;transform:scaleX(1.03); } }
   @keyframes cathedral-breathe { to { transform: scaleY(1.18); opacity: 0.66; } }
 
   @media (max-width: 680px) {

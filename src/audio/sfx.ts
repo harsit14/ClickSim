@@ -90,7 +90,7 @@ export function playRhythmAccent(mode: UniverseId = 'emberlight', streak = 1): b
     verdance: 261.63,
     clockwork: 330,
     prismata: 293.66,
-    tempest: 392,
+    tempest: 220,
     canticle: 220,
   }
   const root = roots[mode]
@@ -98,7 +98,7 @@ export function playRhythmAccent(mode: UniverseId = 'emberlight', streak = 1): b
   for (const [index, frequency] of [root, root * ratio].entries()) {
     const oscillator = a.ctx.createOscillator()
     const gain = a.ctx.createGain()
-    oscillator.type = mode === 'tempest' ? 'triangle' : 'sine'
+    oscillator.type = 'sine'
     oscillator.frequency.value = frequency
     const start = t + index * 0.018
     gain.gain.setValueAtTime(0.0001, start)
@@ -162,15 +162,15 @@ function playFutureClick(mode: 'prismata' | 'tempest' | 'canticle') {
   const oscillator = a.ctx.createOscillator()
   const gain = a.ctx.createGain()
   const filter = a.ctx.createBiquadFilter()
-  oscillator.type = mode === 'tempest' ? 'sawtooth' : 'sine'
-  const start = mode === 'prismata' ? 420 : mode === 'tempest' ? 260 : 330
-  const end = mode === 'prismata' ? 285 : mode === 'tempest' ? 82 : 185
+  oscillator.type = 'sine'
+  const start = mode === 'prismata' ? 420 : mode === 'tempest' ? 245 : 330
+  const end = mode === 'prismata' ? 285 : mode === 'tempest' ? 165 : 185
   oscillator.frequency.setValueAtTime(start, t)
   oscillator.frequency.exponentialRampToValueAtTime(end, t + (mode === 'canticle' ? 0.2 : 0.09))
-  filter.type = mode === 'tempest' ? 'highpass' : 'lowpass'
-  filter.frequency.value = mode === 'tempest' ? 700 : 2_400
+  filter.type = 'lowpass'
+  filter.frequency.value = mode === 'tempest' ? 1_200 : 2_400
   gain.gain.setValueAtTime(0.0001, t)
-  gain.gain.exponentialRampToValueAtTime(mode === 'tempest' ? 0.16 : 0.24, t + 0.008)
+  gain.gain.exponentialRampToValueAtTime(mode === 'tempest' ? 0.12 : 0.24, t + 0.008)
   gain.gain.exponentialRampToValueAtTime(0.001, t + (mode === 'canticle' ? 0.24 : 0.14))
   oscillator.connect(filter).connect(gain).connect(a.master)
   oscillator.start(t)
@@ -249,7 +249,7 @@ function playFutureBuy(gainScale: number, mode: Exclude<UniverseId, 'emberlight'
     verdance: [293.66, 440],
     clockwork: [330, 495],
     prismata: [293.66, 440],
-    tempest: [196, 392],
+    tempest: [164.81, 220],
     canticle: [220, 329.63],
   }
   const routedGain = a.ctx.createGain()
@@ -258,7 +258,7 @@ function playFutureBuy(gainScale: number, mode: Exclude<UniverseId, 'emberlight'
   pairs[mode].forEach((frequency, index) => {
     const oscillator = a.ctx.createOscillator()
     const gain = a.ctx.createGain()
-    oscillator.type = mode === 'tempest' ? 'sawtooth' : 'sine'
+    oscillator.type = 'sine'
     oscillator.frequency.value = frequency
     const start = t + index * 0.075
     gain.gain.setValueAtTime(0.0001, start)
@@ -391,7 +391,7 @@ function playFutureEpoch(mode: Exclude<UniverseId, 'emberlight' | 'tidefall'>) {
     verdance: 146.83,
     clockwork: 165,
     prismata: 146.83,
-    tempest: 73.42,
+    tempest: 82.41,
     canticle: 110,
   }
   const root = roots[mode]
@@ -399,11 +399,11 @@ function playFutureEpoch(mode: Exclude<UniverseId, 'emberlight' | 'tidefall'>) {
   intervals.forEach((interval, index) => {
     const oscillator = a.ctx.createOscillator()
     const gain = a.ctx.createGain()
-    oscillator.type = mode === 'tempest' ? 'sawtooth' : mode === 'clockwork' ? 'square' : 'sine'
+    oscillator.type = mode === 'clockwork' ? 'square' : 'sine'
     oscillator.frequency.value = root * interval
     const start = t + index * 0.18
     gain.gain.setValueAtTime(0.0001, start)
-    gain.gain.exponentialRampToValueAtTime(mode === 'tempest' ? 0.07 : 0.1, start + 0.08)
+    gain.gain.exponentialRampToValueAtTime(mode === 'tempest' ? 0.055 : 0.1, start + 0.08)
     gain.gain.exponentialRampToValueAtTime(0.001, start + 1.8)
     oscillator.connect(gain).connect(a.master)
     oscillator.start(start)
@@ -460,7 +460,7 @@ export function playOmenApproach(mode: UniverseId = 'emberlight'): boolean {
     verdance: 261.63,
     clockwork: 440,
     prismata: 293.66,
-    tempest: 146.83,
+    tempest: 110,
     canticle: 220,
   }
   const root = roots[mode]

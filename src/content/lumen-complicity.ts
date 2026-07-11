@@ -57,7 +57,7 @@ export const LUMEN_COMPLICITY_LINES: readonly LumenComplicityLine[] = [
     id: 'act7-lumen-storm-beacon',
     universeIds: ['tempest'],
     act: 'VII',
-    text: 'Tempest can now continue without us. I kept its archive because I believed release could be taught. I left other storms uncalled. Belief is not permission.',
+    text: 'Vishnulok continues without us. I kept its archive because I believed preservation could be made into a system. I left other refuges unentered. Belief is not permission.',
     when: (game) => saw(game, 'act7-lumen-inevitable') && game.beacons.includes('tempest'),
   },
   {

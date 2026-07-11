@@ -148,26 +148,32 @@ export function routePrismataKindling(
 
 export const routeBrahmalokKindling = routePrismataKindling
 
-export const TEMPEST_PATHS = [
-  { id: 'conductor', name: 'Conductor', glyph: 'ϟ', threshold: 20, boost: 1.8, durationSec: 22, defaultLength: 2, defaultRisk: 0, description: 'Frequent short discharges with a reliable return.' },
-  { id: 'supercell', name: 'Supercell', glyph: '↯', threshold: 70, boost: 4.4, durationSec: 30, defaultLength: 7, defaultRisk: 2, description: 'Hold a long charge cycle for one enormous chain.' },
-  { id: 'jetstream', name: 'Jetstream', glyph: '⇝', threshold: 45, boost: 2.6, durationSec: 48, defaultLength: 6, defaultRisk: 1, description: 'Route charge into a long, stable circulation path.' },
-  { id: 'stormchaser', name: 'Stormchaser', glyph: '⌁', threshold: 35, boost: 3.1, durationSec: 26, defaultLength: 4, defaultRisk: 3, description: 'Follow an active branching leader for a sharper burst.' },
+export const VISHNULOK_CIRCUITS = [
+  { id: 'daily-return', name: 'Daily Return', glyph: '↶', threshold: 20, boost: 1.8, durationSec: 22, defaultLength: 2, defaultRisk: 0, description: 'Frequent modest corrections with a reliable return.' },
+  { id: 'refuge-circuit', name: 'Refuge Circuit', glyph: '⌂', threshold: 70, boost: 4.4, durationSec: 30, defaultLength: 7, defaultRisk: 2, description: 'Carry a large burden through a long chain of shelters.' },
+  { id: 'measured-correction', name: 'Measured Correction', glyph: '≋', threshold: 45, boost: 2.6, durationSec: 48, defaultLength: 6, defaultRisk: 1, description: 'Sustain a broad, stable correction through the middle current.' },
+  { id: 'ocean-balance', name: 'Ocean Balance', glyph: '∞', threshold: 35, boost: 3.1, durationSec: 26, defaultLength: 4, defaultRisk: 3, description: 'Follow changing strain through a sharper responsive return.' },
 ] as const
 
-export const TEMPEST_RISKS = [
-  { id: 'grounded', name: 'Grounded', glyph: '▁', description: 'Lower return, stable containment.' },
-  { id: 'exposed', name: 'Exposed', glyph: '⌁', description: 'Moderate branching risk and return.' },
-  { id: 'volatile', name: 'Volatile', glyph: '↯', description: 'High threshold and stronger discharge.' },
-  { id: 'untethered', name: 'Untethered', glyph: '☈', description: 'Maximum return with the least passive stability.' },
+/** @deprecated Save-slot compatibility alias. */
+export const TEMPEST_PATHS = VISHNULOK_CIRCUITS
+
+export const VISHNULOK_BURDENS = [
+  { id: 'sheltered', name: 'Sheltered', glyph: '⌂', description: 'Lower return, stable refuge.' },
+  { id: 'open-water', name: 'Open Water', glyph: '≈', description: 'Moderate burden and return.' },
+  { id: 'strained', name: 'Strained', glyph: '⌁', description: 'Higher threshold and stronger correction.' },
+  { id: 'far-reaching', name: 'Far-Reaching', glyph: '∞', description: 'Maximum return with the widest obligation.' },
 ] as const
+
+/** @deprecated Save-slot compatibility alias. */
+export const TEMPEST_RISKS = VISHNULOK_BURDENS
 
 export interface TempestStatus {
   readonly pathIndex: number
-  readonly path: (typeof TEMPEST_PATHS)[number]
+  readonly path: (typeof VISHNULOK_CIRCUITS)[number]
   readonly length: number
   readonly riskIndex: number
-  readonly risk: (typeof TEMPEST_RISKS)[number]
+  readonly risk: (typeof VISHNULOK_BURDENS)[number]
   readonly threshold: number
   readonly boost: number
   readonly durationSec: number
@@ -181,11 +187,11 @@ export interface TempestStatus {
 export function tempestStatus(
   state: Readonly<NumericLawState> | undefined,
 ): TempestStatus {
-  const pathIndex = Math.min(TEMPEST_PATHS.length - 1, Math.floor(readNumber(state, 'u6-path', 0, 3)))
-  const path = TEMPEST_PATHS[pathIndex]
+  const pathIndex = Math.min(VISHNULOK_CIRCUITS.length - 1, Math.floor(readNumber(state, 'u6-path', 0, 3)))
+  const path = VISHNULOK_CIRCUITS[pathIndex]
   const length = Math.max(1, Math.floor(readNumber(state, 'u6-path-length', path.defaultLength, 8)))
-  const riskIndex = Math.min(TEMPEST_RISKS.length - 1, Math.floor(readNumber(state, 'u6-path-risk', path.defaultRisk, 3)))
-  const risk = TEMPEST_RISKS[riskIndex]
+  const riskIndex = Math.min(VISHNULOK_BURDENS.length - 1, Math.floor(readNumber(state, 'u6-path-risk', path.defaultRisk, 3)))
+  const risk = VISHNULOK_BURDENS[riskIndex]
   const threshold = Math.min(95, Math.max(10, path.threshold + (length - path.defaultLength) * 4 + (riskIndex - path.defaultRisk) * 5))
   const boost = path.boost * (0.78 + length * 0.055 + riskIndex * 0.12)
   const durationSec = Math.max(12, Math.round(path.durationSec * (0.78 + length * 0.045)))
@@ -194,18 +200,20 @@ export function tempestStatus(
   const ready = charge >= threshold
   const multiplier = boostRemainingSec > 0 ? boost : Math.max(0.72, 0.9 + charge * 0.0038 - riskIndex * 0.035)
   const explanation = boostRemainingSec > 0
-    ? `${path.name} is propagating across ${length} cells for ${Math.ceil(boostRemainingSec)}s at ${risk.name.toLowerCase()} risk.`
+    ? `${path.name} is returning across ${length} shelters for ${Math.ceil(boostRemainingSec)}s with a ${risk.name.toLowerCase()} burden.`
     : ready
-      ? `${path.name} is charged: ${length} cells, ${risk.name.toLowerCase()} risk, ×${boost.toFixed(2)} return.`
-      : `${Math.ceil(threshold - charge)}% more potential is required for this ${length}-cell ${path.name} route.`
+      ? `${path.name} is ready: ${length} shelters, ${risk.name.toLowerCase()} burden, ×${boost.toFixed(2)} return.`
+      : `${Math.ceil(threshold - charge)}% more continuity is required for this ${length}-shelter ${path.name}.`
   return { pathIndex, path, length, riskIndex, risk, threshold, boost, durationSec, charge, boostRemainingSec, ready, multiplier, explanation }
 }
 
 export function selectTempestPath(state: NumericLawState, index: number): boolean {
-  if (!Number.isInteger(index) || index < 0 || index >= TEMPEST_PATHS.length) return false
+  if (!Number.isInteger(index) || index < 0 || index >= VISHNULOK_CIRCUITS.length) return false
   writeNumber(state, 'u6-path', index)
   return true
 }
+
+export const selectVishnulokCircuit = selectTempestPath
 
 export function configureTempestRoute(
   state: NumericLawState,
@@ -213,11 +221,13 @@ export function configureTempestRoute(
   riskIndex: number,
 ): boolean {
   if (!Number.isInteger(length) || length < 1 || length > 8) return false
-  if (!Number.isInteger(riskIndex) || riskIndex < 0 || riskIndex >= TEMPEST_RISKS.length) return false
+  if (!Number.isInteger(riskIndex) || riskIndex < 0 || riskIndex >= VISHNULOK_BURDENS.length) return false
   writeNumber(state, 'u6-path-length', length)
   writeNumber(state, 'u6-path-risk', riskIndex)
   return true
 }
+
+export const configureVishnulokCircuit = configureTempestRoute
 
 export function dischargeTempest(state: NumericLawState): boolean {
   const status = tempestStatus(state)
@@ -229,6 +239,8 @@ export function dischargeTempest(state: NumericLawState): boolean {
   writeNumber(state, 'u6-last-risk', status.riskIndex)
   return true
 }
+
+export const completeVishnulokReturn = dischargeTempest
 
 export const CANTICLE_ROLES = ['pulse', 'sustain', 'multiplier', 'rest', 'syncopation', 'echo'] as const
 export type CanticleRole = (typeof CANTICLE_ROLES)[number]
@@ -378,7 +390,7 @@ export function f4ClickMultiplier(
   }
   if (universeId === 'tempest') {
     const status = tempestStatus(state)
-    return status.boostRemainingSec > 0 && status.path.id === 'stormchaser' ? 1.5 : 1
+    return status.boostRemainingSec > 0 && status.path.id === 'ocean-balance' ? 1.5 : 1
   }
   if (universeId === 'canticle') {
     const status = canticleStatus(state, owned, nowMs)

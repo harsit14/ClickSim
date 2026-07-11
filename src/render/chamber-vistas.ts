@@ -8,7 +8,7 @@ import {
 export type ChamberVistaId =
   | 'canopy-dawn'
   | 'lotus-unfolding'
-  | 'full-discharge'
+  | 'circuit-return'
   | 'standing-wave-cathedral'
 
 export interface ChamberVistaPlan {
@@ -74,9 +74,9 @@ export function planChamberVista({
     const status = tempestStatus(numericLawState)
     if (status.boostRemainingSec <= 0) return null
     return {
-      id: 'full-discharge',
+      id: 'circuit-return',
       universeId,
-      label: `Full discharge: ${status.path.name} propagates through ${status.length} storm cells at ${status.risk.name.toLowerCase()} risk.`,
+      label: `Circuit return: ${status.path.name} travels through ${status.length} shelters with a ${status.risk.name.toLowerCase()} burden.`,
       intensity: clampUnit(0.68 + status.riskIndex * 0.09),
       detail: clampUnit(status.length / 8),
     }

@@ -167,12 +167,12 @@
   [data-native-universe='prismata'] .chamber-frame { stroke: rgba(255, 235, 195, 0.28); stroke-dasharray: 1.2 1.4; }
   [data-native-universe='prismata'] .chamber-accent { stroke: #8ecbe0; animation-timing-function: ease-in-out; }
   [data-native-universe='tempest'] {
-    border-radius: 52% 48% 24% 28%;
+    border-radius: 50% 50% 32% 32%;
     background:
-      repeating-linear-gradient(165deg, transparent 0 5px, hsla(var(--record-hue), 70%, 70%, 0.045) 5px 6px),
-      linear-gradient(180deg, hsla(var(--record-hue), 42%, 28%, 0.26), rgba(4, 10, 17, 0.98));
+      repeating-radial-gradient(ellipse at 50% 0, transparent 0 5px, hsla(var(--record-hue), 54%, 70%, 0.04) 5px 6px),
+      linear-gradient(180deg, hsla(var(--record-hue), 38%, 27%, 0.24), rgba(4, 8, 22, 0.98));
   }
-  [data-native-universe='tempest'] .chamber-accent { stroke: #e9fbff; animation-timing-function: steps(3, end); animation-duration: 1.9s; }
+  [data-native-universe='tempest'] .chamber-accent { stroke: #efd78f; animation-timing-function: ease-in-out; animation-duration: 3.6s; }
   [data-native-universe='canticle'] {
     border-radius: 50%;
     background:

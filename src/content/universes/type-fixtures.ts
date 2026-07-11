@@ -77,11 +77,11 @@ export type PrismataTypeFixture = AssertPack<UniverseFixture<
 
 export type TempestTypeFixture = AssertPack<UniverseFixture<
   'tempest',
-  'Charge',
-  'Storm Eye',
-  'Grounding',
-  'Fulgurites',
-  'Storm Almanac'
+  'Continuity',
+  'The Endless Circuit',
+  'Renewal',
+  'Returns',
+  'Ocean of Continuance'
 >>
 
 export type CanticleTypeFixture = AssertPack<UniverseFixture<

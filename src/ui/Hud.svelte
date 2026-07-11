@@ -89,8 +89,8 @@
         <strong>×{brahmalok.multiplier.toFixed(2)}</strong>
       </div>
     {:else if tempest}
-      <div class="law-state tempest" aria-label={`${tempest.path.name}; ${Math.round(tempest.charge)} percent charge; production ×${tempest.multiplier.toFixed(2)}`}>
-        <span>{tempest.path.glyph} {tempest.boostRemainingSec > 0 ? 'discharging' : tempest.ready ? 'path ready' : 'potential building'}</span>
+      <div class="law-state tempest" aria-label={`${tempest.path.name}; ${Math.round(tempest.charge)} percent continuity; production ×${tempest.multiplier.toFixed(2)}`}>
+        <span>{tempest.path.glyph} {tempest.boostRemainingSec > 0 ? 'returning' : tempest.ready ? 'correction ready' : 'continuity gathering'}</span>
         <i aria-hidden="true">{Math.round(tempest.charge)}%</i>
         <strong>×{tempest.multiplier.toFixed(2)}</strong>
       </div>

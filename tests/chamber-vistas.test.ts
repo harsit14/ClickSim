@@ -45,7 +45,7 @@ test('Brahmalok unfolds its vista only from four active directions under Mandala
   }), null)
 })
 
-test('Tempest vista persists only while a completed discharge propagates', () => {
+test('Vishnulok vista persists only while a completed correction returns', () => {
   const generatorIds = ids('u6')
   assert.equal(planChamberVista({ universeId: 'tempest', generatorIds, owned: owned('u6'), numericLawState: {} }), null)
   const vista = planChamberVista({
@@ -57,8 +57,8 @@ test('Tempest vista persists only while a completed discharge propagates', () =>
       'u6-boost-seconds': amountFromNumber(20),
     },
   })
-  assert.equal(vista?.id, 'full-discharge')
-  assert.match(vista?.label ?? '', /8 storm cells/)
+  assert.equal(vista?.id, 'circuit-return')
+  assert.match(vista?.label ?? '', /8 shelters/)
 })
 
 test('Canticle cathedral needs the named Kindling, every role, and deliberate rests', () => {

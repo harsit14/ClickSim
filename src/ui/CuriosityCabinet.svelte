@@ -95,10 +95,10 @@
       action: 'encounter', past: 'encountered', heldLabel: 'read', sleepingLabel: 'unwritten', revealVerb: 'encounter', thresholdNoun: 'lifetime Possibility',
     },
     tempest: {
-      seal: 'ϟ', fieldLabel: 'forecast wall', fieldTitle: 'Every path leaves evidence', fieldDescription: 'Formation, discharge, and aftermath are logged as one weather system with no hidden strike.',
-      countLabel: 'logged', collectionLabel: 'front', resonanceLabel: 'stored potential', completedLabel: 'fronts grounded', hiddenShelfTitle: 'An Unformed Front', hiddenShelfCopy: 'The pressure map is quiet here, but the ground mark remains ready.', unknownReward: 'unknown forecast',
-      nearClassification: 'resolvable weather trace', emptyClassification: 'no pressure trace', nearName: 'Unlogged formation', emptyName: 'Clear forecast cell', nearFlavor: 'The path is stable enough to enter in the almanac.', emptyFlavor: 'Calm is still a weather state worth preserving.',
-      action: 'log', past: 'logged', heldLabel: 'grounded', sleepingLabel: 'unformed', revealVerb: 'log', thresholdNoun: 'lifetime Charge',
+      seal: '∞', fieldLabel: 'continuance sounding', fieldTitle: 'Every correction must come home', fieldDescription: 'Refuge, correction, and return remain legible as one responsive ocean relation.',
+      countLabel: 'heard', collectionLabel: 'sounding', resonanceLabel: 'sustaining relation', completedLabel: 'returns complete', hiddenShelfTitle: 'An Open Harbor', hiddenShelfCopy: 'Still water keeps a threshold ready without demanding an arrival.', unknownReward: 'unknown continuity',
+      nearClassification: 'unread ocean relation', emptyClassification: 'no sounding encountered', nearName: 'Unheard current', emptyName: 'Still sounding', nearFlavor: 'The route is legible enough to enter without becoming property.', emptyFlavor: 'Calm is a living condition, not an empty record.',
+      action: 'hear', past: 'heard', heldLabel: 'returned', sleepingLabel: 'still', revealVerb: 'hear', thresholdNoun: 'lifetime Continuity',
     },
     canticle: {
       seal: '◌', fieldLabel: 'memory score', fieldTitle: 'Every voice leaves a rest', fieldDescription: 'Voice, memory, and relationship share one score without forcing the records into unison.',
@@ -314,7 +314,7 @@
                 {:else if owned && c.kind === 'letter'}
                   <div class="special letter">
                     <button class="small" aria-expanded={letterOpen} onclick={() => (letterOpen = !letterOpen)}>
-                      {letterOpen ? 'close archive record' : cabinet.id === 'tidefall' ? 'decode tide record' : cabinet.id === 'prismata' ? 'read first-form record' : 'decode archive record'}
+                      {letterOpen ? 'close archive record' : cabinet.id === 'tidefall' ? 'decode tide record' : cabinet.id === 'prismata' ? 'read first-form record' : cabinet.id === 'tempest' ? 'hear ocean record' : 'decode archive record'}
                     </button>
                     {#if letterOpen}
                       <p>{cabinet.archiveRecord}</p>
@@ -604,10 +604,10 @@
     --archive-header: linear-gradient(180deg, rgba(37, 27, 34, 0.995), rgba(17, 13, 22, 0.98));
   }
   .cabinet.tempest {
-    --archive-accent: #9bdfff;
-    --archive-surface: #0a1722;
-    --archive-bg: repeating-linear-gradient(168deg, transparent 0 2.9rem, rgba(134, 214, 255, 0.03) 2.92rem 3rem), radial-gradient(ellipse at 65% 0%, rgba(102, 186, 231, 0.15), transparent 38%), linear-gradient(155deg, rgba(10, 29, 43, 0.99), rgba(3, 9, 16, 0.985));
-    --archive-header: linear-gradient(180deg, rgba(13, 35, 50, 0.995), rgba(6, 20, 31, 0.98));
+    --archive-accent: #e7ce83;
+    --archive-surface: #0a1530;
+    --archive-bg: repeating-radial-gradient(ellipse at 50% 0, transparent 0 2.9rem, rgba(111, 145, 204, 0.035) 2.92rem 3rem), radial-gradient(ellipse at 65% 0%, rgba(231, 206, 131, 0.11), transparent 38%), linear-gradient(155deg, rgba(10, 22, 55, 0.99), rgba(3, 7, 19, 0.985));
+    --archive-header: linear-gradient(180deg, rgba(15, 28, 62, 0.995), rgba(7, 14, 35, 0.98));
   }
   .cabinet.canticle {
     --archive-accent: #f0b9df;

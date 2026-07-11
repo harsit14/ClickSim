@@ -18,14 +18,14 @@ test('the three future-universe law interfaces compile accessibly with distinct 
 
   assert.deepEqual(compiled.warnings, [])
   assert.match(panelSource, /aria-label="Brahmalok creation mandala"/)
-  assert.match(panelSource, /aria-label="Tempest storm field"/)
+  assert.match(panelSource, /aria-label="Vishnulok Endless Circuit"/)
   assert.match(panelSource, /aria-label="Canticle resonance score"/)
   assert.match(panelSource, /aria-label="Verdance grafting bench"/)
 })
 
-test('Brahmalok, Tempest, and Canticle use different spatial interaction grammars', () => {
+test('Brahmalok, Vishnulok, and Canticle use different spatial interaction grammars', () => {
   assert.match(panelSource, /class="creation-stage"[\s\S]*class="lotus-center"[\s\S]*class="creation-directions"/)
-  assert.match(panelSource, /class="storm-layout"[\s\S]*class="anvil-cloud"[\s\S]*class="bolt-network"/)
+  assert.match(panelSource, /class="ocean-layout"[\s\S]*class="refuge-center"[\s\S]*class="current-network"/)
   assert.match(panelSource, /class="orbital-measure"[\s\S]*class="nodal-figure"[\s\S]*--slot-index:/)
   assert.doesNotMatch(panelSource, /class="choices"/)
 })
@@ -36,9 +36,9 @@ test('Verdance adds a rootstock-to-scion graft instead of borrowing a future-wor
   assert.match(panelSource, /severVerdanceGrafting/)
 })
 
-test('the authored worlds reinforce lotus court, convective-storm, and nodal-plate silhouettes', () => {
+test('the authored worlds reinforce lotus court, sustaining ocean, and nodal-plate silhouettes', () => {
   assert.match(worldSource, /class="brahmalok-lotus"/)
-  assert.match(worldSource, /class="tempest-anvil"/)
+  assert.match(worldSource, /class="vishnulok-horizon"/)
   assert.match(worldSource, /class="canticle-nodal nodal-one"/)
   assert.doesNotMatch(worldSource, /class="prismata-bench"/)
 })
@@ -46,7 +46,7 @@ test('the authored worlds reinforce lotus court, convective-storm, and nodal-pla
 test('late-universe score and instrument share one compact surface', () => {
   assert.match(panelSource, /snippet integratedHeader[\s\S]*class="run-score"[\s\S]*class="instrument-title"/)
   assert.match(panelSource, /\.creation-stage \{[^}]*height: 5rem/)
-  assert.match(panelSource, /\.storm-layout \{[^}]*height: 4\.6rem/)
+  assert.match(panelSource, /\.ocean-layout \{[^}]*height: 4\.6rem/)
   assert.match(panelSource, /\.orbital-measure \{[^}]*width: 7\.5rem/)
   assert.match(panelSource, /@media \(max-width: 800px\)[\s\S]*\.brahmalok-mandala,[\s\S]*\.canticle-score \{ width: 100%/)
   assert.match(appSource, /@media \(max-width: 800px\)[\s\S]*\.top-stack\.future-law \{ width: calc\(100vw - 1rem\); \}/)
@@ -54,7 +54,7 @@ test('late-universe score and instrument share one compact surface', () => {
   assert.match(appSource, /\{#if !utilityPanelOpen\}[\s\S]*<UniverseLawPanel \/>[\s\S]*<UpgradeBar \/>/)
   assert.match(panelSource, /FIRST ARRIVAL/)
   assert.match(panelSource, /Choose how the lotus unfolds/)
-  assert.match(panelSource, /Choose a discharge path/)
+  assert.match(panelSource, /Choose a correction circuit/)
   assert.match(panelSource, /Choose a measure preset/)
   assert.match(panelSource, /ember:instrument-primer:v1:/)
   assert.match(panelSource, /aria-label="Explain this universe instrument"/)

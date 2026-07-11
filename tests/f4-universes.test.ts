@@ -89,14 +89,14 @@ test('Brahmalok creation modes reward different four-direction relationships', (
   assert.equal(routed.bands[3], 50)
 })
 
-test('Tempest accumulates bounded potential and discharges only through a ready selected path', () => {
+test('Vishnulok gathers bounded continuity and returns only through a ready circuit', () => {
   const state = {}
   const owned = { 'u6-kindling-01': 20, 'u6-kindling-06': 10 }
   assert.equal(selectTempestPath(state, 1), true)
   assert.equal(dischargeTempest(state), false)
   advanceF4LawState('tempest', state, owned, 120)
   const ready = tempestStatus(state)
-  assert.equal(ready.path.id, 'supercell')
+  assert.equal(ready.path.id, 'refuge-circuit')
   assert.equal(ready.charge, 100)
   const defaultBoost = ready.boost
   assert.equal(configureTempestRoute(state, 8, 3), true)

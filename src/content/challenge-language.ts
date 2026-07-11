@@ -69,10 +69,10 @@ const LEXICONS: Readonly<Record<string, ChallengeLexicon>> = {
     silenceRhythm: 'fourfold cycle', silencePlace: 'the unwritten margin',
   },
   tempest: {
-    unitSingular: 'formation', unitPlural: 'formations', actionVerb: 'form', earnVerb: 'ground',
-    inputPlural: 'strikes', upgradePlural: 'forecasts', productionNoun: 'charge flow', produceVerb: 'contribute',
-    functionVerb: 'carry the front', relationshipPlural: 'couplings', manualCurrencyVerb: 'grounded', silenceSound: 'thunder',
-    silenceRhythm: 'storm rhythm', silencePlace: 'the quiet sky',
+    unitSingular: 'refuge', unitPlural: 'refuges', actionVerb: 'sustain', earnVerb: 'return',
+    inputPlural: 'tendings', upgradePlural: 'corrections', productionNoun: 'continuity', produceVerb: 'contribute',
+    functionVerb: 'carry the circuit', relationshipPlural: 'current relations', manualCurrencyVerb: 'sustained', silenceSound: 'water-bed',
+    silenceRhythm: 'returning tide', silencePlace: 'the still ocean',
   },
   canticle: {
     unitSingular: 'voice', unitPlural: 'voices', actionVerb: 'sound', earnVerb: 'sound',

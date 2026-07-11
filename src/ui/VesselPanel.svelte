@@ -349,12 +349,12 @@
   [data-motif='spectrum-prism'] .piece-3 { left: 33%; width: 5.5rem; height: .45rem; }
   [data-motif='spectrum-prism'] .piece-4 { top: 70%; width: 3.8rem; height: 1.25rem; border-radius: 70% 30% 70% 30%; }
 
-  [data-motif='storm-conductor'] .motif-field { inset: 22% 22% 30%; border-radius: 50% 50% 42% 42%; }
-  [data-motif='storm-conductor'] .piece-0 { top: 39%; width: 9rem; height: 3.3rem; border-radius: 55% 55% 38% 38%; }
-  [data-motif='storm-conductor'] .piece-1 { top: 62%; width: 2.5rem; height: 4.6rem; clip-path: polygon(55% 0, 100% 0, 63% 43%, 90% 43%, 20% 100%, 39% 55%, 8% 55%); }
-  [data-motif='storm-conductor'] .piece-2 { left: 31%; top: 62%; width: 4rem; height: 0.5rem; transform: translate(-50%, -50%) rotate(24deg); }
-  [data-motif='storm-conductor'] .piece-3 { left: 69%; top: 62%; width: 4rem; height: 0.5rem; transform: translate(-50%, -50%) rotate(-24deg); }
-  [data-motif='storm-conductor'] .piece-4 { width: 2.1rem; height: 2.1rem; border-radius: 50%; }
+  [data-motif='storm-conductor'] .motif-field { inset: 18% 16% 25%; border-radius: 50%; border-left-style: dashed; }
+  [data-motif='storm-conductor'] .piece-0 { top: 43%; width: 9rem; height: 3.3rem; border-radius: 55% 55% 18% 18%; }
+  [data-motif='storm-conductor'] .piece-1 { top: 62%; width: 7.5rem; height: 2.3rem; border-radius: 50%; border-left-style: dashed; }
+  [data-motif='storm-conductor'] .piece-2 { left: 31%; top: 64%; width: 4rem; height: .45rem; transform: translate(-50%,-50%) rotate(18deg); }
+  [data-motif='storm-conductor'] .piece-3 { left: 69%; top: 64%; width: 4rem; height: .45rem; transform: translate(-50%,-50%) rotate(-18deg); }
+  [data-motif='storm-conductor'] .piece-4 { width: 2.3rem; height: 1.7rem; border-radius: 55% 55% 18% 18%; }
 
   [data-motif='resonant-chamber'] .motif-field { inset: 8% 31% 18%; border: 2px solid hsla(var(--vessel-hue), 70%, 74%, 0.14); }
   [data-motif='resonant-chamber'] .piece-0 { width: 6.3rem; height: 6.3rem; border: 0.35rem double hsla(var(--piece-hue), 78%, 72%, 0.56); border-radius: 50%; }

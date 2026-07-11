@@ -77,9 +77,9 @@ const PRISMATA_ARCHIVE_LANDMARKS = descriptors(
 
 const TEMPEST_ARCHIVE_LANDMARKS = descriptors(
   Array.from({ length: 12 }, (_value, index) => `u6-archive-${String(index + 1).padStart(2, '0')}`),
-  'Storm Almanac instrument',
-  'Visible Storm Almanac landmark',
-  [['tempest-formation', 'Formation weather station'], ['tempest-discharge', 'Discharge path station'], ['tempest-aftermath', 'Aftermath fulgurite field']],
+  'Ocean of Continuance sounding',
+  'Visible Ocean of Continuance landmark',
+  [['tempest-refuge', 'Refuge harbor'], ['tempest-correction', 'Correction current'], ['tempest-return', 'Return horizon']],
 )
 
 const CANTICLE_ARCHIVE_LANDMARKS = descriptors(
