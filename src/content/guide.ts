@@ -101,11 +101,11 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Playing on the beat',
         paragraphs: [
           'Once music is unlocked, clicking close to an audible beat builds a streak. The ring around the central object is the visual beat guide. Missing the timing resets the streak but never removes permanent progress.',
-          'Streak thresholds improve clicks, grant temporary rhythm blessings, and can summon the active event of the current universe. Music tempo changes between universes, so the rhythm should be learned again after a crossing.',
+          'Streak thresholds gently improve clicks up to ×1.5 and charge Omen attraction instead of creating large production blessings. Music tempo changes between universes, so the rhythm should be learned again after a crossing.',
         ],
         bullets: [
-          '4 beats begins the basic combo multiplier.',
-          '8, 16, 32, and 64 beats unlock increasingly strong active bonuses.',
+          '4 beats begins the basic ×1.1 combo multiplier.',
+          '8, 16, 32, and 64 beats charge Omen attraction; click output never exceeds ×1.5.',
           'The Conductor and certain cabinet objects widen the timing window.',
           'The Silence trial disables music, combos, and wandering events.',
         ],
@@ -182,6 +182,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         ],
         paragraphs: [
           'Purchased objects also appear in the living world. Emberlight renders distant stellar phenomena; Tidefall renders currents, pearls, kelp-light, migrations, and pressure apertures as one underwater ecosystem.',
+          'Lumen Shard lore and the Archive Resonator are purchased inside the active Archive. Archive power no longer lives in a separate multiverse shop.',
         ],
       },
     ],
@@ -214,6 +215,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         paragraphs: [
           'The same permanent choices are interpreted by each universe rather than copied verbatim. Emberlight draws a stellar Constellation in the Observatory; Tidefall sounds a Current Chart in the Moonless Chart, with local node names, lore, layout, and Undertow ritual.',
           'Once every node is owned, a repeatable Stardust market appears. Emberlight calls it the Eternal Observatory; Tidefall calls it the Returning Ocean. Both provide an endless production sink and increased Stardust yield until the next layer-two collapse.',
+          'Permanent Heart vestments recovered with Lumen Shards also live in the Observatory, beside the sky map and the light they recolor.',
         ],
       },
     ],
@@ -248,6 +250,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         paragraphs: [
           'After every fixed Singularity upgrade is owned, the Recursive Works become available. Worldseed Compression repeatedly doubles production. The Recursive Abyss repeatedly improves Deep Collapse yield. These ranks survive Deep Collapses and reset only during Remembrance.',
           'The Resonance Atlas lists every cross-generator synergy in the active universe, its source and target, price, ownership state, and live multiplier. Completing Small Vessels doubles the bonus portion of all resonances.',
+          'Once a world has lit its Beacon, the Deep exposes its capped Lumen Distillery. Distillation converts that world’s local Singularities into shared Lumen Shards without changing the price curve or cap.',
         ],
       },
     ],
@@ -290,6 +293,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         paragraphs: [
           'Only the active universe’s completed Vessel can open the Wayfinder. Crossing parks the current universe, restores the destination if previously visited, and seals the Wayfinder again until that destination builds and activates its own Vessel.',
           'After the local Vessel is active, reaching the world’s Beacon requirement can light that universe across the multiverse and unlock the next route. Beacons multiply production globally and award Dark Between, which is spent on permanent Wayfinder laws.',
+          'Succession Relays and the Relay Lens live in the Wayfinder. Each completed source world may strengthen only its immediate successor; moving the controls here does not change ranks, costs, or effects.',
         ],
       },
     ],

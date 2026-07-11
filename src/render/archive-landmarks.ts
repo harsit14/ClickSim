@@ -5,12 +5,38 @@ import type {
   VisualState,
 } from '../content/universes/types'
 import {
+  hudClearanceRect,
   rectIntersectsHudClearance,
+  rectsIntersect,
+  type HudClearanceRect,
   type HudClearanceViewport,
 } from './hud-clearance'
 import { rectIntersectsHeartTarget } from './heart-target'
 
 export type ArchiveLandmarkMode = 'standard' | 'reduced-motion' | 'low-quality'
+export type ArchiveHintPlacement = 'above' | 'below'
+
+const ARCHIVE_HINT_HEIGHT_PX = 7.2 * 16
+const ARCHIVE_HINT_ANCHOR_OFFSET_PX = (3.15 * 16) / 2 + 0.75 * 16
+const BOTTOM_UI_CLEARANCE_PX = 4 * 16
+
+/**
+ * Places landmark copy on the side of its anchor with enough unobstructed room.
+ * The centered HUD is the upper boundary and the dock/Lumen lane is the lower
+ * boundary, so the same rule works for every universe and viewport.
+ */
+export function archiveHintPlacement(
+  slot: Pick<ArchiveLandmarkSlot, 'y'>,
+  viewport: HudClearanceViewport,
+  topUiBottom = hudClearanceRect(viewport).height,
+): ArchiveHintPlacement {
+  const anchorY = slot.y * viewport.height
+  const roomAbove = anchorY - ARCHIVE_HINT_ANCHOR_OFFSET_PX - topUiBottom
+  const roomBelow = viewport.height - BOTTOM_UI_CLEARANCE_PX - anchorY - ARCHIVE_HINT_ANCHOR_OFFSET_PX
+  if (roomAbove >= ARCHIVE_HINT_HEIGHT_PX) return 'above'
+  if (roomBelow >= ARCHIVE_HINT_HEIGHT_PX) return 'below'
+  return roomBelow >= roomAbove ? 'below' : 'above'
+}
 
 export type ArchiveLandmarkSlotId =
   | 'scatter-01' | 'scatter-02' | 'scatter-03' | 'scatter-04' | 'scatter-05' | 'scatter-06'
@@ -251,6 +277,7 @@ function slotFor(
   universeId: UniversePackV2['id'],
   usedSlotIds: ReadonlySet<ArchiveLandmarkSlotId>,
   viewport: HudClearanceViewport,
+  topUiClearance?: HudClearanceRect,
 ): ArchiveLandmarkSlot | null {
   const maximumRequiredClearance = Math.max(
     ...unit.candidates.map(({ record }) => record.object.minimumHeartDistance),
@@ -267,7 +294,9 @@ function slotFor(
       width: landmarkSize,
       height: landmarkSize,
     }
-    if (rectIntersectsHudClearance(landmarkRect, viewport)) continue
+    if (topUiClearance
+      ? rectsIntersect(landmarkRect, topUiClearance)
+      : rectIntersectsHudClearance(landmarkRect, viewport)) continue
     if (rectIntersectsHeartTarget(landmarkRect, viewport)) continue
     return slot
   }
@@ -284,6 +313,7 @@ export function planArchiveLandmarks(
   descriptors: readonly ArchiveLandmarkPresentationDescriptor[],
   mode: ArchiveLandmarkMode = 'standard',
   viewport: HudClearanceViewport = { width: 1280, height: 720 },
+  topUiClearance?: HudClearanceRect,
 ): ArchiveLandmarkPlan {
   const descriptorByRecord = descriptorMap(descriptors)
   const recordById = new Map(pack.archive.records.map((record) => [record.id, record]))
@@ -314,7 +344,7 @@ export function planArchiveLandmarks(
       hidden.push({ id: unit.id, recordIds, reason: 'attention-budget' })
       continue
     }
-    const slot = slotFor(unit, pack.id, usedSlotIds, viewport)
+    const slot = slotFor(unit, pack.id, usedSlotIds, viewport, topUiClearance)
     if (!slot) {
       hidden.push({ id: unit.id, recordIds, reason: 'placement-budget' })
       continue

@@ -20,7 +20,7 @@
 
 {#if open}
   <div class="scrim">
-    <div class="card">
+    <div class="card instrument-panel">
       <p class="title">While you were gone,</p>
       <p class="body">your {pack.currency.toLowerCase()} kept gathering.</p>
       <p class="gain">{pack.currencyGlyph} {format(amount)}</p>

@@ -29,7 +29,7 @@
 </script>
 
 {#if trial && progress && progressShown && progressTarget}
-  <div class="banner">
+  <div class="banner instrument-panel">
     <span class="name">{trial.name}</span>
     <span class="goal">
       {format(progressShown)} / {format(progressTarget)}

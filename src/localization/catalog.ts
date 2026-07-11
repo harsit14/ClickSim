@@ -2,6 +2,7 @@ import { GUIDE_CHAPTERS } from '../content/guide'
 import { V2_UNIVERSE_BY_ID } from '../content/universes'
 import { ATLAS_FRAGMENTS, ATLAS_LAWS, ATLAS_MASTERIES, CONVERGENCES } from '../endgame/atlas'
 import { GARDEN_CLOSURES, GARDEN_LINKS, GARDEN_NODES } from '../endgame/garden'
+import { LUMEN_COMPLICITY_LINES } from '../content/lumen-complicity'
 
 export const SHELL_MESSAGES: Readonly<Record<string, string>> = {
   'shell.game-title': 'EMBER',
@@ -112,6 +113,7 @@ export function buildEnglishCatalog(): Readonly<Record<string, string>> {
     put(`garden.closure.${closure.id}.consequence`, closure.consequence)
     put(`garden.closure.${closure.id}.final-line`, closure.finalLine)
   }
+  for (const line of LUMEN_COMPLICITY_LINES) put(`lumen.complicity.${line.id}`, line.text)
 
   return Object.fromEntries(Object.entries(messages).sort(([left], [right]) => left.localeCompare(right)))
 }

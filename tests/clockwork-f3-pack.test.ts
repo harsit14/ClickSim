@@ -11,6 +11,10 @@ import {
 import { CLOCKWORK_PATENT_ITEMS } from '../src/content/universes/clockwork/archive'
 import { CLOCKWORK_MAINTENANCE_SIGNALS } from '../src/content/universes/clockwork/maintenance'
 import { validateUniversePackV2 } from '../src/render/manifest-validator'
+import {
+  CLOCKWORK_PATENT_MARKS,
+  CLOCKWORK_PATENT_MARK_BY_ID,
+} from '../src/render/clockwork/patent-marks'
 
 test('Clockwork exports complete legacy and direct V2 packs with matching stable economy IDs', () => {
   assert.equal(CLOCKWORK.id, 'clockwork')
@@ -76,6 +80,26 @@ test('Clockwork V2 carries four doctrines, twelve patents, ten Echoes, Deep tria
   assert.ok(['arrival', 'epoch', 'deep', 'beacon'].every((kind) => CLOCKWORK_V2_PACK.story.scenes.some((scene) => scene.kind === kind)))
   assert.equal(CLOCKWORK_V2_PACK.beacon.requirement.sourceId, 'u4-great-regulator')
   assert.equal(CLOCKWORK_V2_PACK.beacon.requirement.target, 1)
+})
+
+test('all twelve Patent Ledger resonances have distinct Clockwork-native diagram marks', () => {
+  assert.equal(CLOCKWORK_PATENT_MARKS.length, 12)
+  assert.deepEqual(
+    CLOCKWORK_PATENT_MARKS.map(({ id }) => id),
+    CLOCKWORK_PATENT_ITEMS.map(({ id }) => id),
+  )
+  assert.equal(CLOCKWORK_PATENT_MARK_BY_ID.size, 12)
+  assert.equal(new Set(CLOCKWORK_PATENT_MARKS.map(({ diagramPath }) => diagramPath)).size, 12)
+  assert.deepEqual(
+    Object.fromEntries(['transmission', 'prediction', 'exception'].map((family) => [
+      family,
+      CLOCKWORK_PATENT_MARKS.filter((mark) => mark.family === family).length,
+    ])),
+    { transmission: 4, prediction: 4, exception: 4 },
+  )
+  assert.ok(CLOCKWORK_PATENT_MARKS.every(({ label, diagramPath, accentPath }) => (
+    label.length > 12 && diagramPath.length > 20 && accentPath.length > 8
+  )))
 })
 
 test('Clockwork semantic audio covers every object and respects stress ceilings', () => {

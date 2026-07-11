@@ -5,6 +5,8 @@ import { compile } from 'svelte/compiler'
 import {
   LUMEN_VAULT_ITEMS,
   SUCCESSION_RELAYS,
+  lumenVaultHome,
+  lumenVaultItemsForHome,
   lumenDistillationCost,
   lumenVaultProductionMultiplier,
   successionRelayCost,
@@ -102,14 +104,50 @@ test('Concordance persistence clamps ranks, distillations, and known Vault ids',
   assert.deepEqual(clean.endgame.lumenDistillations, { emberlight: 3 })
 })
 
-test('Concordance UI exposes relays, distillation, and all persistent Vault categories accessibly', () => {
-  const componentUrl = new URL('../src/ui/EndgameHub.svelte', import.meta.url)
-  const source = readFileSync(componentUrl, 'utf8')
-  const compiled = compile(source, { filename: componentUrl.pathname, generate: 'client' })
-
-  assert.deepEqual(compiled.warnings, [])
-  assert.match(source, /One world reaches only its immediate successor/)
-  assert.match(source, /Lumen Distillery/)
-  assert.match(source, /The Lumen Vault/)
+test('Phase 8.3 partitions every Vault item into one contextual home without changing definitions', () => {
+  assert.deepEqual(lumenVaultItemsForHome('archive').map(({ id }) => id), [
+    'lore-first-margin',
+    'lore-seventh-witness',
+    'lore-name-before-lumen',
+    'lore-absent-eighth',
+    'utility-archive-resonator',
+  ])
+  assert.deepEqual(lumenVaultItemsForHome('observatory').map(({ id }) => id), [
+    'skin-aurora-archive',
+    'skin-eclipse-gold',
+    'skin-chorusglass',
+  ])
+  assert.deepEqual(lumenVaultItemsForHome('vessel-wayfinder').map(({ id }) => id), ['utility-relay-lens'])
+  assert.equal(LUMEN_VAULT_ITEMS.every((item) => lumenVaultItemsForHome(lumenVaultHome(item)).includes(item)), true)
   assert.deepEqual(new Set(LUMEN_VAULT_ITEMS.map(({ kind }) => kind)), new Set(['lore', 'skin', 'utility']))
+})
+
+test('permanent purchases compile in Deep, Observatory, Wayfinder, and the contextual Archive shelf', () => {
+  const components = [
+    '../src/ui/LumenDistillery.svelte',
+    '../src/ui/LumenVaultShelf.svelte',
+    '../src/ui/SuccessionRelayHome.svelte',
+    '../src/ui/TheDeep.svelte',
+    '../src/ui/Observatory.svelte',
+    '../src/ui/VesselPanel.svelte',
+    '../src/ui/CuriosityCabinet.svelte',
+  ]
+  for (const relative of components) {
+    const componentUrl = new URL(relative, import.meta.url)
+    const source = readFileSync(componentUrl, 'utf8')
+    const compiled = compile(source, { filename: componentUrl.pathname, generate: 'client' })
+    assert.deepEqual(compiled.warnings, [], relative)
+  }
+
+  const deep = readFileSync(new URL('../src/ui/TheDeep.svelte', import.meta.url), 'utf8')
+  const observatory = readFileSync(new URL('../src/ui/Observatory.svelte', import.meta.url), 'utf8')
+  const vessel = readFileSync(new URL('../src/ui/VesselPanel.svelte', import.meta.url), 'utf8')
+  const archive = readFileSync(new URL('../src/ui/CuriosityCabinet.svelte', import.meta.url), 'utf8')
+  const legacy = readFileSync(new URL('../src/ui/EndgameHub.svelte', import.meta.url), 'utf8')
+  assert.match(deep, /<LumenDistillery/)
+  assert.match(observatory, /<LumenVaultShelf home="observatory"/)
+  assert.match(vessel, /<SuccessionRelayHome/)
+  assert.match(vessel, /<LumenVaultShelf home="vessel-wayfinder"/)
+  assert.match(archive, /<LumenVaultShelf home="archive"/)
+  assert.doesNotMatch(legacy, /Concordance|Lumen Distillery|Lumen Vault|buySuccessionRelay|buyLumenVaultItem/)
 })

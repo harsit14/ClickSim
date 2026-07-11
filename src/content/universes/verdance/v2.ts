@@ -14,6 +14,7 @@ import type {
 } from '../types'
 import { adaptLegacyUniversePack, type UniversePackV2Supplement } from '../legacy-v2-adapter'
 import { VERDANCE_COHORT_RULES } from './cohorts'
+import type { Effect } from '../../upgrades'
 import {
   VERDANCE,
   VERDANCE_CURIOSITIES,
@@ -123,6 +124,13 @@ const OMEN_DATA = [
   ['u3-omen-amber-fruit', 'Amber Fruit', 'a layered fruit holding visible age rings', 'Harvest stored age now or let it ripen deterministically.'],
 ] as const
 
+const VERDANCE_OMEN_EFFECTS: FourTuple<readonly Effect[]> = [
+  [{ kind: 'clickMult', value: 1.3 }, { kind: 'critChance', value: 0.015 }],
+  [{ kind: 'synergyMult', value: 1.12 }, { kind: 'globalMult', value: 1.06 }],
+  [{ kind: 'globalMult', value: 1.16 }],
+  [{ kind: 'clickShare', value: 0.006 }, { kind: 'critMult', value: 1.35 }],
+]
+
 export const VERDANCE_OMEN_OBJECTS: WorldObjectManifest[] = OMEN_DATA.map(([id, name, silhouette], index) => ({
   id: `u3-object-omen-${String(index + 1).padStart(2, '0')}`,
   sourceKind: 'omen',
@@ -148,7 +156,7 @@ export const VERDANCE_OMENS = OMEN_DATA.map(([id, name, _silhouette, description
   name,
   description,
   spawn: { mode: 'random' as const, baseChance: 0.04 - index * 0.006, pityThreshold: 16 + index * 4, oddsVisibleAfterDiscovery: true },
-  rewards: [{ id: `${id}-reward`, description, exclusivePermanentPower: false as const, effects: [] }],
+  rewards: [{ id: `${id}-reward`, description, exclusivePermanentPower: false as const, effects: VERDANCE_OMEN_EFFECTS[index] }],
   object: VERDANCE_OMEN_OBJECTS[index],
   accessibilityLabel: `${name} available. ${description}`,
 })) as unknown as AtLeastFour<OmenDef>
@@ -240,10 +248,21 @@ export const VERDANCE_V2_SUPPLEMENT: UniversePackV2Supplement = {
   economy: {
     currency: { id: 'u3-sap', canonicalName: 'World Currency', localName: 'Sap', singular: 'Sap', plural: 'Sap', glyph: '❧', material: 'luminous living sap carried through a vascular network', scope: 'world' },
     doctrines: [
-      { id: 'u3-doctrine-canopy', name: 'Canopy', description: 'Favors mature high tiers and long growth cycles.', favoredMotivations: ['restorer', 'optimizer'], effects: [], visualSignature: 'a broad open canopy whose rings brighten with cohort age' },
-      { id: 'u3-doctrine-rhizome', name: 'Rhizome', description: 'Favors broad lower tiers and root-network resonance.', favoredMotivations: ['optimizer', 'restorer'], effects: [], visualSignature: 'forked root routes joining every foundational Kindling' },
-      { id: 'u3-doctrine-bloom', name: 'Bloom', description: 'Favors active pollination, rhythm, and Omens.', favoredMotivations: ['performer', 'archivist'], effects: [], visualSignature: 'a phyllotaxis bloom with four reachable pollination stations' },
-      { id: 'u3-doctrine-seedbank', name: 'Seedbank', description: 'Favors rapid Pruning, offline aging, and strong starts.', favoredMotivations: ['restorer', 'wayfinder'], effects: [], visualSignature: 'four nested seed shells preserving visible growth rings' },
+      {
+        id: 'u3-doctrine-canopy', name: 'Canopy', description: 'Favors mature high tiers and long growth cycles.', favoredMotivations: ['restorer', 'optimizer'],
+        effects: VERDANCE_GENERATORS.slice(12).map(({ id }) => ({ kind: 'genMult' as const, gen: id, value: 1.18 })),
+        visualSignature: 'a broad open canopy whose rings brighten with cohort age',
+      },
+      {
+        id: 'u3-doctrine-rhizome', name: 'Rhizome', description: 'Favors broad lower tiers and root-network resonance.', favoredMotivations: ['optimizer', 'restorer'],
+        effects: [
+          ...VERDANCE_GENERATORS.slice(0, 6).map(({ id }) => ({ kind: 'genMult' as const, gen: id, value: 1.08 })),
+          { kind: 'synergyMult', value: 1.22 },
+        ],
+        visualSignature: 'forked root routes joining every foundational Kindling',
+      },
+      { id: 'u3-doctrine-bloom', name: 'Bloom', description: 'Favors active pollination, rhythm, and Omens.', favoredMotivations: ['performer', 'archivist'], effects: [{ kind: 'clickMult', value: 1.28 }, { kind: 'critChance', value: 0.02 }], visualSignature: 'a phyllotaxis bloom with four reachable pollination stations' },
+      { id: 'u3-doctrine-seedbank', name: 'Seedbank', description: 'Favors rapid Pruning, offline aging, and strong starts.', favoredMotivations: ['restorer', 'wayfinder'], effects: [{ kind: 'globalMult', value: 1.12 }, { kind: 'clickShare', value: 0.006 }], visualSignature: 'four nested seed shells preserving visible growth rings' },
     ],
     localPrestige: {
       id: 'u3-pruning', canonicalName: 'Epoch Turn', localName: 'Pruning',
@@ -271,10 +290,10 @@ export const VERDANCE_V2_SUPPLEMENT: UniversePackV2Supplement = {
   omens: VERDANCE_OMENS,
   archive: VERDANCE_ARCHIVE,
   trials: [
-    { id: 'u3-trial-scarcity', name: 'Scarcity', historicalFailure: 'The old groves eliminated scarcity and lost the need to adapt.', rules: { sapCap: 100000 }, goal: { metricId: 'mature-cohorts', target: 12, description: 'Mature twelve cohorts under a bounded Sap reserve.' }, rewardEffects: [], accessibilityDescription: 'Resource cap and maturity are shown through text, ring count, and shape.' },
-    { id: 'u3-trial-mutation', name: 'Mutation', historicalFailure: 'Unapproved variation was pruned before it could teach the forest.', rules: { fixedGrafts: false }, goal: { metricId: 'distinct-grafts', target: 4, description: 'Complete four useful grafts without repeating a trait.' }, rewardEffects: [], accessibilityDescription: 'Every graft uses a named trait, branch shape, and text label.' },
-    { id: 'u3-trial-shade', name: 'Shade', historicalFailure: 'Perfect canopies denied every young grove a clearing.', rules: { canopyProduction: 0 }, goal: { metricId: 'root-production', target: 1e9, description: 'Reach the target through roots and understory Kindlings.' }, rewardEffects: [], accessibilityDescription: 'Disabled canopy tiers remain labeled and the active root route is high contrast.' },
-    { id: 'u3-trial-deliberate-loss', name: 'Deliberate Loss', historicalFailure: 'The civilization confused every ending with harm.', rules: { pruningRequired: true }, goal: { metricId: 'memory-seeds', target: 20, description: 'Prune mature growth deliberately and recover twenty Memory Seeds.' }, rewardEffects: [], accessibilityDescription: 'The exact pruned and retained categories are previewed before every action.' },
+    { id: 'u3-trial-scarcity', name: 'Scarcity', historicalFailure: 'The old groves eliminated scarcity and lost the need to adapt.', rules: { sapCap: 100000 }, goal: { metricId: 'mature-cohorts', target: 12, description: 'Mature twelve cohorts under a bounded Sap reserve.' }, rewardEffects: [{ kind: 'globalMult', value: 1.04 }], accessibilityDescription: 'Resource cap and maturity are shown through text, ring count, and shape.' },
+    { id: 'u3-trial-mutation', name: 'Mutation', historicalFailure: 'Unapproved variation was pruned before it could teach the forest.', rules: { fixedGrafts: false }, goal: { metricId: 'distinct-grafts', target: 4, description: 'Complete four useful grafts without repeating a trait.' }, rewardEffects: [{ kind: 'synergyMult', value: 1.06 }], accessibilityDescription: 'Every graft uses a named trait, branch shape, and text label.' },
+    { id: 'u3-trial-shade', name: 'Shade', historicalFailure: 'Perfect canopies denied every young grove a clearing.', rules: { canopyProduction: 0 }, goal: { metricId: 'root-production', target: 1e9, description: 'Reach the target through roots and understory Kindlings.' }, rewardEffects: VERDANCE_GENERATORS.slice(0, 6).map(({ id }) => ({ kind: 'genMult' as const, gen: id, value: 1.06 })), accessibilityDescription: 'Disabled canopy tiers remain labeled and the active root route is high contrast.' },
+    { id: 'u3-trial-deliberate-loss', name: 'Deliberate Loss', historicalFailure: 'The civilization confused every ending with harm.', rules: { pruningRequired: true }, goal: { metricId: 'memory-seeds', target: 20, description: 'Prune mature growth deliberately and recover twenty Memory Seeds.' }, rewardEffects: [{ kind: 'globalMult', value: 1.08 }], accessibilityDescription: 'The exact pruned and retained categories are previewed before every action.' },
   ],
   story: {
     civilizationQuestion: 'Is preservation still life if nothing is allowed to change?',

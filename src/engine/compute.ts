@@ -8,7 +8,11 @@ import {
   curiosityProductionMult,
 } from '../content/curiosities'
 import { universeById, V2_UNIVERSE_BY_ID } from '../content/universes'
-import { verdanceGeneratorCohortStatus } from '../content/universes/verdance/runtime'
+import {
+  verdanceGeneratorCohortStatus,
+  verdanceGraftProductionMultiplier,
+  verdanceGraftingStatus,
+} from '../content/universes/verdance/runtime'
 import { f4ClickMultiplier, f4RateMultiplier } from '../content/universes/f4-runtime'
 import { wayfinderProductionMult, wayfinderTideAmplitude } from '../content/wayfinder'
 import { deepProductionMult, stardustProductionMult } from '../content/repeatables'
@@ -218,9 +222,17 @@ export function unitRate(s: EcoState, def: GeneratorDef): EconomyAmount {
   const cohortMultiplier = s.activeUniverse === 'verdance'
     ? verdanceGeneratorCohortStatus(def.id, s.owned[def.id] ?? 0, s.numericLawState).multiplier
     : 1
+  const graftMultiplier = s.activeUniverse === 'verdance'
+    ? verdanceGraftProductionMultiplier(
+      def.id,
+      universeById('verdance').generators.map(({ id }) => id),
+      s.owned,
+      s.numericLawState,
+    )
+    : 1
   return multiplyAmountByNumber(
     toAmount(def.baseRate),
-    mult * (1 + synergy * synergyBonusMult(s)) * cohortMultiplier,
+    mult * (1 + synergy * synergyBonusMult(s)) * cohortMultiplier * graftMultiplier,
   )
 }
 
@@ -464,6 +476,21 @@ function generatorRateFormula(
       formulaScalar('multiplier', cohort.multiplier),
       universe.id,
     ))
+    const generatorIds = universe.generators.map(({ id }) => id)
+    const graft = verdanceGraftingStatus(generatorIds, s.owned, s.numericLawState)
+    const graftMultiplier = verdanceGraftProductionMultiplier(generator.id, generatorIds, s.owned, s.numericLawState)
+    if (graftMultiplier !== 1) {
+      generatorMultiplier *= graftMultiplier
+      const sourceName = universe.generatorById.get(graft.rootstockId)?.name ?? graft.rootstockId
+      genMultiplierInputs.push(formulaTerm(
+        `${prefix}:grafting`,
+        'universe-law',
+        'u3-grafting',
+        generator.id === graft.rootstockId ? 'Rootstock sap contribution' : `Grafted maturity from ${sourceName}`,
+        formulaScalar('multiplier', graftMultiplier),
+        universe.id,
+      ))
+    }
   }
 
   for (const record of effectSourceRecords(s)) {

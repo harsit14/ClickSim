@@ -4,29 +4,14 @@
   import { THEMES } from '../content/themes'
   import { UNIVERSES, universeV2ById, type UniverseId } from '../content/universes'
   import { WAYFINDER_NODES } from '../content/wayfinder'
-  import {
-    LUMEN_SHARD_GLYPH,
-    LUMEN_SHARD_NAME,
-    LUMEN_VAULT_ITEMS,
-    MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE,
-    SUCCESSION_RELAYS,
-    lumenDistillationCost,
-    successionRelayCost,
-    successionRelayMultiplier,
-    successionRelayRank,
-  } from '../content/legacy-exchange'
   import { format } from '../core/format'
-  import { gteAmount } from '../core/numeric/amount'
   import {
     abandonAtlasRoute,
     activateLawLoadout,
     atlasRouteReady,
     beginAtlasRoute,
-    buyLumenVaultItem,
-    buySuccessionRelay,
     chooseGardenEnding,
     completeAtlasRoute,
-    distillLumenShard,
     game,
     markGardenSceneSeen,
     saveLawLoadout,
@@ -54,10 +39,11 @@
     livedAnswers,
   } from '../endgame/garden'
   import type { AutomationProfile, LawLoadout } from '../endgame/types'
+  import GardenScene from './GardenScene.svelte'
 
   let { onclose }: { onclose: () => void } = $props()
 
-  type Tab = 'chronicle' | 'exchange' | 'loadouts' | 'atlas' | 'garden'
+  type Tab = 'chronicle' | 'loadouts' | 'atlas' | 'garden'
   let tab = $state<Tab>(game.activeAtlasRoute ? 'atlas' : game.beacons.length >= 7 ? 'garden' : game.beacons.length >= 3 ? 'atlas' : 'chronicle')
   let seed = $state(7129)
   let loadoutName = $state('New law set')
@@ -68,7 +54,6 @@
   let selectedWayfinder = $state<string[]>([])
   let importCode = $state('')
   let loadoutMessage = $state('')
-  let exchangeMessage = $state('')
   let beaconDrafts = $state<Record<string, string>>({ ...game.beaconNames })
   let dialog: HTMLDivElement
 
@@ -88,8 +73,6 @@
   const closures = $derived(availableGardenClosures(game.beacons, game.pastEndings, game.ending))
   const credits = $derived(game.gardenEnding ? gardenCredits(game.gardenEnding) : [])
   const answers = $derived(livedAnswers(game.pastEndings, game.ending))
-  const activeDistillations = $derived(Math.max(0, Math.floor(game.lumenDistillations[game.activeUniverse] ?? 0)))
-  const activeDistillationCost = $derived(lumenDistillationCost(activeDistillations))
 
   function selectTab(next: Tab) {
     tab = next
@@ -97,36 +80,6 @@
 
   function commitBeaconName(universeId: string) {
     if (setBeaconName(universeId, beaconDrafts[universeId] ?? '')) save()
-  }
-
-  function investInRelay(id: string) {
-    if (!buySuccessionRelay(id)) {
-      exchangeMessage = 'That relay can only be fed while standing in its completed source universe.'
-      return
-    }
-    exchangeMessage = 'The next universe grows stronger. The source world keeps the relay permanently.'
-    save()
-  }
-
-  function distillShard() {
-    if (!distillLumenShard()) {
-      exchangeMessage = 'This world cannot distill another shard yet.'
-      return
-    }
-    exchangeMessage = `One ${LUMEN_SHARD_NAME} joined the shared Vault.`
-    save()
-  }
-
-  function purchaseVaultItem(id: string) {
-    const item = LUMEN_VAULT_ITEMS.find((entry) => entry.id === id)
-    if (!item || !buyLumenVaultItem(id)) {
-      exchangeMessage = 'That archive piece is already owned or needs more Lumen Shards.'
-      return
-    }
-    exchangeMessage = item.kind === 'skin'
-      ? `${item.name} unlocked and equipped. It remains selectable in Options.`
-      : `${item.name} is now part of the permanent archive.`
-    save()
   }
 
   function toggleWayfinder(id: string) {
@@ -219,7 +172,8 @@
   }
 </script>
 
-<div bind:this={dialog} class="endgame" role="dialog" aria-modal="true" aria-labelledby="legacy-title" tabindex="-1">
+<div bind:this={dialog} class="endgame instrument-panel" class:garden-open={tab === 'garden'} role="dialog" aria-modal="true" aria-labelledby={tab === 'garden' ? 'garden-title' : 'legacy-title'} tabindex="-1">
+  {#if tab !== 'garden'}
   <header>
     <div>
       <span>seven worlds · one record · possible futures</span>
@@ -230,13 +184,13 @@
 
   <nav class="tabs" aria-label="Legacy sections">
     <button class:active={tab === 'chronicle'} onclick={() => selectTab('chronicle')}>Chronicle</button>
-    <button class:active={tab === 'exchange'} disabled={game.beacons.length < 1} onclick={() => selectTab('exchange')}>Concordance</button>
     <button class:active={tab === 'loadouts'} onclick={() => selectTab('loadouts')}>Law loadouts</button>
     <button class:active={tab === 'atlas'} disabled={game.beacons.length < 3} onclick={() => selectTab('atlas')}>Atlas</button>
     <button class:active={tab === 'garden'} disabled={!gardenUnlocked(game.beacons)} onclick={() => selectTab('garden')}>Garden</button>
   </nav>
+  {/if}
 
-  <div class="body">
+  <div class="body" class:garden-body={tab === 'garden'}>
     {#if tab === 'chronicle'}
       <section class="page chronicle" aria-labelledby="chronicle-title">
         <div class="section-head">
@@ -289,75 +243,6 @@
             {/each}
           </section>
         {/if}
-      </section>
-
-    {:else if tab === 'exchange'}
-      <section class="page exchange" aria-labelledby="exchange-title">
-        <div class="section-head exchange-head">
-          <div><span>completed worlds nourish what follows</span><h3 id="exchange-title">The Concordance</h3></div>
-          <div class="shard-balance" aria-label={`${game.lumenShards} Lumen Shards`}>
-            <i>{LUMEN_SHARD_GLYPH}</i><strong>{game.lumenShards}</strong><span>Lumen Shards</span>
-          </div>
-        </div>
-
-        <section class="relay-system" aria-labelledby="relay-title">
-          <div class="exchange-intro">
-            <div><span>succession relays</span><h4 id="relay-title">One world reaches only its immediate successor.</h4></div>
-            <p>After a Beacon is lit, spend that completed world's local Singularities here. Relays persist across pruning and crossing, but never skip a universe.</p>
-          </div>
-          <div class="relay-chain" aria-label="Universe succession chain">
-            {#each UNIVERSES as universe, index (universe.id)}
-              <span class:current={universe.id === game.activeUniverse} class:complete={game.beacons.includes(universe.id)}>{universe.currencyGlyph}<small>{universe.name}</small></span>
-              {#if index < UNIVERSES.length - 1}<b aria-hidden="true">→</b>{/if}
-            {/each}
-          </div>
-          <div class="relay-grid">
-            {#each SUCCESSION_RELAYS as relay (relay.id)}
-              {@const source = UNIVERSES.find((world) => world.id === relay.sourceUniverseId)}
-              {@const target = UNIVERSES.find((world) => world.id === relay.targetUniverseId)}
-              {@const rank = successionRelayRank(game.successionRelays, relay.id)}
-              {@const cost = successionRelayCost(rank)}
-              {@const canFeed = game.activeAtlasRoute === null && relay.sourceUniverseId === game.activeUniverse && game.beacons.includes(relay.sourceUniverseId) && cost !== null && gteAmount(game.singularities, cost)}
-              <article class="relay-card" class:current-source={relay.sourceUniverseId === game.activeUniverse}>
-                <div class="relay-route"><i>{source?.currencyGlyph}</i><span>feeds</span><i>{target?.currencyGlyph}</i></div>
-                <span>{source?.name} → {target?.name}</span>
-                <h5>{relay.name}</h5>
-                <p>{relay.description}</p>
-                <div class="relay-yield"><strong>rank {rank}</strong><em>×{successionRelayMultiplier(relay.targetUniverseId, game.successionRelays, game.lumenPurchases).toFixed(2)} {target?.name} production</em></div>
-                <button disabled={!canFeed} onclick={() => investInRelay(relay.id)}>
-                  {cost === null ? 'Relay mastered' : game.activeAtlasRoute ? 'Unavailable on an Atlas route' : relay.sourceUniverseId !== game.activeUniverse ? `Visit ${source?.name}` : !game.beacons.includes(relay.sourceUniverseId) ? 'Light its Beacon first' : `Feed relay · ◉ ${format(cost)}`}
-                </button>
-              </article>
-            {/each}
-          </div>
-        </section>
-
-        <section class="distillery" aria-labelledby="distillery-title">
-          <div class="distill-sigil" aria-hidden="true"><span>◉</span><b>→</b><i>{LUMEN_SHARD_GLYPH}</i></div>
-          <div><span>rare conversion · {UNIVERSES.find((world) => world.id === game.activeUniverse)?.name}</span><h4 id="distillery-title">Lumen Distillery</h4><p>Each completed universe can compress its own Deep surplus into at most {MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE} shared shards. Costs rise tenfold.</p></div>
-          <div class="distill-action"><strong>{activeDistillations}/{MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE} distilled here</strong><button disabled={game.activeAtlasRoute !== null || !game.beacons.includes(game.activeUniverse) || activeDistillationCost === null || !gteAmount(game.singularities, activeDistillationCost)} onclick={distillShard}>{activeDistillationCost === null ? 'World exhausted' : game.activeAtlasRoute ? 'Unavailable on an Atlas route' : `Distill · ◉ ${format(activeDistillationCost)}`}</button></div>
-        </section>
-
-        <section class="vault" aria-labelledby="vault-title">
-          <div class="vault-door">
-            <span>persists between every universe</span>
-            <h4 id="vault-title">The Lumen Vault</h4>
-            <p>First-time Beacons and first Atlas completions also leave one shard. Nothing purchased here is pruned or left behind.</p>
-          </div>
-          <div class="vault-grid">
-            {#each LUMEN_VAULT_ITEMS as item (item.id)}
-              {@const owned = game.lumenPurchases.includes(item.id)}
-              <article class:owned class={`kind-${item.kind}`}>
-                <div><i>{item.glyph}</i><span>{item.kind}</span></div>
-                <h5>{item.name}</h5>
-                <p>{item.description}</p>
-                {#if owned && item.lore}<blockquote>{item.lore}</blockquote>{/if}
-                <button disabled={owned || game.lumenShards < item.cost} onclick={() => purchaseVaultItem(item.id)}>{owned ? 'Archived' : `${LUMEN_SHARD_GLYPH} ${item.cost} · unlock`}</button>
-              </article>
-            {/each}
-          </div>
-        </section>
-        {#if exchangeMessage}<p class="exchange-message" role="status">{exchangeMessage}</p>{/if}
       </section>
 
     {:else if tab === 'loadouts'}
@@ -487,65 +372,36 @@
       </section>
 
     {:else}
-      <section class="page garden" aria-labelledby="garden-title">
-        <div class="section-head">
-          <div><span>authored closure · no eighth economy</span><h3 id="garden-title">The Garden</h3></div>
-          <strong>seven Beacons in relation</strong>
-        </div>
-
-        <div class="garden-map" role="img" aria-label="Seven restored universes connected through the Garden">
-          {#each GARDEN_NODES as node (node.universeId)}
-            <article class={node.universeId}>
-              <span>{UNIVERSES.find((universe) => universe.id === node.universeId)?.currencyGlyph}</span>
-              <h4>{node.name}</h4>
-              <p>{node.offering}</p>
-              <small>{node.question}</small>
-            </article>
-          {/each}
-        </div>
-        <div class="garden-links">
-          {#each GARDEN_LINKS as link (link.id)}
-            <div><strong>{link.name}</strong><span>{link.from} ↔ {link.to}</span><p>{link.result}</p></div>
-          {/each}
-        </div>
-
-        {#if game.gardenEnding}
-          <section class="credits" aria-live="polite">
-            {#each credits as line, index}
-              {#if index === 0}<h4>{line}</h4>{:else}<p>{line}</p>{/if}
-            {/each}
-            <button class="primary" onclick={() => selectTab('atlas')}>Continue into the Atlas</button>
-          </section>
-        {:else}
-          <section class="closures">
-            <div><span>answers lived</span><strong>{answers.join(' · ') || 'none recorded'}</strong></div>
-            {#each closures as closure (closure.id)}
-              <article>
-                <h4>{closure.name}</h4>
-                <p>{closure.consequence}</p>
-                <em>{closure.finalLine}</em>
-                <button onclick={() => chooseClosure(closure.id)}>Choose this closure</button>
-              </article>
-            {/each}
-            {#if answers.length < 3}
-              <p class="continue-hint">“Continue” appears after Warden, Hunger, and Companion have each been lived across Remembrances.</p>
-            {/if}
-          </section>
-        {/if}
-      </section>
+      <span class="garden-status" aria-live="polite">{game.gardenEnding ? 'The Garden has received your answer.' : ''}</span>
+      <GardenScene
+        nodes={GARDEN_NODES}
+        links={GARDEN_LINKS}
+        {closures}
+        {answers}
+        ending={game.gardenEnding}
+        {credits}
+        reducedMotion={game.motionPreference === 'reduced'}
+        {onclose}
+        onreturn={() => selectTab('chronicle')}
+        onchoose={chooseClosure}
+        oncontinueatlas={() => selectTab('atlas')}
+      />
     {/if}
   </div>
 </div>
 
 <style>
   .endgame { position: fixed; inset: 3.5rem 5vw 3.2rem; z-index: 14; display: grid; grid-template-rows: auto auto 1fr; color: var(--gold); background: color-mix(in srgb, var(--panel) 94%, #02050b); border: 1px solid color-mix(in srgb, var(--amber) 28%, transparent); border-radius: 1.2rem; box-shadow: 0 2rem 8rem rgba(0,0,0,.72), inset 0 1px rgba(255,255,255,.04); overflow: hidden; }
+  .endgame.garden-open { inset: 0; display: block; border: 0; border-radius: 0; background: #05070b; box-shadow: none; }
   header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem .75rem; border-bottom: 1px solid color-mix(in srgb, var(--amber) 16%, transparent); }
-  header span, .section-head span, article > span, .closures > div span { display: block; color: var(--dim); font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; }
+  header span, .section-head span, article > span { display: block; color: var(--dim); font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; }
   h2, h3, h4, h5, p { margin: 0; } h2 { margin-top: .12rem; font: italic 1.3rem Georgia, serif; } h3 { font: italic 1.5rem Georgia, serif; }
   button, input, select { font: inherit; } button { color: inherit; background: rgba(255,255,255,.035); border: 1px solid color-mix(in srgb, var(--amber) 22%, transparent); border-radius: .55rem; padding: .48rem .7rem; cursor: pointer; } button:hover:not(:disabled), button:focus-visible { border-color: var(--amber); background: color-mix(in srgb, var(--amber) 11%, transparent); } button:disabled { opacity: .38; cursor: not-allowed; }
   .close { width: 2.1rem; height: 2.1rem; padding: 0; }
   .tabs { display: flex; gap: .3rem; padding: .55rem 1.1rem; background: rgba(0,0,0,.16); border-bottom: 1px solid rgba(255,255,255,.05); } .tabs button { border-color: transparent; color: var(--dim); } .tabs button.active { color: var(--gold); border-color: color-mix(in srgb, var(--amber) 48%, transparent); background: color-mix(in srgb, var(--amber) 10%, transparent); }
   .body { overflow: auto; } .page { max-width: 76rem; margin: 0 auto; padding: 1.3rem 1.5rem 3rem; }
+  .body.garden-body { width: 100%; height: 100%; overflow: hidden; }
+  .garden-status { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   .section-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 1rem; } .section-head strong { color: color-mix(in srgb, var(--amber) 76%, white); font-size: .75rem; }
   .world-records { display: grid; grid-template-columns: repeat(7, minmax(8rem,1fr)); gap: .45rem; } .world-records article { min-height: 8.3rem; padding: .7rem; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.06); border-radius: .8rem; } .world-records article.lit { border-color: color-mix(in srgb, var(--amber) 30%, transparent); } .world-records i { font-size: 1.2rem; font-style: normal; } .world-records strong { display: block; min-height: 2.5rem; margin-top: .28rem; color: var(--dim); font-size: .64rem; font-weight: 500; line-height: 1.35; } .world-records label { display: block; margin-top: .55rem; } label span, label { color: var(--dim); font-size: .68rem; } input, select { width: 100%; box-sizing: border-box; margin-top: .25rem; padding: .5rem; color: var(--gold); background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.09); border-radius: .45rem; }
   .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; padding: 0; margin: 1rem 0 0; list-style: none; } .timeline li { padding: .75rem; background: rgba(255,255,255,.025); border-left: 2px solid color-mix(in srgb, var(--amber) 42%, transparent); } .timeline li > span { color: var(--amber); font-size: .6rem; text-transform: uppercase; letter-spacing: .12em; } .timeline p { margin: .25rem 0; color: var(--dim); font: italic .78rem Georgia,serif; } time { color: color-mix(in srgb, var(--dim) 68%, transparent); font-size: .58rem; }
@@ -554,28 +410,8 @@
   .importer { display: grid; grid-template-columns: 1fr auto; gap: .6rem; align-items: end; margin-top: .8rem; } .message { margin-top: .55rem; color: var(--amber); font-size: .75rem; }
   .saved-loadouts { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; margin-top: 1rem; } .saved-loadouts article { display: grid; gap: .5rem; padding: .75rem; border: 1px solid rgba(255,255,255,.07); border-radius: .7rem; } .saved-loadouts article.active { border-color: var(--amber); box-shadow: inset 3px 0 var(--amber); } .empty-copy { color: var(--dim); font: italic .85rem Georgia,serif; }
   .seed-control { display: flex; align-items: end; gap: .6rem; } .seed-control label { width: 16rem; } .route-card, .active-route { margin-top: .8rem; padding: 1.1rem; background: radial-gradient(circle at 50% 0%, color-mix(in srgb,var(--amber) 10%,transparent), transparent 45%), rgba(0,0,0,.2); border: 1px solid color-mix(in srgb,var(--amber) 25%,transparent); border-radius: 1rem; } .route-card h4, .active-route h4 { margin: .3rem 0; font: italic 1.25rem Georgia,serif; } .route-laws { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; margin: 1rem 0; } .route-laws div { padding: .7rem; background: rgba(255,255,255,.025); border-top: 2px solid color-mix(in srgb,var(--amber) 36%,transparent); } .route-laws div > span { display: block; margin-bottom: .18rem; } .route-laws div > strong { display: block; } .route-laws p, blockquote, .mastery, .active-route p { margin: .3rem 0; color: var(--dim); font-size: .75rem; line-height: 1.45; } blockquote { padding: .8rem; border-left: 2px solid var(--amber); } blockquote strong { display: block; color: var(--gold); }
+  .route-laws div { display: grid; align-content: start; gap: .2rem; min-width: 0; }
+  .route-laws div > span { margin: 0; line-height: 1.2; overflow-wrap: anywhere; }
+  .route-laws div > strong { line-height: 1.25; overflow-wrap: anywhere; }
   .convergences { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; } .convergences > h4 { grid-column: 1/-1; } .convergences article { padding: .8rem; opacity: .52; border: 1px solid rgba(255,255,255,.06); border-radius: .7rem; } .convergences article.unlocked { opacity: 1; border-color: color-mix(in srgb,var(--amber) 28%,transparent); } .convergences p, .convergences small { display: block; margin-top: .35rem; color: var(--dim); font-size: .7rem; line-height: 1.4; }
-  .garden-map { display: grid; grid-template-columns: repeat(4,1fr); gap: .55rem; } .garden-map article { min-height: 7rem; padding: .85rem; background: radial-gradient(circle at 15% 15%, color-mix(in srgb,var(--amber) 10%,transparent), transparent 42%), rgba(0,0,0,.2); border: 1px solid rgba(255,255,255,.07); border-radius: 50% 50% .8rem .8rem / 1rem 1rem .8rem .8rem; } .garden-map article:last-child { grid-column: 2 / 4; } .garden-map article > span { font-size: 1.1rem; } .garden-map p, .garden-map small { display: block; margin-top: .35rem; color: var(--dim); font-size: .68rem; line-height: 1.35; }
-  .garden-links { display: grid; grid-template-columns: repeat(4,1fr); gap: .4rem; margin-top: .7rem; } .garden-links div { padding: .6rem; border-left: 2px solid color-mix(in srgb,var(--amber) 36%,transparent); background: rgba(255,255,255,.02); } .garden-links span, .garden-links p { display: block; margin-top: .2rem; color: var(--dim); font-size: .64rem; }
-  .closures { display: grid; grid-template-columns: repeat(4,1fr); gap: .55rem; margin-top: 1rem; } .closures > div, .continue-hint { grid-column: 1/-1; } .closures article { display: flex; flex-direction: column; gap: .55rem; padding: .85rem; border: 1px solid color-mix(in srgb,var(--amber) 20%,transparent); border-radius: .8rem; } .closures article p { color: var(--dim); font-size: .72rem; line-height: 1.45; } .closures article em { flex: 1; font: italic .78rem Georgia,serif; } .continue-hint { color: var(--dim); font: italic .8rem Georgia,serif; }
-  .credits { max-width: 46rem; margin: 1.2rem auto; padding: 1.4rem; text-align: center; background: radial-gradient(circle, color-mix(in srgb,var(--amber) 10%,transparent), transparent 65%); border-block: 1px solid color-mix(in srgb,var(--amber) 20%,transparent); } .credits p { margin: .65rem 0; color: var(--dim); font: italic .85rem Georgia,serif; }
-  .exchange { --vault-line: color-mix(in srgb, var(--amber) 28%, transparent); }
-  .exchange-head { align-items: center; }
-  .shard-balance { display: grid; grid-template-columns: auto auto; column-gap: .55rem; align-items: center; min-width: 9.5rem; padding: .65rem .9rem; background: radial-gradient(circle at 18% 50%, color-mix(in srgb,var(--amber) 20%,transparent), transparent 46%), rgba(0,0,0,.22); border: 1px solid var(--vault-line); border-radius: 4rem; }
-  .shard-balance i { grid-row: 1 / 3; font-size: 1.75rem; font-style: normal; text-shadow: 0 0 1.2rem var(--amber); } .shard-balance strong { font-size: 1.15rem; line-height: 1; } .shard-balance span { font-size: .55rem; color: var(--dim); letter-spacing: .1em; text-transform: uppercase; }
-  .relay-system { padding: 1rem; background: linear-gradient(145deg, color-mix(in srgb,var(--amber) 7%,transparent), transparent 38%), rgba(0,0,0,.18); border: 1px solid var(--vault-line); border-radius: 1rem; }
-  .exchange-intro { display: flex; align-items: end; justify-content: space-between; gap: 2rem; } .exchange-intro h4, .distillery h4, .vault-door h4 { margin-top: .18rem; font: italic 1.08rem Georgia,serif; } .exchange-intro p { max-width: 38rem; color: var(--dim); font-size: .72rem; line-height: 1.5; }
-  .relay-chain { display: grid; grid-template-columns: repeat(13,auto); align-items: center; justify-content: center; gap: .34rem; margin: 1rem 0; padding: .7rem; background: rgba(0,0,0,.24); border-block: 1px solid rgba(255,255,255,.05); }
-  .relay-chain > span { display: grid; place-items: center; width: 3.35rem; height: 3.35rem; color: var(--dim); border: 1px solid rgba(255,255,255,.08); border-radius: 50%; font-size: 1rem; } .relay-chain > span small { max-width: 4rem; font-size: .45rem; letter-spacing: .04em; white-space: nowrap; } .relay-chain > span.complete { color: var(--gold); border-color: var(--vault-line); box-shadow: 0 0 1rem color-mix(in srgb,var(--amber) 9%,transparent); } .relay-chain > span.current { outline: 1px solid var(--amber); outline-offset: 3px; } .relay-chain b { color: color-mix(in srgb,var(--amber) 52%,transparent); font-weight: 400; }
-  .relay-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; }
-  .relay-card { display: flex; flex-direction: column; min-height: 13rem; padding: .8rem; background: rgba(1,4,9,.34); border: 1px solid rgba(255,255,255,.065); border-radius: .75rem; } .relay-card.current-source { border-color: color-mix(in srgb,var(--amber) 48%,transparent); box-shadow: inset 0 2px color-mix(in srgb,var(--amber) 45%,transparent); } .relay-card h5 { margin: .18rem 0 .32rem; font: 700 .92rem Georgia,serif; } .relay-card p { flex: 1; color: var(--dim); font-size: .68rem; line-height: 1.45; }
-  .relay-route { display: flex; align-items: center; gap: .4rem; align-self: flex-end; } .relay-route i { display: grid; place-items: center; width: 1.45rem; height: 1.45rem; color: var(--amber); background: color-mix(in srgb,var(--amber) 8%,transparent); border: 1px solid var(--vault-line); border-radius: 50%; font-style: normal; } .relay-route span { color: var(--dim); font-size: .5rem; letter-spacing: .1em; text-transform: uppercase; }
-  .relay-yield { display: flex; justify-content: space-between; gap: .4rem; margin: .7rem 0 .45rem; padding-top: .5rem; border-top: 1px solid rgba(255,255,255,.05); } .relay-yield strong { color: var(--amber); font-size: .65rem; text-transform: uppercase; } .relay-yield em { color: var(--gold); font-size: .64rem; font-style: normal; }
-  .relay-card button, .vault-grid button, .distill-action button { width: 100%; font-size: .68rem; }
-  .distillery { display: grid; grid-template-columns: auto 1fr 13rem; align-items: center; gap: 1rem; margin-top: .75rem; padding: 1rem; background: radial-gradient(circle at 10% 50%, color-mix(in srgb,var(--amber) 13%,transparent), transparent 22%), rgba(0,0,0,.2); border: 1px solid var(--vault-line); border-radius: 1rem; } .distillery p, .vault-door p { margin-top: .28rem; color: var(--dim); font-size: .7rem; line-height: 1.45; } .distill-sigil { display: flex; align-items: center; gap: .45rem; font-size: 1.2rem; } .distill-sigil i { color: var(--gold); font-size: 1.7rem; font-style: normal; text-shadow: 0 0 1rem var(--amber); } .distill-sigil b { color: var(--dim); font-size: .8rem; } .distill-action strong { display: block; margin-bottom: .45rem; color: var(--dim); font-size: .62rem; text-align: center; text-transform: uppercase; letter-spacing: .08em; }
-  .vault { margin-top: .75rem; padding: 1rem; background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb,var(--amber) 11%,transparent), transparent 35%), rgba(0,0,0,.25); border: 1px solid var(--vault-line); border-radius: 1rem; }
-  .vault-door { max-width: 42rem; margin: 0 auto 1rem; text-align: center; } .vault-door > span { color: var(--dim); font-size: .58rem; letter-spacing: .16em; text-transform: uppercase; }
-  .vault-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; } .vault-grid article { display: flex; flex-direction: column; min-height: 10.5rem; padding: .85rem; background: linear-gradient(145deg, rgba(255,255,255,.025), transparent 45%); border: 1px solid rgba(255,255,255,.07); border-radius: .75rem; } .vault-grid article.owned { border-color: var(--vault-line); } .vault-grid article > div { display: flex; justify-content: space-between; align-items: center; } .vault-grid article i { font-size: 1.4rem; font-style: normal; text-shadow: 0 0 1rem color-mix(in srgb,var(--amber) 55%,transparent); } .vault-grid article h5 { margin: .35rem 0; font: 700 .9rem Georgia,serif; } .vault-grid article p { flex: 1; color: var(--dim); font-size: .68rem; line-height: 1.45; } .vault-grid article blockquote { margin: .55rem 0; padding: .55rem; color: var(--gold); background: color-mix(in srgb,var(--amber) 5%,transparent); font: italic .67rem/1.45 Georgia,serif; } .vault-grid .kind-lore { box-shadow: inset 3px 0 color-mix(in srgb,var(--amber) 28%,transparent); } .vault-grid .kind-skin { box-shadow: inset 3px 0 color-mix(in srgb,#d9a7ff 34%,transparent); } .vault-grid .kind-utility { box-shadow: inset 3px 0 color-mix(in srgb,#88efff 32%,transparent); }
-  .exchange-message { position: sticky; bottom: .5rem; margin: .8rem auto 0; width: fit-content; padding: .6rem 1rem; color: var(--gold); background: color-mix(in srgb,var(--panel) 96%,black); border: 1px solid var(--amber); border-radius: 2rem; box-shadow: 0 .5rem 2rem rgba(0,0,0,.6); font-size: .72rem; }
-  @media (max-width: 980px) { .relay-grid, .vault-grid { grid-template-columns: repeat(2,1fr); } .relay-chain { overflow-x: auto; justify-content: start; } .distillery { grid-template-columns: auto 1fr; } .distill-action { grid-column: 1 / -1; } }
 </style>

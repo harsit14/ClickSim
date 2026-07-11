@@ -111,13 +111,24 @@
 
 <style>
   .hud {
+    position: relative;
+    isolation: isolate;
     text-align: center;
     animation: fade-in 1.6s ease both;
     pointer-events: none;
   }
+  .hud::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -1.1rem -3.2rem -0.75rem;
+    background: radial-gradient(ellipse, color-mix(in srgb, var(--bg) 72%, transparent) 0 22%, transparent 72%);
+    pointer-events: none;
+  }
   .light {
-    font-size: 2.1rem;
-    font-weight: 650;
+    font-size: clamp(2.3rem, 3.45vw, 2.75rem);
+    line-height: 1;
+    font-weight: 700;
     letter-spacing: 0;
     font-variant-numeric: tabular-nums;
     color: var(--gold);
@@ -130,8 +141,9 @@
     color: var(--amber);
   }
   .rate {
-    margin-top: 0.15rem;
-    font-size: 0.85rem;
+    margin-top: 0.32rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
     color: var(--dim);
     font-variant-numeric: tabular-nums;
     animation: fade-in-plain 1s ease both;

@@ -1,11 +1,13 @@
 <script lang="ts">
   import { availableUpgrades } from '../engine/compute'
-  import { describeEffect } from '../content/upgrades'
+  import { describeEffect, type UpgradeDef } from '../content/upgrades'
   import { game, hasUi, buyUpgrade } from '../engine/game.svelte'
   import { universeById } from '../content/universes'
   import { format } from '../core/format'
   import { playBuy } from '../audio/sfx'
   import { amountFromNumber, ltAmount } from '../core/numeric/amount'
+  import SetPieceArt from './SetPieceArt.svelte'
+  import { emberlightSetPieceStage } from '../render/emberlight/set-piece-registry'
 
   const SHOWN = 9
   const available = $derived(hasUi('upgrades') ? availableUpgrades(game) : [])
@@ -29,6 +31,12 @@
       previewId = null
     }
   }
+
+  function upgradeGeneratorId(upgrade: UpgradeDef): string {
+    const generatorEffect = upgrade.effects.find((effect) => effect.kind === 'genMult' || effect.kind === 'synergy')
+    if (generatorEffect?.kind === 'genMult' || generatorEffect?.kind === 'synergy') return generatorEffect.gen
+    return upgrade.unlock.gen ?? 'spark'
+  }
 </script>
 
 {#if shown.length > 0}
@@ -41,6 +49,9 @@
   >
     <div class="bar">
       {#each shown as u (u.id)}
+        {@const artifact = game.activeUniverse === 'emberlight'
+          ? emberlightSetPieceStage(`ember-kindling-${upgradeGeneratorId(u)}`)
+          : null}
         <button
           class="up"
           class:previewing={previewId === u.id}
@@ -53,7 +64,11 @@
           onfocus={() => (previewId = u.id)}
           onclick={() => tryBuy(u.id)}
         >
-          <span class="glyph">{u.glyph}</span>
+          {#if artifact}
+            <span class="artifact-icon"><SetPieceArt stage={artifact} monochrome /></span>
+          {:else}
+            <span class="glyph">{u.glyph}</span>
+          {/if}
         </button>
       {/each}
       {#if overflow > 0}
@@ -97,12 +112,12 @@
     height: 2.4rem;
     display: grid;
     place-items: center;
-    background: hsla(var(--hue), 70%, 55%, 0.12);
+    background: color-mix(in srgb, var(--amber) 6%, hsla(var(--hue), 70%, 55%, 0.08));
     border: 1px solid hsla(var(--hue), 85%, 65%, 0.55);
     border-radius: 10px;
     cursor: pointer;
     padding: 0;
-    box-shadow: 0 0 12px hsla(var(--hue), 90%, 60%, 0.25);
+    box-shadow: inset 0 0 1rem color-mix(in srgb, var(--amber) 12%, transparent), 0 0 12px hsla(var(--hue), 90%, 60%, 0.18);
     transition: transform 0.08s, box-shadow 0.15s;
   }
   .up:not(.unaffordable):hover {
@@ -114,15 +129,30 @@
     box-shadow: 0 0 20px hsla(var(--hue), 90%, 60%, 0.45);
   }
   .up.unaffordable {
-    opacity: 0.4;
-    box-shadow: none;
+    opacity: 1;
+    color: color-mix(in srgb, var(--text) 45%, var(--bg));
+    background:
+      linear-gradient(128deg, transparent 0 47%, color-mix(in srgb, var(--dim) 9%, transparent) 48% 50%, transparent 51%) 0 0 / 1.5rem 1.5rem,
+      color-mix(in srgb, var(--bg) 86%, var(--panel));
+    border-color: color-mix(in srgb, var(--dim) 12%, transparent);
+    box-shadow: inset 0 0 0.9rem rgba(0, 0, 0, 0.28);
     cursor: default;
   }
+  .up.unaffordable .artifact-icon,
+  .up.unaffordable .glyph { color: color-mix(in srgb, var(--dim) 45%, var(--bg)); filter: none; }
   .glyph {
     font-size: 0.95rem;
     font-weight: 700;
     color: hsl(var(--hue), 90%, 72%);
   }
+  .artifact-icon {
+    width: 1.32rem;
+    height: 1.32rem;
+    color: hsl(var(--hue), 90%, 72%);
+    filter: drop-shadow(0 0 0.25rem hsla(var(--hue), 90%, 60%, 0.36));
+    animation: artifact-glint 560ms ease-out both;
+  }
+  @keyframes artifact-glint { from { opacity: 0.25; transform: scale(0.65); filter: brightness(2.2); } to { opacity: 1; transform: scale(1); } }
   .detail {
     display: flex;
     flex-direction: column;
@@ -161,7 +191,7 @@
     font-size: 0.8rem;
     color: var(--dim);
   }
-  @media (max-width: 720px) {
+  @media (max-width: 800px) {
     .bar {
       overflow-x: auto;
       justify-content: flex-start;

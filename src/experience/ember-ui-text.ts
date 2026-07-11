@@ -19,6 +19,8 @@ const COPY: Readonly<Record<string, string>> = {
   'goal-lens.slot.now': 'Next useful',
   'goal-lens.slot.soon': 'Next discovery',
   'goal-lens.slot.pinned': 'Pinned ambition',
+  'goal-lens.stopping-point': 'Good stopping point: after {goal}. Progress continues while you are away.',
+  'goal-lens.stopping-point-now': 'This is a good stopping point. Progress continues while you are away.',
   'goal-lens.reason.affordable-kindling': 'Affordable now; adds {rate} per second.',
   'goal-lens.reason.reachable-kindling': 'Nearest meaningful Kindling purchase.',
   'goal-lens.reason.discovery': 'The next unseen Kindling is taking shape.',

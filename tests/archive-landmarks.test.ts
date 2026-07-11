@@ -7,8 +7,10 @@ import { TIDEFALL_V2_PACK } from '../src/content/universes/tidefall-v2'
 import type { UniversePackV2 } from '../src/content/universes/types'
 import {
   ARCHIVE_LANDMARK_SLOTS,
+  archiveHintPlacement,
   planArchiveLandmarks,
 } from '../src/render/archive-landmarks'
+import { hudClearanceRect, rectsIntersect } from '../src/render/hud-clearance'
 import { archiveLandmarkDescriptorsFor } from '../src/render/archive-landmark-registry'
 import type {
   ArchiveLandmarkPresentationDescriptor,
@@ -179,6 +181,48 @@ test('all seven completed Archives render all twelve records with the collection
       assert.deepEqual(plan.landmarks.flatMap(({ recordIds: ids }) => ids).sort(), [...recordIds].sort())
       assert.equal(new Set(plan.landmarks.map(({ slot }) => slot.x)).size, 12, `${universeId}/${mode} aligned x positions`)
       assert.equal(new Set(plan.landmarks.map(({ slot }) => slot.y)).size, 12, `${universeId}/${mode} aligned y positions`)
+    }
+  }
+})
+
+test('every Archive tooltip opens away from the shared HUD in every universe', () => {
+  const viewport = { width: 1280, height: 720 }
+  const topUiClearance = { x: (viewport.width - 704) / 2, y: 14, width: 704, height: 306 }
+  const hudBottom = topUiClearance.y + topUiClearance.height
+  const hintHeight = 7.2 * 16
+  const anchorOffset = (3.15 * 16) / 2 + 0.75 * 16
+
+  for (const [universeId, pack] of V2_UNIVERSE_BY_ID) {
+    const recordIds = pack.archive.records.map(({ id }) => id)
+    const plan = planArchiveLandmarks(
+      pack,
+      recordIds,
+      archiveLandmarkDescriptorsFor(universeId),
+      'standard',
+      viewport,
+      topUiClearance,
+    )
+    for (const { slot } of plan.landmarks) {
+      const landmarkRect = {
+        x: slot.x * viewport.width - 28,
+        y: slot.y * viewport.height - 28,
+        width: 56,
+        height: 56,
+      }
+      assert.equal(
+        rectsIntersect(landmarkRect, topUiClearance),
+        false,
+        `${universeId}/${slot.id} landmark entered the measured HUD`,
+      )
+      const anchorY = slot.y * viewport.height
+      const placement = archiveHintPlacement(slot, viewport, hudBottom)
+      const hintTop = placement === 'above'
+        ? anchorY - anchorOffset - hintHeight
+        : anchorY + anchorOffset
+      assert.ok(
+        hintTop >= hudBottom,
+        `${universeId}/${slot.id} ${placement} tooltip entered the HUD: ${hintTop} < ${hudBottom}`,
+      )
     }
   }
 })

@@ -112,8 +112,8 @@ export interface FutureUniverseSpec {
   readonly visualMaterials: readonly string[]
   readonly primarySilhouettes: readonly string[]
   readonly economy: {
-    readonly costScales: readonly number[]
-    readonly rateScales: readonly number[]
+    readonly baseCosts: readonly number[]
+    readonly baseRates: readonly number[]
     readonly costMultiplier: number
   }
   readonly signatureUpgrades: (generators: readonly GeneratorDef[]) => readonly UpgradeDef[]
@@ -152,16 +152,6 @@ export interface FutureUniverseSpec {
   }[]
 }
 
-const BASE_COSTS = [
-  15, 180, 2_200, 26_000, 320_000, 4e6, 51e6, 650e6, 8.2e9,
-  105e9, 1.6e12, 27e12, 450e12, 8e15, 150e15, 3e18, 60e18, 1.3e21,
-] as const
-
-const BASE_RATES = [
-  0.28, 2.7, 23, 205, 1_750, 14_700, 123_000, 1.03e6, 8.8e6,
-  74e6, 625e6, 5.3e9, 45e9, 382e9, 3.2e12, 27.5e12, 235e12, 2.05e15,
-] as const
-
 const ARCHIVE_COSTS = [1e6, 5e6, 25e6, 1e8, 5e8, 2e9, 1e10, 1e11, 1e12, 1e13, 1e14, 1e15] as const
 const OWNERSHIP_THRESHOLDS = [1, 10, 25, 50, 100] as const
 const OWNERSHIP_LABELS = ['single specimen', 'organized array', 'interacting network', 'world-shaping system', 'named infrastructure'] as const
@@ -185,8 +175,8 @@ function makeGenerator(spec: FutureUniverseSpec, seed: FutureKindlingSeed, index
     id: `${spec.prefix}-kindling-${String(index + 1).padStart(2, '0')}`,
     name: seed.name,
     flavor: seed.flavor,
-    baseCost: Math.round(BASE_COSTS[index] * spec.economy.costScales[index]),
-    baseRate: BASE_RATES[index] * spec.economy.rateScales[index],
+    baseCost: spec.economy.baseCosts[index],
+    baseRate: spec.economy.baseRates[index],
     costMult: spec.economy.costMultiplier,
     tier: index + 1,
     hue: (spec.palette.accentHue + index * 13) % 360,
@@ -627,8 +617,12 @@ export function createFutureUniversePack(spec: FutureUniverseSpec): {
   if (spec.omens.length < 4) throw new TypeError(`${spec.id} requires at least four Omens.`)
   if (spec.doctrines.length !== 4) throw new TypeError(`${spec.id} requires exactly four doctrines.`)
   if (spec.story.length !== 10) throw new TypeError(`${spec.id} requires exactly ten core Echoes.`)
-  if (spec.economy.costScales.length !== 18 || spec.economy.rateScales.length !== 18) {
-    throw new TypeError(`${spec.id} requires eighteen authored cost and rate scales.`)
+  if (spec.economy.baseCosts.length !== 18 || spec.economy.baseRates.length !== 18) {
+    throw new TypeError(`${spec.id} requires eighteen authored cost and rate values.`)
+  }
+  if (spec.economy.baseCosts.some((value) => !Number.isFinite(value) || value <= 0)
+    || spec.economy.baseRates.some((value) => !Number.isFinite(value) || value <= 0)) {
+    throw new TypeError(`${spec.id} requires finite positive authored costs and rates.`)
   }
   if (!Number.isFinite(spec.economy.costMultiplier) || spec.economy.costMultiplier <= 1) {
     throw new TypeError(`${spec.id} requires a finite generator cost multiplier above one.`)

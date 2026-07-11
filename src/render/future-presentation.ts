@@ -9,6 +9,7 @@ import type {
 } from './presentation-contract'
 
 const THRESHOLDS = [1, 10, 25, 50, 100] as const
+const FROZEN_LEGACY_USERS = new Set(['prismata', 'tempest', 'canticle'])
 
 export interface FuturePresentationGrammar {
   readonly palette: UniversePresentation['palette']
@@ -66,10 +67,14 @@ function descriptor(object: WorldObjectManifest, grammar: FuturePresentationGram
   }
 }
 
+/** @deprecated Frozen compatibility bridge for the three existing F4 chamber pieces. */
 export function createFuturePresentation(
   pack: UniversePackV2,
   grammar: FuturePresentationGrammar,
 ): UniversePresentation {
+  if (!FROZEN_LEGACY_USERS.has(pack.id)) {
+    throw new TypeError(`${pack.id} must register authored set-piece paths; generic primitive stacking is frozen.`)
+  }
   return {
     universeId: pack.id,
     palette: grammar.palette,

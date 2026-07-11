@@ -34,6 +34,7 @@
   const titleId = $derived(`${id}-title`)
   const chartId = $derived(`${id}-chart`)
   const primaryRecommendation = $derived(model.result.now ?? model.result.soon ?? model.result.pinned)
+  const stoppingRecommendation = $derived(model.result.soon ?? model.result.now)
   const lensGlyph = $derived(
     universeId === 'tidefall' ? '≈'
       : universeId === 'verdance' ? '❧'
@@ -64,7 +65,7 @@
 
 {#if model.visibility === 'collapsed'}
   <aside
-    class="goal-lens rhythm-state reduced-motion-safe"
+    class="goal-lens instrument-panel rhythm-state reduced-motion-safe"
     data-universe={universeId}
     aria-label={resolveText('goal-lens.title')}
     data-state="active-rhythm-collapsed"
@@ -77,7 +78,7 @@
   </aside>
 {:else if model.visibility === 'expanded'}
   <section
-    class="goal-lens reduced-motion-safe"
+    class="goal-lens instrument-panel reduced-motion-safe"
     class:disclosed
     aria-labelledby={titleId}
     data-universe={universeId}
@@ -167,6 +168,13 @@
             {/each}
           </div>
         {/if}
+
+        <p class="stopping-point">
+          <span aria-hidden="true">◇</span>
+          {stoppingRecommendation
+            ? resolveText('goal-lens.stopping-point', { goal: goalLabel(stoppingRecommendation) })
+            : resolveText('goal-lens.stopping-point-now')}
+        </p>
       </div>
     {/if}
   </section>
@@ -320,6 +328,18 @@
     font-size: 1.1rem;
     opacity: 0.72;
   }
+  .stopping-point {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.45rem;
+    align-items: start;
+    margin: 0.7rem 0 0;
+    padding-top: 0.62rem;
+    color: var(--dim, #c4bdaf);
+    border-top: 1px solid color-mix(in srgb, var(--lens-accent) 16%, transparent);
+    font: 420 0.68rem/1.4 var(--font-interface, system-ui, sans-serif);
+  }
+  .stopping-point span { color: var(--lens-accent); }
   .chart {
     padding: 0.15rem 0.75rem 0.75rem 3.75rem;
     animation: chart-reveal 160ms ease-out both;

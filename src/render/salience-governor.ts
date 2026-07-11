@@ -14,6 +14,8 @@ export interface SalienceContext {
   readonly capacity: number
   readonly attentionBudget: UniverseVisualManifest['attentionBudget']
   readonly zoneInteractiveLimits: Readonly<Record<ScreenZone, number>>
+  readonly minimumVoidFraction?: number
+  readonly baseLuminousCoverage?: number
 }
 
 export interface SalienceCandidate {
@@ -38,6 +40,7 @@ export type SalienceHiddenReason =
   | 'zone-interactive-budget'
   | 'attention-budget'
   | 'quality-capacity'
+  | 'void-budget'
 
 export interface HiddenSalienceDecision {
   readonly objectId: string
@@ -47,6 +50,18 @@ export interface HiddenSalienceDecision {
 export interface SaliencePlan {
   readonly visible: readonly VisibleSalienceDecision[]
   readonly hidden: readonly HiddenSalienceDecision[]
+  readonly estimatedLuminousCoverage: number
+  readonly minimumVoidFraction: number
+}
+
+export const MINIMUM_VOID_FRACTION = 0.35
+export const MAX_LUMINOUS_COVERAGE = 1 - MINIMUM_VOID_FRACTION
+
+const COVERAGE_BY_SALIENCE: Readonly<Record<ObjectSalience, number>> = {
+  ambient: 0.025,
+  supporting: 0.045,
+  interactive: 0.075,
+  milestone: 0.11,
 }
 
 const SALIENCE_PRIORITY: Readonly<Record<ObjectSalience, number>> = {
@@ -118,8 +133,23 @@ export function governSalience(
   const interactiveByZone = new Map<ScreenZone, number>()
   let primaryTargets = 0
   let secondaryTargets = 0
+  const minimumVoidFraction = context.minimumVoidFraction ?? MINIMUM_VOID_FRACTION
+  if (!Number.isFinite(minimumVoidFraction) || minimumVoidFraction < 0 || minimumVoidFraction >= 1) {
+    throw new RangeError('Minimum void fraction must be finite and between 0 (inclusive) and 1 (exclusive).')
+  }
+  const maximumCoverage = 1 - minimumVoidFraction
+  let estimatedLuminousCoverage = context.baseLuminousCoverage ?? 0.08
+  if (!Number.isFinite(estimatedLuminousCoverage) || estimatedLuminousCoverage < 0) {
+    throw new RangeError('Base luminous coverage must be finite and nonnegative.')
+  }
 
   for (const candidate of ranked) {
+    const candidateCoverage = COVERAGE_BY_SALIENCE[candidate.object.salience]
+      * opacityFor(candidate, context.panelOpen)
+    if (estimatedLuminousCoverage + candidateCoverage > maximumCoverage) {
+      hidden.push({ objectId: candidate.object.id, reason: 'void-budget' })
+      continue
+    }
     const target = isAttentionTarget(candidate.object.salience)
     if (target) {
       const zoneCount = interactiveByZone.get(candidate.object.screenZone) ?? 0
@@ -164,9 +194,15 @@ export function governSalience(
       priority: SALIENCE_PRIORITY[candidate.object.salience]
         + (context.panelOpen ? PANEL_PRIORITY[candidate.object.priorityWhilePanelOpen] : 0),
     })
+    estimatedLuminousCoverage += candidateCoverage
   }
 
-  return { visible, hidden }
+  return {
+    visible,
+    hidden,
+    estimatedLuminousCoverage,
+    minimumVoidFraction,
+  }
 }
 
 export function layoutCapacityFor(

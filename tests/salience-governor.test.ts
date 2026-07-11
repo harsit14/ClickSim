@@ -8,6 +8,8 @@ import type {
 import {
   governSalience,
   layoutCapacityFor,
+  MAX_LUMINOUS_COVERAGE,
+  MINIMUM_VOID_FRACTION,
 } from '../src/render/salience-governor'
 
 const state = (label: string) => ({
@@ -132,4 +134,20 @@ test('layout capacity is deterministic across desktop, mobile, quality, and mini
   assert.equal(layoutCapacityFor(1280, 720, 'low', false), 14)
   assert.equal(layoutCapacityFor(390, 844, 'low', false), 8)
   assert.equal(layoutCapacityFor(1280, 720, 'high', true), 6)
+})
+
+test('the luminous coverage budget preserves at least thirty-five percent void', () => {
+  const candidates = Array.from({ length: 40 }, (_, index) => ({
+    object: object(`luminous-${index}`, 'supporting', 'normal', index % 2 === 0 ? 'near' : 'far'),
+    manifestIndex: index,
+  }))
+  const plan = governSalience(candidates, {
+    ...context,
+    panelOpen: false,
+    capacity: 40,
+  })
+
+  assert.equal(plan.minimumVoidFraction, MINIMUM_VOID_FRACTION)
+  assert.ok(plan.estimatedLuminousCoverage <= MAX_LUMINOUS_COVERAGE)
+  assert.ok(plan.hidden.some(({ reason }) => reason === 'void-budget'))
 })

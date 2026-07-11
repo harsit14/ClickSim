@@ -125,6 +125,16 @@ test('Canticle measures expose strategic rests with deterministic silent equival
 })
 
 test('F4 Epoch turns retain authored configuration but discard live law energy', () => {
+  const verdance = {
+    'u3-kindling-01-cohort-age': amountFromNumber(100),
+    'u3-graft-rootstock': amountFromNumber(0),
+    'u3-graft-scion': amountFromNumber(8),
+    'u3-graft-active': amountFromNumber(1),
+  }
+  assert.deepEqual(Object.keys(retainedF4LawConfiguration('verdance', verdance)).sort(), [
+    'u3-graft-active', 'u3-graft-rootstock', 'u3-graft-scion',
+  ])
+
   const prismata = { 'u5-recipe': amountFromNumber(2), 'u5-route-01': amountFromNumber(5), 'u5-fluorescence': amountFromNumber(90) }
   assert.deepEqual(Object.keys(retainedF4LawConfiguration('prismata', prismata)).sort(), ['u5-recipe', 'u5-route-01'])
 

@@ -6,13 +6,18 @@
   import { universeById, universeV2ById } from '../content/universes'
   import { clickEmber, hasUi, game, buyGenerator } from '../engine/game.svelte'
   import { format } from '../core/format'
-  import { playClick, playBuy } from '../audio/sfx'
+  import { playClick, playBuy, playRhythmAccent } from '../audio/sfx'
   import { beatDurationSec, currentBeatIndex, startMusic, isPlaying } from '../audio/music'
   import { combo, registerClick, silenced } from '../systems/combo.svelte'
   import { gamePaused } from '../core/pause.svelte'
   import { averagedRhythmReward } from '../accessibility/averaged-rhythm'
   import { resolveVisualQuality } from '../core/preferences'
   import { amountFromNumber, gteAmount } from '../core/numeric/amount'
+  import { consumeCrossingWrongClick } from '../experience/crossing-arrival.svelte'
+  import {
+    RHYTHM_COMPETENT_MULTIPLIER,
+    RHYTHM_EXCEPTIONAL_MULTIPLIER,
+  } from '../systems/rhythm-balance'
 
   let {
     averagedRhythm = false,
@@ -25,15 +30,18 @@
   let quasarRaf = 0
   let lastQuasarBeat = -1
 
-  function clickRewardMultiplier(): number {
-    if (!averagedRhythm) return registerClick()
+  function clickReward(): { readonly multiplier: number; readonly onBeat: boolean } {
+    if (!averagedRhythm) {
+      const multiplier = registerClick()
+      return { multiplier, onBeat: combo.streak > 0 }
+    }
     combo.streak = 0
     combo.lastRewardAt = 0
     const v2Pack = universeV2ById(game.activeUniverse)
     const range = v2Pack?.accessibility.timing.averagedRewardRatio ?? [0.85, 0.9]
     const result = averagedRhythmReward({
-      competentMultiplier: 10,
-      exceptionalMultiplier: 20,
+      competentMultiplier: RHYTHM_COMPETENT_MULTIPLIER,
+      exceptionalMultiplier: RHYTHM_EXCEPTIONAL_MULTIPLIER,
       targetCompetentRatio: (range[0] + range[1]) / 2,
       presentation: {
         audio: game.sfxVolume > 0 ? 'audible' : 'muted',
@@ -45,16 +53,20 @@
         }),
       },
     })
-    return result.rewardMultiplier ?? 1
+    return { multiplier: result.rewardMultiplier ?? 1, onBeat: false }
   }
 
   function handleClick(x: number, y: number) {
     if (!world) return
     if (hasUi('music') && !isPlaying() && !silenced()) startMusic()
-    const result = clickEmber(clickRewardMultiplier())
-    playClick(universeById(game.activeUniverse).audio.click)
-    world.clickPulse()
-    world.burst(x, y)
+    const rhythm = clickReward()
+    const result = clickEmber(rhythm.multiplier)
+    const wrongFootMode = consumeCrossingWrongClick(game.activeUniverse)
+    const clickMode = wrongFootMode ?? universeById(game.activeUniverse).audio.click
+    playClick(clickMode)
+    if (rhythm.onBeat) playRhythmAccent(clickMode, combo.streak)
+    world.clickPulse(x, y)
+    world.burst(x, y, { onBeat: rhythm.onBeat, crit: result.crit, comboStreak: combo.streak })
     if (!comparativeBlind) world.addFloat(`${result.crit ? 'CRIT ' : '+'}${format(result.amount)}`, x, y - 12)
   }
 
@@ -85,6 +97,7 @@
 
   function onPointerMove(e: PointerEvent) {
     if (!world) return
+    world.setPointerPosition(e.clientX, e.clientY)
     hovering = world.isOnEmber(e.clientX, e.clientY, performance.now())
   }
 

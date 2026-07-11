@@ -33,8 +33,8 @@ export const PRISMATA_SPEC: FutureUniverseSpec = {
   visualMaterials: ['crystal lattice', 'optical glass', 'thin-film interference', 'polarizing membrane', 'fluorescent mineral', 'fiber light', 'diffraction foil'],
   primarySilhouettes: ['a labeled optical bench with three source bands', 'an interlocked lens lattice joining six distinct paths', 'a white horizon whose component bands remain visible'],
   economy: {
-    costScales: [0.85, 0.9, 0.95, 1, 1.08, 1.16, 1.25, 1.35, 1.5, 1.65, 1.8, 2, 2.2, 2.45, 2.75, 3.1, 3.5, 4],
-    rateScales: [0.9, 1.05, 1.2, 0.95, 1.25, 1.35, 1.1, 1.45, 1.2, 1.55, 1.35, 1.75, 1.5, 1.9, 1.65, 2.1, 1.8, 2.4],
+    baseCosts: [13, 162, 2_090, 26_000, 345_600, 4_640_000, 63_750_000, 877_500_000, 12_300_000_000, 173_250_000_000, 700_000_000_000, 22_000_000_000_000, 162_000_000_000_000, 1_740_000_000_000_000, 12_700_000_000_000_000, 138_000_000_000_000_000, 1_020_000_000_000_000_000, 11_800_000_000_000_000_000],
+    baseRates: [0.252, 2.835, 27.6, 194.75, 2_187.5, 19_845, 135_300, 1_493_500, 10_560_000, 114_700_000, 843_750_000, 9_275_000_000, 67_500_000_000, 725_800_000_000, 5_280_000_000_000, 57_750_000_000_000, 423_000_000_000_000, 4_920_000_000_000_000],
     costMultiplier: 1.145,
   },
   signatureUpgrades: (generators) => [
@@ -133,7 +133,7 @@ export const PRISMATA_SPEC: FutureUniverseSpec = {
   ],
   tempo: 96,
   meter: '4/4 spectral pulse with six harmonic color families',
-  audioFamilies: ['glass focus snap and photon hiss', 'rising lens interval', 'coherent harmonic flash', 'diffracted glass call', 'subtractive spectrum cadence'],
+  audioFamilies: ['glass focus snap and photon hiss', 'rising lens interval', 'coherent harmonic flash', 'diffracted glass call', 'refraction aperture-close cadence'],
   silenceState: 'Every band remains readable through wavelength number, hatch pattern, ray thickness, and geometry.',
   fatiguePolicy: 'Focus snaps soften above four inputs per second; high partials are limited; Refraction removes bands before returning a restrained white chord.',
   routeGlyph: '◇',

@@ -34,12 +34,27 @@ const KINDLING_FLAVOR = [
   'The whole patient world, finally able to grow beyond itself.',
 ] as const
 
+export const VERDANCE_BASE_COSTS = [
+  15, 183, 2_233, 27_238, 332_300, 4_054_062, 49_459_559, 603_406_625,
+  5_500_000_000, 32_000_000_000, 150_000_000_000, 650_000_000_000,
+  2_800_000_000_000, 12_000_000_000_000, 50_000_000_000_000,
+  220_000_000_000_000, 950_000_000_000_000, 4_200_000_000_000_000,
+] as const
+
+export const VERDANCE_BASE_RATES = [
+  0.3, 2.52, 21.168, 177.8112, 1_493.61408, 12_546.358272, 105_389.4094848,
+  885_271.03967232, 7_436_276.73324749, 62_464_724.5592789, 524_703_686.297943,
+  4_407_510_964.90272, 37_023_092_105.1829, 310_993_973_683.536,
+  2_612_349_378_941.7, 21_943_734_783_110.3, 184_327_372_178_127,
+  1_548_349_926_296_263,
+] as const
+
 const generator = (index: number, name: string, flavor: string): GeneratorDef => ({
   id: `u3-kindling-${String(index + 1).padStart(2, '0')}`,
   name,
   flavor,
-  baseCost: index === 0 ? 15 : Math.round(15 * 12.2 ** index),
-  baseRate: index === 0 ? 0.3 : 0.3 * 8.4 ** index,
+  baseCost: VERDANCE_BASE_COSTS[index],
+  baseRate: VERDANCE_BASE_RATES[index],
   costMult: 1.15,
   tier: index + 1,
   hue: 72 + (index * 9) % 86,

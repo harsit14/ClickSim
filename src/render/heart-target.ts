@@ -15,8 +15,9 @@ export interface HeartTargetRect {
   readonly height: number
 }
 
-export const HEART_GROWTH_RADIUS_CAP = 58
+export const HEART_GROWTH_RADIUS_CAP = 22
 export const HEART_INTERACTION_GUTTER = 16
+export const HEART_VERTICAL_POSITION = 0.62
 
 /** A substantial opening Heart that still leaves room for its authored frame. */
 export function heartBaseRadius(viewportWidth: number, viewportHeight: number): number {
@@ -30,7 +31,7 @@ export function heartHitRadius(coreRadius: number): number {
 }
 
 export function heartTargetCenter(viewport: HeartTargetViewport): HeartTargetPoint {
-  return { x: viewport.width / 2, y: viewport.height * 0.48 }
+  return { x: viewport.width / 2, y: viewport.height * HEART_VERTICAL_POSITION }
 }
 
 /** Maximum live hit radius, including progression growth and a misclick gutter. */

@@ -45,7 +45,14 @@
   import { clearBuffs } from './systems/buffs.svelte'
   import { combo } from './systems/combo.svelte'
   import { save } from './core/save'
-  import { isPlaying, setMusicMode, setStems, startMusic } from './audio/music'
+  import {
+    clearCeremonyStemWithdrawal,
+    isPlaying,
+    setCeremonyStemBeat,
+    setMusicMode,
+    setStems,
+    startMusic,
+  } from './audio/music'
   import { THEME_BY_ID, themeVarsForUniverse } from './content/themes'
   import { progressionIdentity } from './content/universe-progression'
   import { universeById, universeV2ById } from './content/universes'
@@ -56,6 +63,11 @@
   import { amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
   import { resolveVisualQuality } from './core/preferences'
   import { buildEmberGoalCandidates, previewSupernovaRecovery } from './experience/ember-cohesion'
+  import {
+    beginCrossingArrival,
+    cancelCrossingArrival,
+    completeCrossingArrival,
+  } from './experience/crossing-arrival.svelte'
   import { formatGoalDuration, resolveUniverseUiText } from './experience/ember-ui-text'
   import { compareProgressionBoundary } from './experience/reset-comparison'
   import type { ResetComparison } from './experience/reset-comparison'
@@ -93,6 +105,9 @@
     && new URLSearchParams(window.location.search).get('f2-blind') === '1'
   const playtestMode = import.meta.env.DEV
     && new URLSearchParams(window.location.search).get('playtest') === '1'
+  const supernovaTimeScale = import.meta.env.DEV
+    ? Math.max(0.02, Math.min(1, Number(new URLSearchParams(window.location.search).get('supernova-speed')) || 1))
+    : 1
 
   const novaReady = $derived(!isZeroAmount(supernovaGain()))
   const observatoryVisible = $derived(
@@ -268,6 +283,7 @@
     resetPreviewOpen = false
     resetComparison = null
     if (decision.action === 'cancel') {
+      clearCeremonyStemWithdrawal()
       requestAnimationFrame(() => document.querySelector<HTMLCanvasElement>('[data-focus-region="heart"]')?.focus({ preventScroll: true }))
       return
     }
@@ -291,25 +307,38 @@
 
   function afterSupernova() {
     cutsceneActive = false
+    clearCeremonyStemWithdrawal()
     if (resumeMusicAfterNova && hasUi('music')) startMusic()
     resumeMusicAfterNova = false
   }
 
   function beginCrossingPrelude(universeId: string) {
     closeAll()
+    const source = universeById(game.activeUniverse)
+    const target = universeById(universeId)
+    beginCrossingArrival({
+      sourceId: source.id,
+      sourceName: source.shortName,
+      sourceVerb: universeV2ById(source.id)?.identity.primaryVerb ?? 'kindle',
+      destinationId: target.id,
+      destinationName: target.shortName,
+      destinationVerb: universeV2ById(target.id)?.identity.primaryVerb ?? 'kindle',
+      firstArrival: game.universeRuns[universeId] === undefined,
+    })
     crossingTarget = universeId
     crossingPrelude = true
   }
 
   function finishCrossing(universeId: string) {
     if (crossToUniverse(universeId)) {
+      completeCrossingArrival(game.activeUniverse)
       clearBuffs()
       clearToasts()
       combo.streak = 0
       combo.lastRewardAt = 0
       worldRef()?.resetForUniverse()
       save()
-    }
+    } else cancelCrossingArrival()
     crossingPrelude = false
     crossingTarget = null
   }
@@ -351,6 +380,8 @@
     <ManifestWorldLayer
       pack={activeV2Pack}
       owned={game.owned}
+      numericLawState={game.numericLawState}
+      achievementIds={game.achievements}
       archiveItems={activePack.cabinet.items}
       unlockedArchiveIds={game.curiosities}
       litBeaconUniverseIds={game.beacons}
@@ -365,11 +396,13 @@
   {/if}
   <PurchaseCeremonyLayer />
   <section class="top-stack" class:future-law={activePack.id === 'prismata' || activePack.id === 'tempest' || activePack.id === 'canticle'} aria-label="Run status and upgrades">
-    <Hud />
-    <BuffBar />
+    {#if activePack.id !== 'prismata' && activePack.id !== 'tempest' && activePack.id !== 'canticle'}
+      <Hud />
+      <BuffBar />
+    {/if}
     <ChallengeBanner />
-    <UniverseLawPanel />
     {#if !utilityPanelOpen}
+      <UniverseLawPanel />
       <UpgradeBar />
     {/if}
   </section>
@@ -485,13 +518,15 @@
     resolveText={resolveActiveUiText}
     formatDuration={formatGoalDuration}
     ondecision={handleResetDecision}
+    onholdbeat={setCeremonyStemBeat}
+    onholdcancel={clearCeremonyStemWithdrawal}
   />
 {/if}
 {#if guideOpen}
   <GameGuide onclose={() => (guideOpen = false)} />
 {/if}
 {#if cutsceneActive}
-  <SupernovaCutscene doReset={resetForSupernova} onfinished={afterSupernova} />
+  <SupernovaCutscene doReset={resetForSupernova} onfinished={afterSupernova} timeScale={supernovaTimeScale} />
 {/if}
 {#if questionOpen}
   <TheQuestion onclose={() => (questionOpen = false)} />
@@ -526,6 +561,7 @@
   }
   .top-stack.future-law {
     width: min(44rem, calc(100vw - 18rem));
+    gap: 0.28rem;
   }
   .cohesion-stack {
     position: fixed;
@@ -629,19 +665,19 @@
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  @media (max-width: 720px) {
+  @media (max-width: 800px) {
     .cohesion-stack {
-      top: 7.35rem;
+      top: 21.5rem;
       left: 4rem;
       right: 0.5rem;
       width: auto;
-      max-height: 23vh;
+      max-height: 11vh;
       overflow-y: auto;
       transform: none;
     }
     .dock {
       bottom: auto;
-      top: 10rem;
+      top: 11.5rem;
       left: 0.5rem;
       right: auto;
       max-height: calc(62vh - 10.5rem);
@@ -650,6 +686,16 @@
       padding-right: 0.2rem;
       scrollbar-width: none;
     }
+  }
+  :global(html[data-lumen-history='open']) .cohesion-stack { opacity: 0; pointer-events: none; }
+  @media (max-width: 650px) {
+    .top-stack { width: calc(100vw - 1rem); }
+    .cohesion-stack { right: 0.45rem; max-height: 11vh; }
+  }
+  @media (max-width: 380px) {
+    .top-stack { top: 0.4rem; gap: 0.35rem; }
+    .cohesion-stack { left: 3.2rem; right: 0.4rem; top: 21.25rem; }
+    .dock { left: 0.35rem; top: 11.25rem; }
   }
   .game-shell.comparative-blind > :global(.keyboard-focus),
   .game-shell.comparative-blind > :global(.feedback-layer),

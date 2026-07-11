@@ -36,13 +36,15 @@ export function retainedF4LawConfiguration(
   universeId: string,
   state: Readonly<NumericLawState>,
 ): NumericLawState {
-  const keep = universeId === 'prismata'
-    ? (key: string) => key === 'u5-recipe' || key.startsWith('u5-route-')
-    : universeId === 'tempest'
-      ? (key: string) => key === 'u6-path' || key === 'u6-path-length' || key === 'u6-path-risk'
-      : universeId === 'canticle'
-        ? (key: string) => key === 'u7-measure' || key.startsWith('u7-slot-')
-        : () => false
+  const keep = universeId === 'verdance'
+    ? (key: string) => key.startsWith('u3-graft-')
+    : universeId === 'prismata'
+      ? (key: string) => key === 'u5-recipe' || key.startsWith('u5-route-')
+      : universeId === 'tempest'
+        ? (key: string) => key === 'u6-path' || key === 'u6-path-length' || key === 'u6-path-risk'
+        : universeId === 'canticle'
+          ? (key: string) => key === 'u7-measure' || key.startsWith('u7-slot-')
+          : () => false
   return Object.fromEntries(Object.entries(state).filter(([key]) => keep(key)))
 }
 

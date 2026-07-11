@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { UniverseId } from '../content/universes/types'
+  import { CHAMBER_ARCHIVE_MARK_BY_ID } from '../render/chamber-archive-marks'
+  import { CLOCKWORK_PATENT_MARK_BY_ID } from '../render/clockwork/patent-marks'
 
   interface Props {
     id: string
@@ -9,16 +11,38 @@
   }
 
   let { id, hue, universeId, unresolved = false }: Props = $props()
+  const clockworkMark = $derived(universeId === 'clockwork' ? CLOCKWORK_PATENT_MARK_BY_ID.get(id) : undefined)
+  const chamberMark = $derived.by(() => {
+    const mark = CHAMBER_ARCHIVE_MARK_BY_ID.get(id)
+    return mark?.universeId === universeId ? mark : undefined
+  })
 </script>
 
 <span
   class={`archive-record-art art-${id}`}
   class:tidefall={universeId === 'tidefall'}
+  class:clockwork={universeId === 'clockwork'}
+  class:chamber-native={!!chamberMark}
+  data-native-universe={chamberMark?.universeId}
   class:unresolved
   style:--record-hue={hue}
   aria-hidden="true"
 >
-  <i class="halo"></i><i class="core"></i><i class="ring"></i><i class="beam"></i>
+  {#if clockworkMark}
+    <svg class={`patent-mark family-${clockworkMark.family}`} viewBox="0 0 40 40">
+      <path class="patent-plate" d="M5 5H30L35 10V35H5ZM30 5V10H35M8 8H11M8 32H11" />
+      <path class="patent-diagram" d={clockworkMark.diagramPath} />
+      <path class="patent-accent" d={clockworkMark.accentPath} />
+    </svg>
+  {:else if chamberMark}
+    <svg class={`chamber-mark family-${chamberMark.family}`} viewBox="0 0 40 40">
+      <path class="chamber-frame" d={chamberMark.framePath} />
+      <path class="chamber-diagram" d={chamberMark.diagramPath} />
+      <path class="chamber-accent" d={chamberMark.accentPath} />
+    </svg>
+  {:else}
+    <i class="halo"></i><i class="core"></i><i class="ring"></i><i class="beam"></i>
+  {/if}
 </span>
 
 <style>
@@ -62,6 +86,102 @@
   }
   .beam { display: none; }
   .unresolved { filter: grayscale(0.86); opacity: 0.45; }
+
+  .clockwork {
+    overflow: visible;
+    border-color: hsla(var(--record-hue), 54%, 65%, 0.28);
+    border-radius: 0.28rem;
+    background:
+      linear-gradient(hsla(var(--record-hue), 45%, 58%, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--record-hue), 45%, 58%, 0.055) 1px, transparent 1px),
+      linear-gradient(145deg, rgba(37, 31, 23, 0.96), rgba(10, 14, 17, 0.98));
+    background-size: 0.42rem 0.42rem, 0.42rem 0.42rem, auto;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 230, 172, 0.035),
+      inset 0 0 14px rgba(0, 0, 0, 0.54),
+      0 0 13px hsla(var(--record-hue), 72%, 54%, 0.09);
+  }
+  .patent-mark { width: 100%; height: 100%; overflow: visible; }
+  .patent-mark path {
+    vector-effect: non-scaling-stroke;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .patent-plate { stroke: hsla(var(--record-hue), 48%, 72%, 0.32); stroke-width: 0.78; }
+  .patent-diagram {
+    stroke: hsla(var(--record-hue), 74%, 74%, 0.9);
+    stroke-width: 1.35;
+    filter: drop-shadow(0 0 1.8px hsla(var(--record-hue), 84%, 62%, 0.42));
+  }
+  .patent-accent {
+    stroke: #fff0ba;
+    stroke-width: 1.05;
+    stroke-dasharray: 2 1.5;
+    opacity: 0.82;
+    animation: patent-index 2.4s steps(4, end) infinite;
+  }
+  .family-prediction .patent-diagram { stroke: hsla(var(--record-hue), 66%, 78%, 0.94); }
+  .family-exception .patent-accent { stroke: #ffc69e; }
+
+  .chamber-native {
+    overflow: visible;
+    border-color: hsla(var(--record-hue), 58%, 70%, 0.25);
+    background: linear-gradient(145deg, hsla(var(--record-hue), 32%, 18%, 0.82), rgba(4, 7, 11, 0.96));
+    box-shadow: inset 0 0 13px rgba(0, 0, 0, 0.5), 0 0 13px hsla(var(--record-hue), 70%, 56%, 0.1);
+  }
+  .chamber-mark { width: 100%; height: 100%; overflow: visible; }
+  .chamber-mark path {
+    vector-effect: non-scaling-stroke;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .chamber-frame { stroke: hsla(var(--record-hue), 50%, 72%, 0.24); stroke-width: 0.72; }
+  .chamber-diagram {
+    stroke: hsla(var(--record-hue), 72%, 78%, 0.92);
+    stroke-width: 1.28;
+    filter: drop-shadow(0 0 1.6px hsla(var(--record-hue), 90%, 68%, 0.4));
+  }
+  .chamber-accent {
+    stroke: color-mix(in srgb, hsl(var(--record-hue), 88%, 76%) 72%, white);
+    stroke-width: 1.05;
+    stroke-dasharray: 2.2 1.6;
+    opacity: 0.84;
+    animation: native-record-signal 2.8s ease-in-out infinite alternate;
+  }
+  [data-native-universe='verdance'] {
+    border-radius: 52% 48% 44% 56%;
+    background:
+      linear-gradient(32deg, transparent 47%, hsla(var(--record-hue), 55%, 68%, 0.08) 48% 50%, transparent 51%),
+      radial-gradient(circle at 36% 28%, hsla(var(--record-hue), 48%, 34%, 0.24), rgba(5, 17, 10, 0.96) 70%);
+  }
+  [data-native-universe='verdance'] .chamber-frame { stroke-dasharray: 1.2 1.8; }
+  [data-native-universe='verdance'] .chamber-accent { stroke: #d9f3a9; }
+  [data-native-universe='prismata'] {
+    border-radius: 0;
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.08), transparent 42%),
+      linear-gradient(45deg, hsla(var(--record-hue), 64%, 28%, 0.28), rgba(6, 5, 19, 0.98));
+  }
+  [data-native-universe='prismata'] .chamber-frame { stroke: rgba(238, 232, 255, 0.28); }
+  [data-native-universe='prismata'] .chamber-accent { stroke: #ffffff; animation-timing-function: steps(4, end); }
+  [data-native-universe='tempest'] {
+    border-radius: 52% 48% 24% 28%;
+    background:
+      repeating-linear-gradient(165deg, transparent 0 5px, hsla(var(--record-hue), 70%, 70%, 0.045) 5px 6px),
+      linear-gradient(180deg, hsla(var(--record-hue), 42%, 28%, 0.26), rgba(4, 10, 17, 0.98));
+  }
+  [data-native-universe='tempest'] .chamber-accent { stroke: #e9fbff; animation-timing-function: steps(3, end); animation-duration: 1.9s; }
+  [data-native-universe='canticle'] {
+    border-radius: 50%;
+    background:
+      repeating-radial-gradient(circle, transparent 0 5px, hsla(var(--record-hue), 52%, 70%, 0.05) 5px 6px),
+      radial-gradient(circle, hsla(var(--record-hue), 45%, 30%, 0.2), rgba(12, 6, 15, 0.98) 72%);
+  }
+  [data-native-universe='canticle'] .chamber-frame { stroke-dasharray: 1.5 1.5; }
+  [data-native-universe='canticle'] .chamber-accent { stroke: #ffe7f7; animation-duration: 3.6s; }
 
   .art-moth .core { width: 0.6rem; height: 0.6rem; background: #eff8ff; box-shadow: 0 0 5px #fff, 0 0 14px rgba(170, 215, 255, 0.75); }
   .art-moth .halo { inset: 0.7rem; border-color: rgba(202, 232, 255, 0.3); }
@@ -147,8 +267,11 @@
   @keyframes archive-pulse { from { opacity: 0.46; transform: scale(0.94); } to { opacity: 1; transform: scale(1.06); } }
   @keyframes archive-spin { to { transform: translate(-50%, -50%) rotate(344deg); } }
   @keyframes quasar-beam { from { opacity: 0.38; } to { opacity: 1; } }
+  @keyframes patent-index { 0%, 100% { opacity: 0.38; } 50% { opacity: 1; } }
+  @keyframes native-record-signal { from { opacity: 0.36; stroke-dashoffset: 0; } to { opacity: 1; stroke-dashoffset: 5; } }
 
   @media (prefers-reduced-motion: reduce) {
     .archive-record-art i { animation: none !important; }
+    .archive-record-art path { animation: none !important; }
   }
 </style>

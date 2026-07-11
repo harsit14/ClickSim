@@ -21,13 +21,14 @@ universe ended—and what may exist beyond it.
   Singularities on a permanent Succession Relay that strengthens only the immediately
   following universe.
 - Lumen Shards form a rare persistent seven-world currency, earned through first-time
-  Beacons, first Atlas completions, and capped high-cost local distillation. The Lumen
-  Vault spends them on authored lore, exclusive vestments, and permanent utilities.
+  Beacons, first Atlas completions, and capped high-cost local distillation. Their
+  purchases now live where they act: lore in Archives, vestments in the Observatory,
+  and route instruments in the Wayfinder.
 - Save writer version 23 with migration support for every historical release, parked
   universe runs, per-universe Vessels, atomic backups, and rollback recovery.
 - Desktop release hardening is complete. Mobile-specific interface work is intentionally
   deferred.
-- The complete project gate currently passes 314 automated tests, TypeScript checks,
+- The complete project gate currently passes 318 automated tests, TypeScript checks,
   content proofreading, production builds, bundle budgets, and offline inspection.
 
 ## Highlights
@@ -41,7 +42,14 @@ universe ended—and what may exist beyond it.
 - **Three distinct late-world instruments** — Prismata uses a spatial refraction
   chamber, Tempest exposes a charged convective storm field, and Canticle arranges its
   sixteen-beat score around a visible nodal figure instead of sharing one control-bench
-  layout.
+  layout. Their compact integrated HUD reserves a fixed active-effect cell, so catching
+  a power-up never moves the score or instrument.
+- **First-arrival instrument primers** — each late universe teaches its three core
+  interactions inside the instrument itself, dismisses persistently, and remains
+  reopenable from a small `?` control without enabling global guidance prompts.
+- **Calm achievement delivery** — achievements queue through one compact top-edge
+  ribbon; large unlock bursts collapse into a final archive summary instead of stacking
+  over the playfield.
 - **Living playfields** — every purchase changes the world through authored objects,
   ownership states, motion, and audio. Decorative and interactive objects preserve the
   Heart's click area and the readable status zone.
@@ -60,17 +68,18 @@ universe ended—and what may exist beyond it.
   and ending records.
 - **Omens and active opportunities** — Falling Stars, tide phenomena, pollinators,
   Maintenance Signals, optical events, storms, and refrains use bounded rewards and
-  never punish a missed event.
+  never punish a missed event. Shared entry rules favor top/bottom traversal and keep
+  every side entrance inside the upper half for a fair reaction window.
 - **The Deep** — a second prestige layer with local presentation, permanent laws,
   automation, repeatable works, and twelve trials.
 - **The Crossing and Garden** — completed local Vessels carry restored worlds into the
   Dark Between. Seven Beacons open the authored Garden conclusion and continuing play.
-- **The Concordance** — six visible Succession Relays turn completed-world Deep surplus
-  into production for the next universe without allowing skips. Every universe also
-  has three expensive opportunities to distill a shared Lumen Shard.
-- **The Lumen Vault** — rare currency persists through every reset and crossing, opening
-  four hidden archive passages, three exclusive visual vestments, and two permanent
-  multiverse utilities.
+- **Three permanent homes** — the Deep owns Singularity upgrades and capped Lumen
+  distillation; the Observatory owns constellation works and shared vestments; the
+  Vessel-Wayfinder owns laws, Succession Relays, and route instruments.
+- **Archive bonuses stay in the Archive** — rare Lumen Shards still persist through
+  every reset and crossing, but their hidden passages and Archive Resonator now sit
+  beside the records they interpret.
 - **Chronicle, builds, and Atlas routes** — dated milestones, named Beacons, law
   loadouts, shareable configuration codes, deterministic route records, and permanent
   Convergences.

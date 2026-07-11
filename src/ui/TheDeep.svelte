@@ -3,6 +3,7 @@
   import { DEEP_UPGRADES, SINGULARITY_COST } from '../content/deep'
   import { CHALLENGES, challengeUnlocked } from '../content/challenges'
   import ResonanceAtlas from './ResonanceAtlas.svelte'
+  import LumenDistillery from './LumenDistillery.svelte'
   import {
     game,
     deepCollapseGain,
@@ -122,7 +123,7 @@
   }
 </script>
 
-<section class="deep" class:tidefall>
+<section class="deep instrument-panel" class:tidefall>
   <header>
     <div class="title-block">
       <span>{identity.overline}</span>
@@ -166,7 +167,8 @@
     {#each DEEP_UPGRADES as u (u.id)}
       {@const copy = deepUpgradeCopy(u, pack.id)}
       {@const owned = game.singUpgrades.includes(u.id)}
-      <div class="item" class:owned>
+      {@const affordable = !owned && gteAmount(game.singularities, amountFromNumber(u.cost))}
+      <div class="item" class:owned class:affordable class:unaffordable={!owned && !affordable}>
         <div class="item-head">
           <strong>{copy.name}</strong>
           {#if owned}
@@ -183,7 +185,7 @@
               <span class="held">held</span>
             {/if}
           {:else}
-            <button class="buy" disabled={!gteAmount(game.singularities, amountFromNumber(u.cost))} onclick={() => tryBuy(u.id)}>
+            <button class="buy" class:unaffordable={!affordable} disabled={!affordable} onclick={() => tryBuy(u.id)}>
               ◉ {u.cost}
             </button>
           {/if}
@@ -209,7 +211,8 @@
           {@const copy = deepWorkCopy(work, pack.id)}
           {@const rank = workRank(game.deepWorks, work.id)}
           {@const cost = workCost(work, rank)}
-          <article class="recursive-work">
+          {@const affordable = cost !== null && gteAmount(game.singularities, cost)}
+          <article class="recursive-work" class:affordable class:unaffordable={cost !== null && !affordable}>
             <span class="work-glyph">{work.glyph}</span>
             <div class="work-copy">
               <small>rank {rank}</small>
@@ -218,7 +221,7 @@
               <span>{copy.effect ?? work.effect}</span>
               <b>{workStatus(work.id)}</b>
             </div>
-            <button disabled={cost === null || !gteAmount(game.singularities, cost)} onclick={() => tryBuyWork(work.id)}>
+            <button class:unaffordable={cost !== null && !affordable} disabled={cost === null || !affordable} onclick={() => tryBuyWork(work.id)}>
               {cost === null ? 'mastered' : `${identity.workVerb} · ◉ ${format(cost)}`}
             </button>
           </article>
@@ -228,6 +231,8 @@
       <p>{identity.recursiveEmpty}</p>
     {/if}
   </section>
+
+  <LumenDistillery />
 
   <ResonanceAtlas />
 
@@ -431,6 +436,8 @@
     background: rgba(255, 255, 255, 0.025);
   }
   .item.owned { border-color: rgba(140, 220, 255, 0.3); }
+  .item.affordable { border-color: color-mix(in srgb, var(--amber) 28%, transparent); box-shadow: inset 0 0 1.05rem color-mix(in srgb, var(--amber) 12%, transparent); }
+  .item.unaffordable { color: color-mix(in srgb, var(--text) 45%, var(--bg)); background: linear-gradient(132deg, transparent 0 48%, color-mix(in srgb, var(--dim) 8%, transparent) 49% 50%, transparent 51%) 0 0 / 2.6rem 2.6rem, color-mix(in srgb, var(--bg) 88%, var(--panel)); border-color: color-mix(in srgb, var(--dim) 9%, transparent); }
   .trial.done { border-color: rgba(255, 217, 138, 0.35); }
   .trial.active {
     border-color: rgba(255, 140, 90, 0.5);
@@ -465,7 +472,8 @@
     border-radius: 999px;
     cursor: pointer;
   }
-  .buy:disabled { opacity: 0.35; cursor: default; }
+  .buy:disabled,
+  .buy.unaffordable { opacity: 1; color: color-mix(in srgb, var(--text) 45%, var(--bg)); background: color-mix(in srgb, var(--bg) 86%, var(--panel)); box-shadow: inset 0 0 0.8rem rgba(0,0,0,0.32); cursor: default; }
   .held {
     font-size: 0.72rem;
     font-style: italic;
@@ -557,6 +565,8 @@
   .recursive > p { margin: 0.45rem 0 0; font-family: Georgia, serif; font-size: 0.74rem; font-style: italic; color: var(--dim); }
   .recursive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.7rem; }
   .recursive-work { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.55rem; padding: 0.7rem; border: 1px solid rgba(140, 220, 255, 0.14); border-radius: 10px; background: rgba(2, 8, 13, 0.34); }
+  .recursive-work.affordable { border-color: color-mix(in srgb, var(--amber) 28%, transparent); box-shadow: inset 0 0 1.05rem color-mix(in srgb, var(--amber) 12%, transparent); }
+  .recursive-work.unaffordable { color: color-mix(in srgb, var(--text) 45%, var(--bg)); background: linear-gradient(132deg, transparent 0 48%, color-mix(in srgb, var(--dim) 8%, transparent) 49% 50%, transparent 51%) 0 0 / 2.6rem 2.6rem, color-mix(in srgb, var(--bg) 88%, var(--panel)); border-color: color-mix(in srgb, var(--dim) 9%, transparent); }
   .work-glyph { width: 1.9rem; height: 1.9rem; display: grid; place-items: center; color: #c5efff; border: 1px solid rgba(140, 220, 255, 0.2); border-radius: 50%; box-shadow: 0 0 14px rgba(105, 210, 255, 0.08); }
   .work-copy { min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
   .work-copy small { font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; color: #80c9eb; }
@@ -565,7 +575,8 @@
   .work-copy span { font-size: 0.62rem; color: #a9d2e4; }
   .work-copy b { margin-top: 0.1rem; font-size: 0.58rem; font-weight: 650; color: #9fe3ff; }
   .recursive-work button { grid-column: 1 / -1; justify-self: start; padding: 0.3rem 0.72rem; font: inherit; font-size: 0.64rem; font-weight: 750; color: #06131c; background: linear-gradient(180deg, #d6f3ff, #80c9eb); border: 0; border-radius: 999px; cursor: pointer; }
-  .recursive-work button:disabled { opacity: 0.38; cursor: default; }
+  .recursive-work button:disabled,
+  .recursive-work button.unaffordable { opacity: 1; color: color-mix(in srgb, var(--text) 45%, var(--bg)); background: color-mix(in srgb, var(--bg) 86%, var(--panel)); box-shadow: inset 0 0 0.8rem rgba(0,0,0,0.32); cursor: default; }
   .deep.tidefall {
     background:
       radial-gradient(ellipse at 50% -10%, rgba(71, 206, 205, 0.13), transparent 30%),

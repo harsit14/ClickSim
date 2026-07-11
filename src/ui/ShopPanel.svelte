@@ -24,6 +24,10 @@
     verdanceGeneratorCohortStatus,
     type VerdanceGeneratorCohortStatus,
   } from '../content/universes/verdance'
+  import { resolveVisualQuality } from '../core/preferences'
+  import SetPieceArt from './SetPieceArt.svelte'
+  import { emberlightSetPieceStage } from '../render/emberlight/set-piece-registry'
+  import { emberlightOwnershipThreshold } from '../render/emberlight/flagship-scene'
 
   const AMOUNTS: BuyAmount[] = [1, 10, 100, 'max']
 
@@ -87,6 +91,14 @@
     })
     publishLivePurchase(event, v2Pack, {
       audio: { silence: game.sfxVolume <= 0 },
+      visual: {
+        reducedMotion: game.motionPreference === 'reduced',
+        quality: resolveVisualQuality(game.visualQuality, {
+          width: window.innerWidth,
+          devicePixelRatio: window.devicePixelRatio || 1,
+          hardwareConcurrency: navigator.hardwareConcurrency || 8,
+        }),
+      },
     })
   }
 
@@ -100,7 +112,7 @@
 </script>
 
 {#if visible && !suppressed}
-  <aside class="shop" class:collapsed aria-label="Kindling shop">
+  <aside class="shop instrument-panel" class:collapsed aria-label="Kindling shop">
     <button
       class="retract"
       class:collapsed
@@ -134,10 +146,13 @@
       {#each shown as g (g.id)}
         {@const p = purchase(g)}
         {@const owned = game.owned[g.id] ?? 0}
+        {@const kindlingArt = pack.id === 'emberlight' ? emberlightSetPieceStage(`ember-kindling-${g.id}`) : null}
+        {@const ownershipThreshold = emberlightOwnershipThreshold(owned) ?? 0}
         {@const cohort = pack.id === 'verdance' ? verdanceGeneratorCohortStatus(g.id, owned, game.numericLawState) : null}
         <button
           class="row"
           data-generator-id={g.id}
+          data-ownership-threshold={kindlingArt ? ownershipThreshold : undefined}
           class:unaffordable={ltAmount(game.light, p.cost) || genPurchaseDisabled(game, g)}
           onclick={() => tryBuy(g)}
           title={genDisabled(game, g)
@@ -148,7 +163,15 @@
                 ? `${g.flavor} — ${cohort.stageLabel} cohort, production ×${cohort.multiplier.toFixed(2)}, ${cohortTiming(cohort)}`
                 : g.flavor}
         >
-          <span class="dot" style:--hue={g.hue}></span>
+          {#if kindlingArt}
+            {#key `${g.id}-${ownershipThreshold}`}
+              <span class="kindling-icon" class:state-glint={owned > 0} style:--hue={g.hue}>
+                <SetPieceArt stage={kindlingArt} monochrome />
+              </span>
+            {/key}
+          {:else}
+            <span class="dot" style:--hue={g.hue}></span>
+          {/if}
           <span class="info">
             <span class="name">
               <span class="name-label">{g.name}</span>
@@ -183,8 +206,8 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 0.9rem 0.6rem;
-    background: var(--panel);
-    border: 1px solid rgba(255, 179, 92, 0.14);
+    background-color: var(--glass);
+    border-color: var(--glass-border);
     border-radius: 14px;
     backdrop-filter: blur(10px);
     animation: shop-in 1.4s ease both;
@@ -267,13 +290,14 @@
     scrollbar-width: thin;
   }
   .row {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.65rem;
     width: 100%;
     padding: 0.55rem 0.6rem;
     margin-bottom: 0.4rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.025);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     color: var(--text);
@@ -281,6 +305,10 @@
     text-align: left;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, transform 0.06s;
+  }
+  .row:not(.teased):not(.unaffordable) {
+    background: color-mix(in srgb, var(--amber) 5%, rgba(255, 255, 255, 0.025));
+    box-shadow: inset 0 0 1.1rem color-mix(in srgb, var(--amber) 12%, transparent);
   }
   .row:not(.teased):not(.unaffordable):hover {
     background: rgba(255, 179, 92, 0.09);
@@ -290,9 +318,18 @@
     transform: scale(0.97);
   }
   .row.unaffordable {
-    opacity: 0.45;
+    opacity: 1;
+    color: color-mix(in srgb, var(--text) 45%, var(--bg));
+    background:
+      linear-gradient(132deg, transparent 0 48%, color-mix(in srgb, var(--dim) 8%, transparent) 49% 50%, transparent 51%) 0 0 / 2.8rem 2.8rem,
+      color-mix(in srgb, var(--bg) 84%, var(--panel));
+    border-color: color-mix(in srgb, var(--dim) 8%, transparent);
+    box-shadow: inset 0 0 1.2rem rgba(0, 0, 0, 0.28);
     cursor: default;
   }
+  .row.unaffordable .meta,
+  .row.unaffordable .cohort { color: color-mix(in srgb, var(--dim) 45%, var(--bg)); }
+  .row.unaffordable .owned { color: color-mix(in srgb, var(--amber) 45%, var(--bg)); }
   .row.teased {
     opacity: 0.35;
     cursor: default;
@@ -309,6 +346,23 @@
     background: #3a374d;
     box-shadow: none;
   }
+  .kindling-icon {
+    position: relative;
+    flex: none;
+    width: 1.35rem;
+    height: 1.35rem;
+    color: hsl(var(--hue, 38), 88%, 68%);
+    filter: drop-shadow(0 0 0.24rem hsla(var(--hue, 38), 90%, 62%, 0.34));
+  }
+  .kindling-icon.state-glint::after {
+    content: '';
+    position: absolute;
+    inset: -0.15rem;
+    border-radius: 50%;
+    border-top: 1px solid rgba(255, 241, 205, 0.8);
+    animation: state-glint 520ms ease-out both;
+  }
+  @keyframes state-glint { from { opacity: 1; transform: scale(0.55) rotate(-50deg); } to { opacity: 0; transform: scale(1.25) rotate(25deg); } }
   .info {
     display: flex;
     flex-direction: column;
@@ -355,7 +409,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 800px) {
     .shop {
       top: auto;
       right: 0;

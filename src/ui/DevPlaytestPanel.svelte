@@ -18,7 +18,10 @@
   ] as const satisfies readonly { id: DevScenario; label: string }[]
 
   const milestonePresets = [
+    { id: 'ember-camp', label: 'Phase 2 · Camp' },
     { id: 'midgame', label: 'First 5 Minutes' },
+    { id: 'ember-cosmic', label: 'Phase 2 · Cosmic' },
+    { id: 'ember-postnova', label: 'Phase 2 · Post-Nova' },
     { id: 'pruning', label: 'Pruning Ready' },
     { id: 'markets', label: 'Repeatable Markets' },
     { id: 'question', label: 'The Question' },

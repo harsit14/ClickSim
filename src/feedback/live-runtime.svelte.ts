@@ -22,9 +22,20 @@ import {
   dispatchSemanticFeedback,
   type FeedbackDispatchResult,
 } from './index'
+import { format } from '../core/format'
+import { worldRef } from '../render/world-ref'
+import {
+  INITIAL_PURCHASE_CEREMONY_TIMELINE,
+  schedulePurchaseCeremony,
+  type PurchaseCeremonyTimelineState,
+} from './purchase-ceremony'
 
 export interface LiveFeedbackPreferences {
   readonly audio: SemanticAudioRuntimePreferences
+  readonly visual?: {
+    readonly reducedMotion: boolean
+    readonly quality: 'high' | 'balanced' | 'low'
+  }
 }
 
 export interface LiveFeedbackState {
@@ -41,6 +52,7 @@ export const liveFeedback: LiveFeedbackState = $state({
 
 let audioState: SemanticAudioRuntimeState = EMPTY_SEMANTIC_AUDIO_RUNTIME_STATE
 let announcementState: AnnouncementGateState = EMPTY_ANNOUNCEMENT_STATE
+let purchaseTimeline: PurchaseCeremonyTimelineState = INITIAL_PURCHASE_CEREMONY_TIMELINE
 
 function fallbackMessage(request: AudioSinkFallbackRequest): string {
   const action = request.event.kind === 'purchase' ? 'Purchase completed' : 'Action completed'
@@ -119,6 +131,23 @@ export function publishLivePurchase(
     },
   ])
   liveFeedback.lastDispatch = dispatch
+  if (event.source.kind === 'generator') {
+    const destinationObject = pack.visual.objects.find((object) => (
+      object.sourceKind === 'generator' && object.sourceId === event.source.id
+    ))
+    const scheduled = schedulePurchaseCeremony(event, purchaseTimeline, {
+      destination: destinationObject
+        ? { kind: 'world-object', id: destinationObject.id }
+        : { kind: 'none', reason: 'The purchased generator has no visible manifest address.' },
+      reducedMotion: preferences.visual?.reducedMotion ?? false,
+      quality: preferences.visual?.quality ?? 'balanced',
+    })
+    purchaseTimeline = scheduled.nextState
+    const delayMs = Math.max(0, scheduled.ceremony.startsAtMs - performance.now())
+    window.setTimeout(() => {
+      worldRef()?.emitPurchaseMote(event.source.id, `+${format(event.rateDelta)}/s`)
+    }, delayMs)
+  }
   return dispatch
 }
 
@@ -126,6 +155,7 @@ export function publishLivePurchase(
 export function resetLiveFeedbackRuntime() {
   audioState = EMPTY_SEMANTIC_AUDIO_RUNTIME_STATE
   announcementState = EMPTY_ANNOUNCEMENT_STATE
+  purchaseTimeline = INITIAL_PURCHASE_CEREMONY_TIMELINE
   liveFeedback.announcement = ''
   liveFeedback.visualFallbackEventId = null
   liveFeedback.lastDispatch = null

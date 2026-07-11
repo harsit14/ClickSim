@@ -187,7 +187,7 @@
   }
 </script>
 
-<section class="panel" aria-labelledby="options-title">
+<section class="panel instrument-panel" aria-labelledby="options-title">
   <header>
     <div>
       <span>settings · accessibility · recovery</span>

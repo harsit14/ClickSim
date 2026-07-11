@@ -10,6 +10,8 @@ import {
 import { DEFAULT_UNIVERSE_ID, UNIVERSE_BY_ID, universeById, universeV2ById } from '../content/universes'
 import {
   advanceVerdanceCohortLawState,
+  clearVerdanceGraft,
+  configureVerdanceGraft,
   verdanceCohortRuntimeSummary,
 } from '../content/universes/verdance/runtime'
 import {
@@ -1108,6 +1110,24 @@ export function configureUniverseLaw(index: number): boolean {
 export function configurePrismataRoute(kindlingIndex: number, bandIndex: number): boolean {
   return game.challenge === null && game.activeUniverse === 'prismata'
     ? routePrismataKindling(game.numericLawState, kindlingIndex, bandIndex)
+    : false
+}
+
+/** Freely binds one Verdance rootstock cohort to one younger scion. */
+export function configureVerdanceGrafting(rootstockIndex: number, scionIndex: number): boolean {
+  return game.challenge === null && game.activeUniverse === 'verdance'
+    ? configureVerdanceGraft(
+      game.numericLawState,
+      rootstockIndex,
+      scionIndex,
+      universeById('verdance').generators.length,
+    )
+    : false
+}
+
+export function severVerdanceGrafting(): boolean {
+  return game.challenge === null && game.activeUniverse === 'verdance'
+    ? clearVerdanceGraft(game.numericLawState)
     : false
 }
 

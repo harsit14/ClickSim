@@ -79,7 +79,7 @@
   }
 </script>
 
-<section class="panel" aria-labelledby="stats-title">
+<section class="panel instrument-panel" aria-labelledby="stats-title">
   <header>
     <h2 id="stats-title">A Way to Remember</h2>
     <button bind:this={closeButton} class="close" aria-label="close stats" onclick={onclose}>✕</button>

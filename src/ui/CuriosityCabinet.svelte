@@ -28,6 +28,7 @@
     isZeroAmount,
   } from '../core/numeric/amount'
   import ArchiveRecordArt from './ArchiveRecordArt.svelte'
+  import LumenVaultShelf from './LumenVaultShelf.svelte'
 
   let { onclose }: { onclose: () => void } = $props()
   let now = $state(Date.now())
@@ -108,7 +109,7 @@
   }
 </script>
 
-<section class="cabinet" class:tidefall={cabinet.id === 'tidefall'} aria-labelledby="cabinet-title">
+<section class="cabinet instrument-panel" class:tidefall={cabinet.id === 'tidefall'} aria-labelledby="cabinet-title">
   <header class="cabinet-header">
     <div>
       <span class="kicker">{cabinet.surveyLabel}</span>
@@ -229,6 +230,8 @@
       </section>
     {/each}
   </div>
+
+  <LumenVaultShelf home="archive" />
 </section>
 
 <style>

@@ -148,7 +148,7 @@
 <svelte:window onkeydown={onKeydown} />
 
 <div class="guide-backdrop">
-  <dialog class="guide" open aria-modal="true" aria-labelledby="guide-title">
+  <dialog class="guide instrument-panel" open aria-modal="true" aria-labelledby="guide-title">
     <header class="guide-header">
       <div class="guide-title">
         <span>complete in-game reference</span>

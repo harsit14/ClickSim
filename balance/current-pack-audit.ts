@@ -21,6 +21,12 @@ import {
   toAmount,
 } from '../src/core/numeric/amount'
 import { SIMULATOR_PROFILES, type SimulatorProfile } from './simulator-contract'
+import {
+  advanceF4LawState,
+  dischargeTempest,
+  tempestStatus,
+} from '../src/content/universes/f4-runtime'
+import { advanceVerdanceCohortLawState } from '../src/content/universes/verdance/runtime'
 
 const AUDIT_HORIZON_HOURS = 40
 const AUDIT_STEP_SECONDS = 60
@@ -44,6 +50,7 @@ export interface CurrentPackAuditResult {
   readonly finalRate: SerializedEconomyAmount
   readonly finalEarned: SerializedEconomyAmount
   readonly firstEpochAtMs: number | null
+  readonly firstBeaconAtMs: number | null
   readonly longestPreEpochPurchaseGapMs: number
 }
 
@@ -71,6 +78,30 @@ function initialState(universeId: UniverseId): EcoState {
     darkBetween: ZERO_AMOUNT,
     wayfinder: [],
     vesselParts: [],
+    numericLawState: {},
+  }
+}
+
+function advanceActiveUniverseLaw(
+  state: EcoState,
+  profile: SimulatorProfile,
+  elapsedSeconds: number,
+): void {
+  const numericLawState = state.numericLawState ??= {}
+  const pack = universeById(state.activeUniverse)
+  if (state.activeUniverse === 'verdance') {
+    advanceVerdanceCohortLawState(
+      numericLawState,
+      state.owned,
+      pack.generators.map(({ id }) => id),
+      elapsedSeconds * 1_000,
+    )
+  }
+  advanceF4LawState(state.activeUniverse, numericLawState, state.owned, elapsedSeconds)
+  if (state.activeUniverse === 'tempest' && profile.mechanicUse > 0) {
+    const status = tempestStatus(numericLawState)
+    const releaseThreshold = status.threshold + (100 - status.threshold) * (1 - profile.mechanicUse)
+    if (status.boostRemainingSec <= 0 && status.charge >= releaseThreshold) dischargeTempest(numericLawState)
   }
 }
 
@@ -123,9 +154,11 @@ export function runCurrentPackAudit(
   let lastPurchaseAtMs = 0
   let longestPreEpochPurchaseGapMs = 0
   let firstEpochAtMs: number | null = null
+  let firstBeaconAtMs: number | null = null
   const horizonMs = horizonHours * 3600_000
 
   for (let atMs = 0; atMs < horizonMs; atMs += AUDIT_STEP_SECONDS * 1000) {
+    advanceActiveUniverseLaw(state, profile, AUDIT_STEP_SECONDS)
     const gain = multiplyAmountByNumber(activeIncomeRate(state, profile, atMs), AUDIT_STEP_SECONDS)
     state.light = addAmounts(state.light, gain)
     state.totalEarned = addAmounts(state.totalEarned, gain)
@@ -189,6 +222,10 @@ export function runCurrentPackAudit(
         purchasedGeneratorIds.push(id)
         events.push({ atMs, kind: 'first-generator', id })
       }
+      if (firstBeaconAtMs === null && (state.owned[pack.beacon.generatorId] ?? 0) >= pack.beacon.count) {
+        firstBeaconAtMs = atMs
+        events.push({ atMs, kind: 'milestone', id: 'beacon-ready' })
+      }
     }
 
     while (nextMilestone < milestones.length && gteAmount(state.totalEarned, milestones[nextMilestone])) {
@@ -215,14 +252,21 @@ export function runCurrentPackAudit(
     finalRate: serializeAmount(activeIncomeRate(state, profile, horizonMs)),
     finalEarned: serializeAmount(state.totalEarned),
     firstEpochAtMs,
+    firstBeaconAtMs,
     longestPreEpochPurchaseGapMs,
   }
 }
 
 export function runAllCurrentPackAudits(): readonly CurrentPackAuditResult[] {
   const legacyProfiles = SIMULATOR_PROFILES.filter((profile) =>
-    profile.id === 'casual-one-click-per-second' || profile.id === 'active-six-clicks-per-second')
+    profile.id === 'casual-one-click-per-second'
+    || profile.id === 'active-six-clicks-per-second'
+    || profile.id === 'competent-universe-mechanic')
   return (['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle'] as const).flatMap((universeId) =>
-    legacyProfiles.map((profile) => runCurrentPackAudit(universeId, profile)),
+    legacyProfiles.map((profile) => runCurrentPackAudit(
+      universeId,
+      profile,
+      profile.id === 'competent-universe-mechanic' ? 8 : AUDIT_HORIZON_HOURS,
+    )),
   )
 }

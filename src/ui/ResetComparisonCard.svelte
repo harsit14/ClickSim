@@ -10,6 +10,10 @@
   import type { ResetComparison } from '../experience/reset-comparison'
   import type { FocusReturnDescriptor } from '../accessibility/focus'
   import type { DurationFormatter, UiTextResolver } from '../experience/ui-text'
+  import {
+    EMBERLIGHT_SUPERNOVA_HOLD_BEAT_MS,
+    EMBERLIGHT_SUPERNOVA_HOLD_MS,
+  } from '../render/emberlight/supernova'
 
   interface Props {
     id: string
@@ -20,6 +24,8 @@
     resolveText: UiTextResolver
     formatDuration: DurationFormatter
     ondecision: (decision: ResetCardDecision) => void
+    onholdbeat?: (beat: number) => void
+    onholdcancel?: () => void
   }
 
   let {
@@ -31,11 +37,21 @@
     resolveText,
     formatDuration,
     ondecision,
+    onholdbeat = () => {},
+    onholdcancel = () => {},
   }: Props = $props()
 
   let cancelButton: HTMLButtonElement
   let confirmButton: HTMLButtonElement
+  let holdTimer: ReturnType<typeof setInterval> | undefined
+  let holdStartedAt = 0
+  let holdActive = $state(false)
+  let holdProgress = $state(0)
+  let holdBeat = $state(0)
   const model = $derived(buildResetComparisonCardModel(comparison))
+  const requiresHold = $derived(universeId === 'emberlight' && comparison.boundary === 'epoch-turn')
+  const ceremonyPreview = import.meta.env.DEV
+    && new URLSearchParams(window.location.search).get('supernova-preview') === '1'
   const titleId = $derived(`${id}-title`)
   const descriptionId = $derived(`${id}-description`)
   const turnGlyph = $derived(
@@ -48,7 +64,10 @@
                 : '✦',
   )
 
-  onMount(() => cancelButton.focus({ preventScroll: true }))
+  onMount(() => {
+    cancelButton.focus({ preventScroll: true })
+    return () => clearInterval(holdTimer)
+  })
 
   function decide(action: 'confirm' | 'cancel') {
     ondecision(describeResetCardDecision(
@@ -56,6 +75,59 @@
       action,
       action === 'confirm' ? confirmFocusReturn : cancelFocusReturn,
     ))
+  }
+
+  function resetHold(notify = false) {
+    clearInterval(holdTimer)
+    holdTimer = undefined
+    const wasActive = holdActive
+    holdActive = false
+    holdProgress = 0
+    holdBeat = 0
+    if (notify && wasActive) onholdcancel()
+  }
+
+  function advanceHold() {
+    if (!holdActive) return
+    const elapsed = Math.max(0, performance.now() - holdStartedAt)
+    holdProgress = Math.min(1, elapsed / EMBERLIGHT_SUPERNOVA_HOLD_MS)
+    const nextBeat = Math.min(3, Math.floor(elapsed / EMBERLIGHT_SUPERNOVA_HOLD_BEAT_MS))
+    if (nextBeat !== holdBeat) {
+      holdBeat = nextBeat
+      onholdbeat(holdBeat)
+    }
+    if (elapsed < EMBERLIGHT_SUPERNOVA_HOLD_MS) return
+    clearInterval(holdTimer)
+    holdTimer = undefined
+    holdActive = false
+    holdProgress = 1
+    holdBeat = 3
+    decide('confirm')
+  }
+
+  function beginHold(event: PointerEvent | KeyboardEvent) {
+    if (!requiresHold || holdActive) return
+    event.preventDefault()
+    if (event instanceof KeyboardEvent && event.repeat) return
+    holdActive = true
+    holdStartedAt = performance.now()
+    holdProgress = 0
+    holdBeat = 0
+    holdTimer = setInterval(advanceHold, 32)
+  }
+
+  function releaseHold(event: PointerEvent | KeyboardEvent) {
+    if (!requiresHold) return
+    event.preventDefault()
+    resetHold(true)
+  }
+
+  function confirmClick(event: MouseEvent) {
+    if (requiresHold) {
+      event.preventDefault()
+      return
+    }
+    decide('confirm')
   }
 
   function onDialogKeydown(event: KeyboardEvent) {
@@ -101,9 +173,15 @@
   }
 </script>
 
-<div class="scrim reduced-motion-safe" data-universe={universeId}>
+<div
+  class="scrim reduced-motion-safe"
+  class:holding={holdActive}
+  data-universe={universeId}
+  data-hold-beat={holdBeat}
+  style={`--hold-dim:${holdBeat * 0.1}`}
+>
   <div
-    class="reset-card"
+    class="reset-card instrument-panel"
     class:destructive={comparison.kind === 'destructive'}
     role="dialog"
     tabindex="-1"
@@ -211,10 +289,36 @@
         <button bind:this={cancelButton} type="button" class="cancel" onclick={() => decide('cancel')}>
           {resolveText('reset.action.cancel')}
         </button>
-        <button bind:this={confirmButton} type="button" class="confirm" onclick={() => decide('confirm')}>
-          {resolveText('reset.action.confirm', { action: resolveText(model.actionLabelKey) })}
+        {#if ceremonyPreview && requiresHold}
+          <button type="button" class="preview" onclick={() => decide('confirm')}>Preview ceremony</button>
+        {/if}
+        <button
+          bind:this={confirmButton}
+          type="button"
+          class="confirm"
+          class:hold-confirm={requiresHold}
+          class:holding={holdActive}
+          style={`--hold-progress:${holdProgress}`}
+          aria-label={requiresHold ? `Hold for three beats to ${resolveText(model.actionLabelKey)}` : undefined}
+          onpointerdown={beginHold}
+          onpointerup={releaseHold}
+          onpointercancel={releaseHold}
+          onkeydown={(event) => (event.key === ' ' || event.key === 'Enter') && beginHold(event)}
+          onkeyup={(event) => (event.key === ' ' || event.key === 'Enter') && releaseHold(event)}
+          onclick={confirmClick}
+        >
+          {#if requiresHold}
+            Hold {holdBeat}/3 beats · {resolveText(model.actionLabelKey)}
+          {:else}
+            {resolveText('reset.action.confirm', { action: resolveText(model.actionLabelKey) })}
+          {/if}
         </button>
       </div>
+      {#if requiresHold}
+        <p class="hold-status" aria-live="polite">
+          {holdActive ? `Beat ${holdBeat} of 3. Keep holding.` : 'Press and hold for three beats. Release to cancel.'}
+        </p>
+      {/if}
     </footer>
   </div>
 </div>
@@ -234,6 +338,17 @@
       rgba(2, 3, 8, 0.84);
     backdrop-filter: blur(12px);
   }
+  .scrim::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: #000;
+    opacity: var(--hold-dim, 0);
+    transition: opacity 180ms ease;
+  }
+  .reset-card { z-index: 1; }
   .scrim[data-universe='tidefall'] {
     background:
       radial-gradient(ellipse at 50% 58%, color-mix(in srgb, var(--turn-warm) 9%, transparent), transparent 50%),
@@ -591,6 +706,27 @@
     background: color-mix(in srgb, var(--turn-accent) 80%, white);
     border-color: transparent;
     font-weight: 760;
+  }
+  .hold-confirm {
+    min-width: 18rem;
+    color: color-mix(in srgb, var(--turn-accent) 82%, white);
+    background:
+      linear-gradient(90deg,
+        color-mix(in srgb, var(--turn-warm) 74%, white) 0 calc(var(--hold-progress) * 100%),
+        color-mix(in srgb, var(--panel) 86%, #070a0f) calc(var(--hold-progress) * 100%) 100%);
+    border-color: color-mix(in srgb, var(--turn-accent) 42%, transparent);
+    user-select: none;
+    touch-action: none;
+  }
+  .hold-confirm.holding { box-shadow: 0 0 1.3rem color-mix(in srgb, var(--turn-warm) 22%, transparent); }
+  .hold-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
   }
   @media (max-width: 720px) {
     .comparison-grid { grid-template-columns: 1fr; }

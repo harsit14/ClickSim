@@ -16,6 +16,7 @@ import {
 } from './hud-clearance'
 import {
   HEART_GROWTH_RADIUS_CAP,
+  HEART_VERTICAL_POSITION,
   heartBaseRadius,
   pointInsideHeartTarget,
   heartTargetCenter,
@@ -29,6 +30,7 @@ import {
   gteAmount,
   isZeroAmount,
 } from '../core/numeric/amount'
+import { particleRecipe, type ParticleRecipeKind } from './particle-recipes'
 
 interface Particle {
   x: number
@@ -40,6 +42,12 @@ interface Particle {
   size: number
   hue: number
   light: number
+  gravity?: number
+  gravityAfterLife?: number
+  gravityAfter?: number
+  tail?: number
+  additive?: boolean
+  bounce?: boolean
 }
 
 interface FloatText {
@@ -67,6 +75,34 @@ interface Glimmer {
   phase: number
 }
 
+const GROUND_COLORS = {
+  emberlight: '#221A24',
+  tidefall: '#0A2432',
+  verdance: '#1C2415',
+  clockwork: '#262019',
+  prismata: '#191627',
+  tempest: '#1C2633',
+  canticle: '#241826',
+} as const
+
+const PARALLAX_BY_TIER = {
+  ground: 1,
+  nearSky: 0.6,
+  deepSky: 0.35,
+  horizon: 0.15,
+} as const
+
+const MAX_POINTER_DRIFT_PX = 6
+
+const GROUND_ANCHOR_BY_TIER: Readonly<Record<number, readonly [number, number]>> = {
+  1: [0.1, 0.765],
+  2: [0.9, 0.77],
+  3: [0.22, 0.735],
+  4: [0.78, 0.745],
+  5: [0.33, 0.7],
+  6: [0.67, 0.7],
+}
+
 function mulberry32(seed: number) {
   return function () {
     seed |= 0
@@ -82,6 +118,8 @@ const QUALITY_ORDER: RenderQuality[] = ['low', 'balanced', 'high']
 export class World {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
+  private bloomCanvas = document.createElement('canvas')
+  private bloomCtx = this.bloomCanvas.getContext('2d')!
   private particles: Particle[] = []
   private floats: FloatText[] = []
   private quasarTaps: QuasarTap[] = []
@@ -91,6 +129,8 @@ export class World {
   private lastBeat = -1
   private rings: number[] = [] // birth timestamps (ms)
   private collapseStart = 0
+  private collapseDurationMs = 2_800
+  private supernovaAfterglowStart = 0
   private reducedMotionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)')
   private profileId = ''
   private selectedQuality: VisualQuality = game.visualQuality
@@ -103,11 +143,21 @@ export class World {
   private width = 0
   private height = 0
   private dpr = 1
+  private pointerDriftX = 0
+  private pointerDriftY = 0
+  private targetPointerDriftX = 0
+  private targetPointerDriftY = 0
+  private clickAxisX = 0
+  private clickAxisY = -1
+  private idleMoteAcc = 0
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')!
     this.resize()
+    if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('scenario') === 'ember-postnova') {
+      this.supernovaAfterglowStart = performance.now()
+    }
   }
 
   resize() {
@@ -120,6 +170,9 @@ export class World {
     this.canvas.height = this.height * this.dpr
     this.canvas.style.width = this.width + 'px'
     this.canvas.style.height = this.height + 'px'
+    const bloomScale = profile.id === 'high' ? 0.34 : profile.id === 'balanced' ? 0.25 : 0.18
+    this.bloomCanvas.width = Math.max(1, Math.ceil(this.width * bloomScale))
+    this.bloomCanvas.height = Math.max(1, Math.ceil(this.height * bloomScale))
   }
 
   get center() {
@@ -206,12 +259,12 @@ export class World {
     const growth = Math.pow(amountLog10(addAmounts(ONE_AMOUNT, game.totalEarned)), 1.2) * 6
     // Start large enough to read as the primary action, then preserve a bounded
     // progression swell without letting late-game Hearts consume the stage.
-    const base = heartBaseRadius(this.width, this.height) + Math.min(growth, HEART_GROWTH_RADIUS_CAP)
+    const baseRadius = heartBaseRadius(this.width, this.height)
+    const base = baseRadius + Math.min(growth, baseRadius * 0.4, HEART_GROWTH_RADIUS_CAP)
     const motion = this.motionScale()
-    const breath = 1 + (0.028 * Math.sin(now / 900) + 0.012 * Math.sin(now / 233)) * motion
-    const squash = 1 + this.pulse * 0.16 * motion
+    const breath = 1 + 0.028 * Math.sin((now / 4_000) * Math.PI * 2) * motion
     const swell = 1 + this.collapseProgress(now) * 1.4
-    return base * breath * squash * swell
+    return base * breath * swell
   }
 
   isOnEmber(x: number, y: number, now: number): boolean {
@@ -222,8 +275,18 @@ export class World {
     )
   }
 
-  clickPulse() {
+  clickPulse(x = this.center.x, y = this.center.y - 1) {
+    const dx = x - this.center.x
+    const dy = y - this.center.y
+    const length = Math.hypot(dx, dy)
+    this.clickAxisX = length > 0.01 ? dx / length : 0
+    this.clickAxisY = length > 0.01 ? dy / length : -1
     this.pulse = 1
+  }
+
+  setPointerPosition(x: number, y: number) {
+    this.targetPointerDriftX = ((x / Math.max(1, this.width)) * 2 - 1) * MAX_POINTER_DRIFT_PX
+    this.targetPointerDriftY = ((y / Math.max(1, this.height)) * 2 - 1) * MAX_POINTER_DRIFT_PX
   }
 
   quasarTap(text: string, crit = false, now = performance.now()) {
@@ -256,12 +319,16 @@ export class World {
   }
 
   /** Supernova cutscene: everything falls into the ember. */
-  beginCollapse() {
-    this.collapseStart = performance.now()
+  beginCollapse(delayMs = 0, durationMs = 2_800) {
+    this.collapseStart = performance.now() + Math.max(0, delayMs)
+    this.collapseDurationMs = Math.max(1, durationMs)
   }
 
   endCollapse() {
     this.collapseStart = 0
+    if (game.activeUniverse === 'emberlight' && game.supernovae > 0) {
+      this.supernovaAfterglowStart = performance.now()
+    }
     this.particles = []
     this.glimmers.clear()
     this.rings = []
@@ -271,6 +338,8 @@ export class World {
   /** A Crossing must not carry short-lived canvas artifacts into the next world. */
   resetForUniverse() {
     this.collapseStart = 0
+    this.collapseDurationMs = 2_800
+    this.supernovaAfterglowStart = 0
     this.particles = []
     this.floats = []
     this.quasarTaps = []
@@ -279,11 +348,18 @@ export class World {
     this.pulse = 0
     this.driftAcc = 0
     this.lastBeat = -1
+    this.pointerDriftX = 0
+    this.pointerDriftY = 0
+    this.targetPointerDriftX = 0
+    this.targetPointerDriftY = 0
+    this.clickAxisX = 0
+    this.clickAxisY = -1
+    this.idleMoteAcc = 0
   }
 
   private collapseProgress(now: number): number {
-    if (this.collapseStart === 0) return 0
-    return Math.min(1, (now - this.collapseStart) / 2800)
+    if (this.collapseStart === 0 || now < this.collapseStart) return 0
+    return Math.min(1, (now - this.collapseStart) / this.collapseDurationMs)
   }
 
   /** The ember wears its answer: gold for the warden, red for the hunger,
@@ -319,25 +395,99 @@ export class World {
     }
   }
 
-  burst(x: number, y: number) {
-    const c = this.center
+  burst(x: number, y: number, feedback: { readonly onBeat?: boolean; readonly crit?: boolean; readonly comboStreak?: number } = {}) {
+    this.emitParticleRecipe(feedback.onBeat ? 'on-beat' : 'click', x, y, feedback.comboStreak ?? 0)
+    if (feedback.crit) this.emitParticleRecipe('critical', x, y)
+    if (feedback.onBeat) this.rings.push(performance.now())
+  }
+
+  emitParticleRecipe(kind: ParticleRecipeKind, x = this.center.x, y = this.center.y, comboStreak = 0) {
     const accent = universeById(game.activeUniverse).palette.accentHue
-    const count = Math.max(3, Math.round((9 + Math.floor(Math.random() * 6)) * this.motionScale()))
+    const recipe = particleRecipe(kind)
+    const [minimum, maximum] = recipe.count
+    const rawCount = minimum + Math.floor(Math.random() * (maximum - minimum + 1))
+    const count = Math.max(1, Math.round(rawCount * this.motionScale()))
     for (let i = 0; i < count; i++) {
-      const angle = Math.atan2(y - c.y, x - c.x) + (Math.random() - 0.5) * 2.4
-      const speed = 60 + Math.random() * 160
+      let angle = -Math.PI / 2 + (Math.random() - 0.5) * (70 * Math.PI / 180)
+      let speed = 150 + Math.random() * 110
+      let startX = x
+      let startY = y
+      let gravity = recipe.gravity
+      let bounce = false
+
+      if (kind === 'critical') {
+        angle = i < 3 ? -Math.PI / 2 + (i * Math.PI * 2) / 3 : Math.PI * (0.35 + Math.random() * 0.3)
+        speed = i < 3 ? 180 : 130
+        bounce = i === 3
+      } else if (kind === 'achievement') {
+        angle = Math.atan2(this.height * 0.16 - y, this.width * 0.18 - x)
+        speed = Math.hypot(this.width * 0.18 - x, this.height * 0.16 - y) / 0.7
+      } else if (kind === 'omen') {
+        angle = Math.random() * Math.PI * 2
+        speed = 70 + Math.random() * 150
+        gravity = recipe.gravity
+        bounce = true
+      } else if (kind === 'purchase') {
+        angle = Math.atan2(y - startY, x - startX)
+        speed = 0
+      } else if (kind === 'on-beat' && comboStreak >= 8) {
+        const braidIndex = i - (count - 1) / 2
+        angle = -Math.PI / 2 + braidIndex * 0.09
+        speed = 190 + Math.abs(braidIndex) * 7
+      }
+
+      const lifeMs = recipe.lifeMs[0] + Math.random() * (recipe.lifeMs[1] - recipe.lifeMs[0])
       this.addParticle({
-        x,
-        y,
+        x: startX,
+        y: startY,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 40,
+        vy: Math.sin(angle) * speed,
         life: 0,
-        maxLife: 0.5 + Math.random() * 0.7,
-        size: 1 + Math.random() * 2.4,
-        hue: accent - 12 + Math.random() * 24,
-        light: 55 + Math.random() * 40,
+        maxLife: lifeMs / 1_000,
+        size: kind === 'critical' && i < 3 ? 1.25 : 0.8 + Math.random() * 1.4,
+        hue: kind === 'omen' ? accent - 24 + Math.random() * 48 : accent - 12 + Math.random() * 24,
+        light: 64 + Math.random() * 30,
+        gravity,
+        gravityAfterLife: recipe.gravityAfterMs === undefined ? undefined : recipe.gravityAfterMs / 1_000,
+        gravityAfter: recipe.gravityAfter,
+        tail: recipe.tailLength,
+        additive: recipe.blend === 'additive',
+        bounce,
       })
     }
+  }
+
+  emitPurchaseMote(sourceId: string, rateDeltaText?: string) {
+    const generator = universeById(game.activeUniverse).generators.find(({ id }) => id === sourceId)
+    if (!generator) return
+    const destination = this.worldAddressForTier(generator.tier)
+    const startX = this.width * 0.82
+    const startY = this.height * 0.5
+    const duration = 0.4
+    const recipe = particleRecipe('purchase')
+    this.addParticle({
+      x: startX,
+      y: startY,
+      vx: (destination.x - startX) / duration,
+      vy: (destination.y - startY) / duration,
+      life: 0,
+      maxLife: recipe.lifeMs[0] / 1_000,
+      size: 2.4,
+      hue: universeById(game.activeUniverse).palette.accentHue,
+      light: 82,
+      gravity: 0,
+      tail: recipe.tailLength,
+      additive: true,
+    })
+    if (rateDeltaText) this.addFloat(rateDeltaText, destination.x, destination.y)
+  }
+
+  private worldAddressForTier(tier: number): { readonly x: number; readonly y: number } {
+    const ground = GROUND_ANCHOR_BY_TIER[tier]
+    if (ground) return { x: this.width * ground[0], y: this.height * ground[1] }
+    if (tier <= 12) return { x: this.width * (0.18 + ((tier - 7) / 5) * 0.64), y: this.height * 0.45 }
+    if (tier <= 15) return { x: this.width * (0.24 + ((tier - 13) / 2) * 0.52), y: this.height * 0.25 }
+    return { x: this.width * (0.18 + ((tier - 16) / 2) * 0.66), y: this.height * 0.1 }
   }
 
   addFloat(text: string, x: number, y: number) {
@@ -388,11 +538,19 @@ export class World {
       let hash = 0
       for (const ch of cacheKey) hash = (hash * 31 + ch.charCodeAt(0)) | 0
       const rand = mulberry32(hash + list.length * 7919)
-      // low tiers settle near the ground, middle tiers hang mid-void, stars fill the sky
-      const [yMin, yMax] = tier <= 6 ? [0.62, 0.95] : tier <= 12 ? [0.3, 0.58] : [0.04, 0.26]
+      // Kindlings 1-6 have concrete addresses on the dune. Later tiers occupy
+      // increasingly distant sky bands rather than one undifferentiated field.
+      const groundAnchor = GROUND_ANCHOR_BY_TIER[tier]
+      const [xMin, xMax, yMin, yMax] = groundAnchor
+        ? [groundAnchor[0] - 0.055, groundAnchor[0] + 0.055, groundAnchor[1] - 0.024, groundAnchor[1] + 0.018]
+        : tier <= 12
+          ? [0.08, 0.92, 0.28, 0.56]
+          : tier <= 15
+            ? [0.06, 0.94, 0.1, 0.32]
+            : [0.05, 0.95, 0.035, 0.18]
       while (list.length < want) {
         const glimmer = {
-          x: 0.05 + rand() * 0.9,
+          x: xMin + rand() * (xMax - xMin),
           y: yMin + rand() * (yMax - yMin),
           size: 1 + rand() * 2 + tier * 0.12,
           hue,
@@ -927,7 +1085,37 @@ export class World {
   }
 
   private update(dt: number, now: number) {
+    const particlesPaused = document.documentElement.dataset.lumenImportance === 'important'
     this.pulse = Math.max(0, this.pulse - dt * 6)
+    const parallaxEase = 1 - Math.exp(-dt * 5)
+    this.pointerDriftX += (this.targetPointerDriftX - this.pointerDriftX) * parallaxEase
+    this.pointerDriftY += (this.targetPointerDriftY - this.pointerDriftY) * parallaxEase
+
+    const sparkCount = game.owned.spark ?? 0
+    if (!particlesPaused && game.activeUniverse === 'emberlight' && sparkCount > 0 && this.motionScale() >= 1) {
+      // Sparks are a rate, not a landmark: more ownership means the Coal exhales
+      // more frequently, while still respecting the global particle budget.
+      const moteInterval = Math.max(0.16, 2 / (1 + Math.log2(sparkCount + 1) * 0.75))
+      this.idleMoteAcc += dt
+      if (this.idleMoteAcc >= moteInterval) {
+        this.idleMoteAcc %= moteInterval
+        const c = this.center
+        const r = this.emberRadius(now)
+        this.addParticle({
+          x: c.x + r * 0.16,
+          y: c.y - r * 0.58,
+          vx: 4 + Math.random() * 7,
+          vy: -18 - Math.random() * 8,
+          life: 0,
+          maxLife: 1.8 + Math.random() * 0.4,
+          size: 0.8 + Math.random() * 0.7,
+          hue: 34 + Math.random() * 12,
+          light: 70 + Math.random() * 15,
+        })
+      }
+    } else {
+      this.idleMoteAcc = 0
+    }
 
     // during collapse, everything streams into the ember
     const collapse = this.collapseProgress(now)
@@ -970,7 +1158,7 @@ export class World {
 
     // gentle motes rising from the ember while generators work
     const rate = ratePerSec()
-    if (!isZeroAmount(rate)) {
+    if (!particlesPaused && !isZeroAmount(rate)) {
       const profile = this.currentRenderProfile()
       this.driftAcc += dt * Math.min(5, 0.6 + Math.sqrt(amountToBoundedNumber(rate)) * 0.35) * this.motionScale() * profile.moteScale
       while (this.driftAcc >= 1) {
@@ -993,17 +1181,28 @@ export class World {
       }
     }
 
-    for (let i = this.particles.length - 1; i >= 0; i--) {
-      const p = this.particles[i]
-      p.life += dt
-      if (p.life >= p.maxLife) {
-        this.particles.splice(i, 1)
-        continue
+    if (!particlesPaused) {
+      for (let i = this.particles.length - 1; i >= 0; i--) {
+        const p = this.particles[i]
+        p.life += dt
+        if (p.life >= p.maxLife) {
+          this.particles.splice(i, 1)
+          continue
+        }
+        p.x += p.vx * dt
+        p.y += p.vy * dt
+        p.vx *= 1 - dt * 1.2
+        const gravity = p.gravityAfterLife !== undefined && p.life >= p.gravityAfterLife
+          ? p.gravityAfter ?? p.gravity ?? 20
+          : p.gravity ?? 20
+        p.vy += gravity * dt
+        if (p.bounce && p.y >= this.height * 0.78 && p.vy > 0) {
+          p.y = this.height * 0.78
+          p.vy *= -0.34
+          p.vx *= 0.7
+          p.bounce = false
+        }
       }
-      p.x += p.vx * dt
-      p.y += p.vy * dt
-      p.vx *= 1 - dt * 1.2
-      p.vy += 20 * dt // faint gravity; rising motes still rise
     }
 
     for (let i = this.floats.length - 1; i >= 0; i--) {
@@ -1017,6 +1216,296 @@ export class World {
         f.vy *= 1 - dt * 0.12
       }
     }
+  }
+
+  private parallaxForTier(tier: number): number {
+    if (tier <= 6) return PARALLAX_BY_TIER.ground
+    if (tier <= 12) return PARALLAX_BY_TIER.nearSky
+    if (tier <= 15) return PARALLAX_BY_TIER.deepSky
+    return PARALLAX_BY_TIER.horizon
+  }
+
+  private drawGround() {
+    const { ctx, width, height } = this
+    const offsetX = this.pointerDriftX * PARALLAX_BY_TIER.ground
+    const offsetY = this.pointerDriftY * PARALLAX_BY_TIER.ground * 0.25
+    const edgeY = height * 0.79 + offsetY
+    const seamY = height * (HEART_VERTICAL_POSITION + 0.085) + offsetY
+    ctx.save()
+    ctx.fillStyle = GROUND_COLORS[game.activeUniverse as keyof typeof GROUND_COLORS]
+      ?? GROUND_COLORS.emberlight
+    ctx.beginPath()
+    ctx.moveTo(-24 + offsetX, edgeY)
+    ctx.bezierCurveTo(
+      width * 0.17 + offsetX,
+      height * 0.75 + offsetY,
+      width * 0.34 + offsetX,
+      seamY + height * 0.018,
+      width * 0.5 + offsetX,
+      seamY,
+    )
+    ctx.bezierCurveTo(
+      width * 0.67 + offsetX,
+      seamY + height * 0.012,
+      width * 0.83 + offsetX,
+      height * 0.76 + offsetY,
+      width + 24 + offsetX,
+      height * 0.8 + offsetY,
+    )
+    ctx.lineTo(width + 24, height + 24)
+    ctx.lineTo(-24, height + 24)
+    ctx.closePath()
+    ctx.fill()
+    ctx.restore()
+  }
+
+  private applyScreenBloom(profile: RenderProfile) {
+    const { ctx, width, height, dpr } = this
+    const bloomWidth = this.bloomCanvas.width
+    const bloomHeight = this.bloomCanvas.height
+    this.bloomCtx.setTransform(1, 0, 0, 1, 0, 0)
+    this.bloomCtx.clearRect(0, 0, bloomWidth, bloomHeight)
+    this.bloomCtx.filter = profile.id === 'low'
+      ? 'brightness(1.12) contrast(1.18)'
+      : 'brightness(1.22) contrast(1.28) saturate(1.08)'
+    this.bloomCtx.drawImage(
+      this.canvas,
+      0,
+      0,
+      this.canvas.width,
+      this.canvas.height,
+      0,
+      0,
+      bloomWidth,
+      bloomHeight,
+    )
+    this.bloomCtx.filter = 'none'
+
+    ctx.save()
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.globalCompositeOperation = 'lighter'
+    ctx.globalAlpha = profile.id === 'high' ? 0.24 : profile.id === 'balanced' ? 0.19 : 0.13
+    ctx.filter = `blur(${profile.id === 'high' ? 12 : profile.id === 'balanced' ? 9 : 6}px)`
+    const bleed = profile.id === 'high' ? 16 : profile.id === 'balanced' ? 12 : 8
+    ctx.drawImage(this.bloomCanvas, -bleed, -bleed, width + bleed * 2, height + bleed * 2)
+    ctx.restore()
+  }
+
+  private emberlightCoalStage(): number {
+    if (game.ending !== null) return 5
+    let deepestTier = 0
+    for (const generator of universeById('emberlight').generators) {
+      if ((game.owned[generator.id] ?? 0) > 0) deepestTier = Math.max(deepestTier, generator.tier)
+    }
+    if (deepestTier >= 14) return 4
+    if (deepestTier >= 10) return 3
+    if (deepestTier >= 7) return 2
+    if (deepestTier >= 3) return 1
+    if (game.supernovae > 0) return 1
+    return 0
+  }
+
+  private drawSupernovaAfterglow(now: number) {
+    if (game.activeUniverse !== 'emberlight' || this.supernovaAfterglowStart <= 0) return
+    const age = now - this.supernovaAfterglowStart
+    if (age >= 60_000) {
+      this.supernovaAfterglowStart = 0
+      return
+    }
+    const { ctx, width, height } = this
+    const fade = 1 - age / 60_000
+    ctx.save()
+
+    // Fresh Stardust remains caught in the ash for the first minute.
+    for (let index = 0; index < 42; index += 1) {
+      const x = ((index * 83 + 17) % 997) / 997 * width
+      const y = height * (0.755 + (((index * 47 + 11) % 100) / 100) * 0.19)
+      const twinkle = 0.35 + 0.65 * Math.sin(now / 420 + index * 2.13) ** 2
+      ctx.fillStyle = `rgba(215, 205, 255, ${fade * twinkle * 0.34})`
+      ctx.beginPath()
+      ctx.arc(x, y, 0.7 + (index % 3) * 0.45, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    // Scorch-ghosts remember the largest lost structures without repopulating the sky.
+    ctx.strokeStyle = `rgba(177, 145, 214, ${fade * 0.075})`
+    ctx.lineWidth = 1
+    ctx.setLineDash([3, 8])
+    ctx.beginPath()
+    ctx.moveTo(width * 0.16, height * 0.72)
+    ctx.lineTo(width * 0.28, height * 0.63)
+    ctx.lineTo(width * 0.39, height * 0.71)
+    ctx.moveTo(width * 0.67, height * 0.28)
+    ctx.arc(width * 0.67, height * 0.28, Math.min(width, height) * 0.046, 0, Math.PI * 2)
+    ctx.moveTo(width * 0.14, height * 0.17)
+    ctx.lineTo(width * 0.28, height * 0.09)
+    ctx.lineTo(width * 0.39, height * 0.2)
+    ctx.lineTo(width * 0.51, height * 0.11)
+    ctx.stroke()
+    ctx.setLineDash([])
+    ctx.restore()
+  }
+
+  private drawEmberlightCoal(now: number, radius: number, reduced: boolean) {
+    const { ctx } = this
+    const c = this.center
+    const stage = this.emberlightCoalStage()
+    const pal = this.palette()
+    const clickAngle = Math.atan2(this.clickAxisY, this.clickAxisX)
+
+    ctx.save()
+    ctx.translate(c.x, c.y)
+
+    if (stage >= 4) {
+      ctx.strokeStyle = `rgba(${pal.c1}, 0.28)`
+      ctx.lineWidth = 1.2
+      for (const offset of [-0.58, -0.18, 0.24, 0.61]) {
+        ctx.beginPath()
+        ctx.moveTo(offset * radius, -radius * 0.48)
+        ctx.bezierCurveTo(offset * radius * 1.3, -radius * 1.25, offset * radius * 0.7, -radius * 2.1, offset * radius * 1.8, -radius * 2.8)
+        ctx.stroke()
+      }
+    }
+
+    if (stage >= 3) {
+      ctx.strokeStyle = `rgba(${pal.c1}, 0.44)`
+      ctx.lineWidth = Math.max(1.2, radius * 0.035)
+      ctx.beginPath()
+      ctx.ellipse(radius * 0.12, -radius * 0.08, radius * 1.18, radius * 0.78, -0.48, 3.62, 5.92)
+      ctx.stroke()
+    }
+
+    if (stage >= 1) {
+      for (let index = 0; index < 7; index += 1) {
+        const angle = Math.PI * (0.05 + index * 0.15)
+        const x = Math.cos(angle) * radius * 1.05
+        const y = Math.sin(angle) * radius * 0.48 + radius * 0.68
+        ctx.fillStyle = index % 2 === 0 ? '#2f2528' : '#3a2d2b'
+        ctx.beginPath()
+        ctx.ellipse(x, y, radius * 0.24, radius * 0.13, angle - Math.PI / 2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    if (stage >= 2) {
+      for (let index = 0; index < 2; index += 1) {
+        const angle = now / 800 + index * Math.PI * 0.88
+        ctx.fillStyle = `rgba(${pal.c1}, ${0.34 + index * 0.12})`
+        ctx.beginPath()
+        ctx.arc(Math.cos(angle) * radius * 1.1, Math.sin(angle) * radius * 0.42, radius * 0.055, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    ctx.scale(1.1, 0.96)
+    ctx.rotate(clickAngle)
+    ctx.scale(1 - this.pulse * 0.06 * this.motionScale(), 1 + this.pulse * 0.02 * this.motionScale())
+    ctx.rotate(-clickAngle)
+
+    const core = ctx.createRadialGradient(-radius * 0.18, -radius * 0.22, 0, 0, 0, radius)
+    core.addColorStop(0, `rgba(${pal.c0}, 1)`)
+    core.addColorStop(0.34, `rgba(${pal.c1}, 0.98)`)
+    core.addColorStop(0.78, `rgba(${pal.c2}, 0.92)`)
+    core.addColorStop(1, `rgba(${pal.c3}, 0.84)`)
+    ctx.fillStyle = core
+    ctx.beginPath()
+    ctx.moveTo(-radius * 0.94, radius * 0.12)
+    ctx.bezierCurveTo(-radius * 1.02, -radius * 0.42, -radius * 0.58, -radius * 0.88, -radius * 0.1, -radius * 0.82)
+    ctx.bezierCurveTo(radius * 0.24, -radius * 1.02, radius * 0.82, -radius * 0.62, radius * 0.86, -radius * 0.12)
+    ctx.bezierCurveTo(radius * 1.02, radius * 0.34, radius * 0.55, radius * 0.88, radius * 0.08, radius * 0.82)
+    ctx.bezierCurveTo(-radius * 0.38, radius * 0.97, -radius * 0.88, radius * 0.65, -radius * 0.94, radius * 0.12)
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.fillStyle = 'rgba(24, 16, 19, 0.82)'
+    ctx.beginPath()
+    ctx.moveTo(-radius * 0.88, radius * 0.08)
+    ctx.bezierCurveTo(-radius * 0.88, -radius * 0.46, -radius * 0.55, -radius * 0.78, -radius * 0.12, -radius * 0.75)
+    ctx.lineTo(-radius * 0.3, -radius * 0.18)
+    ctx.lineTo(-radius * 0.06, radius * 0.06)
+    ctx.lineTo(-radius * 0.28, radius * 0.72)
+    ctx.bezierCurveTo(-radius * 0.68, radius * 0.66, -radius * 0.92, radius * 0.42, -radius * 0.88, radius * 0.08)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(radius * 0.02, -radius * 0.78)
+    ctx.bezierCurveTo(radius * 0.52, -radius * 0.82, radius * 0.86, -radius * 0.5, radius * 0.84, -radius * 0.12)
+    ctx.lineTo(radius * 0.3, -radius * 0.02)
+    ctx.lineTo(radius * 0.08, -radius * 0.24)
+    ctx.closePath()
+    ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(radius * 0.15, radius * 0.08)
+    ctx.lineTo(radius * 0.82, radius * 0.02)
+    ctx.bezierCurveTo(radius * 0.88, radius * 0.45, radius * 0.5, radius * 0.82, radius * 0.08, radius * 0.8)
+    ctx.lineTo(-radius * 0.1, radius * 0.2)
+    ctx.closePath()
+    ctx.fill()
+
+    const crackAlpha = reduced ? 0.78 : Math.min(1, 0.7 + this.pulse * 0.7)
+    ctx.strokeStyle = `rgba(${this.pulse > 0.55 ? '255, 250, 231' : pal.c1}, ${crackAlpha})`
+    ctx.lineWidth = Math.max(1.4, radius * (0.035 + this.pulse * 0.018))
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.beginPath()
+    ctx.moveTo(-radius * 0.22, -radius * 0.72)
+    ctx.lineTo(-radius * 0.3, -radius * 0.2)
+    ctx.lineTo(-radius * 0.06, radius * 0.05)
+    ctx.lineTo(-radius * 0.16, radius * 0.36)
+    ctx.lineTo(-radius * 0.06, radius * 0.74)
+    ctx.moveTo(-radius * 0.06, radius * 0.05)
+    ctx.lineTo(radius * 0.18, -radius * 0.2)
+    ctx.lineTo(radius * 0.48, -radius * 0.08)
+    ctx.moveTo(-radius * 0.16, radius * 0.36)
+    ctx.lineTo(radius * 0.14, radius * 0.2)
+    ctx.lineTo(radius * 0.38, radius * 0.48)
+    ctx.stroke()
+
+    if (stage >= 5) {
+      ctx.fillStyle = `rgba(${pal.c0}, 0.92)`
+      ctx.beginPath()
+      ctx.ellipse(0, radius * 0.04, radius * 0.18, radius * 0.13, -0.2, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    ctx.restore()
+  }
+
+  private drawEmberlightWisps(now: number, radius: number, reduced: boolean) {
+    const owned = game.owned.wisp ?? 0
+    if (owned <= 0) return
+    const { ctx } = this
+    const c = this.center
+    const count = owned >= 50 ? 3 : owned >= 10 ? 2 : 1
+    ctx.save()
+    ctx.globalCompositeOperation = 'screen'
+    for (let index = 0; index < count; index += 1) {
+      const phase = index * 2.1
+      const turn = reduced ? phase : now / (2_800 + index * 310) + phase
+      const x = c.x + Math.cos(turn) * radius * (1.45 + index * 0.42)
+      const y = c.y - radius * (0.25 + index * 0.18) + Math.sin(turn * 1.37) * radius * 0.38
+      const alpha = 0.26 + Math.min(0.24, Math.log10(owned + 1) * 0.1)
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(-0.36 + Math.sin(turn) * 0.24)
+      const glow = ctx.createRadialGradient(0, -radius * 0.08, 0, 0, 0, radius * 0.44)
+      glow.addColorStop(0, `rgba(216, 252, 255, ${alpha * 0.9})`)
+      glow.addColorStop(0.42, `rgba(93, 222, 242, ${alpha})`)
+      glow.addColorStop(1, 'rgba(67, 177, 221, 0)')
+      ctx.fillStyle = glow
+      ctx.beginPath()
+      ctx.moveTo(0, -radius * 0.42)
+      ctx.bezierCurveTo(radius * 0.3, -radius * 0.12, radius * 0.2, radius * 0.2, 0, radius * 0.36)
+      ctx.bezierCurveTo(-radius * 0.2, radius * 0.12, -radius * 0.22, -radius * 0.12, 0, -radius * 0.42)
+      ctx.fill()
+      ctx.strokeStyle = `rgba(180, 244, 255, ${alpha * 0.72})`
+      ctx.lineWidth = Math.max(0.8, radius * 0.018)
+      ctx.beginPath()
+      ctx.moveTo(0, radius * 0.16)
+      ctx.bezierCurveTo(-radius * 0.18, radius * 0.48, radius * 0.12, radius * 0.65, -radius * 0.07, radius * 0.88)
+      ctx.stroke()
+      ctx.restore()
+    }
+    ctx.restore()
   }
 
   private draw(now: number) {
@@ -1038,6 +1527,9 @@ export class World {
     ctx.fillStyle = vg
     ctx.fillRect(0, 0, width, height)
 
+    this.drawGround()
+    this.drawSupernovaAfterglow(now)
+
     // The ambient field gives progression a shared sense of depth. V2 worlds
     // add a composed universe atmosphere in ManifestWorldLayer instead of
     // replacing this field with a grid of contract primitives.
@@ -1049,18 +1541,25 @@ export class World {
       if (owned <= 0) continue
       const ownedScale = 1 + Math.min(0.7, Math.log10(owned + 1) * 0.2)
       const tierScale = 1 + Math.min(0.25, g.tier * 0.012)
+      const parallax = this.parallaxForTier(g.tier)
       for (const gl of this.glimmersFor(g.id, owned, g.hue, g.tier)) {
         const tw = reduced ? 0.72 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now / 700 + gl.phase))
         const size = gl.size * ownedScale * tierScale
         if (circleIntersectsHudClearance(
-          gl.x * width,
-          gl.y * height,
+          gl.x * width + this.pointerDriftX * parallax,
+          gl.y * height + this.pointerDriftY * parallax,
           size + 2,
           { width, height },
         )) continue
         ctx.beginPath()
         ctx.fillStyle = `hsla(${gl.hue}, 90%, 70%, ${0.22 * tw * collapseFade})`
-        ctx.arc(gl.x * width, gl.y * height, size * tw + 0.4, 0, Math.PI * 2)
+        ctx.arc(
+          gl.x * width + this.pointerDriftX * parallax,
+          gl.y * height + this.pointerDriftY * parallax,
+          size * tw + 0.4,
+          0,
+          Math.PI * 2,
+        )
         ctx.fill()
       }
     }
@@ -1072,17 +1571,7 @@ export class World {
     const c = this.center
     const r = this.emberRadius(now)
 
-    // halo
     const pal = this.palette()
-    const halo = ctx.createRadialGradient(c.x, c.y, r * 0.2, c.x, c.y, r * 4.2)
-    halo.addColorStop(0, `rgba(${pal.halo}, 0.28)`)
-    halo.addColorStop(0.5, `rgba(${pal.mid}, 0.07)`)
-    halo.addColorStop(1, `rgba(${pal.mid}, 0)`)
-    ctx.fillStyle = halo
-    ctx.beginPath()
-    ctx.arc(c.x, c.y, r * 4.2, 0, Math.PI * 2)
-    ctx.fill()
-
     // core
     const flick = reduced ? 0.98 : 0.94 + 0.06 * Math.sin(now / 61) * Math.sin(now / 137)
     const core = ctx.createRadialGradient(c.x, c.y - r * 0.15, 0, c.x, c.y, r)
@@ -1092,7 +1581,11 @@ export class World {
     core.addColorStop(1, `rgba(${pal.c3}, 0)`)
     ctx.fillStyle = core
     ctx.beginPath()
-    if (game.activeUniverse === 'verdance') {
+    if (game.activeUniverse === 'emberlight') {
+      // Wisps wander in the Coal's plane and are occluded by it.
+      this.drawEmberlightWisps(now, r, reduced)
+      this.drawEmberlightCoal(now, r, reduced)
+    } else if (game.activeUniverse === 'verdance') {
       ctx.save()
       ctx.translate(c.x, c.y)
       ctx.rotate(-0.16)
@@ -1196,11 +1689,27 @@ export class World {
     for (const p of this.particles) {
       const fade = 1 - p.life / p.maxLife
       if (circleIntersectsHudClearance(p.x, p.y, p.size + 2, { width, height })) continue
+      ctx.save()
+      if (p.additive) ctx.globalCompositeOperation = 'lighter'
+      if ((p.tail ?? 0) > 0) {
+        const speed = Math.max(1, Math.hypot(p.vx, p.vy))
+        const tail = (p.tail ?? 0) * fade
+        ctx.strokeStyle = `hsla(${p.hue}, 100%, ${p.light}%, ${fade * 0.62})`
+        ctx.lineWidth = Math.max(0.6, p.size * fade)
+        ctx.lineCap = 'round'
+        ctx.beginPath()
+        ctx.moveTo(p.x, p.y)
+        ctx.lineTo(p.x - (p.vx / speed) * tail, p.y - (p.vy / speed) * tail)
+        ctx.stroke()
+      }
       ctx.beginPath()
       ctx.fillStyle = `hsla(${p.hue}, 100%, ${p.light}%, ${fade})`
       ctx.arc(p.x, p.y, p.size * fade + 0.3, 0, Math.PI * 2)
       ctx.fill()
+      ctx.restore()
     }
+
+    this.applyScreenBloom(this.currentRenderProfile())
 
     // floating +N
     ctx.textAlign = 'center'

@@ -233,6 +233,10 @@ test('F3 and F4 scenarios preserve every universe-local content namespace', () =
   assert.equal(verdance.activeUniverse, 'verdance')
   assert.equal(clockwork.activeUniverse, 'clockwork')
   assert.ok(Object.keys(verdance.owned).every((id) => id.startsWith('u3-')))
+  assert.deepEqual(
+    Object.keys(verdance.numericLawState).filter((id) => id.startsWith('u3-graft-')).sort(),
+    ['u3-graft-active', 'u3-graft-rootstock', 'u3-graft-scion'],
+  )
   assert.ok(Object.keys(clockwork.owned).every((id) => id.startsWith('u4-')))
   assert.ok(verdance.curiosities.length >= 3)
   assert.ok(clockwork.curiosities.length >= 3)

@@ -409,8 +409,13 @@ function futureProgression(config: {
   currency: string
   epoch: string
   matter: string
-  epochVerb: string
-  warning: string
+  epochCopy: {
+    firstText: string
+    needsText: string
+    readyText: string
+    warningText: string
+    goText: string
+  }
   deepTitle: string
   deepVerb: string
   trialsTitle: string
@@ -429,18 +434,18 @@ function futureProgression(config: {
       title: config.observatoryTitle,
       mapTitle: config.mapTitle,
       trialWait: `A local trial is underway — ${config.observatoryTitle} holds its current state.`,
-      firstText: `When this world has gathered enough {currency}, perform ${config.epoch} and preserve ${config.matter}.`,
-      needsText: `The next ${config.epoch} needs more {currency}.`,
-      readyText: `${config.epoch} is ready. Inspect the boundary before committing.`,
-      warningText: config.warning,
+      firstText: config.epochCopy.firstText,
+      needsText: config.epochCopy.needsText,
+      readyText: config.epochCopy.readyText,
+      warningText: config.epochCopy.warningText,
       collapseName: config.epoch,
-      goText: config.epochVerb,
+      goText: config.epochCopy.goText,
       ownedText: `preserved as ${config.matter}`,
       eternalEyebrow: `after the first ${config.epoch}`,
       eternalTitle: `The Continuing ${mapName}`,
       eternalIntro: `These works consume unspent ${config.matter}. Their ranks survive ${config.epoch} and fold only at the local Deep boundary.`,
       eternalEmpty: `Complete ${config.mapTitle}. Its finished relationships open repeatable ${config.matter} works.`,
-      workVerb: config.epochVerb.toLowerCase(),
+      workVerb: config.epochCopy.goText.toLowerCase(),
       nodes: config.nodes,
       works: config.works,
     },
@@ -480,8 +485,13 @@ const PRISMATA_PROGRESSION = futureProgression({
   currency: 'Chroma',
   epoch: 'Refraction',
   matter: 'Facets',
-  epochVerb: 'Crystallize the spectrum',
-  warning: 'Chroma, present optical Kindlings, and ordinary refinements return to darkness. Facets, recipes, Archives, and deeper laws remain.',
+  epochCopy: {
+    firstText: 'When six named paths can survive one white output, close the bench. Their solved angles will crystallize as Facets.',
+    needsText: 'This spectrum has not held enough {currency} to set another Facet. Keep the bands labeled and the source open.',
+    readyText: 'The paths are aligned. Let the source go dark and keep the relationship at the rim.',
+    warningText: 'Chroma, present optical Kindlings, and ordinary refinements return to darkness. Facets, recipes, Archives, and deeper laws remain.',
+    goText: 'Close the aperture',
+  },
   deepTitle: 'The Dark Line',
   deepVerb: 'Enter the absorption line',
   trialsTitle: 'Trials of Separation',
@@ -540,8 +550,13 @@ const TEMPEST_PROGRESSION = futureProgression({
   currency: 'Charge',
   epoch: 'Grounding',
   matter: 'Fulgurites',
-  epochVerb: 'Ground the storm',
-  warning: 'Charge, present storm cells, and ordinary refinements return to calm. Fulgurites, saved paths, Archives, and deeper laws remain.',
+  epochCopy: {
+    firstText: 'When the sky can no longer hold its useful difference, choose the ground. The declared path will cool into Fulgurites.',
+    needsText: 'The pressure wall needs more {currency} before another path can survive as glass.',
+    readyText: 'The leader has reached the ground mark. Release the weather through the route you chose.',
+    warningText: 'Charge, present storm cells, and ordinary refinements return to calm. Fulgurites, saved paths, Archives, and deeper laws remain.',
+    goText: 'Complete the path',
+  },
   deepTitle: 'The Quiet Eye',
   deepVerb: 'Cross the eye wall',
   trialsTitle: 'Trials of Release',
@@ -600,8 +615,13 @@ const CANTICLE_PROGRESSION = futureProgression({
   currency: 'Resonance',
   epoch: 'Refrain',
   matter: 'Overtones',
-  epochVerb: 'Complete the refrain',
-  warning: 'Resonance, present voices, and ordinary refinements return to rest. Overtones, measures, Resonant Memory, and deeper laws remain.',
+  epochCopy: {
+    firstText: 'When this movement has carried every answer it can hold, let the final bar close. Its surviving relationships will remain as Overtones.',
+    needsText: 'The measure needs more {currency} before its ending can leave a true Overtone.',
+    readyText: 'The final beat is sounding. Do not cut it short; leave the rest after it open.',
+    warningText: 'Resonance, present voices, and ordinary refinements return to rest. Overtones, measures, Resonant Memory, and deeper laws remain.',
+    goText: 'Let the bar resolve',
+  },
   deepTitle: 'The Perfect Rest',
   deepVerb: 'Hold the rest',
   trialsTitle: 'Trials of Relationship',

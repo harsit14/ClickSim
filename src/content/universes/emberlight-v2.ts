@@ -90,14 +90,14 @@ const KINDLING_SPECS: EighteenTuple<KindlingVisualSpec> = [
   {
     sourceId: 'forge', phenomenon: 'A stellar anvil teaching Light to work',
     purpose: 'Signals mature passive infrastructure and Forge doctrine affinity',
-    screenZone: 'heart', salience: 'interactive', material: ['iron-dark anvil', 'gold plasma spray'],
+    screenZone: 'near', salience: 'interactive', material: ['iron-dark anvil', 'gold plasma spray'],
     silhouette: 'a broad anvil beneath a bipolar flame', objectMotion: motion('authored', 'Each strike sends a paired plasma fan away from the Heart', 3_200),
     ownershipSilhouettes: ['one stellar anvil', 'a ten-forge crescent', 'a twenty-five-forge industrial arc', 'a fifty-forge star foundry', 'a hundred-forge cosmic manufactory'],
   },
   {
     sourceId: 'beacon', phenomenon: 'A tower of Light calling into an unanswered sky',
     purpose: 'Foreshadows inter-world contact without representing the final Beacon system',
-    screenZone: 'heart', salience: 'interactive', material: ['spectral glass', 'focused plasma'],
+    screenZone: 'near', salience: 'interactive', material: ['spectral glass', 'focused plasma'],
     silhouette: 'a narrow tower with a sweeping lens', objectMotion: motion('optical', 'A focused beam searches the ecliptic', 6_000),
     ownershipSilhouettes: ['one searching tower', 'a ten-beacon watch ring', 'a twenty-five-beacon signal lattice', 'a fifty-beacon horizon array', 'a hundred-beacon listening civilization'],
   },

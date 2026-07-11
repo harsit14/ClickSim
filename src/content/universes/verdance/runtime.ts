@@ -44,6 +44,28 @@ export interface VerdanceCohortRuntimeSummary {
   readonly prunableQuantity: number
 }
 
+export const VERDANCE_GRAFT_RULES = {
+  inheritedMaturityShare: 0.55,
+  rootstockProductionFactor: 0.92,
+} as const
+
+export interface VerdanceGraftingStatus {
+  readonly configured: boolean
+  readonly active: boolean
+  readonly rootstockIndex: number
+  readonly scionIndex: number
+  readonly rootstockId: string
+  readonly scionId: string
+  readonly rootstockStageLabel: string
+  readonly scionStageLabel: string
+  readonly rootstockCohortMultiplier: number
+  readonly scionCohortMultiplier: number
+  readonly scionGraftedMultiplier: number
+  readonly rootstockProductionFactor: number
+  readonly scionProductionFactor: number
+  readonly explanation: string
+}
+
 function quantityKey(generatorId: string): string {
   return `${generatorId}-cohort-quantity`
 }
@@ -60,6 +82,15 @@ function boundedStateNumber(value: EconomyAmount | undefined, fallback = 0): num
   } catch {
     return fallback
   }
+}
+
+function graftIndex(
+  state: Readonly<Record<string, EconomyAmount>> | undefined,
+  key: string,
+  fallback: number,
+  generatorCount: number,
+): number {
+  return Math.min(generatorCount - 1, Math.floor(boundedStateNumber(state?.[key], fallback)))
 }
 
 function ownedQuantity(value: number | undefined): number {
@@ -182,4 +213,92 @@ export function verdanceCohortRuntimeSummary(
     memorySeedBonus: pruning.memorySeeds,
     prunableQuantity: pruning.prunableQuantity,
   }
+}
+
+/**
+ * Bind one older Kindling cohort to one younger cohort. Configuration is free,
+ * deterministic, and retained through Pruning; the graft only wakes while both
+ * cohorts exist and the chosen rootstock is actually more mature.
+ */
+export function configureVerdanceGraft(
+  state: Record<string, EconomyAmount>,
+  rootstockIndex: number,
+  scionIndex: number,
+  generatorCount = 18,
+): boolean {
+  if (!Number.isSafeInteger(generatorCount) || generatorCount < 2) return false
+  if (!Number.isInteger(rootstockIndex) || rootstockIndex < 0 || rootstockIndex >= generatorCount) return false
+  if (!Number.isInteger(scionIndex) || scionIndex < 0 || scionIndex >= generatorCount) return false
+  if (rootstockIndex === scionIndex) return false
+  state['u3-graft-rootstock'] = amountFromNumber(rootstockIndex)
+  state['u3-graft-scion'] = amountFromNumber(scionIndex)
+  state['u3-graft-active'] = amountFromNumber(1)
+  return true
+}
+
+export function clearVerdanceGraft(state: Record<string, EconomyAmount>): boolean {
+  const configured = boundedStateNumber(state['u3-graft-active']) >= 1
+  delete state['u3-graft-active']
+  delete state['u3-graft-rootstock']
+  delete state['u3-graft-scion']
+  return configured
+}
+
+export function verdanceGraftingStatus(
+  generatorIds: readonly string[],
+  owned: Readonly<Record<string, number>>,
+  state: Readonly<Record<string, EconomyAmount>> | undefined,
+): VerdanceGraftingStatus {
+  const generatorCount = generatorIds.length
+  if (generatorCount < 2) throw new RangeError('Verdance grafting requires at least two Kindlings.')
+  const rootstockIndex = graftIndex(state, 'u3-graft-rootstock', 0, generatorCount)
+  const defaultScionIndex = rootstockIndex === 0 ? 1 : 0
+  const scionIndex = graftIndex(state, 'u3-graft-scion', defaultScionIndex, generatorCount)
+  const rootstockId = generatorIds[rootstockIndex]
+  const scionId = generatorIds[scionIndex]
+  const configured = boundedStateNumber(state?.['u3-graft-active']) >= 1 && rootstockIndex !== scionIndex
+  const rootstock = verdanceGeneratorCohortStatus(rootstockId, owned[rootstockId] ?? 0, state)
+  const scion = verdanceGeneratorCohortStatus(scionId, owned[scionId] ?? 0, state)
+  const maturityLead = Math.max(0, rootstock.multiplier - scion.multiplier)
+  const active = configured && rootstock.quantity > 0 && scion.quantity > 0 && maturityLead > 0
+  const inheritedMaturity = active ? maturityLead * VERDANCE_GRAFT_RULES.inheritedMaturityShare : 0
+  const scionGraftedMultiplier = scion.multiplier + inheritedMaturity
+  const rootstockProductionFactor = active ? VERDANCE_GRAFT_RULES.rootstockProductionFactor : 1
+  const scionProductionFactor = active && scion.multiplier > 0 ? scionGraftedMultiplier / scion.multiplier : 1
+  const explanation = !configured
+    ? 'Choose an older rootstock and a younger scion to bind one living graft.'
+    : rootstock.quantity <= 0 || scion.quantity <= 0
+      ? 'The graft is tied, but both selected Kindlings must be planted before sap can cross.'
+      : maturityLead <= 0
+        ? 'The graft is resting: the selected rootstock is not older than its scion.'
+        : `${Math.round(VERDANCE_GRAFT_RULES.inheritedMaturityShare * 100)}% of the rootstock maturity lead crosses the graft; the donor retains ${Math.round(VERDANCE_GRAFT_RULES.rootstockProductionFactor * 100)}% output.`
+  return {
+    configured,
+    active,
+    rootstockIndex,
+    scionIndex,
+    rootstockId,
+    scionId,
+    rootstockStageLabel: rootstock.stageLabel,
+    scionStageLabel: scion.stageLabel,
+    rootstockCohortMultiplier: rootstock.multiplier,
+    scionCohortMultiplier: scion.multiplier,
+    scionGraftedMultiplier,
+    rootstockProductionFactor,
+    scionProductionFactor,
+    explanation,
+  }
+}
+
+export function verdanceGraftProductionMultiplier(
+  generatorId: string,
+  generatorIds: readonly string[],
+  owned: Readonly<Record<string, number>>,
+  state: Readonly<Record<string, EconomyAmount>> | undefined,
+): number {
+  const graft = verdanceGraftingStatus(generatorIds, owned, state)
+  if (!graft.active) return 1
+  if (generatorId === graft.rootstockId) return graft.rootstockProductionFactor
+  if (generatorId === graft.scionId) return graft.scionProductionFactor
+  return 1
 }

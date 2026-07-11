@@ -1,5 +1,6 @@
 import type { GameState } from '../engine/game.svelte'
 import { amountFromNumber, gteAmount } from '../core/numeric/amount'
+import { DEVOURER_INFALL_ACCOUNT } from './infall-rhyme'
 
 /** Echoes — recovered fragments of the universe that came before.
  *  Collected automatically; read in the Codex. The record grows darker. */
@@ -90,7 +91,7 @@ export const ECHOES: EchoDef[] = [
     title: 'The Shape in the Dark',
     provenance: 'eyewitness account. the only one.',
     text:
-      'It did not roar. That is the detail every later telling gets wrong. It arrived like evening—gradually, then all at once—and stars went out politely, as if asked. It consumed structures in order: nursery, ecliptic, galaxy, web. At each scale it became more efficient, carrying the solved law forward. The witness called it the Devourer because no kinder noun survived. At the final Heart it stopped. The Last Ember was too small to matter and too deliberate to ignore. The witness swears the darkness looked relieved. Lumen’s annotation is only three words: “It left you.”',
+      `It did not roar. That is the detail every later telling gets wrong. It arrived like evening—gradually, then all at once—and consumed in one deliberate order. ${DEVOURER_INFALL_ACCOUNT} At each scale it carried the solved law forward. The witness called it the Devourer because no kinder noun survived. At the final Heart it stopped. The Last Ember was too small to matter and too deliberate to ignore. The witness swears the darkness looked relieved. Lumen’s annotation is only three words: “It left you.”`,
     when: (g) => gteAmount(g.allTimeEarned, amountFromNumber(1e15)),
   },
 ]

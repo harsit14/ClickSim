@@ -35,6 +35,7 @@
     gteAmount,
     isZeroAmount,
   } from '../core/numeric/amount'
+  import LumenVaultShelf from './LumenVaultShelf.svelte'
 
   let {
     onclose,
@@ -145,7 +146,7 @@
   }
 </script>
 
-<section class="observatory" class:tidefall class:verdance={pack.id === 'verdance'} class:clockwork={pack.id === 'clockwork'} class:prismata={pack.id === 'prismata'} class:tempest={pack.id === 'tempest'} class:canticle={pack.id === 'canticle'}>
+<section class="observatory instrument-panel" class:tidefall class:verdance={pack.id === 'verdance'} class:clockwork={pack.id === 'clockwork'} class:prismata={pack.id === 'prismata'} class:tempest={pack.id === 'tempest'} class:canticle={pack.id === 'canticle'}>
   <header>
     <div class="title-block">
       <span>{identity.overline}</span>
@@ -305,7 +306,7 @@
       {:else if state === 'locked'}
         <span class="locked-tag">requires {requiredNames(selected)}</span>
       {:else}
-        <button class="buy" disabled={state !== 'ready'} onclick={() => tryBuy(selected)}>
+        <button class="buy" class:unaffordable={state !== 'ready'} disabled={state !== 'ready'} onclick={() => tryBuy(selected)}>
           {epochMatterGlyph} {selected.cost}
         </button>
       {/if}
@@ -327,7 +328,8 @@
           {@const copy = stardustWorkCopy(work, pack.id)}
           {@const rank = workRank(game.stardustWorks, work.id)}
           {@const cost = workCost(work, rank)}
-          <article class="work">
+          {@const affordable = cost !== null && gteAmount(game.stardust, cost)}
+          <article class="work" class:affordable class:unaffordable={cost !== null && !affordable}>
             <span class="work-glyph">{work.glyph}</span>
             <div class="work-copy">
               <small>rank {rank}</small>
@@ -336,7 +338,7 @@
               <span>{copy.effect ?? work.effect}</span>
               <b>{workStatus(work.id)}</b>
             </div>
-            <button disabled={cost === null || !gteAmount(game.stardust, cost)} onclick={() => tryBuyWork(work.id)}>
+            <button class:unaffordable={cost !== null && !affordable} disabled={cost === null || !affordable} onclick={() => tryBuyWork(work.id)}>
               {cost === null ? 'mastered' : `${identity.workVerb} · ${epochMatterGlyph} ${format(cost)}`}
             </button>
           </article>
@@ -346,6 +348,8 @@
       <p>{identity.eternalEmpty}</p>
     {/if}
   </section>
+
+  <LumenVaultShelf home="observatory" />
 </section>
 
 <style>
@@ -925,8 +929,12 @@
     border-radius: 999px;
     cursor: pointer;
   }
-  .buy:disabled {
-    opacity: 0.4;
+  .buy:disabled,
+  .buy.unaffordable {
+    opacity: 1;
+    color: color-mix(in srgb, var(--text) 45%, var(--bg));
+    background: linear-gradient(132deg, transparent 0 47%, color-mix(in srgb, var(--dim) 10%, transparent) 48% 50%, transparent 51%) 0 0 / 1.4rem 1.4rem, color-mix(in srgb, var(--bg) 86%, var(--panel));
+    box-shadow: inset 0 0 0.85rem rgba(0, 0, 0, 0.3);
     cursor: default;
   }
   .owned-tag, .locked-tag {
@@ -950,6 +958,8 @@
   .eternal > p { margin: 0.45rem 0 0; font-family: Georgia, serif; font-size: 0.74rem; font-style: italic; color: var(--dim); }
   .work-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.7rem; }
   .work { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.55rem; padding: 0.7rem; border: 1px solid rgba(190, 175, 255, 0.15); border-radius: 10px; background: rgba(3, 3, 10, 0.28); }
+  .work.affordable { border-color: color-mix(in srgb, var(--amber) 26%, transparent); box-shadow: inset 0 0 1.15rem color-mix(in srgb, var(--amber) 12%, transparent); }
+  .work.unaffordable { color: color-mix(in srgb, var(--text) 45%, var(--bg)); background: linear-gradient(132deg, transparent 0 48%, color-mix(in srgb, var(--dim) 8%, transparent) 49% 50%, transparent 51%) 0 0 / 2.6rem 2.6rem, color-mix(in srgb, var(--bg) 88%, var(--panel)); border-color: color-mix(in srgb, var(--dim) 9%, transparent); }
   .work-glyph { width: 1.9rem; height: 1.9rem; display: grid; place-items: center; color: #ffe4ad; border: 1px solid rgba(255, 220, 160, 0.2); border-radius: 50%; box-shadow: 0 0 14px rgba(255, 196, 110, 0.08); }
   .work-copy { min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
   .work-copy small { font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; color: #a99cf0; }
@@ -958,7 +968,8 @@
   .work-copy span { font-size: 0.62rem; color: #cfc8f5; }
   .work-copy b { margin-top: 0.1rem; font-size: 0.58rem; font-weight: 650; color: #ffe0a3; }
   .work button { grid-column: 1 / -1; justify-self: start; padding: 0.3rem 0.72rem; font: inherit; font-size: 0.64rem; font-weight: 750; color: #171127; background: linear-gradient(180deg, #e5ddff, #aa9bf0); border: 0; border-radius: 999px; cursor: pointer; }
-  .work button:disabled { opacity: 0.38; cursor: default; }
+  .work button:disabled,
+  .work button.unaffordable { opacity: 1; color: color-mix(in srgb, var(--text) 45%, var(--bg)); background: color-mix(in srgb, var(--bg) 86%, var(--panel)); box-shadow: inset 0 0 0.8rem rgba(0,0,0,0.32); cursor: default; }
   .observatory.tidefall {
     background:
       radial-gradient(ellipse at 50% -8%, rgba(61, 181, 190, 0.16), transparent 38%),

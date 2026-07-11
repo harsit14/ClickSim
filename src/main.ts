@@ -1,4 +1,7 @@
 import { mount } from 'svelte'
+import '@fontsource-variable/inter/opsz.css'
+import '@fontsource-variable/fraunces/full.css'
+import '@fontsource-variable/fraunces/full-italic.css'
 import './app.css'
 import App from './App.svelte'
 import { load, replaceStoredSave, startAutosave } from './core/save'
@@ -11,8 +14,16 @@ import { startAchievementWatcher } from './systems/achievements.svelte'
 import { startAutomation } from './systems/automation.svelte'
 import { registerOfflineWorker } from './core/offline'
 
+const devSearch = import.meta.env.DEV ? new URLSearchParams(window.location.search) : null
+const silhouetteHarness = devSearch?.has('silhouettes') ?? false
+
+if (silhouetteHarness) {
+  void import('./ui/SilhouetteHarness.svelte').then(({ default: SilhouetteHarness }) => {
+    mount(SilhouetteHarness, { target: document.getElementById('app')! })
+  })
+} else {
 if (import.meta.env.DEV) {
-  const scenario = createDevScenario(new URLSearchParams(window.location.search).get('scenario'))
+  const scenario = createDevScenario(devSearch?.get('scenario') ?? null)
   if (scenario) replaceStoredSave(scenario)
   // debug/test hook — dev builds only
   ;(window as any).__ember = { game }
@@ -43,3 +54,4 @@ mount(App, {
   target: document.getElementById('app')!,
   props: { offlineGain },
 })
+}

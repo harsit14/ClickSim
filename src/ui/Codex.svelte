@@ -32,7 +32,7 @@
   }
 </script>
 
-<section class="codex">
+<section class="codex instrument-panel">
   <header class="codex-header">
     <h2>Story Archive</h2>
     <span class="count">{activeTab === 'journal' ? `${transcript.count} lines remembered` : `${found} / ${echoes.length} recovered`}</span>

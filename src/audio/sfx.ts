@@ -35,6 +35,14 @@ export function playClick(mode: UniverseId = 'emberlight') {
     playTidefallClick()
     return
   }
+  if (mode === 'verdance') {
+    playVerdanceClick()
+    return
+  }
+  if (mode === 'clockwork') {
+    playClockworkClick()
+    return
+  }
   if (mode === 'prismata' || mode === 'tempest' || mode === 'canticle') {
     playFutureClick(mode)
     return
@@ -69,6 +77,82 @@ export function playClick(mode: UniverseId = 'emberlight') {
   filter.frequency.value = 3000
   noise.connect(filter).connect(nGain).connect(a.master)
   noise.start(t)
+}
+
+/** A quiet, deterministic harmonic interval layered only onto accepted beat clicks. */
+export function playRhythmAccent(mode: UniverseId = 'emberlight', streak = 1): boolean {
+  const a = audio()
+  if (!a) return false
+  const t = a.ctx.currentTime
+  const roots: Record<UniverseId, number> = {
+    emberlight: 330,
+    tidefall: 293.66,
+    verdance: 261.63,
+    clockwork: 330,
+    prismata: 523.25,
+    tempest: 392,
+    canticle: 220,
+  }
+  const root = roots[mode]
+  const ratio = streak >= 64 ? 1.5 : streak >= 16 ? 4 / 3 : 5 / 4
+  for (const [index, frequency] of [root, root * ratio].entries()) {
+    const oscillator = a.ctx.createOscillator()
+    const gain = a.ctx.createGain()
+    oscillator.type = mode === 'tempest' ? 'triangle' : 'sine'
+    oscillator.frequency.value = frequency
+    const start = t + index * 0.018
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(index === 0 ? 0.045 : 0.032, start + 0.012)
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.24)
+    oscillator.connect(gain).connect(a.master)
+    oscillator.start(start)
+    oscillator.stop(start + 0.26)
+  }
+  return true
+}
+
+/** A short wooden seed-pop with a leaf-soft tail. */
+function playVerdanceClick() {
+  const a = audio()
+  if (!a) return
+  const t = a.ctx.currentTime
+  const body = a.ctx.createOscillator()
+  const gain = a.ctx.createGain()
+  const filter = a.ctx.createBiquadFilter()
+  body.type = 'triangle'
+  body.frequency.setValueAtTime(310, t)
+  body.frequency.exponentialRampToValueAtTime(118, t + 0.14)
+  filter.type = 'lowpass'
+  filter.frequency.setValueAtTime(1_250, t)
+  gain.gain.setValueAtTime(0.0001, t)
+  gain.gain.exponentialRampToValueAtTime(0.3, t + 0.008)
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2)
+  body.connect(filter).connect(gain).connect(a.master)
+  body.start(t)
+  body.stop(t + 0.22)
+}
+
+/** A dry two-part escapement: engage, then release one counted tooth. */
+function playClockworkClick() {
+  const a = audio()
+  if (!a) return
+  const t = a.ctx.currentTime
+  for (const [offset, frequency] of [[0, 1_180], [0.055, 760]] as const) {
+    const tick = a.ctx.createOscillator()
+    const gain = a.ctx.createGain()
+    const filter = a.ctx.createBiquadFilter()
+    tick.type = 'square'
+    tick.frequency.setValueAtTime(frequency, t + offset)
+    filter.type = 'bandpass'
+    filter.frequency.value = frequency
+    filter.Q.value = 4.8
+    gain.gain.setValueAtTime(0.0001, t + offset)
+    gain.gain.exponentialRampToValueAtTime(0.16, t + offset + 0.004)
+    gain.gain.exponentialRampToValueAtTime(0.001, t + offset + 0.045)
+    tick.connect(filter).connect(gain).connect(a.master)
+    tick.start(t + offset)
+    tick.stop(t + offset + 0.055)
+  }
 }
 
 function playFutureClick(mode: 'prismata' | 'tempest' | 'canticle') {
@@ -257,6 +341,48 @@ export function playSupernova(mode: UniverseId = 'emberlight') {
   })
 }
 
+/** The one heartbeat inside the Supernova's beat of black. */
+export function playSupernovaHeartbeat(): boolean {
+  const a = audio()
+  if (!a) return false
+  const t = a.ctx.currentTime
+  for (const [offset, peak] of [[0, 0.28], [0.14, 0.16]] as const) {
+    const oscillator = a.ctx.createOscillator()
+    const gain = a.ctx.createGain()
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(92, t + offset)
+    oscillator.frequency.exponentialRampToValueAtTime(42, t + offset + 0.18)
+    gain.gain.setValueAtTime(0.0001, t + offset)
+    gain.gain.exponentialRampToValueAtTime(peak, t + offset + 0.015)
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + offset + 0.24)
+    oscillator.connect(gain).connect(a.master)
+    oscillator.start(t + offset)
+    oscillator.stop(t + offset + 0.26)
+  }
+  return true
+}
+
+/** One quiet mallet note for a landing Stardust facet. */
+export function playStardustMote(index: number): boolean {
+  const a = audio()
+  if (!a) return false
+  const chord = [261.63, 329.63, 392, 523.25, 659.25] as const
+  const frequency = chord[Math.abs(Math.floor(index)) % chord.length]
+  const t = a.ctx.currentTime
+  const oscillator = a.ctx.createOscillator()
+  const gain = a.ctx.createGain()
+  oscillator.type = 'triangle'
+  oscillator.frequency.setValueAtTime(frequency * 1.8, t)
+  oscillator.frequency.exponentialRampToValueAtTime(frequency, t + 0.05)
+  gain.gain.setValueAtTime(0.0001, t)
+  gain.gain.exponentialRampToValueAtTime(0.055, t + 0.012)
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.42)
+  oscillator.connect(gain).connect(a.master)
+  oscillator.start(t)
+  oscillator.stop(t + 0.45)
+  return true
+}
+
 function playFutureEpoch(mode: Exclude<UniverseId, 'emberlight' | 'tidefall'>) {
   const a = audio()
   if (!a) return
@@ -321,6 +447,41 @@ function playUndertow() {
     oscillator.start(start)
     oscillator.stop(start + 1.42)
   })
+}
+
+/** A restrained five-second shimmer that lets the world announce an Omen. */
+export function playOmenApproach(mode: UniverseId = 'emberlight'): boolean {
+  const a = audio()
+  if (!a) return false
+  const t = a.ctx.currentTime
+  const roots: Record<UniverseId, number> = {
+    emberlight: 329.63,
+    tidefall: 196,
+    verdance: 261.63,
+    clockwork: 440,
+    prismata: 659.25,
+    tempest: 146.83,
+    canticle: 220,
+  }
+  const root = roots[mode]
+  const intervals = mode === 'tidefall' || mode === 'tempest' ? [1, 4 / 3] : [1, 3 / 2]
+  intervals.forEach((ratio, index) => {
+    const oscillator = a.ctx.createOscillator()
+    const gain = a.ctx.createGain()
+    const filter = a.ctx.createBiquadFilter()
+    oscillator.type = mode === 'clockwork' ? 'triangle' : 'sine'
+    oscillator.frequency.value = root * ratio
+    filter.type = 'lowpass'
+    filter.frequency.value = mode === 'tidefall' ? 900 : 2_600
+    const start = t + index * 0.32
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(index === 0 ? 0.038 : 0.026, start + 0.6)
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 4.7)
+    oscillator.connect(filter).connect(gain).connect(a.master)
+    oscillator.start(start)
+    oscillator.stop(start + 4.8)
+  })
+  return true
 }
 
 /** Sparkling ascent for catching a falling star. */

@@ -20,8 +20,8 @@ export const TEMPEST_SPEC: FutureUniverseSpec = {
   visualMaterials: ['cloud volume', 'rain filament', 'ice crystal', 'plasma channel', 'magnetic field line', 'stormglass', 'glassed sand'],
   primarySilhouettes: ['a bounded potential field joining six storm cells', 'a branching continental front with declared discharge paths', 'a stable auroral column occupying a former eye wall'],
   economy: {
-    costScales: [1, 0.92, 1.04, 0.88, 1.12, 1.28, 1.08, 1.36, 1.58, 1.42, 1.78, 1.62, 2.05, 2.35, 2.15, 2.75, 3.4, 4.3],
-    rateScales: [1.2, 0.95, 1.1, 1.35, 1.05, 1.55, 1.45, 1.2, 1.85, 1.6, 2.05, 1.75, 2.25, 2.55, 2.3, 2.8, 3.15, 3.8],
+    baseCosts: [15, 166, 2_288, 22_880, 358_400, 5_120_000, 55_080_000, 884_000_000, 9_000_000_000, 38_000_000_000, 1_700_000_000_000, 14_000_000_000_000, 120_000_000_000_000, 1_000_000_000_000_000, 8_500_000_000_000_000, 73_000_000_000_000_000, 630_000_000_000_000_000, 5_500_000_000_000_000_000],
+    baseRates: [0.336, 2.565, 25.3, 276.75, 1_837.5, 22_785, 178_350, 1_236_000, 16_280_000, 118_400_000, 1_281_250_000, 9_275_000_000, 101_250_000_000, 974_100_000_000, 7_360_000_000_000, 77_000_000_000_000, 740_250_000_000_000, 7_790_000_000_000_000],
     costMultiplier: 1.16,
   },
   signatureUpgrades: (generators) => [
@@ -111,7 +111,7 @@ export const TEMPEST_SPEC: FutureUniverseSpec = {
     { name: 'Aftermath', failure: 'Nobody preserved the evidence left in glassed ground.', rule: 'finish with all three Almanac shelves complete', accessibility: 'Shelf completion uses names, fractions, and distinct icons.', rewardEffects: [{ kind: 'globalMult', value: 1.08 }] },
   ],
   tempo: 108, meter: '4/4 syncopated pressure cycle',
-  audioFamilies: ['dry static snap', 'rising pressure interval', 'contained electrical crack', 'distant storm call', 'grounding propagation cadence'],
+  audioFamilies: ['dry static snap', 'rising pressure interval', 'contained electrical crack', 'distant storm call', 'grounding leader-to-fulgurite cadence'],
   silenceState: 'Charge percentage, notched meter, path shape, countdown, and captions carry every mechanical signal.',
   fatiguePolicy: 'Electrical highs are tightly limited; overlapping discharges duck rain and thunder beds; no cue exceeds the semantic loudness ceiling.',
   routeGlyph: '☈', routeArrival: 'a calm aperture opens inside a storm whose every leader points away from the Heart', unlockText: 'light Prismata’s Beacon',

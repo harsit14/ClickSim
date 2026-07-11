@@ -7,6 +7,8 @@
   import { isPlaying, stopMusic, startMusic } from '../audio/music'
   import { playSupernova, playBloom, playCollect } from '../audio/sfx'
   import { onMount } from 'svelte'
+  import { questionInfallBeat } from '../content/infall-rhyme'
+  import QuestionInfallRhyme from './QuestionInfallRhyme.svelte'
 
   let { onclose }: { onclose: () => void } = $props()
 
@@ -23,6 +25,7 @@
   const allEchoes = $derived(game.echoes.length >= universe.echoes.length)
   const isFinal = $derived(lineIdx === QUESTION_LINES.length - 1)
   const chosen = $derived(ENDING_CHOICES.find((choice) => choice.id === chosenId) ?? null)
+  const infallBeat = $derived(stage === 'lines' ? questionInfallBeat(lineIdx) : null)
 
   $effect(() => {
     stage
@@ -113,6 +116,12 @@
   <div class="scene-glow" aria-hidden="true"></div>
   <div class="bar top" aria-hidden="true"></div>
   <div class="bar bottom" aria-hidden="true"></div>
+
+  {#if infallBeat}
+    {#key infallBeat.id}
+      <QuestionInfallRhyme beat={infallBeat} />
+    {/key}
+  {/if}
 
   {#if stage === 'lines' || stage === 'choice'}
     <button class="leave" aria-label="leave the question" onclick={(event) => { event.stopPropagation(); cancel() }}>×</button>

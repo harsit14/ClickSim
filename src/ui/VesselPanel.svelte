@@ -29,6 +29,8 @@
   import { playBuy, playCollect } from '../audio/sfx'
   import { pushToast } from '../systems/toasts.svelte'
   import { amountFromNumber, gteAmount, isZeroAmount } from '../core/numeric/amount'
+  import LumenVaultShelf from './LumenVaultShelf.svelte'
+  import SuccessionRelayHome from './SuccessionRelayHome.svelte'
 
   let { onclose, oncross }: { onclose: () => void; oncross: (universeId: string) => void } = $props()
   let closeButton: HTMLButtonElement
@@ -79,7 +81,7 @@
   }
 </script>
 
-<section class="vessel">
+<section class="vessel instrument-panel">
   <header>
     <div>
       <span class="overline">{activeBlueprint.overline}</span>
@@ -204,6 +206,9 @@
           </article>
         {/each}
       </div>
+
+      <SuccessionRelayHome />
+      <LumenVaultShelf home="vessel-wayfinder" />
     </section>
   {:else}
     <section class="crossing-gate" aria-label="Wayfinder locked">

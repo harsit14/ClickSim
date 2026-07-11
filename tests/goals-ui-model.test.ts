@@ -142,6 +142,13 @@ test('new F1b components compile with no accessibility compiler warnings', () =>
   }
 })
 
+test('Goal Lens recommends an explicit stopping point as clearly as a goal', () => {
+  const source = readFileSync(new URL('../src/ui/GoalLens.svelte', import.meta.url), 'utf8')
+  assert.match(source, /goal-lens\.stopping-point/)
+  assert.match(source, /goal-lens\.stopping-point-now/)
+  assert.match(source, /stopping-point/)
+})
+
 test('optional guidance is off until the player enables it from Settings', () => {
   const appSource = readFileSync(new URL('../src/App.svelte', import.meta.url), 'utf8')
   const optionsSource = readFileSync(new URL('../src/ui/OptionsPanel.svelte', import.meta.url), 'utf8')

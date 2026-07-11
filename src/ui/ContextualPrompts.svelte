@@ -44,7 +44,7 @@
 {#if selection.prompt}
   {@const prompt = selection.prompt}
   <aside
-    class="contextual-prompt reduced-motion-safe"
+    class="contextual-prompt instrument-panel reduced-motion-safe"
     aria-labelledby={titleId}
     data-prompt-id={prompt.id}
     data-universe={universeId}

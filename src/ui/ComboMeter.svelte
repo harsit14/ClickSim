@@ -1,5 +1,7 @@
 <script lang="ts">
   import { combo, comboMult } from '../systems/combo.svelte'
+  import { fallingStarState } from '../systems/falling-stars.svelte'
+  import { OMEN_ATTRACTION_CAP } from '../systems/omen-attraction'
 
   const mult = $derived(comboMult())
   const next = $derived(
@@ -18,8 +20,8 @@
 </script>
 
 {#if combo.streak >= 4}
-  <div class="combo" class:hot={mult >= 10} class:blazing={mult >= 20}>
-    ♪ ×{mult} <em>{combo.streak} on beat{#if next} · next {next}{/if}</em>
+  <div class="combo" class:hot={combo.streak >= 32} class:blazing={combo.streak >= 64}>
+    ♪ ×{mult} <em>{combo.streak} on beat{#if next} · next {next}{/if} · omen {Math.round(fallingStarState.omenAttraction / OMEN_ATTRACTION_CAP * 100)}%</em>
   </div>
 {/if}
 
@@ -29,10 +31,12 @@
     top: 62%;
     left: 50%;
     transform: translateX(-50%);
+    padding: 0.32rem 0.72rem;
     font-size: 1rem;
     font-weight: 700;
     color: var(--gold);
     text-shadow: 0 0 16px rgba(255, 179, 92, 0.5);
+    background: radial-gradient(ellipse, color-mix(in srgb, var(--bg) 76%, transparent), transparent 74%);
     pointer-events: none;
     animation: combo-in 0.25s ease both;
   }

@@ -21,6 +21,7 @@ import {
   hudClearanceRect,
   rectsIntersect,
 } from './hud-clearance'
+import { HEART_VERTICAL_POSITION } from './heart-target'
 
 export interface ManifestViewport {
   readonly width: number
@@ -77,6 +78,7 @@ export interface ManifestObjectRenderPlan {
   readonly screenZone: ScreenZone
   readonly role: SalienceRole
   readonly rect: LayoutRect
+  readonly parallaxFactor: number
   readonly opacity: number
   readonly motionPaused: boolean
   readonly state: ResolvedManifestVisualState
@@ -130,6 +132,22 @@ export interface ManifestLayoutInput {
 
 const THRESHOLDS = [1, 10, 25, 50, 100] as const satisfies readonly OwnershipThreshold[]
 const HEART_CLEARANCE_EPSILON = 1e-6
+
+export const PARALLAX_BY_SCREEN_ZONE: Readonly<Record<ScreenZone, number>> = {
+  near: 1,
+  heart: 0.6,
+  far: 0.35,
+  horizon: 0.15,
+}
+
+const EMBERLIGHT_GROUND_ANCHORS: Readonly<Record<string, readonly [number, number]>> = {
+  spark: [0.08, 0.785],
+  wisp: [0.92, 0.79],
+  hearth: [0.2, 0.75],
+  kiln: [0.8, 0.76],
+  forge: [0.31, 0.72],
+  beacon: [0.69, 0.72],
+}
 
 export function ownershipThresholdForCount(count: number): OwnershipThreshold | null {
   if (!Number.isFinite(count) || count < 1) return null
@@ -229,7 +247,7 @@ function heartPlan(
     Math.min(viewport.width, viewport.height) < 560 ? 0.1 : 0.085
   )))
   const centerX = viewport.width / 2
-  const centerY = viewport.height * 0.53
+  const centerY = viewport.height * HEART_VERTICAL_POSITION
   return {
     centerX,
     centerY,
@@ -301,6 +319,29 @@ function centersFor(rect: LayoutRect, width: number, height: number): readonly [
     const rightDistance = (right[0] - centerX) ** 2 + (right[1] - centerY) ** 2
     return leftDistance - rightDistance || left[1] - right[1] || left[0] - right[0]
   })
+}
+
+function authoredCentersFor(
+  object: WorldObjectManifest,
+  zone: LayoutRect,
+  viewport: ManifestViewport,
+  width: number,
+  height: number,
+): readonly [number, number][] {
+  const anchor = object.screenZone === 'near' ? EMBERLIGHT_GROUND_ANCHORS[object.sourceId] : undefined
+  if (!anchor) return centersFor(zone, width, height)
+  const centerX = Math.max(
+    zone.x + width / 2,
+    Math.min(zone.x + zone.width - width / 2, viewport.width * anchor[0]),
+  )
+  const centerY = Math.max(
+    zone.y + height / 2,
+    Math.min(zone.y + zone.height - height / 2, viewport.height * anchor[1] - height / 2),
+  )
+  return [
+    [centerX, centerY],
+    ...centersFor(zone, width, height).filter(([x, y]) => x !== centerX || y !== centerY),
+  ]
 }
 
 function pointToRectDistance(x: number, y: number, rect: LayoutRect): number {
@@ -445,7 +486,13 @@ export function planManifestLayout(input: ManifestLayoutInput): ManifestRenderPl
   const placed: ManifestObjectRenderPlan[] = []
   for (const decision of salience.visible) {
     const size = objectSize(decision, input.viewport)
-    const centers = centersFor(zones[decision.object.screenZone], size.width, size.height)
+    const centers = authoredCentersFor(
+      decision.object,
+      zones[decision.object.screenZone],
+      input.viewport,
+      size.width,
+      size.height,
+    )
     const owned = input.state.ownershipBySourceId[decision.object.sourceId] ?? 0
     const state = resolveManifestVisualState(decision.object, owned, input.preferences)
     let result: ManifestObjectRenderPlan | null = null
@@ -463,6 +510,7 @@ export function planManifestLayout(input: ManifestLayoutInput): ManifestRenderPl
         screenZone: decision.object.screenZone,
         role: decision.role,
         rect,
+        parallaxFactor: PARALLAX_BY_SCREEN_ZONE[decision.object.screenZone],
         opacity: decision.opacity,
         motionPaused: decision.motionPaused,
         state,

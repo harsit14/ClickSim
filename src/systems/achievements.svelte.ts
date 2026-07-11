@@ -3,9 +3,10 @@ import { CHALLENGE_BY_ID } from '../content/challenges'
 import { universeById } from '../content/universes'
 import { game, ratePerSec, endChallenge } from '../engine/game.svelte'
 import { save } from '../core/save'
-import { pushToast } from './toasts.svelte'
+import { pushAchievementToast, pushToast } from './toasts.svelte'
 import { playAchievement, playSupernova } from '../audio/sfx'
 import { gamePaused } from '../core/pause.svelte'
+import { worldRef } from '../render/world-ref'
 
 function checkChallenge() {
   if (!game.challenge) return
@@ -27,7 +28,8 @@ function check() {
     game.achievements.push(def.id)
     const pack = universeById(game.activeUniverse)
     const copy = achievementDisplay(def, pack.id)
-    pushToast(copy.name, copy.flavor, `${pack.achievementPower.toLowerCase()} +1%`)
+    pushAchievementToast(copy.name, copy.flavor, `${pack.achievementPower.toLowerCase()} +1%`)
+    worldRef()?.emitParticleRecipe('achievement')
     playAchievement()
   }
   for (const echo of universeById(game.activeUniverse).echoes) {

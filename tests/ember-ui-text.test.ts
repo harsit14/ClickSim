@@ -9,6 +9,10 @@ import {
 test('Ember UI text resolves parameters and readable contract fallbacks', () => {
   assert.equal(resolveEmberUiText('goal-lens.title'), 'Ember Compass')
   assert.equal(resolveEmberUiText('goal-lens.kindling', { name: 'Spark' }), 'Kindle Spark')
+  assert.equal(
+    resolveEmberUiText('goal-lens.stopping-point', { goal: 'Kindle Spark' }),
+    'Good stopping point: after Kindle Spark. Progress continues while you are away.',
+  )
   assert.equal(resolveEmberUiText('reset.category.deep-collapse-count'), 'Deep collapse count')
 })
 

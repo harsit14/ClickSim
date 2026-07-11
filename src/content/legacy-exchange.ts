@@ -95,6 +95,7 @@ export function successionRelayMultiplier(
 }
 
 export type LumenVaultItemKind = 'lore' | 'skin' | 'utility'
+export type LumenVaultHome = 'archive' | 'observatory' | 'vessel-wayfinder'
 
 export interface LumenVaultItem {
   readonly id: string
@@ -155,6 +156,17 @@ export const LUMEN_VAULT_ITEM_BY_ID = new Map(LUMEN_VAULT_ITEMS.map((item) => [i
 export const LUMEN_SHARD_GLYPH = '✥'
 export const LUMEN_SHARD_NAME = 'Lumen Shard'
 export const MAX_LUMEN_DISTILLATIONS_PER_UNIVERSE = 3
+
+/** Phase 8.3 presentation ownership. Item identities and effects stay frozen. */
+export function lumenVaultHome(item: Pick<LumenVaultItem, 'id' | 'kind'>): LumenVaultHome {
+  if (item.kind === 'skin') return 'observatory'
+  if (item.id === 'utility-relay-lens') return 'vessel-wayfinder'
+  return 'archive'
+}
+
+export function lumenVaultItemsForHome(home: LumenVaultHome): readonly LumenVaultItem[] {
+  return LUMEN_VAULT_ITEMS.filter((item) => lumenVaultHome(item) === home)
+}
 
 export function lumenVaultProductionMultiplier(purchases: readonly string[] | undefined): number {
   if (!purchases) return 1

@@ -54,6 +54,7 @@ let nextBar = 0
 let timer: ReturnType<typeof setInterval> | undefined
 let volume = 0.6
 let stems: StemFlags = { mallets: false, bass: false, strings: false, choir: false }
+let ceremonyStemBeat = 0
 let musicMode: MusicMode = 'emberlight'
 
 export function beatDurationSec(): number {
@@ -79,6 +80,24 @@ export function setMusicVolume(v: number) {
 
 export function setStems(f: StemFlags) {
   stems = f
+}
+
+/** Three-beat consent hold: choir, strings, then bass withdraw without mutating progression. */
+export function setCeremonyStemBeat(beat: number) {
+  ceremonyStemBeat = Number.isFinite(beat) ? Math.max(0, Math.min(3, Math.floor(beat))) : 0
+}
+
+export function clearCeremonyStemWithdrawal() {
+  ceremonyStemBeat = 0
+}
+
+export function effectiveStemFlags(): StemFlags {
+  return {
+    mallets: stems.mallets,
+    bass: stems.bass && ceremonyStemBeat < 3,
+    strings: stems.strings && ceremonyStemBeat < 2,
+    choir: stems.choir && ceremonyStemBeat < 1,
+  }
 }
 
 export function isPlaying() {
@@ -203,6 +222,7 @@ function scheduleBar(ctx: AudioContext, bar: number) {
   const t0 = startAt + bar * barSec
   const chord = CHORDS[bar % 4]
   const root = ROOTS[bar % 4]
+  const activeStems = effectiveStemFlags()
 
   // pad — always on: two detuned triangles per chord tone
   for (const f of chord) {
@@ -231,7 +251,7 @@ function scheduleBar(ctx: AudioContext, bar: number) {
   }
 
   // mallets — hearth-family stem: pentatonic plucks on scattered eighths
-  if (stems.mallets) {
+  if (activeStems.mallets) {
     const rand = mulberry32(bar * 7919 + 17)
     for (let eighth = 0; eighth < 8; eighth++) {
       if (rand() < 0.45) continue
@@ -244,7 +264,7 @@ function scheduleBar(ctx: AudioContext, bar: number) {
   }
 
   // bass — beacon-family stem: root on beats 1 and 3
-  if (stems.bass) {
+  if (activeStems.bass) {
     for (const b of [0, 2]) {
       tone(ctx, {
         freq: root, type: 'sine', at: t0 + b * beatSec,
@@ -254,7 +274,7 @@ function scheduleBar(ctx: AudioContext, bar: number) {
   }
 
   // strings — star-family stem: slow filtered saws an octave up
-  if (stems.strings) {
+  if (activeStems.strings) {
     for (const f of chord) {
       tone(ctx, {
         freq: f * 2, type: 'sawtooth', at: t0, attack: 1.3, peak: 0.014,
@@ -264,7 +284,7 @@ function scheduleBar(ctx: AudioContext, bar: number) {
   }
 
   // choir — cosmic stem: high sines with slow vibrato
-  if (stems.choir) {
+  if (activeStems.choir) {
     for (const f of chord) {
       tone(ctx, {
         freq: f * 4, type: 'sine', at: t0, attack: 1.6, peak: 0.012,
@@ -281,6 +301,7 @@ function scheduleTidefallBar(ctx: AudioContext, bar: number) {
   const t0 = startAt + bar * barSec
   const chord = TIDE_CHORDS[bar % TIDE_CHORDS.length]
   const root = TIDE_ROOTS[bar % TIDE_ROOTS.length]
+  const activeStems = effectiveStemFlags()
 
   // Submerged pad: slower sine/triangle bloom with a narrow, dark filter.
   for (const freq of chord) {
@@ -329,7 +350,7 @@ function scheduleTidefallBar(ctx: AudioContext, bar: number) {
     })
   }
 
-  if (stems.mallets) {
+  if (activeStems.mallets) {
     const rand = mulberry32(bar * 6151 + 43)
     for (let eighth = 0; eighth < 8; eighth++) {
       if (rand() < 0.58) continue
@@ -347,17 +368,17 @@ function scheduleTidefallBar(ctx: AudioContext, bar: number) {
     }
   }
 
-  if (stems.bass) {
+  if (activeStems.bass) {
     tone(ctx, { freq: root, type: 'triangle', at: t0, attack: 0.18, peak: 0.08, decayTo: barSec, filterHz: 320 })
   }
 
-  if (stems.strings) {
+  if (activeStems.strings) {
     for (const freq of chord.slice(1)) {
       tone(ctx, { freq: freq * 2, type: 'sine', at: t0 + beatSec, attack: 1.1, peak: 0.018, decayTo: barSec, vibratoHz: 0.32, vibratoDepth: 5 })
     }
   }
 
-  if (stems.choir) {
+  if (activeStems.choir) {
     for (const freq of chord.slice(1)) {
       tone(ctx, { freq: freq * 3, type: 'triangle', at: t0, attack: 1.8, peak: 0.009, decayTo: barSec + 0.8, filterHz: 1450, vibratoHz: 4.2, vibratoDepth: 7 })
     }

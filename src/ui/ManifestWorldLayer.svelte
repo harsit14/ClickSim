@@ -9,9 +9,11 @@
     type ManifestViewport,
   } from '../render/manifest-layout'
   import {
+    archiveHintPlacement,
     planArchiveLandmarks,
     type ArchiveLandmarkMode,
   } from '../render/archive-landmarks'
+  import type { HudClearanceRect } from '../render/hud-clearance'
   import { archiveLandmarkDescriptorsFor } from '../render/archive-landmark-registry'
   import { heartPresentationStateKey } from '../render/presentation-contract'
   import {
@@ -19,6 +21,12 @@
     universePresentationById,
   } from '../render/presentation-registry'
   import ArchiveRecordArt from './ArchiveRecordArt.svelte'
+  import ChamberVistaLayer from './ChamberVistaLayer.svelte'
+  import ClockworkFlagshipLayer from './ClockworkFlagshipLayer.svelte'
+  import EmberlightFlagshipLayer from './EmberlightFlagshipLayer.svelte'
+  import EmberlightRemnants from './EmberlightRemnants.svelte'
+  import KindledSky from './KindledSky.svelte'
+  import TidefallFlagshipLayer from './TidefallFlagshipLayer.svelte'
 
   interface Props {
     pack: UniversePackV2
@@ -28,22 +36,11 @@
     unlockedArchiveIds?: readonly string[]
     litBeaconUniverseIds?: readonly string[]
     activeOmenIds?: readonly string[]
+    achievementIds?: readonly string[]
+    numericLawState?: Readonly<Record<string, import('../content/universes/types').EconomyAmount>>
     onarchiveopen?: () => void
   }
 
-  const EMBER_STARS = [
-    ['10%', '34%', '0.72'], ['24%', '70%', '0.42'], ['35%', '55%', '0.5'],
-    ['66%', '57%', '0.46'], ['76%', '68%', '0.66'], ['90%', '39%', '0.38'],
-    ['43%', '79%', '0.32'], ['58%', '76%', '0.28'],
-  ] as const
-  const TIDE_BUBBLES = [
-    ['10%', '42%', '0.56'], ['23%', '58%', '0.32'], ['27%', '64%', '0.24'],
-    ['74%', '62%', '0.28'], ['78%', '54%', '0.48'], ['82%', '66%', '0.22'],
-  ] as const
-  const TIDE_FISH = [
-    ['18%', '59%', '0.62'], ['23%', '63%', '0.42'], ['28%', '57%', '0.32'],
-    ['71%', '58%', '0.38'], ['76%', '62%', '0.56'], ['90%', '39%', '0.3'],
-  ] as const
   const VERDANCE_LEAVES = [
     ['9%', '30%', '-18deg'], ['13%', '20%', '12deg'], ['31%', '54%', '-8deg'],
     ['68%', '57%', '14deg'], ['87%', '19%', '-12deg'], ['91%', '33%', '18deg'],
@@ -57,10 +54,14 @@
     unlockedArchiveIds = [],
     litBeaconUniverseIds = [],
     activeOmenIds = [],
+    achievementIds = [],
+    numericLawState,
     onarchiveopen = () => {},
   }: Props = $props()
   let viewport = $state<ManifestViewport>({ width: 1280, height: 720 })
+  let topUiClearance = $state<HudClearanceRect | undefined>(undefined)
   let now = $state(Date.now())
+  let leviathanPreview = $state(false)
 
   const presentation = $derived(universePresentationById(pack.id))
   const manifestByObjectId = $derived(new Map(pack.visual.objects.map((object) => [object.id, object])))
@@ -77,6 +78,7 @@
   }
 
   const visibleObjectIds = $derived(pack.visual.objects.filter(objectVisible).map(({ id }) => id))
+  const virginWorld = $derived(visibleObjectIds.length === 0)
   const objectCountsById = $derived(Object.fromEntries(pack.visual.objects.map((object) => [
     object.id,
     object.sourceKind === 'generator'
@@ -108,6 +110,7 @@
     archiveLandmarkDescriptorsFor(pack.id),
     archiveMode,
     viewport,
+    topUiClearance,
   ))
 
   function measure() {
@@ -115,6 +118,11 @@
       width: Math.max(320, window.innerWidth),
       height: Math.max(480, window.innerHeight),
     }
+    const topStack = document.querySelector<HTMLElement>('.top-stack')
+    const rect = topStack?.getBoundingClientRect()
+    topUiClearance = rect && rect.width > 0 && rect.height > 0
+      ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+      : undefined
   }
 
   function countLabel(count: number): string {
@@ -133,8 +141,18 @@
 
   onMount(() => {
     measure()
+    const topStack = document.querySelector<HTMLElement>('.top-stack')
+    const topStackObserver = topStack && typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(measure)
+      : null
+    if (topStack && topStackObserver) topStackObserver.observe(topStack)
+    leviathanPreview = import.meta.env.DEV
+      && new URLSearchParams(window.location.search).get('tide-omen') === 'leviathan'
     const timer = setInterval(() => (now = Date.now()), 500)
-    return () => clearInterval(timer)
+    return () => {
+      topStackObserver?.disconnect()
+      clearInterval(timer)
+    }
   })
 </script>
 
@@ -156,41 +174,16 @@
   data-visible-objects={plan.objects.length}
   data-presentation-ready={presentation !== null}
   data-world-state={worldState?.key ?? 'none'}
+  data-virgin-state={virginWorld}
   style={`--scene-strength:${sceneStrength}`}
 >
   <h2 class="sr-only">Visible {pack.identity.shortName} world</h2>
 
   {#if presentation}
+    {#if !virginWorld}
     <div class="scene-composition" aria-hidden="true">
       <div class="scene-vignette"></div>
-      {#if pack.id === 'emberlight'}
-        <div class="ember-haze"></div>
-        <div class="ember-corona"></div>
-        <div class="ember-orbit orbit-one"></div>
-        <div class="ember-orbit orbit-two"></div>
-        <div class="ember-orbit orbit-three"></div>
-        <div class="ember-constellation">
-          {#each EMBER_STARS as star}
-            <i style={`--x:${star[0]};--y:${star[1]};--spark:${star[2]}`}></i>
-          {/each}
-        </div>
-      {:else if pack.id === 'tidefall'}
-        <div class="tide-depth"></div>
-        <div class="tide-current current-one"></div>
-        <div class="tide-current current-two"></div>
-        <div class="tide-current current-three"></div>
-        <div class="tide-caustic"></div>
-        <div class="tide-bubbles">
-          {#each TIDE_BUBBLES as bubble}
-            <i style={`--x:${bubble[0]};--y:${bubble[1]};--bubble:${bubble[2]}`}></i>
-          {/each}
-        </div>
-        <div class="tide-shoal">
-          {#each TIDE_FISH as fish}
-            <i style={`--x:${fish[0]};--y:${fish[1]};--fish:${fish[2]}`}></i>
-          {/each}
-        </div>
-      {:else if pack.id === 'verdance'}
+      {#if pack.id === 'verdance'}
         <div class="verdance-canopy"></div>
         <div class="verdance-roots"></div>
         <div class="verdance-ring growth-ring-one"></div>
@@ -200,14 +193,6 @@
             <i style={`--x:${leaf[0]};--y:${leaf[1]};--leaf-rotation:${leaf[2]}`}></i>
           {/each}
         </div>
-      {:else if pack.id === 'clockwork'}
-        <div class="clockwork-depth"></div>
-        <div class="clockwork-horizon"></div>
-        <div class="clockwork-meridian"></div>
-        <div class="clockwork-gear gear-primary"></div>
-        <div class="clockwork-gear gear-secondary"></div>
-        <div class="clockwork-chapter-ring"></div>
-        <div class="clockwork-power-train"><i></i><i></i><i></i><i></i><i></i></div>
       {:else if pack.id === 'prismata'}
         <div class="prismata-darkroom"></div>
         <div class="prismata-aperture"></div>
@@ -237,12 +222,42 @@
         <div class="canticle-rest"></div>
       {/if}
     </div>
+    {/if}
+
+    <ChamberVistaLayer
+      universeId={pack.id}
+      generatorIds={pack.visual.objects
+        .filter(({ sourceKind }) => sourceKind === 'generator')
+        .map(({ sourceId }) => sourceId)}
+      {owned}
+      {numericLawState}
+      reducedMotion={preferences.reducedMotion}
+      quality={preferences.quality}
+    />
+
+    {#if pack.id === 'emberlight'}
+      <EmberlightFlagshipLayer owned={owned} reducedMotion={preferences.reducedMotion} />
+      <EmberlightRemnants owned={owned} />
+      <KindledSky {achievementIds} reducedMotion={preferences.reducedMotion} />
+    {/if}
+
+    {#if pack.id === 'tidefall' && !virginWorld}
+      <TidefallFlagshipLayer
+        {owned}
+        reducedMotion={preferences.reducedMotion}
+        leviathanActive={activeOmenIdSet.has('leviathan-passage') || leviathanPreview}
+      />
+    {/if}
+
+    {#if pack.id === 'clockwork' && !virginWorld}
+      <ClockworkFlagshipLayer {owned} reducedMotion={preferences.reducedMotion} />
+    {/if}
 
     {#if worldState}
       <p class="sr-only" role="status">{worldState.label}</p>
     {/if}
 
-    {#if heartState}
+    {#if heartState && !virginWorld && pack.id !== 'emberlight'}
       <figure
         class="manifest-heart"
         data-depth={presentation.heart.depth}
@@ -272,6 +287,11 @@
             data-record-id={record.id}
             data-slot={landmark.slot.id}
             data-side={landmark.slot.x >= 0.58 ? 'right' : landmark.slot.x <= 0.22 ? 'left-edge' : 'center'}
+            data-vertical={archiveHintPlacement(
+              landmark.slot,
+              viewport,
+              topUiClearance ? topUiClearance.y + topUiClearance.height : undefined,
+            )}
             data-motion={landmark.visual.motion.kind}
             style={`--landmark-x:${landmark.slot.x * 100}%;--landmark-y:${landmark.slot.y * 100}%`}
             aria-label={`${landmark.accessibleDescription}. Open ${pack.archive.localName}.`}
@@ -329,9 +349,6 @@
   }
   .scene-composition,
   .scene-vignette,
-  .ember-constellation,
-  .tide-bubbles,
-  .tide-shoal,
   .verdance-leaves {
     position: absolute;
     inset: 0;
@@ -457,75 +474,6 @@
   .wave-two { transform: rotate(-3deg) translateY(2.6rem); opacity: 0.6; }
   .canticle-rest { position: absolute; left: 50%; top: 53%; width: min(13vw, 9rem); aspect-ratio: 1; transform: translate(-50%, -50%); border: 1px dashed color-mix(in srgb, var(--gold) 30%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--bg) 48%, transparent); box-shadow: 0 0 2.4rem color-mix(in srgb, var(--bg) 90%, transparent); }
 
-  /* Clockwork: one inspectable civic transmission centered on the Heart. */
-  .clockwork-depth {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(circle at 50% 53%, color-mix(in srgb, var(--amber) 11%, transparent) 0 7%, transparent 34%),
-      linear-gradient(180deg, transparent 0 47%, color-mix(in srgb, var(--panel) 12%, transparent) 72%, color-mix(in srgb, var(--bg) 42%, transparent));
-  }
-  .clockwork-horizon {
-    position: absolute;
-    left: 7%;
-    right: 7%;
-    top: 32%;
-    height: 36%;
-    border-top: 1px solid color-mix(in srgb, var(--gold) 16%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--amber) 11%, transparent);
-    background: repeating-linear-gradient(90deg, transparent 0 8.5%, color-mix(in srgb, var(--gold) 8%, transparent) 8.6% 8.75%);
-    -webkit-mask: linear-gradient(90deg, transparent, #000 13% 87%, transparent);
-    mask: linear-gradient(90deg, transparent, #000 13% 87%, transparent);
-  }
-  .clockwork-meridian {
-    position: absolute;
-    left: 50%;
-    top: 12%;
-    bottom: 10%;
-    width: 1px;
-    background: linear-gradient(transparent, color-mix(in srgb, var(--gold) 38%, transparent) 20% 82%, transparent);
-  }
-  .clockwork-gear,
-  .clockwork-chapter-ring {
-    position: absolute;
-    left: 50%;
-    top: 53%;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-  }
-  .clockwork-gear {
-    background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--gold) 30%, transparent) 0 2deg, transparent 2deg 15deg);
-    -webkit-mask: radial-gradient(circle, transparent 0 62%, #000 63% 72%, transparent 73%);
-    mask: radial-gradient(circle, transparent 0 62%, #000 63% 72%, transparent 73%);
-    animation: clockwork-index 36s steps(24, end) infinite;
-  }
-  .gear-primary { width: min(39vw, 34rem); aspect-ratio: 1; }
-  .gear-secondary { width: min(62vw, 58rem); aspect-ratio: 1; opacity: 0.38; animation-direction: reverse; animation-duration: 54s; }
-  .clockwork-chapter-ring {
-    width: min(49vw, 45rem);
-    aspect-ratio: 1;
-    border: 1px solid color-mix(in srgb, var(--gold) 24%, transparent);
-    box-shadow: inset 0 0 2.8rem color-mix(in srgb, var(--amber) 4%, transparent);
-  }
-  .clockwork-power-train {
-    position: absolute;
-    left: 18%;
-    right: 18%;
-    top: 53%;
-    height: 1px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 38%, transparent) 12% 88%, transparent);
-  }
-  .clockwork-power-train i {
-    width: 0.64rem;
-    aspect-ratio: 1;
-    border: 1px solid color-mix(in srgb, var(--gold) 46%, transparent);
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
-    box-shadow: 0 0 0 0.24rem color-mix(in srgb, var(--amber) 7%, transparent);
-  }
   .scene-composition {
     opacity: calc(0.58 + var(--scene-strength) * 0.28);
   }
@@ -533,123 +481,6 @@
     z-index: 4;
     background: radial-gradient(ellipse at 50% 53%, transparent 0 28%, rgba(2, 4, 10, 0.12) 58%, rgba(1, 2, 7, 0.7) 100%);
   }
-
-  /* Emberlight: one solar system, not a field of disconnected tokens. */
-  .ember-haze,
-  .ember-corona,
-  .ember-orbit {
-    position: absolute;
-    left: 50%;
-    top: 53%;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-  }
-  .ember-haze {
-    width: min(76vw, 68rem);
-    aspect-ratio: 1.45;
-    background:
-      radial-gradient(ellipse at center, color-mix(in srgb, var(--amber) 11%, transparent) 0 12%, transparent 54%),
-      radial-gradient(ellipse at center, color-mix(in srgb, var(--gold) 6%, transparent) 0 2%, transparent 68%);
-    filter: blur(18px);
-  }
-  .ember-corona {
-    width: min(34vw, 28rem);
-    aspect-ratio: 1;
-    background: repeating-conic-gradient(from 8deg, color-mix(in srgb, var(--gold) 12%, transparent) 0 1deg, transparent 1deg 18deg);
-    -webkit-mask: radial-gradient(circle, transparent 0 28%, #000 45%, transparent 72%);
-    mask: radial-gradient(circle, transparent 0 28%, #000 45%, transparent 72%);
-    animation: corona-turn 70s linear infinite;
-  }
-  .ember-orbit {
-    border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
-    box-shadow: inset 0 0 2rem color-mix(in srgb, var(--amber) 3%, transparent);
-  }
-  .orbit-one { width: min(32vw, 29rem); aspect-ratio: 1.85; transform: translate(-50%, -50%) rotate(-9deg); }
-  .orbit-two { width: min(55vw, 52rem); aspect-ratio: 2.15; opacity: 0.52; transform: translate(-50%, -50%) rotate(6deg); }
-  .orbit-three { width: min(76vw, 72rem); aspect-ratio: 2.55; opacity: 0.22; transform: translate(-50%, -50%) rotate(-4deg); }
-  .ember-constellation i {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    width: calc(0.22rem + var(--spark) * 0.26rem);
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--gold) 86%, white);
-    box-shadow:
-      0 0 calc(0.4rem + var(--spark) * 0.9rem) color-mix(in srgb, var(--amber) 58%, transparent),
-      0 0 0 1px color-mix(in srgb, var(--gold) 20%, transparent);
-    opacity: calc(0.25 + var(--spark));
-    animation: ember-signal 5.8s ease-in-out infinite alternate;
-  }
-
-  /* Tidefall: layered currents share a horizon and the landmarks form two shoals. */
-  .tide-depth {
-    position: absolute;
-    inset: 8% 0 0;
-    background:
-      radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--amber) 12%, transparent) 0 5%, transparent 42%),
-      linear-gradient(180deg, transparent 0 28%, color-mix(in srgb, var(--panel) 16%, transparent) 58%, color-mix(in srgb, var(--bg) 35%, transparent) 100%);
-  }
-  .tide-current {
-    position: absolute;
-    left: -12vw;
-    width: 124vw;
-    border-radius: 50%;
-    border-top: 1px solid color-mix(in srgb, var(--gold) 34%, transparent);
-    box-shadow: 0 -1.2rem 2.8rem color-mix(in srgb, var(--amber) 4%, transparent);
-    transform-origin: center;
-    animation: current-drift 14s ease-in-out infinite alternate;
-  }
-  .current-one { top: 39%; height: 24%; transform: rotate(-2deg); }
-  .current-two { top: 51%; height: 18%; opacity: 0.54; transform: rotate(2deg); animation-delay: -4s; }
-  .current-three { top: 67%; height: 16%; opacity: 0.24; transform: rotate(-1deg); animation-delay: -8s; }
-  .tide-caustic {
-    position: absolute;
-    left: 50%;
-    top: 53%;
-    width: min(68vw, 64rem);
-    aspect-ratio: 2.5;
-    border: 1px solid color-mix(in srgb, var(--gold) 22%, transparent);
-    border-left-color: transparent;
-    border-right-color: transparent;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: inset 0 0 4rem color-mix(in srgb, var(--amber) 4%, transparent);
-  }
-  .tide-bubbles i {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    width: calc(0.28rem + var(--bubble) * 0.8rem);
-    aspect-ratio: 1;
-    border: 1px solid color-mix(in srgb, var(--gold) 48%, transparent);
-    border-radius: 50%;
-    opacity: calc(0.18 + var(--bubble));
-    animation: bubble-rise 9s ease-in-out infinite alternate;
-  }
-  .tide-shoal i {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    width: calc(0.8rem + var(--fish) * 1.4rem);
-    height: calc(0.24rem + var(--fish) * 0.34rem);
-    border-radius: 70% 46% 46% 70%;
-    background: color-mix(in srgb, var(--gold) 46%, transparent);
-    opacity: calc(0.16 + var(--fish) * 0.42);
-    animation: shoal-drift 11s ease-in-out infinite alternate;
-  }
-  .tide-shoal i::after {
-    content: '';
-    position: absolute;
-    right: -32%;
-    top: 50%;
-    width: 42%;
-    height: 150%;
-    background: inherit;
-    clip-path: polygon(0 50%, 100% 0, 100% 100%);
-    transform: translateY(-50%);
-  }
-  .tide-shoal i:nth-child(-n + 3) { transform: scaleX(-1); }
 
   /* Verdance: roots and canopy form one organism around an open germination clearing. */
   .verdance-canopy {
@@ -724,6 +555,7 @@
   }
   .archive-landmark:hover,
   .archive-landmark:focus-visible {
+    z-index: 5;
     transform: translate(-50%, -50%) scale(1.08);
     filter: drop-shadow(0 0 1.25rem color-mix(in srgb, var(--amber) 44%, transparent));
     outline: none;
@@ -742,7 +574,7 @@
   .archive-hint {
     position: absolute;
     left: 50%;
-    bottom: calc(100% + 0.65rem);
+    bottom: calc(100% + 0.75rem);
     width: 15.5rem;
     display: grid;
     gap: 0.16rem;
@@ -769,6 +601,20 @@
     left: -0.4rem;
     transform: translate(0, 0.3rem) scale(0.94);
     transform-origin: 0 100%;
+  }
+  [data-vertical='below'] .archive-hint {
+    top: calc(100% + 0.75rem);
+    bottom: auto;
+    transform: translate(-50%, -0.3rem) scale(0.94);
+    transform-origin: 50% 0;
+  }
+  [data-vertical='below'][data-side='right'] .archive-hint {
+    transform: translate(0, -0.3rem) scale(0.94);
+    transform-origin: 100% 0;
+  }
+  [data-vertical='below'][data-side='left-edge'] .archive-hint {
+    transform: translate(0, -0.3rem) scale(0.94);
+    transform-origin: 0 0;
   }
   .archive-landmark:hover .archive-hint,
   .archive-landmark:focus-visible .archive-hint {
@@ -827,23 +673,29 @@
     transform: rotate(-16deg);
   }
   .tidefall .heart-frame {
-    inset: -20% -46%;
-    border: 1px solid color-mix(in srgb, var(--gold) 32%, transparent);
-    border-left-color: transparent;
-    border-right-color: transparent;
-    box-shadow: inset 0 0 2.5rem color-mix(in srgb, var(--amber) 8%, transparent);
+    inset: -16%;
+    border: 0;
+    border-radius: 46% 54% 58% 42% / 39% 47% 53% 61%;
+    background:
+      radial-gradient(circle at 39% 31%, color-mix(in srgb, white 76%, var(--gold)) 0 4%, transparent 5%),
+      radial-gradient(ellipse at 33% 68%, color-mix(in srgb, var(--amber) 32%, transparent), transparent 56%),
+      linear-gradient(142deg, color-mix(in srgb, var(--gold) 38%, var(--panel)), color-mix(in srgb, var(--amber) 19%, var(--bg)) 43%, color-mix(in srgb, var(--bg) 94%, black));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 20%, transparent), 0 0 2.5rem color-mix(in srgb, var(--amber) 14%, transparent);
+    opacity: 0.48;
     animation: heart-current 7s ease-in-out infinite alternate;
   }
   .tidefall .heart-frame::before {
-    inset: 20% 28%;
-    border-top: 1px solid color-mix(in srgb, var(--gold) 58%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--gold) 22%, transparent);
+    inset: 23% 18% 18% 28%;
+    border: 0;
+    border-radius: 38% 62% 47% 53% / 58% 45% 55% 42%;
+    background: linear-gradient(160deg, color-mix(in srgb, var(--bg) 91%, black), color-mix(in srgb, var(--panel) 74%, transparent));
   }
   .tidefall .heart-frame::after {
-    inset: -24% 12%;
-    border: 1px solid color-mix(in srgb, var(--amber) 18%, transparent);
-    border-top-color: transparent;
-    border-bottom-color: transparent;
+    left: 49%; top: -48%; bottom: 68%; width: 1px;
+    border: 0;
+    border-radius: 0;
+    background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--gold) 52%, transparent));
+    box-shadow: -0.8rem 0.6rem 0 color-mix(in srgb, var(--amber) 18%, transparent), 0.7rem 1.3rem 0 color-mix(in srgb, var(--gold) 14%, transparent);
   }
   .verdance .heart-frame {
     inset: -28%;
@@ -898,25 +750,11 @@
     white-space: nowrap;
     border: 0;
   }
-  @keyframes corona-turn { to { transform: translate(-50%, -50%) rotate(360deg); } }
-  @keyframes ember-signal { to { opacity: 0.28; transform: scale(0.72); } }
   @keyframes heart-orbit { to { transform: rotate(360deg); } }
-  @keyframes current-drift { to { transform: translateY(-1.5%) rotate(1deg) scaleX(1.02); } }
-  @keyframes bubble-rise { to { transform: translateY(-1.6rem); opacity: 0.16; } }
-  @keyframes shoal-drift { to { margin-left: 1.4rem; opacity: 0.2; } }
   @keyframes heart-current { to { transform: scaleX(1.04) scaleY(0.94); opacity: 0.62; } }
   @keyframes leaf-breathe { to { transform: rotate(var(--leaf-rotation)) translateY(-0.3rem); opacity: 0.28; } }
   @keyframes seed-breathe { to { transform: scale(1.035, 0.97); opacity: 0.72; } }
-  @keyframes clockwork-index { to { transform: translate(-50%, -50%) rotate(360deg); } }
   @keyframes clockwork-heart-index { to { transform: rotate(360deg); } }
-  :global(html[data-visual-quality='low']) .orbit-three,
-  :global(html[data-visual-quality='low']) .current-three,
-  :global(html[data-visual-quality='low']) .ember-constellation i:nth-child(n + 5),
-  :global(html[data-visual-quality='low']) .tide-bubbles i:nth-child(n + 4),
-  :global(html[data-visual-quality='low']) .tide-shoal i:nth-child(n + 4) { display: none; }
-  :global(html[data-contrast='high']) .ember-orbit,
-  :global(html[data-contrast='high']) .tide-current,
-  :global(html[data-contrast='high']) .tide-caustic,
   :global(html[data-contrast='high']) .heart-frame { border-color: rgba(255, 255, 255, 0.64); }
   @media (prefers-reduced-motion: reduce) {
     .manifest-world,

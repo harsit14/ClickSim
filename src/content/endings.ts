@@ -1,4 +1,5 @@
 /** Act III — The Question, and what comes after. */
+import { INFALL_RHYME_BEATS } from './infall-rhyme'
 
 export type Ending = 'warden' | 'hunger' | 'companion'
 
@@ -7,12 +8,9 @@ export const QUESTION_LINES: string[] = [
   'You want to know what happened to the old universe.',
   'I have written seventeen drafts of this sentence. Here is the honest one:',
   'Nothing came out of the dark to eat it. The dark was never hungry.',
-  'It was eaten from the inside — by the only thing that could hold that much light and still want more.',
-  'It ate the suns it was given. Then the suns it made. Then the hearths. Then the names of the hearths.',
+  ...INFALL_RHYME_BEATS.map(({ questionLine }) => questionLine),
   'And when there was nothing left, it slept. A single ember. The smallest it has ever been.',
-  'I did not wake you to rebuild the universe. I woke you to see what you would do with one.',
-  'You built. You burned it down and built it brighter. You kept rhythm in the silence. I watched very carefully.',
-  'So the question was never mine to ask. It is yours, and it is only three words:',
+  'I woke you to see what you would do with a universe. You built, drew it inward in that same order, and built it brighter. I watched very carefully.',
   'What are you?',
 ]
 

@@ -48,7 +48,7 @@ test('Supernova is a contiguous, captioned, reduced-motion-safe subtractive cere
   assert.equal(final.startMs + final.durationMs, spec.totalDurationMs)
   const silence = spec.phases.filter(({ audio }) => audio.kind === 'intentional-silence')
   assert.equal(silence.length, 1)
-  assert.ok(Math.abs(silence[0].durationMs - 60_000 / 72) < 1)
+  assert.equal(silence[0].durationMs, 1_200)
 })
 
 test('local, canonical, muted, non-color, and screen-reader language is explicit', () => {

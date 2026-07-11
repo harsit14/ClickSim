@@ -25,7 +25,7 @@ if (process.argv.includes('--json')) {
   console.log(`CURRENT PACK CURVE AUDIT · ${currentPackAudits.length} actual compute profiles`)
   for (const audit of currentPackAudits) {
     console.log(
-      `  ${audit.universeId}/${audit.profileId}: earned=${audit.finalEarned} rate=${audit.finalRate}/s purchases=${audit.purchaseCount} firstEpoch=${audit.firstEpochAtMs ?? 'unreached'}ms`,
+      `  ${audit.universeId}/${audit.profileId}: earned=${audit.finalEarned} rate=${audit.finalRate}/s purchases=${audit.purchaseCount} firstEpoch=${audit.firstEpochAtMs ?? 'unreached'}ms beacon=${audit.firstBeaconAtMs ?? 'unreached'}ms`,
     )
   }
   console.log('')

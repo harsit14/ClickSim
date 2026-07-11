@@ -2,14 +2,26 @@
   import { onMount } from 'svelte'
   import { game, hasUi, earn, passiveRatePerSec } from '../engine/game.svelte'
   import { addBuff } from '../systems/buffs.svelte'
-  import { fallingStarState, summonFallingStar } from '../systems/falling-stars.svelte'
+  import { fallingStarState, resetOmenAttraction, summonFallingStar } from '../systems/falling-stars.svelte'
   import { pushToast } from '../systems/toasts.svelte'
   import { perkBonus } from '../content/constellation'
   import { CHALLENGE_BY_ID } from '../content/challenges'
-  import { playStarCatch } from '../audio/sfx'
+  import { playOmenApproach, playStarCatch } from '../audio/sfx'
   import { format } from '../core/format'
   import { gamePaused } from '../core/pause.svelte'
   import { curiosityStarRateBonus } from '../content/curiosities'
+  import {
+    planPowerUpSpawn,
+    type PowerUpEntryEdge,
+    type PowerUpSpawnPlan,
+  } from '../systems/power-up-spawn'
+  import {
+    OMEN_ANNOUNCEMENT_MS,
+    OMEN_MISS_BANK_RATIO,
+    OMEN_MIN_HIT_SIZE_PX,
+    planOmenReward,
+    positionOnOmenArc,
+  } from '../systems/omen-v2'
   import { universeById } from '../content/universes'
   import type { UniversePowerUp } from '../content/universes'
   import type { EconomyAmount, UniverseId } from '../content/universes/types'
@@ -29,8 +41,10 @@
     maxAmount,
     multiplyAmountByNumber,
   } from '../core/numeric/amount'
+  import { worldRef } from '../render/world-ref'
 
-  const LIFETIME_MS = 18_000
+  const EVENT_HALF_WIDTH = 3.3 * 16
+  const EVENT_HALF_HEIGHT = 1.9 * 16
   // sky constellation perks: more frequent stars, longer blessings, star pairs
   // (plus the permanent Drought-trial reward)
   const rateScale = () =>
@@ -49,16 +63,26 @@
   const NEXT_DELAY = () => (90_000 + Math.random() * 150_000) * rateScale()
 
   interface Star {
+    phase: 'announcing' | 'active'
     universeId: string
     power: UniversePowerUp
     motion: 'meteor' | 'bubble'
     eventNoun: string
     audioMode: UniverseId
+    entryEdge: PowerUpEntryEdge
+    route: PowerUpSpawnPlan
     x: number
     y: number
-    vx: number
-    vy: number
+    travelAngleRad: number
+    announcedAt: number
     born: number
+  }
+
+  interface BankedEmbers {
+    x: number
+    y: number
+    hue: number
+    label: string
   }
 
   let star = $state<Star | null>(null)
@@ -67,7 +91,18 @@
   let raf = 0
   let handledSummons = $state(0)
   let queuedSummon = $state(false)
+  let announcementRemaining = $state(5)
+  let bankedEmbers = $state<BankedEmbers | null>(null)
+  let bankedEmberTimer: ReturnType<typeof setTimeout>
   let forcedPowerId = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('event') : null
+  let forcedEntry = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('entry') : null
+  let attractionUniverse = $state(game.activeUniverse)
+
+  $effect(() => {
+    if (attractionUniverse === game.activeUniverse) return
+    attractionUniverse = game.activeUniverse
+    resetOmenAttraction()
+  })
 
   function pickPower(fromRhythm = false): UniversePowerUp {
     const powers = universeById(game.activeUniverse).events.powerUps
@@ -96,41 +131,53 @@
       return
     }
     const pack = universeById(game.activeUniverse)
-    const fromLeft = Math.random() < 0.5
-    const bubble = pack.events.motion === 'bubble'
     const viewport = { width: window.innerWidth, height: window.innerHeight }
     const clearance = hudClearanceRect(viewport)
-    const eventHalfWidth = 3.3 * 16
-    const eventHalfHeight = 1.9 * 16
     const heartCenter = heartTargetCenter(viewport)
     const heartClearance = heartMaximumHitRadius(viewport)
     const protectedLeft = Math.min(clearance.x, heartCenter.x - heartClearance)
     const protectedRight = Math.max(clearance.x + clearance.width, heartCenter.x + heartClearance)
-    const leftLane = [eventHalfWidth, protectedLeft - eventHalfWidth] as const
-    const rightLane = [protectedRight + eventHalfWidth, window.innerWidth - eventHalfWidth] as const
-    const usableLanes = [leftLane, rightLane].filter(([start, end]) => end > start)
-    const lane = usableLanes[Math.floor(Math.random() * usableLanes.length)]
-    const bubbleX = lane
-      ? lane[0] + Math.random() * (lane[1] - lane[0])
-      : window.innerWidth * (fromLeft ? 0.08 : 0.92)
-    const meteorY = Math.max(
-      clearance.height + eventHalfHeight + 12,
-      heartCenter.y + heartClearance + eventHalfHeight + 12,
-    ) + Math.random() * Math.max(0, window.innerHeight * 0.08)
+    const forcedEdgeRoll = forcedEntry === 'top' ? 0.1
+      : forcedEntry === 'bottom' ? 0.55
+        : forcedEntry === 'left' ? 0.78
+          : forcedEntry === 'right' ? 0.92
+            : Math.random()
+    forcedEntry = null
+    const entry = planPowerUpSpawn({
+      viewportWidth: viewport.width,
+      viewportHeight: viewport.height,
+      eventHalfWidth: EVENT_HALF_WIDTH,
+      eventHalfHeight: EVENT_HALF_HEIGHT,
+      protectedLeft,
+      protectedRight,
+      protectedTop: clearance.y + clearance.height,
+      protectedHeartTop: heartCenter.y - heartClearance,
+      edgeRoll: forcedEdgeRoll,
+      laneRoll: Math.random(),
+      positionRoll: Math.random(),
+      speedRoll: Math.random(),
+      driftRoll: Math.random(),
+    })
     const next = {
+      phase: 'announcing' as const,
       power: pickPower(fromRhythm),
       universeId: pack.id,
       motion: pack.events.motion,
       eventNoun: pack.events.noun,
       audioMode: pack.audio.event,
-      x: bubble ? bubbleX : fromLeft ? -30 : window.innerWidth + 30,
-      y: bubble ? window.innerHeight + 30 : meteorY,
-      vx: bubble ? (fromLeft ? 1 : -1) * (5 + Math.random() * 8) : (fromLeft ? 1 : -1) * (45 + Math.random() * 35),
-      vy: bubble ? -(36 + Math.random() * 18) : 18 + Math.random() * 18,
-      born: performance.now(),
+      entryEdge: entry.edge,
+      route: entry,
+      x: entry.x,
+      y: entry.y,
+      travelAngleRad: entry.travelAngleRad,
+      announcedAt: performance.now(),
+      born: 0,
     }
     star = next
     pos = { x: next.x, y: next.y }
+    announcementRemaining = OMEN_ANNOUNCEMENT_MS / 1_000
+    document.documentElement.dataset.omenArrival = pack.id
+    playOmenApproach(pack.audio.event)
     animate()
   }
 
@@ -149,6 +196,7 @@
     const frame = (now: number) => {
       if (!star) return
       if (star.universeId !== game.activeUniverse) {
+        delete document.documentElement.dataset.omenArrival
         star = null
         scheduleNext()
         return
@@ -156,33 +204,43 @@
       const elapsed = now - last
       last = now
       if (gamePaused()) {
-        star.born += elapsed
+        if (star.phase === 'announcing') star.announcedAt += elapsed
+        else star.born += elapsed
         raf = requestAnimationFrame(frame)
         return
       }
-      const dt = elapsed / 1000
-      star.x += star.vx * dt
-      star.y += star.vy * dt
+      if (star.phase === 'announcing') {
+        const remainingMs = Math.max(0, OMEN_ANNOUNCEMENT_MS - (now - star.announcedAt))
+        announcementRemaining = Math.max(1, Math.ceil(remainingMs / 1_000))
+        if (remainingMs > 0) {
+          raf = requestAnimationFrame(frame)
+          return
+        }
+        star.phase = 'active'
+        star.born = now
+        delete document.documentElement.dataset.omenArrival
+      }
+      const routeProgress = (now - star.born) / star.route.durationMs
+      const point = positionOnOmenArc(star.route, routeProgress)
+      star.x = point.x
+      star.y = point.y
       const eventRect = {
-        x: star.x - 3.3 * 16,
-        y: star.y - 1.9 * 16,
-        width: 6.6 * 16,
-        height: 3.8 * 16,
+        x: star.x - EVENT_HALF_WIDTH,
+        y: star.y - EVENT_HALF_HEIGHT,
+        width: EVENT_HALF_WIDTH * 2,
+        height: EVENT_HALF_HEIGHT * 2,
       }
       const viewport = { width: window.innerWidth, height: window.innerHeight }
       if (
         rectIntersectsHudClearance(eventRect, viewport)
         || rectIntersectsHeartTarget(eventRect, viewport)
       ) {
-        star = null
-        scheduleNext()
+        missStar()
         return
       }
       pos = { x: star.x, y: star.y }
-      const leftWorld = star.motion === 'bubble' ? star.y < -50 : star.y > window.innerHeight + 40
-      if (now - star.born > LIFETIME_MS || leftWorld) {
-        star = null
-        scheduleNext()
+      if (point.progress >= 1) {
+        missStar()
         return
       }
       raf = requestAnimationFrame(frame)
@@ -190,41 +248,69 @@
     raf = requestAnimationFrame(frame)
   }
 
+  function applyReward(caught: Star, rewardRatio: number, missed = false) {
+    const power = caught.power
+    const pack = universeById(caught.universeId)
+    const reward = planOmenReward(power, durScale(), rewardRatio)
+    if (reward.durationSeconds > 0) {
+      addBuff(
+        {
+          id: `${pack.id}-${power.id}${missed ? '-banked' : ''}`,
+          label: `${missed ? 'Banked ' : ''}${power.label} ${power.glyph}`,
+          prodMult: power.prodMult ?? 1,
+          clickMult: power.clickMult ?? 1,
+        },
+        reward.durationSeconds,
+      )
+    }
+    let amount: EconomyAmount = ZERO_AMOUNT
+    if (reward.rateSeconds > 0) {
+      amount = maxAmount(
+        amountFromNumber((power.minAward ?? 0) * reward.rewardRatio),
+        multiplyAmountByNumber(passiveRatePerSec(), reward.rateSeconds),
+      )
+      earn(amount)
+    }
+    if (missed) {
+      let message = `The ${caught.eventNoun} passed. A quarter of its reward remains as embers on the ground.`
+      if (!isZeroAmount(amount)) message += ` ${pack.currencyGlyph} ${format(amount)} banked.`
+      if (reward.durationSeconds > 0) message += ` ${reward.durationSeconds} seconds banked.`
+      pushToast('Embers banked', message, caught.eventNoun)
+      return reward
+    }
+    let message = power.toast.replaceAll('{currency}', pack.currency.toLowerCase())
+    if (!isZeroAmount(amount)) message += ` ${pack.currencyGlyph} ${format(amount)} gathered.`
+    if (reward.durationSeconds > 0) message += ` ${reward.durationSeconds} seconds.`
+    pushToast(power.label, message, caught.eventNoun)
+    return reward
+  }
+
+  function missStar() {
+    if (!star || star.phase !== 'active') return
+    const missed = star
+    star = null
+    cancelAnimationFrame(raf)
+    const groundX = Math.max(OMEN_MIN_HIT_SIZE_PX, Math.min(window.innerWidth - OMEN_MIN_HIT_SIZE_PX, missed.x))
+    const groundY = window.innerHeight - 38
+    worldRef()?.emitParticleRecipe('omen', groundX, groundY)
+    const reward = applyReward(missed, OMEN_MISS_BANK_RATIO, true)
+    bankedEmbers = { x: groundX, y: groundY, hue: missed.power.hue, label: missed.power.label }
+    clearTimeout(bankedEmberTimer)
+    bankedEmberTimer = setTimeout(() => { bankedEmbers = null }, Math.max(8_000, reward.durationSeconds * 1_000))
+    scheduleNext()
+  }
+
   function catchStar(event?: Event) {
     event?.preventDefault()
     event?.stopPropagation()
-    if (!star || gamePaused()) return
+    if (!star || star.phase !== 'active' || gamePaused()) return
     const caught = star
-    const power = caught.power
     star = null
     cancelAnimationFrame(raf)
     game.starsCaught += 1
     playStarCatch(caught.audioMode)
-    const pack = universeById(caught.universeId)
-    const duration = power.durationSec ? Math.round(power.durationSec * durScale()) : 0
-    if (duration > 0) {
-      addBuff(
-        {
-          id: `${pack.id}-${power.id}`,
-          label: `${power.label} ${power.glyph}`,
-          prodMult: power.prodMult ?? 1,
-          clickMult: power.clickMult ?? 1,
-        },
-        duration,
-      )
-    }
-    let amount: EconomyAmount = ZERO_AMOUNT
-    if (power.rateSeconds) {
-      amount = maxAmount(
-        amountFromNumber(power.minAward ?? 0),
-        multiplyAmountByNumber(passiveRatePerSec(), power.rateSeconds),
-      )
-      earn(amount)
-    }
-    let message = power.toast.replaceAll('{currency}', pack.currency.toLowerCase())
-    if (!isZeroAmount(amount)) message += ` ${pack.currencyGlyph} ${format(amount)} gathered.`
-    if (duration > 0) message += ` ${duration} seconds.`
-    pushToast(power.label, message, caught.eventNoun)
+    worldRef()?.emitParticleRecipe('omen', caught.x, caught.y)
+    applyReward(caught, 1)
     if (Math.random() < perkBonus(game.constellation, 'starPair') && summonFallingStar()) {
       pushToast('A paired omen', `Another ${caught.eventNoun} follows the first.`, 'constellation')
     }
@@ -246,19 +332,38 @@
     spawnTimer = setTimeout(spawn, forcedPowerId ? 650 : FIRST_DELAY())
     return () => {
       clearTimeout(spawnTimer)
+      clearTimeout(bankedEmberTimer)
       cancelAnimationFrame(raf)
+      delete document.documentElement.dataset.omenArrival
     }
   })
 </script>
 
-{#if star}
+{#if star?.phase === 'announcing'}
+  <div
+    class="omen-announcement"
+    class:bubble={star.motion === 'bubble'}
+    data-universe={star.universeId}
+    data-entry-edge={star.entryEdge}
+    style:left={pos.x + 'px'}
+    style:top={pos.y + 'px'}
+    style:--hue={star.power.hue}
+    role="status"
+    aria-live="polite"
+  >
+    <span class="arrival-mark" aria-hidden="true"></span>
+    <span class="arrival-copy"><strong>{star.power.label}</strong> approaches · {announcementRemaining}</span>
+  </div>
+{:else if star}
   {@const power = star.power}
   <button
     class="falling-star"
     class:bubble={star.motion === 'bubble'}
+    data-entry-edge={star.entryEdge}
     style:left={pos.x + 'px'}
     style:top={pos.y + 'px'}
     style:--hue={power.hue}
+    style:--travel-angle={star.travelAngleRad + 'rad'}
     onpointerdown={catchStar}
     onclick={catchStar}
     aria-label={`catch ${power.label} power-up`}
@@ -271,11 +376,105 @@
   </button>
 {/if}
 
+{#if bankedEmbers}
+  <div
+    class="banked-embers"
+    style:left={bankedEmbers.x + 'px'}
+    style:top={bankedEmbers.y + 'px'}
+    style:--hue={bankedEmbers.hue}
+    aria-label={`A quarter of ${bankedEmbers.label} is banked on the ground`}
+  ><span></span><span></span><span></span></div>
+{/if}
+
 <style>
+  .omen-announcement {
+    position: fixed;
+    width: 6.6rem;
+    height: 3.8rem;
+    margin: -1.9rem -3.3rem;
+    display: grid;
+    place-items: center;
+    z-index: 7;
+    pointer-events: none;
+    color: hsla(var(--hue), 92%, 82%, 0.9);
+  }
+  .arrival-mark {
+    width: 2.9rem;
+    height: 2.9rem;
+    border: 1px solid hsla(var(--hue), 88%, 72%, 0.48);
+    border-radius: 50%;
+    box-shadow: 0 0 24px hsla(var(--hue), 88%, 60%, 0.2);
+    animation: arrival-breathe 1s ease-in-out infinite;
+  }
+  .omen-announcement:not(.bubble) .arrival-mark::before,
+  .omen-announcement:not(.bubble) .arrival-mark::after {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 -1.1rem currentColor, 0 1.1rem currentColor, -1.1rem 0 currentColor, 1.1rem 0 currentColor;
+    transform: translate(-50%, -50%);
+  }
+  .omen-announcement:not(.bubble) .arrival-mark::after {
+    transform: translate(-50%, -50%) rotate(45deg) scale(0.72);
+    opacity: 0.58;
+  }
+  .omen-announcement.bubble .arrival-mark {
+    border-style: double;
+    box-shadow: inset 0 0 18px hsla(var(--hue), 80%, 64%, 0.12), 0 0 24px hsla(var(--hue), 80%, 64%, 0.22);
+  }
+  .arrival-copy {
+    position: absolute;
+    top: calc(100% + 0.2rem);
+    left: 50%;
+    width: max-content;
+    max-width: min(15rem, 42vw);
+    transform: translateX(-50%);
+    padding: 0.28rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(8, 7, 17, 0.72);
+    box-shadow: 0 0 18px rgba(8, 7, 17, 0.8);
+    font: 600 0.64rem/1.2 Inter, sans-serif;
+    letter-spacing: 0.06em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .arrival-copy strong { color: #fff6dd; }
+  .omen-announcement[data-entry-edge='bottom'] .arrival-copy {
+    top: auto;
+    bottom: calc(100% + 0.2rem);
+  }
+  .banked-embers {
+    position: fixed;
+    width: 3rem;
+    height: 1.2rem;
+    margin: -0.6rem -1.5rem;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    gap: 0.22rem;
+    z-index: 5;
+    pointer-events: none;
+    filter: drop-shadow(0 0 8px hsla(var(--hue), 92%, 62%, 0.75));
+  }
+  .banked-embers span {
+    width: 0.34rem;
+    height: 0.24rem;
+    border-radius: 50% 50% 45% 55%;
+    background: hsla(var(--hue), 90%, 70%, 0.88);
+    animation: ember-bank 2.4s ease-in-out infinite alternate;
+  }
+  .banked-embers span:nth-child(2) { width: 0.48rem; height: 0.31rem; animation-delay: -0.8s; }
+  .banked-embers span:nth-child(3) { animation-delay: -1.6s; }
   .falling-star {
     position: fixed;
     width: 6.6rem;
     height: 3.8rem;
+    min-width: 44px;
+    min-height: 44px;
     margin: -1.9rem -3.3rem;
     display: grid;
     place-items: center;
@@ -300,6 +499,7 @@
     filter: blur(1px);
     pointer-events: none;
   }
+  .falling-star:not(.bubble)::before { transform: rotate(var(--travel-angle)); transform-origin: right center; }
   .falling-star.bubble::before {
     right: auto;
     width: 3.1rem;
@@ -365,6 +565,14 @@
     from { transform: scale(0.85) rotate(-8deg); }
     to { transform: scale(1.15) rotate(8deg); }
   }
+  @keyframes arrival-breathe {
+    0%, 100% { transform: scale(0.82); opacity: 0.38; }
+    50% { transform: scale(1.08); opacity: 0.92; }
+  }
+  @keyframes ember-bank {
+    from { opacity: 0.46; transform: translateY(1px) scale(0.82); }
+    to { opacity: 1; transform: translateY(-2px) scale(1.08); }
+  }
   @keyframes bubble-ring {
     0%, 100% { transform: scale(0.82); opacity: 0.42; }
     50% { transform: scale(1.18); opacity: 0.82; }
@@ -372,5 +580,12 @@
   @keyframes bubble-float {
     from { transform: translateY(2px) scale(0.92); }
     to { transform: translateY(-3px) scale(1.07); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arrival-mark,
+    .banked-embers span,
+    .core,
+    .falling-star.bubble .core,
+    .falling-star.bubble::before { animation: none; }
   }
 </style>

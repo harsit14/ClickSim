@@ -19,8 +19,8 @@ export const CANTICLE_SPEC: FutureUniverseSpec = {
   visualMaterials: ['resonant wood', 'tensioned membrane', 'Chladni sand', 'metallic overtone', 'luminous air density', 'string fiber', 'waveform ribbon'],
   primarySilhouettes: ['a four-slot visible measure around a resonant membrane', 'a cathedral of chambers joined by standing-wave nodes', 'two distinct waveform voices sharing one open horizon'],
   economy: {
-    costScales: [0.78, 0.92, 1.05, 0.9, 1.12, 1.22, 1.38, 1.3, 1.55, 1.72, 1.9, 1.82, 2.15, 2.4, 2.7, 3.05, 3.45, 4.1],
-    rateScales: [0.8, 1.1, 0.92, 1.25, 1.05, 1.32, 1.18, 1.48, 1.3, 1.58, 1.72, 1.45, 1.88, 2.05, 2.2, 2.42, 2.7, 3.25],
+    baseCosts: [12, 166, 2_310, 23_400, 358_400, 4_880_000, 70_380_000, 845_000_000, 12_710_000_000, 160_000_000_000, 650_000_000_000, 18_400_000_000_000, 203_000_000_000_000, 1_880_000_000_000_000, 16_900_000_000_000_000, 160_000_000_000_000_000, 1_520_000_000_000_000_000, 16_000_000_000_000_000_000],
+    baseRates: [0.224, 2.97, 21.16, 256.25, 1_837.5, 19_404, 145_140, 1_524_400, 11_440_000, 116_920_000, 1_075_000_000, 7_685_000_000, 84_600_000_000, 783_100_000_000, 7_040_000_000_000, 66_550_000_000_000, 634_500_000_000_000, 6_662_500_000_000_000],
     costMultiplier: 1.14,
   },
   signatureUpgrades: (generators) => [
@@ -110,7 +110,7 @@ export const CANTICLE_SPEC: FutureUniverseSpec = {
     { name: 'Second Voice', failure: 'The civilization could not admit an unscripted answer.', rule: 'complete with two distinct presets during one run', accessibility: 'Preset changes and retained state are announced.', rewardEffects: [{ kind: 'globalMult', value: 1.08 }] },
   ],
   tempo: 72, meter: '4/4 base grid with polymetric visible measures',
-  audioFamilies: ['soft membrane strike', 'open fifth response', 'bounded harmonic accent', 'wandering phrase call', 'completed waveform cadence'],
+  audioFamilies: ['soft membrane strike', 'open fifth response', 'bounded harmonic accent', 'wandering phrase call', 'refrain final-bar-and-open-rest cadence'],
   silenceState: 'Node position, pulse shape, captions, slot labels, and contrast provide complete mechanical equivalence.',
   fatiguePolicy: 'Touch timbres stay soft and bounded; dense measures reduce high partials; rests subtract sound before any milestone cadence.',
   routeGlyph: '⌇', routeArrival: 'a membrane waits in perfect silence until a second node answers from beyond it', unlockText: 'light Tempest’s Beacon',
