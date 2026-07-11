@@ -62,7 +62,7 @@ export const SUCCESSION_RELAYS: readonly SuccessionRelay[] = [
     targetUniverseId: 'canticle',
     name: 'The Quiet Ascent',
     description: 'Vishnulok’s completed return leaves one still current approaching the mountain passage.',
-    sourceGift: 'spent continuity pressure becomes +12% Canticle production per rank',
+    sourceGift: 'spent continuity pressure becomes +12% Kailash production per rank',
   },
 ]
 

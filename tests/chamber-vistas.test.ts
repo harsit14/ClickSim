@@ -61,16 +61,16 @@ test('Vishnulok vista persists only while a completed correction returns', () =>
   assert.match(vista?.label ?? '', /8 shelters/)
 })
 
-test('Canticle cathedral needs the named Kindling, every role, and deliberate rests', () => {
+test('Kailash open summit needs the Ring of Return, every act, and deliberate rests', () => {
   const generatorIds = ids('u7')
   const vista = planChamberVista({
-    universeId: 'canticle', generatorIds, owned: owned('u7', 13),
+    universeId: 'canticle', generatorIds, owned: owned('u7', 17),
     numericLawState: { 'u7-measure': amountFromNumber(3) }, nowMs: 0,
   })
-  assert.equal(vista?.id, 'standing-wave-cathedral')
-  assert.match(vista?.label ?? '', /six roles and \d+ deliberate rests/)
+  assert.equal(vista?.id, 'open-summit-ring')
+  assert.match(vista?.label ?? '', /all five acts and \d+ deliberate rests/)
   assert.equal(planChamberVista({
-    universeId: 'canticle', generatorIds, owned: owned('u7', 12),
+    universeId: 'canticle', generatorIds, owned: owned('u7', 16),
     numericLawState: { 'u7-measure': amountFromNumber(3) }, nowMs: 0,
   }), null)
 })

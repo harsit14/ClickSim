@@ -95,9 +95,9 @@
         <strong>×{tempest.multiplier.toFixed(2)}</strong>
       </div>
     {:else if canticle}
-      <div class="law-state canticle" aria-label={`${canticle.measure.name}; slot ${canticle.slotIndex + 1}, ${canticle.role}; production ×${canticle.multiplier.toFixed(2)}`}>
+      <div class="law-state canticle" aria-label={`${canticle.measure.name}; position ${canticle.slotIndex + 1}, ${canticle.role}; production ×${canticle.multiplier.toFixed(2)}`}>
         <span>{canticle.measure.glyph} {canticle.role}</span>
-        <i aria-hidden="true">slot {canticle.slotIndex + 1}/{canticle.slots.length}</i>
+        <i aria-hidden="true">position {canticle.slotIndex + 1}/{canticle.slots.length}</i>
         <strong>×{canticle.multiplier.toFixed(2)}</strong>
       </div>
     {/if}

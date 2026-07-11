@@ -86,11 +86,11 @@ export type TempestTypeFixture = AssertPack<UniverseFixture<
 
 export type CanticleTypeFixture = AssertPack<UniverseFixture<
   'canticle',
-  'Resonance',
-  'First Chord',
-  'Refrain',
-  'Overtones',
-  'Resonant Memory'
+  'Cadence',
+  'The Still Point',
+  'Release',
+  'Traces',
+  'Mountain Witness'
 >>
 
 export type SevenUniverseTypeFixtures = readonly [

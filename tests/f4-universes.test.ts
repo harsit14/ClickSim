@@ -111,18 +111,18 @@ test('Vishnulok gathers bounded continuity and returns only through a ready circ
   assert.equal(tempestStatus(state).boostRemainingSec, 0)
 })
 
-test('Canticle measures expose strategic rests with deterministic silent equivalence', () => {
+test('Kailash cycles expose five acts, strategic rests, and deterministic silent equivalence', () => {
   const state = {}
   const owned = { 'u7-kindling-01': 50, 'u7-kindling-07': 50 }
   assert.equal(selectCanticleMeasure(state, 3), true)
   const rest = canticleStatus(state, owned, 0)
-  assert.equal(rest.measure.id, 'silence')
+  assert.equal(rest.measure.id, 'open-ring')
   assert.equal(rest.role, 'rest')
   assert.ok(rest.multiplier > 1)
   assert.ok(CANTICLE_MEASURES.every((measure) => measure.slots.length === 16))
   assert.equal(cycleCanticleSlot(state, 0), true)
   const edited = canticleStatus(state, owned, 0)
-  assert.equal(edited.slots[0], 'syncopation')
+  assert.equal(edited.slots[0], 'veil')
   assert.notEqual(edited.patternBonus, rest.patternBonus)
   assert.equal(CANTICLE_V2_PACK.physics.sequence?.silentModeEquivalent, true)
   assert.equal(CANTICLE_V2_PACK.accessibility.muted.fullGameplayEquivalent, true)

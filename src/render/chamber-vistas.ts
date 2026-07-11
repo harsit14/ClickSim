@@ -9,7 +9,7 @@ export type ChamberVistaId =
   | 'canopy-dawn'
   | 'lotus-unfolding'
   | 'circuit-return'
-  | 'standing-wave-cathedral'
+  | 'open-summit-ring'
 
 export interface ChamberVistaPlan {
   readonly id: ChamberVistaId
@@ -84,12 +84,12 @@ export function planChamberVista({
 
   if (universeId === 'canticle') {
     const status = canticleStatus(numericLawState, owned, nowMs)
-    const cathedralWaveOwned = (owned['u7-kindling-13'] ?? 0) > 0
-    if (!cathedralWaveOwned || status.distinctRoles < 6 || status.restCount < 4) return null
+    const ringOwned = (owned['u7-kindling-17'] ?? 0) > 0
+    if (!ringOwned || status.distinctRoles < 6 || status.restCount < 3) return null
     return {
-      id: 'standing-wave-cathedral',
+      id: 'open-summit-ring',
       universeId,
-      label: `Standing-wave cathedral: six roles and ${status.restCount} deliberate rests hold one resonant architecture.`,
+      label: `Open summit: all five acts and ${status.restCount} deliberate rests reveal an incomplete copper ring and the path downward.`,
       intensity: clampUnit(0.72 + status.restCount / 48),
       detail: clampUnit(status.patternBonus - 1),
     }

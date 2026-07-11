@@ -62,5 +62,6 @@
   [data-universe-art='prismata'] .accent { stroke: color-mix(in srgb, currentColor 62%, #ffd98d); }
   [data-universe-art='tempest'] .frame { stroke-dasharray: 1.4 1.8; }
   [data-universe-art='tempest'] .accent { stroke: color-mix(in srgb, currentColor 60%, #f1d584); }
-  [data-universe-art='canticle'] .frame { stroke-dasharray: 1.3 1.3; }
+  [data-universe-art='canticle'] .frame { stroke-dasharray: 4 1.3; }
+  [data-universe-art='canticle'] .accent { stroke: color-mix(in srgb, currentColor 58%, #c47d4f); }
 </style>

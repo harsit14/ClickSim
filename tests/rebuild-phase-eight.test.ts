@@ -150,7 +150,7 @@ test('a missed Omen banks exactly one quarter without weakening its buff', () =>
   )
   const eventUi = read('../src/ui/FallingStar.svelte')
   assert.match(eventUi, /applyReward\(missed, OMEN_MISS_BANK_RATIO, true\)/)
-  assert.match(eventUi, /A quarter of its reward remains as embers on the ground/)
+  assert.match(eventUi, /A quarter of its reward remains along the route/)
   assert.match(eventUi, /class="banked-embers"/)
   assert.match(eventUi, /worldRef\(\)\?\.emitParticleRecipe\('omen', groundX, groundY\)/)
 })

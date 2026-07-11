@@ -13,7 +13,7 @@ test('Phase 6.2 gives every chamber world a ten-line authored Lumen arc', () => 
     verdance: /Pruning.*(?:cut|memory|seed)/i,
     prismata: /Recomposition.*Folio/i,
     tempest: /Renewal.*Return/i,
-    canticle: /Refrain.*Overtone/i,
+    canticle: /Release.*Trace/i,
   }
   const allTexts: string[] = []
 
@@ -45,16 +45,16 @@ test('each chamber Epoch decision uses native ceremony prose instead of shared s
     'Open the canopy',
     'Recompose the folio',
     'Complete the return',
-    'Let the bar resolve',
+    'Hold to release',
   ])
 })
 
-test('Pruning, Recomposition, Renewal, and Refrain have distinct semantic cadences', () => {
+test('Pruning, Recomposition, Renewal, and Release have distinct semantic cadences', () => {
   const expectedCadence = {
     verdance: /pruning/i,
     prismata: /folio-close.*open final interval/i,
     tempest: /returning current.*quiet/i,
-    canticle: /refrain.*open-rest/i,
+    canticle: /silence.*return/i,
   }
   const families = CHAMBER_IDS.map((universeId) => {
     const audio = V2_UNIVERSE_BY_ID.get(universeId)!.audio

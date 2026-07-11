@@ -14,7 +14,7 @@
     { id: 'clockwork', label: 'Clockwork' },
     { id: 'prismata', label: 'Brahmalok' },
     { id: 'tempest', label: 'Vishnulok' },
-    { id: 'canticle', label: 'Canticle' },
+    { id: 'canticle', label: 'Kailash' },
   ] as const satisfies readonly { id: DevScenario; label: string }[]
 
   const milestonePresets = [

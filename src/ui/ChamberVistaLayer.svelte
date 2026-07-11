@@ -53,14 +53,12 @@
       <div class="return-refuges"><i></i><i></i><i></i><i></i></div>
       <div class="return-home"></div>
     {:else}
-      <div class="cathedral-nave"></div>
-      <div class="cathedral-arch arch-a"></div>
-      <div class="cathedral-arch arch-b"></div>
-      <div class="cathedral-arch arch-c"></div>
-      <div class="cathedral-wave wave-a"></div>
-      <div class="cathedral-wave wave-b"></div>
-      <div class="cathedral-nodes"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="cathedral-rest"></div>
+      <div class="summit-clearing"></div>
+      <div class="summit-range"></div>
+      <div class="summit-river"></div>
+      <div class="summit-ring"></div>
+      <div class="summit-acts"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="summit-rest"></div>
     {/if}
   </div>
 {/if}
@@ -126,22 +124,17 @@
   .return-refuges { inset:0; }.return-refuges i { top:52%;width:5rem;height:2.4rem;border:1px solid color-mix(in srgb,var(--gold) 24%,transparent);border-bottom:0;border-radius:55% 55% 0 0;background:color-mix(in srgb,var(--bg) 42%,transparent); }.return-refuges i:nth-child(1){left:17%}.return-refuges i:nth-child(2){left:34%;top:68%;transform:scale(.78)}.return-refuges i:nth-child(3){right:34%;top:68%;transform:scale(.78)}.return-refuges i:nth-child(4){right:17%}
   .return-home { left:50%;top:56%;width:5rem;aspect-ratio:1.45;transform:translate(-50%,-50%);border:1px dashed color-mix(in srgb,var(--gold) 46%,transparent);border-radius:55% 55% 20% 20%;background:color-mix(in srgb,var(--bg) 76%,transparent);box-shadow:0 0 2rem color-mix(in srgb,var(--bg) 58%,transparent); }
 
-  /* Canticle — nodes, rests, and antinodes hold an inhabitable acoustic form. */
-  .standing-wave-cathedral .cathedral-nave { left: 50%; top: 20%; bottom: 13%; width: min(54vw, 48rem); transform: translateX(-50%); background: radial-gradient(ellipse at 50% 90%, color-mix(in srgb, var(--gold) 12%, transparent), transparent 65%); border-bottom: 1px solid color-mix(in srgb, var(--gold) 40%, transparent); perspective: 40rem; }
-  .cathedral-arch { left: 50%; bottom: 16%; transform: translateX(-50%); border: 1px solid color-mix(in srgb, var(--gold) 34%, transparent); border-bottom: 0; border-radius: 50% 50% 0 0; box-shadow: inset 0 0 2rem color-mix(in srgb, var(--amber) 4%, transparent); }
-  .arch-a { width: min(50vw, 44rem); height: 58%; }
-  .arch-b { width: min(36vw, 32rem); height: 42%; opacity: 0.78; }
-  .arch-c { width: min(22vw, 19rem); height: 26%; opacity: 0.58; }
-  .cathedral-wave { left: 12%; right: 12%; top: 53%; height: 4.2rem; border-top: 2px solid color-mix(in srgb, var(--gold) 42%, transparent); border-radius: 50%; filter: drop-shadow(0 0 0.5rem color-mix(in srgb, var(--gold) 24%, transparent)); animation: cathedral-breathe 3.6s ease-in-out infinite alternate; }
-  .wave-b { transform: scaleY(-1) translateY(-2rem); opacity: 0.58; animation-delay: -1.8s; }
-  .cathedral-nodes { inset: 0; }
-  .cathedral-nodes i { left: calc(20% + var(--node) * 12%); top: 53%; width: 0.72rem; aspect-ratio: 1; transform: translate(-50%, -50%); border: 1px solid color-mix(in srgb, white 60%, transparent); border-radius: 50%; background: var(--bg); box-shadow: 0 0 1rem color-mix(in srgb, var(--gold) 44%, transparent); }
-  .cathedral-nodes i:nth-child(1) { --node: 0; } .cathedral-nodes i:nth-child(2) { --node: 1; } .cathedral-nodes i:nth-child(3) { --node: 2; } .cathedral-nodes i:nth-child(4) { --node: 3; } .cathedral-nodes i:nth-child(5) { --node: 4; } .cathedral-nodes i:nth-child(6) { --node: 5; }
-  .cathedral-rest { left: 50%; top: 53%; width: 5.4rem; aspect-ratio: 1; transform: translate(-50%, -50%); border: 1px dashed color-mix(in srgb, white 46%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--bg) 82%, transparent); box-shadow: 0 0 2.8rem var(--bg); }
+  /* Kailash — the late vista reveals a ring that refuses enclosure and a visible route down. */
+  .open-summit-ring .summit-clearing { inset:0;background:radial-gradient(ellipse at 50% 58%,color-mix(in srgb,var(--gold) 15%,transparent),transparent 46%);animation:summit-clear 6s ease-in-out infinite alternate; }
+  .summit-range { left:50%;bottom:8%;width:min(70vw,62rem);height:66%;transform:translateX(-50%);clip-path:polygon(0 100%,18% 72%,31% 78%,50% 8%,69% 77%,82% 65%,100% 100%);background:linear-gradient(145deg,color-mix(in srgb,var(--gold) 14%,#28465b),#0a1624 55%,#04080e);filter:drop-shadow(0 0 1.6rem color-mix(in srgb,var(--gold) 8%,transparent)); }
+  .summit-river { left:52%;top:34%;width:3px;height:60%;background:linear-gradient(var(--gold),#79b4c5 55%,transparent);transform:rotate(6deg);box-shadow:0 0 1rem color-mix(in srgb,var(--gold) 38%,transparent); }
+  .summit-ring { left:50%;top:51%;width:min(38vw,32rem);aspect-ratio:1;transform:translate(-50%,-50%);border:2px solid color-mix(in srgb,#c47d4f 48%,transparent);border-left-color:transparent;border-radius:50%;filter:drop-shadow(0 0 1.4rem color-mix(in srgb,#c47d4f 16%,transparent)); }
+  .summit-acts { inset:0; }.summit-acts i { --act-angle:calc(var(--act) * 72deg - 90deg);left:calc(50% - .45rem);top:calc(51% - .45rem);width:.9rem;aspect-ratio:1;transform:rotate(var(--act-angle)) translateY(-9.5rem) rotate(calc(-1 * var(--act-angle)));border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);background:#07101b;box-shadow:0 0 .8rem color-mix(in srgb,var(--gold) 24%,transparent); }.summit-acts i:nth-child(1){--act:0}.summit-acts i:nth-child(2){--act:1}.summit-acts i:nth-child(3){--act:2}.summit-acts i:nth-child(4){--act:3}.summit-acts i:nth-child(5){--act:4}
+  .summit-rest { left:50%;top:51%;width:4.8rem;aspect-ratio:1;transform:translate(-50%,-50%);border:1px dashed color-mix(in srgb,white 46%,transparent);border-radius:50%;background:color-mix(in srgb,var(--bg) 84%,transparent);box-shadow:0 0 2.8rem var(--bg); }
 
   [data-vista-quality='low'] .dawn-rays i:nth-child(n+4),
   [data-vista-quality='low'] .unfolding-courts,
-  [data-vista-quality='low'] .arch-b { display: none; }
+  [data-vista-quality='low'] .summit-acts i:nth-child(n+4) { display: none; }
   .motion-paused,
   .motion-paused * { animation: none !important; }
 
@@ -149,14 +142,12 @@
   @keyframes dawn-turn { to { transform: rotate(360deg); } }
   @keyframes lotus-breathe { to { transform: translate(-50%, -50%) scale(1.045); opacity: .78; } }
   @keyframes return-calm { to { opacity:.72;transform:scaleX(1.03); } }
-  @keyframes cathedral-breathe { to { transform: scaleY(1.18); opacity: 0.66; } }
+  @keyframes summit-clear { to { opacity:.72;transform:scaleX(1.03); } }
 
   @media (max-width: 680px) {
     .crown { width: 48%; }
     .unfolding-lotus { width: 58vw; }
-    .arch-a { width: 84vw; }
-    .arch-b { width: 61vw; }
-    .arch-c { width: 37vw; }
-    .cathedral-nodes i { left: calc(14% + var(--node) * 14.4%); }
+    .summit-ring { width: 65vw; }
+    .summit-acts i { transform:rotate(var(--act-angle)) translateY(-6.4rem) rotate(calc(-1 * var(--act-angle))); }
   }
 </style>

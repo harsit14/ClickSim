@@ -102,9 +102,9 @@ const HABIT_BREAKS: Readonly<Record<UniverseId, readonly CrossingHabitBreak[]>> 
     { id: 'cross-habit-tempest-3', atMs: 540_000, text: 'Let the correction come home. Vishnulok does not call outward power complete while its aftermath remains elsewhere.' },
   ],
   canticle: [
-    { id: 'cross-habit-canticle-1', atMs: 75_000, text: 'A rest is an occupied position here. Silence may be doing more work than the note beside it.' },
-    { id: 'cross-habit-canticle-2', atMs: 270_000, text: 'Sequence changes meaning. The same voices in another order are another machine.' },
-    { id: 'cross-habit-canticle-3', atMs: 540_000, text: 'Compose the absence too. Canticle does not confuse constant sound with progress.' },
+    { id: 'cross-habit-canticle-1', atMs: 75_000, text: 'This mountain is not a prize or machine. Read which paths open refuge and which return downward.' },
+    { id: 'cross-habit-canticle-2', atMs: 270_000, text: 'Sequence changes responsibility. Shelter before release means something different from shelter afterward.' },
+    { id: 'cross-habit-canticle-3', atMs: 540_000, text: 'Leave room to stop. Kailash does not confuse unstoppable momentum with completion.' },
   ],
 }
 

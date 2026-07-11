@@ -174,13 +174,13 @@
   }
   [data-native-universe='tempest'] .chamber-accent { stroke: #efd78f; animation-timing-function: ease-in-out; animation-duration: 3.6s; }
   [data-native-universe='canticle'] {
-    border-radius: 50%;
+    border-radius: 50% 50% 18% 18%;
     background:
-      repeating-radial-gradient(circle, transparent 0 5px, hsla(var(--record-hue), 52%, 70%, 0.05) 5px 6px),
-      radial-gradient(circle, hsla(var(--record-hue), 45%, 30%, 0.2), rgba(12, 6, 15, 0.98) 72%);
+      linear-gradient(145deg, transparent 0 42%, hsla(var(--record-hue), 48%, 70%, 0.05) 43% 44%, transparent 45%),
+      linear-gradient(180deg, hsla(var(--record-hue), 34%, 29%, 0.18), rgba(5, 10, 18, 0.98));
   }
-  [data-native-universe='canticle'] .chamber-frame { stroke-dasharray: 1.5 1.5; }
-  [data-native-universe='canticle'] .chamber-accent { stroke: #ffe7f7; animation-duration: 3.6s; }
+  [data-native-universe='canticle'] .chamber-frame { stroke-dasharray: 4 1.5; }
+  [data-native-universe='canticle'] .chamber-accent { stroke: #d39a70; animation-duration: 5.6s; }
 
   .art-moth .core { width: 0.6rem; height: 0.6rem; background: #eff8ff; box-shadow: 0 0 5px #fff, 0 0 14px rgba(170, 215, 255, 0.75); }
   .art-moth .halo { inset: 0.7rem; border-color: rgba(202, 232, 255, 0.3); }

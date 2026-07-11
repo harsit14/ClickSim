@@ -101,10 +101,10 @@
       action: 'hear', past: 'heard', heldLabel: 'returned', sleepingLabel: 'still', revealVerb: 'hear', thresholdNoun: 'lifetime Continuity',
     },
     canticle: {
-      seal: '◌', fieldLabel: 'memory score', fieldTitle: 'Every voice leaves a rest', fieldDescription: 'Voice, memory, and relationship share one score without forcing the records into unison.',
-      countLabel: 'remembered', collectionLabel: 'movement', resonanceLabel: 'standing resonance', completedLabel: 'movements sounding', hiddenShelfTitle: 'An Open Rest', hiddenShelfCopy: 'The measure keeps a place for a voice that has not entered yet.', unknownReward: 'unknown harmony',
-      nearClassification: 'recoverable resonant memory', emptyClassification: 'no voice recorded', nearName: 'Unscored voice', emptyName: 'Open measure', nearFlavor: 'The waveform is stable enough to remember.', emptyFlavor: 'A rest is not missing content. It is room to answer.',
-      action: 'remember', past: 'remembered', heldLabel: 'remembered', sleepingLabel: 'resting', revealVerb: 'remember', thresholdNoun: 'lifetime Resonance',
+      seal: '△', fieldLabel: 'mountain witness', fieldTitle: 'Every ending leaves a path down', fieldDescription: 'Change, refuge, and return remain separate witnesses around one open summit.',
+      countLabel: 'witnessed', collectionLabel: 'ascent', resonanceLabel: 'carried trace', completedLabel: 'paths returned', hiddenShelfTitle: 'An Unread Slope', hiddenShelfCopy: 'Snow and stone keep the next witness without demanding an ascent.', unknownReward: 'unknown trace',
+      nearClassification: 'recoverable mountain witness', emptyClassification: 'no route witnessed', nearName: 'Unmarked passage', emptyName: 'Open summit', nearFlavor: 'The path is legible enough to follow without claiming it.', emptyFlavor: 'The still point remains unoccupied.',
+      action: 'witness', past: 'witnessed', heldLabel: 'carried', sleepingLabel: 'still', revealVerb: 'witness', thresholdNoun: 'lifetime Cadence',
     },
   }
   const language = $derived(CABINET_LANGUAGE[pack.id] ?? CABINET_LANGUAGE.emberlight)
@@ -314,7 +314,7 @@
                 {:else if owned && c.kind === 'letter'}
                   <div class="special letter">
                     <button class="small" aria-expanded={letterOpen} onclick={() => (letterOpen = !letterOpen)}>
-                      {letterOpen ? 'close archive record' : cabinet.id === 'tidefall' ? 'decode tide record' : cabinet.id === 'prismata' ? 'read first-form record' : cabinet.id === 'tempest' ? 'hear ocean record' : 'decode archive record'}
+                      {letterOpen ? 'close archive record' : cabinet.id === 'tidefall' ? 'decode tide record' : cabinet.id === 'prismata' ? 'read first-form record' : cabinet.id === 'tempest' ? 'hear ocean record' : cabinet.id === 'canticle' ? 'witness mountain record' : 'decode archive record'}
                     </button>
                     {#if letterOpen}
                       <p>{cabinet.archiveRecord}</p>
@@ -610,10 +610,10 @@
     --archive-header: linear-gradient(180deg, rgba(15, 28, 62, 0.995), rgba(7, 14, 35, 0.98));
   }
   .cabinet.canticle {
-    --archive-accent: #f0b9df;
-    --archive-surface: #1a0e1a;
-    --archive-bg: repeating-radial-gradient(circle at 20% 12%, transparent 0 3.3rem, rgba(240,185,223,0.028) 3.35rem 3.42rem), linear-gradient(150deg, rgba(34, 18, 35, 0.99), rgba(10, 6, 14, 0.985));
-    --archive-header: linear-gradient(180deg, rgba(39, 21, 40, 0.995), rgba(20, 11, 24, 0.98));
+    --archive-accent: #d39a70;
+    --archive-surface: #101d29;
+    --archive-bg: repeating-linear-gradient(145deg, transparent 0 4.2rem, rgba(99,169,191,0.025) 4.25rem 4.3rem), radial-gradient(circle at 72% 8%, rgba(232,237,242,.11), transparent 26%), linear-gradient(150deg, rgba(20, 35, 50, 0.99), rgba(5, 9, 16, 0.988));
+    --archive-header: linear-gradient(180deg, rgba(25, 43, 59, 0.995), rgba(10, 17, 27, 0.98));
   }
   .object-copy { min-width: 0; display: flex; flex-direction: column; gap: 0.14rem; }
   .object-copy small { font-size: 0.49rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: hsla(var(--hue), 72%, 76%, 0.64); }

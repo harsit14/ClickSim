@@ -1143,12 +1143,14 @@ export function configureTempestPath(length: number, riskIndex: number): boolean
 
 export const configureVishnulokRoute = configureTempestPath
 
-/** Advances one editable Canticle slot through the six complete role states. */
+/** Advances one editable Kailash position through five game-fiction acts and rest. */
 export function editCanticleSlot(slotIndex: number): boolean {
   return game.challenge === null && game.activeUniverse === 'canticle'
     ? cycleCanticleSlot(game.numericLawState, slotIndex)
     : false
 }
+
+export const editKailashAct = editCanticleSlot
 
 /** Executes the active law action; Vishnulok completes its declared return. */
 export function activateUniverseLaw(): boolean {

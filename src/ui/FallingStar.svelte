@@ -272,10 +272,10 @@
       earn(amount)
     }
     if (missed) {
-      let message = `The ${caught.eventNoun} passed. A quarter of its reward remains as embers on the ground.`
+      let message = `The ${caught.eventNoun} passed. A quarter of its reward remains along the route.`
       if (!isZeroAmount(amount)) message += ` ${pack.currencyGlyph} ${format(amount)} banked.`
       if (reward.durationSeconds > 0) message += ` ${reward.durationSeconds} seconds banked.`
-      pushToast('Embers banked', message, caught.eventNoun)
+      pushToast('Omen banked', message, caught.eventNoun)
       return reward
     }
     let message = power.toast.replaceAll('{currency}', pack.currency.toLowerCase())

@@ -1,6 +1,6 @@
 # The Three Lokas Reframe
 
-Status: implementation canon; Brahmalok and Vishnulok technical replacements complete, external cultural review remains a release gate
+Status: implementation canon; all three loka technical replacements complete, external cultural review remains a release gate
 
 ## Story contract
 
@@ -113,10 +113,10 @@ the player does not build, purchase, defeat, own, or upgrade a deity.
 - No live UI adopts a loka name until that realm's 18 Kindlings, 12 Archive
   records, mechanics, trials, story, audio, crossings, fallbacks, and art are all
   complete.
-- Brahmalok and Vishnulok now satisfy that technical activation gate in the
-  development build. Kailash remains dormant. External cultural-consultant and
-  South Asian art/iconography review remain mandatory before a public release;
-  technical activation is not a substitute for that human review.
+- Brahmalok, Vishnulok, and Kailash now satisfy that technical activation gate
+  in the development build. External cultural-consultant and South Asian
+  art/iconography review remain mandatory before a public release; technical
+  activation is not a substitute for that human review.
 - The Unscheduled Interval is a one-time revelation after Clockwork's Beacon,
   not a fifth recurring random or scheduled Maintenance Signal.
 

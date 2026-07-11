@@ -34,8 +34,7 @@ test('Clockwork remains the final restored universe and the three lokas occupy s
   for (const realm of DIVINE_REALMS) {
     const currentPack = universeById(realm.saveSlotUniverseId)
     assert.ok(currentPack.generators.every(({ id }) => id.startsWith(`${realm.stablePrefix}-`)))
-    if (realm.id === 'brahmalok' || realm.id === 'vishnulok') assert.equal(currentPack.shortName, realm.publicName)
-    else assert.notEqual(currentPack.shortName, realm.publicName, 'Unbuilt loka names stay dormant until complete')
+    assert.equal(currentPack.shortName, realm.publicName)
     assert.equal(divineRealmForSaveSlot(realm.saveSlotUniverseId)?.id, realm.id)
     assert.ok(realm.sacredPresences.every((presence) => !realm.centralInterface.includes(presence)))
   }

@@ -75,10 +75,10 @@ const LEXICONS: Readonly<Record<string, ChallengeLexicon>> = {
     silenceRhythm: 'returning tide', silencePlace: 'the still ocean',
   },
   canticle: {
-    unitSingular: 'voice', unitPlural: 'voices', actionVerb: 'sound', earnVerb: 'sound',
-    inputPlural: 'beats', upgradePlural: 'arrangements', productionNoun: 'resonance', produceVerb: 'contribute',
-    functionVerb: 'carry the measure', relationshipPlural: 'harmonies', manualCurrencyVerb: 'sounded', silenceSound: 'audible tone',
-    silenceRhythm: 'performed rhythm', silencePlace: 'the perfect rest',
+    unitSingular: 'refuge', unitPlural: 'refuges', actionVerb: 'release', earnVerb: 'carry',
+    inputPlural: 'tendings', upgradePlural: 'paths', productionNoun: 'cadence', produceVerb: 'contribute',
+    functionVerb: 'carry the cycle', relationshipPlural: 'mountain relations', manualCurrencyVerb: 'carried', silenceSound: 'mountain wind',
+    silenceRhythm: 'five-act cycle', silencePlace: 'the open summit',
   },
 }
 

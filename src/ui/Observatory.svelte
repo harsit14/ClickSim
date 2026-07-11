@@ -535,8 +535,8 @@
     clip-path: ellipse(50% 42% at 50% 54%);
   }
   .nova.armed[data-universe='canticle']::after {
-    background: repeating-radial-gradient(ellipse at center, transparent 0 10%, color-mix(in srgb, var(--amber) 11%, transparent) 10.4% 11%, transparent 11.4% 21%);
-    clip-path: ellipse(50% 44% at 50% 50%);
+    background:linear-gradient(145deg,transparent 0 34%,color-mix(in srgb,var(--gold) 13%,transparent) 34.5% 35.3%,transparent 35.8%),radial-gradient(circle at 66% 22%,color-mix(in srgb,var(--gold) 9%,transparent),transparent 19%);
+    clip-path:polygon(0 100%,16% 70%,30% 78%,51% 15%,69% 76%,82% 63%,100% 100%);
   }
   .nova.armed::before {
     content: '✦';
@@ -554,7 +554,7 @@
   .nova.armed[data-universe='clockwork']::before { content: '⌁'; outline: 1px dashed color-mix(in srgb, var(--gold) 20%, transparent); outline-offset: 0.16rem; }
   .nova.armed[data-universe='prismata']::before { content: '✤'; border-radius: 54% 46% 54% 46%; outline: 1px dashed color-mix(in srgb, #8ecbe0 26%, transparent); outline-offset: .16rem; }
   .nova.armed[data-universe='tempest']::before { content: '↶'; border-radius: 50%; border-left-style: dashed; }
-  .nova.armed[data-universe='canticle']::before { content: '◌'; border-style: dashed; border-radius: 50%; }
+  .nova.armed[data-universe='canticle']::before { content: '▽'; border-bottom-style: dashed; border-radius: 50% 50% 18% 18%; }
   .nova.armed .nova-text {
     margin: 0;
   }
@@ -1036,6 +1036,9 @@
     background:
       repeating-linear-gradient(90deg, transparent 0 4.9rem, color-mix(in srgb, var(--gold) 3%, transparent) 4.92rem 4.98rem),
       linear-gradient(180deg, color-mix(in srgb, var(--panel) 97%, #0b0d10), color-mix(in srgb, var(--panel) 92%, #05070a));
+  }
+  .observatory.canticle {
+    background:linear-gradient(145deg,transparent 0 28%,color-mix(in srgb,var(--gold) 3%,transparent) 28.3% 28.8%,transparent 29.1% 46%),radial-gradient(circle at 72% -2%,color-mix(in srgb,var(--gold) 12%,transparent),transparent 30%),linear-gradient(180deg,color-mix(in srgb,var(--panel) 97%,#09121e),color-mix(in srgb,var(--panel) 93%,#04080e));
   }
   :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .title-block > span,
   :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .eternal-head span,

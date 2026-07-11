@@ -356,12 +356,12 @@
   [data-motif='storm-conductor'] .piece-3 { left: 69%; top: 64%; width: 4rem; height: .45rem; transform: translate(-50%,-50%) rotate(-18deg); }
   [data-motif='storm-conductor'] .piece-4 { width: 2.3rem; height: 1.7rem; border-radius: 55% 55% 18% 18%; }
 
-  [data-motif='resonant-chamber'] .motif-field { inset: 8% 31% 18%; border: 2px solid hsla(var(--vessel-hue), 70%, 74%, 0.14); }
-  [data-motif='resonant-chamber'] .piece-0 { width: 6.3rem; height: 6.3rem; border: 0.35rem double hsla(var(--piece-hue), 78%, 72%, 0.56); border-radius: 50%; }
-  [data-motif='resonant-chamber'] .piece-1 { width: 11rem; height: 2.3rem; border-width: 1px 0; border-radius: 50%; }
-  [data-motif='resonant-chamber'] .piece-2 { left: 38%; width: 1.6rem; height: 1.6rem; border-radius: 50%; }
-  [data-motif='resonant-chamber'] .piece-3 { left: 62%; width: 1.6rem; height: 1.6rem; border-radius: 50%; }
-  [data-motif='resonant-chamber'] .piece-4 { top: 70%; width: 4rem; height: 1.2rem; border-style: dashed; border-radius: 999px; }
+  [data-motif='resonant-chamber'] .motif-field { inset:12% 18% 16%;border:1px solid hsla(var(--vessel-hue),70%,74%,.14);border-left-color:transparent;border-radius:50%; }
+  [data-motif='resonant-chamber'] .piece-0 { top:58%;width:10rem;height:5.2rem;clip-path:polygon(0 100%,18% 62%,34% 72%,54% 8%,70% 70%,82% 55%,100% 100%);border-radius:0;background:hsla(var(--piece-hue),55%,38%,.16); }
+  [data-motif='resonant-chamber'] .piece-1 { left:54%;top:58%;width:.25rem;height:7rem;transform:translate(-50%,-50%) rotate(7deg);border-radius:999px; }
+  [data-motif='resonant-chamber'] .piece-2 { left:26%;top:72%;width:2.4rem;height:1.4rem;border-radius:55% 55% 0 0; }
+  [data-motif='resonant-chamber'] .piece-3 { left:74%;top:72%;width:2.4rem;height:1.4rem;border-radius:55% 55% 0 0; }
+  [data-motif='resonant-chamber'] .piece-4 { top:52%;width:8rem;height:8rem;border-left-color:transparent;border-radius:50%; }
 
   .blueprint-intro {
     margin: -0.25rem 0 0.65rem;

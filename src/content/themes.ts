@@ -43,7 +43,7 @@ export const THEMES: ThemeDef[] = [
       },
       prismata: { '--amber': '#d7a34c', '--gold': '#fff0c7', '--panel': 'rgba(22, 16, 24, 0.9)' },
       tempest: { '--amber': '#5577c8', '--gold': '#f5e5ae', '--panel': 'rgba(8, 14, 35, 0.9)' },
-      canticle: { '--amber': '#d89bc7', '--gold': '#fff0f7', '--panel': 'rgba(27, 12, 28, 0.88)' },
+      canticle: { '--amber': '#63a9bf', '--gold': '#e8edf2', '--panel': 'rgba(12, 18, 29, 0.91)' },
     },
   },
   {
@@ -75,7 +75,7 @@ export const THEMES: ThemeDef[] = [
       },
       prismata: { '--amber': '#c8a66b', '--gold': '#f5e6c2', '--panel': 'rgba(29, 24, 27, 0.88)' },
       tempest: { '--amber': '#8196b8', '--gold': '#eee2c2', '--panel': 'rgba(18, 24, 42, 0.88)' },
-      canticle: { '--amber': '#c1a0b0', '--gold': '#f2e3e8', '--panel': 'rgba(34, 25, 32, 0.86)' },
+      canticle: { '--amber': '#7895a8', '--gold': '#e4e8eb', '--panel': 'rgba(25, 31, 40, 0.89)' },
     },
   },
   {
@@ -107,7 +107,7 @@ export const THEMES: ThemeDef[] = [
       },
       prismata: { '--amber': '#889fc5', '--gold': '#e1e6f4', '--panel': 'rgba(18, 18, 35, 0.9)' },
       tempest: { '--amber': '#6881c5', '--gold': '#e0dcce', '--panel': 'rgba(10, 17, 46, 0.9)' },
-      canticle: { '--amber': '#a186c8', '--gold': '#e2d4f2', '--panel': 'rgba(26, 17, 39, 0.88)' },
+      canticle: { '--amber': '#6589b0', '--gold': '#dde4ef', '--panel': 'rgba(15, 24, 40, 0.9)' },
     },
   },
   {
@@ -139,7 +139,7 @@ export const THEMES: ThemeDef[] = [
       },
       prismata: { '--amber': '#d58b58', '--gold': '#f7cf9f', '--panel': 'rgba(38, 22, 24, 0.9)' },
       tempest: { '--amber': '#b88667', '--gold': '#efd6ae', '--panel': 'rgba(34, 23, 35, 0.89)' },
-      canticle: { '--amber': '#cc7f91', '--gold': '#f5cad0', '--panel': 'rgba(39, 21, 31, 0.88)' },
+      canticle: { '--amber': '#b8785a', '--gold': '#efd9ce', '--panel': 'rgba(35, 24, 29, 0.9)' },
     },
   },
   {
@@ -159,7 +159,7 @@ export const THEMES: ThemeDef[] = [
       clockwork: { '--amber': '#73c8ae', '--gold': '#ddfff2', '--panel': 'rgba(10, 29, 28, 0.88)' },
       prismata: { '--amber': '#6ebfc2', '--gold': '#ddf6e8', '--panel': 'rgba(10, 27, 32, 0.9)' },
       tempest: { '--amber': '#5c9ea0', '--gold': '#e1ecd6', '--panel': 'rgba(7, 26, 39, 0.9)' },
-      canticle: { '--amber': '#70d4b8', '--gold': '#e2fff6', '--panel': 'rgba(11, 27, 30, 0.88)' },
+      canticle: { '--amber': '#6aa9a1', '--gold': '#e3f1ed', '--panel': 'rgba(10, 27, 33, 0.9)' },
     },
   },
   {
@@ -179,7 +179,7 @@ export const THEMES: ThemeDef[] = [
       clockwork: { '--amber': '#dda349', '--gold': '#ffedb0', '--panel': 'rgba(22, 18, 14, 0.9)' },
       prismata: { '--amber': '#d2a044', '--gold': '#fff0b8', '--panel': 'rgba(24, 18, 20, 0.92)' },
       tempest: { '--amber': '#c29a4f', '--gold': '#f8e9b8', '--panel': 'rgba(16, 19, 31, 0.91)' },
-      canticle: { '--amber': '#cf9460', '--gold': '#ffe4bd', '--panel': 'rgba(24, 17, 21, 0.9)' },
+      canticle: { '--amber': '#c47d4f', '--gold': '#f2ddc9', '--panel': 'rgba(26, 20, 23, 0.91)' },
     },
   },
   {
@@ -199,7 +199,7 @@ export const THEMES: ThemeDef[] = [
       clockwork: { '--amber': '#c896b0', '--gold': '#f7e5ec', '--panel': 'rgba(30, 20, 30, 0.89)' },
       prismata: { '--amber': '#c78cad', '--gold': '#f7e2df', '--panel': 'rgba(30, 18, 34, 0.91)' },
       tempest: { '--amber': '#9b88ba', '--gold': '#e9dfd4', '--panel': 'rgba(19, 17, 42, 0.9)' },
-      canticle: { '--amber': '#e09abe', '--gold': '#ffe7f3', '--panel': 'rgba(33, 18, 34, 0.89)' },
+      canticle: { '--amber': '#8a82a9', '--gold': '#e8e2ee', '--panel': 'rgba(22, 20, 37, 0.91)' },
     },
   },
 ]

@@ -49,7 +49,8 @@
   let holdProgress = $state(0)
   let holdBeat = $state(0)
   const model = $derived(buildResetComparisonCardModel(comparison))
-  const requiresHold = $derived(universeId === 'emberlight' && comparison.boundary === 'epoch-turn')
+  const isKailashRelease = $derived(universeId === 'canticle' && comparison.boundary === 'epoch-turn')
+  const requiresHold = $derived((universeId === 'emberlight' || universeId === 'canticle') && comparison.boundary === 'epoch-turn')
   const ceremonyPreview = import.meta.env.DEV
     && new URLSearchParams(window.location.search).get('supernova-preview') === '1'
   const titleId = $derived(`${id}-title`)
@@ -60,7 +61,7 @@
         : universeId === 'clockwork' ? '⌁'
           : universeId === 'prismata' ? '✤'
             : universeId === 'tempest' ? '↶'
-              : universeId === 'canticle' ? '◌'
+              : universeId === 'canticle' ? '▽'
                 : '✦',
   )
 
@@ -308,7 +309,7 @@
           onclick={confirmClick}
         >
           {#if requiresHold}
-            Hold {holdBeat}/3 beats · {resolveText(model.actionLabelKey)}
+            {isKailashRelease ? `Hold ${holdBeat}/3 stages · ${resolveText(model.actionLabelKey)}` : `Hold ${holdBeat}/3 beats · ${resolveText(model.actionLabelKey)}`}
           {:else}
             {resolveText('reset.action.confirm', { action: resolveText(model.actionLabelKey) })}
           {/if}
@@ -316,7 +317,9 @@
       </div>
       {#if requiresHold}
         <p class="hold-status" aria-live="polite">
-          {holdActive ? `Beat ${holdBeat} of 3. Keep holding.` : 'Press and hold for three beats. Release to cancel.'}
+          {isKailashRelease
+            ? holdActive ? `Release stage ${holdBeat} of 3. Shelter remains visible. Keep holding, or release to cancel.` : 'Inspect what returns. Press and hold through three stages; release at any time to cancel.'
+            : holdActive ? `Beat ${holdBeat} of 3. Keep holding.` : 'Press and hold for three beats. Release to cancel.'}
         </p>
       {/if}
     </footer>
@@ -380,9 +383,9 @@
     background: repeating-radial-gradient(ellipse at 50% 58%, transparent 0 4rem, rgba(241, 213, 139, 0.018) 4.05rem 4.1rem, transparent 4.15rem 7rem), linear-gradient(180deg, rgba(5, 8, 28, 0.9), rgba(8, 16, 38, 0.96));
   }
   .scrim[data-universe='canticle'] {
-    --turn-accent: #fff0f7;
-    --turn-warm: #d89bc7;
-    background: repeating-radial-gradient(ellipse at 50% 48%, transparent 0 5rem, rgba(216, 155, 199, 0.018) 5.05rem 5.12rem, transparent 5.18rem 8rem), rgba(9, 4, 11, 0.91);
+    --turn-accent: #e8edf2;
+    --turn-warm: #c47d4f;
+    background:linear-gradient(145deg,transparent 0 29%,rgba(99,169,191,.022) 29.2% 29.5%,transparent 29.8% 48%),radial-gradient(circle at 68% 20%,rgba(232,237,242,.09),transparent 22%),rgba(4,8,14,.93);
   }
   .reset-card {
     position: relative;
@@ -431,8 +434,8 @@
     background: repeating-radial-gradient(ellipse at 7% 14%, transparent 0 1.7rem, color-mix(in srgb, var(--turn-accent) 4%, transparent) 1.74rem 1.78rem, transparent 1.82rem 2.8rem), radial-gradient(ellipse at 8% 10%, color-mix(in srgb, var(--turn-warm) 10%, transparent), transparent 26%), linear-gradient(128deg, color-mix(in srgb, var(--panel) 94%, #07102d), color-mix(in srgb, var(--panel) 82%, transparent));
   }
   [data-universe='canticle'] .reset-card {
-    border-radius: 2.2rem 2.2rem 0.5rem 0.5rem;
-    background: repeating-radial-gradient(ellipse at 4% 9%, transparent 0 2.5rem, color-mix(in srgb, var(--turn-warm) 4%, transparent) 2.55rem 2.62rem, transparent 2.7rem 4.2rem), linear-gradient(118deg, color-mix(in srgb, var(--panel) 94%, #120713), color-mix(in srgb, var(--panel) 82%, transparent));
+    border-radius:2.2rem 2.2rem .4rem .4rem;
+    background:linear-gradient(145deg,transparent 0 17%,color-mix(in srgb,var(--turn-accent) 4%,transparent) 17.3% 17.8%,transparent 18.1% 31%),radial-gradient(circle at 8% 10%,color-mix(in srgb,var(--turn-warm) 8%,transparent),transparent 23%),linear-gradient(118deg,color-mix(in srgb,var(--panel) 94%,#08111c),color-mix(in srgb,var(--panel) 82%,transparent));
   }
   .reset-card.destructive { border-color: color-mix(in srgb, var(--turn-accent) 34%, transparent); }
   .turn-header {
@@ -477,8 +480,8 @@
   [data-universe='prismata'] .turn-orbit { inset: .2rem; border-radius: 50%; transform: rotate(45deg); }
   [data-universe='tempest'] .turn-mark { border-radius: 50%; }
   [data-universe='tempest'] .turn-orbit { inset: 0.35rem -0.3rem; border-right: 1px solid color-mix(in srgb, var(--turn-accent) 26%, transparent); transform: rotate(-10deg); }
-  [data-universe='canticle'] .turn-mark { border-style: dashed; }
-  [data-universe='canticle'] .turn-orbit { inset: 0.45rem -0.35rem; transform: scaleX(1.28); }
+  [data-universe='canticle'] .turn-mark { border-radius:50% 50% 18% 18%;border-bottom-style:dashed; }
+  [data-universe='canticle'] .turn-orbit { inset:-.2rem;border-left-color:transparent;transform:rotate(-12deg); }
   .eyebrow {
     color: color-mix(in srgb, var(--turn-accent) 72%, var(--dim));
     font-size: 0.62rem;

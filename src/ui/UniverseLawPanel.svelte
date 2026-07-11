@@ -14,8 +14,8 @@
   import { universeById, universeV2ById } from '../content/universes'
   import { verdanceGraftingStatus } from '../content/universes/verdance'
   import {
-    CANTICLE_ROLES,
-    CANTICLE_MEASURES,
+    KAILASH_ACTS,
+    KAILASH_CYCLES,
     BRAHMALOK_DIRECTIONS,
     BRAHMALOK_MODES,
     TEMPEST_PATHS,
@@ -56,9 +56,9 @@
       note: 'Longer, more burdened circuits ask for more continuity and return more sustaining power.',
     },
     canticle: {
-      title: 'Reading the score',
-      steps: ['Choose a measure preset', 'Select any numbered beat to cycle its role', 'Use rests and distinct roles to shape the multiplier'],
-      note: 'Editing the score is free and immediately reversible.',
+      title: 'Reading the Still Point',
+      steps: ['Choose a mountain cycle', 'Select any numbered position to change its act', 'Keep refuge, grace, and meaningful rests inside release'],
+      note: 'The five acts are game-fiction labels. Editing is free and immediately reversible.',
     },
   } as const
   const instrumentPrimer = $derived(
@@ -103,8 +103,8 @@
     if (editCanticleSlot(index)) save()
   }
 
-  function roleGlyph(role: (typeof CANTICLE_ROLES)[number]): string {
-    return role === 'rest' ? '○' : role === 'pulse' ? '●' : role === 'sustain' ? '━' : role === 'echo' ? '))' : role === 'syncopation' ? '◆' : '×'
+  function roleGlyph(role: (typeof KAILASH_ACTS)[number]): string {
+    return role === 'rest' ? '○' : role === 'emergence' ? '△' : role === 'shelter' ? '⌂' : role === 'release' ? '▽' : role === 'veil' ? '⌁' : '◇'
   }
 
   function primerStorageKey(universeId: string): string {
@@ -327,44 +327,42 @@
     </div>
   </section>
 {:else if canticle}
-  <section class="law-panel canticle-score" aria-label="Canticle resonance score">
-    {@render integratedHeader('RESONANCE SCORE', canticle.measure.name, `BEAT ${canticle.slotIndex + 1}/16`, canticle.role, canticle.multiplier)}
+  <section class="law-panel kailash-stillpoint" aria-label="Kailash Still Point cycle">
+    {@render integratedHeader('THE STILL POINT', canticle.measure.name, `POSITION ${canticle.slotIndex + 1}/16`, canticle.role, canticle.multiplier)}
     {@render primerStrip()}
 
-    <div class="score-layout">
-      <div class="orbital-measure" aria-label={canticle.explanation}>
-        <div class="nodal-figure" aria-hidden="true"><i></i><i></i><i></i></div>
-        <div class="measure-center">
+    <div class="kailash-layout">
+      <div class="mountain-cycle" aria-label={canticle.explanation}>
+        <div class="summit-moon" aria-hidden="true"></div>
+        <div class="summit-ridge ridge-back" aria-hidden="true"></div>
+        <div class="summit-ridge ridge-front" aria-hidden="true"></div>
+        <div class="river-thread" aria-hidden="true"></div>
+        <div class="late-ring" class:complete={canticle.distinctRoles === 6 && canticle.restCount >= 3} aria-hidden="true"></div>
+        <div class="still-center">
           <span>{canticle.measure.glyph}</span>
           <strong>{roleGlyph(canticle.role)}</strong>
           <small>{Math.ceil(canticle.nextSlotInMs)}ms</small>
         </div>
-        {#each canticle.slots as role, index}
-          <button
-            type="button"
-            class:active={canticle.slotIndex === index}
-            data-role={role}
-            style={`--slot-index:${index}`}
-            onclick={() => editSlot(index)}
-            title={`Edit beat ${index + 1}: ${role}`}
-            aria-label={`Beat ${index + 1}, ${role}; activate to choose next role`}
-          >
-            <span>{roleGlyph(role)}</span><small>{index + 1}</small>
-          </button>
-        {/each}
       </div>
 
-      <div class="score-console">
+      <div class="cycle-console">
         <p class="law-explanation">{canticle.explanation}</p>
-        <div class="measure-presets" role="group" aria-label="free measure preset selection">
-          {#each CANTICLE_MEASURES as measure, index}
+        <div class="cycle-sequence" role="group" aria-label="editable five-act release sequence">
+          {#each canticle.slots as role, index}
+            <button type="button" class:active={canticle.slotIndex === index} data-role={role} onclick={() => editSlot(index)} title={`Edit position ${index + 1}: ${role}`} aria-label={`Position ${index + 1}, ${role}; activate to choose next act`}>
+              <span>{roleGlyph(role)}</span><small>{index + 1}</small>
+            </button>
+          {/each}
+        </div>
+        <div class="cycle-presets" role="group" aria-label="mountain cycle preset selection">
+          {#each KAILASH_CYCLES as measure, index}
             <button type="button" aria-pressed={canticle.measureIndex === index} onclick={() => configure(index)} title={measure.description}>
               <span>{measure.glyph}</span><div><b>{measure.name}</b><small>{measure.description}</small></div>
             </button>
           {/each}
         </div>
-        <div class="role-legend" aria-label={`${canticle.restCount} rests and ${canticle.distinctRoles} distinct roles`}>
-          {#each CANTICLE_ROLES as role}
+        <div class="act-legend" aria-label={`${canticle.restCount} rests and ${canticle.distinctRoles} distinct acts`}>
+          {#each KAILASH_ACTS as role}
             <span data-role={role}><i>{roleGlyph(role)}</i>{role}</span>
           {/each}
         </div>
@@ -505,40 +503,33 @@
   .circuit-route { display:grid;align-content:center;gap:.32rem;padding-left:.5rem;border-left:1px solid color-mix(in srgb,var(--gold) 12%,transparent); }.reach-scale,.burden-scale { display:grid;grid-template-columns:6rem 1fr;align-items:center;gap:.3rem; }.reach-scale > span,.burden-scale > span { color:var(--dim);font:720 .4rem/1 system-ui,sans-serif;letter-spacing:.07em; }.reach-scale > div,.burden-scale > div { display:flex;gap:.16rem; }
   .circuit-route button { flex:1;min-width:0;padding:.22rem .16rem;color:var(--dim);background:color-mix(in srgb,var(--bg) 62%,transparent);border:1px solid color-mix(in srgb,var(--gold) 12%,transparent);font:650 .4rem/1 system-ui,sans-serif; }.circuit-route button[aria-pressed='true'] { color:white;border-color:var(--gold);background:color-mix(in srgb,var(--amber) 9%,transparent); }
 
-  /* Canticle — a circular score whose silence is a visible part of the composition. */
-  .canticle-score { width: min(42rem, calc(100vw - 29rem)); margin: 0.12rem auto 0; padding: 0.42rem 0.62rem 0.5rem; border-radius: 1.4rem 1.4rem 0.45rem 0.45rem; background: radial-gradient(ellipse at 25% 55%, color-mix(in srgb, var(--amber) 8%, transparent), transparent 32%), color-mix(in srgb, var(--panel) 92%, #0c0710); }
-  .score-layout { display: grid; grid-template-columns: 8.3rem 1fr; gap: 0.55rem; align-items: center; margin-top: 0.24rem; }
-  .orbital-measure { position: relative; width: 7.5rem; aspect-ratio: 1; margin: 0 auto; border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--amber) 7%, transparent), transparent 65%); }
-  .orbital-measure::before, .orbital-measure::after { content: ''; position: absolute; inset: 18%; border: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); border-radius: 50%; }
-  .orbital-measure::after { inset: 34%; border-style: dashed; }
-  .nodal-figure { position: absolute; inset: 12%; border-radius: 50%; background: repeating-conic-gradient(from 22.5deg, transparent 0 20deg, color-mix(in srgb, var(--gold) 7%, transparent) 21deg 22.5deg); -webkit-mask: radial-gradient(circle, transparent 0 34%, #000 35% 78%, transparent 79%); mask: radial-gradient(circle, transparent 0 34%, #000 35% 78%, transparent 79%); }
-  .nodal-figure i { position: absolute; left: 50%; top: 50%; width: 70%; height: 42%; border: 1px solid color-mix(in srgb, var(--gold) 16%, transparent); border-radius: 50%; transform: translate(-50%, -50%) rotate(calc(var(--node-rotation, 0) * 1deg)); }
-  .nodal-figure i:nth-child(2) { --node-rotation: 60; } .nodal-figure i:nth-child(3) { --node-rotation: 120; }
-  .measure-center { position: absolute; left: 50%; top: 50%; z-index: 2; width: 2.35rem; aspect-ratio: 1; display: grid; place-items: center; align-content: center; gap: 0.04rem; transform: translate(-50%, -50%); color: white; border: 1px solid color-mix(in srgb, var(--gold) 28%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--bg) 76%, transparent); box-shadow: 0 0 1rem color-mix(in srgb, var(--amber) 12%, transparent); }
-  .measure-center > span { color: var(--dim); font-size: 0.5rem; }
-  .measure-center strong { font: 760 0.8rem/1 ui-monospace, monospace; }
-  .measure-center small { color: var(--dim); font-size: 0.38rem; }
-  .orbital-measure > button { --slot-angle: calc(var(--slot-index) * 22.5deg); position: absolute; left: calc(50% - 0.62rem); top: calc(50% - 0.62rem); z-index: 3; width: 1.24rem; height: 1.24rem; display: grid; place-items: center; align-content: center; gap: 0.01rem; padding: 0; color: color-mix(in srgb, var(--gold) 58%, var(--dim)); background: color-mix(in srgb, var(--panel) 94%, var(--bg)); border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 50%; transform: rotate(var(--slot-angle)) translateY(-3.08rem) rotate(calc(-1 * var(--slot-angle))); }
-  .orbital-measure > button span { font: 720 0.48rem/1 ui-monospace, monospace; }
-  .orbital-measure > button small { color: var(--dim); font-size: 0.34rem; }
-  .orbital-measure > button[data-role='rest'] { border-style: dashed; background: color-mix(in srgb, var(--bg) 90%, transparent); }
-  .orbital-measure > button.active { color: white; border-color: white; box-shadow: 0 0 0 0.16rem color-mix(in srgb, var(--amber) 16%, transparent), 0 0 0.8rem var(--amber); }
-  .score-console { min-width: 0; display: grid; gap: 0.42rem; }
-  .measure-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 0.24rem; }
-  .measure-presets button { min-width: 0; display: flex; align-items: center; gap: 0.38rem; padding: 0.34rem 0.4rem; color: var(--dim); text-align: left; background: color-mix(in srgb, var(--bg) 62%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); border-radius: 0.55rem 0.2rem 0.55rem 0.2rem; }
-  .measure-presets button > span { color: var(--amber); font-size: 0.9rem; }
-  .measure-presets button div { min-width: 0; display: grid; gap: 0.08rem; }
-  .measure-presets b { color: color-mix(in srgb, var(--gold) 70%, white); font-size: 0.5rem; }
-  .measure-presets small { overflow: hidden; font-size: 0.4rem; text-overflow: ellipsis; white-space: nowrap; }
-  .measure-presets button[aria-pressed='true'] { color: white; border-color: var(--gold); box-shadow: inset 2px 0 var(--amber); }
-  .role-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.22rem 0.46rem; padding-top: 0.35rem; border-top: 1px solid color-mix(in srgb, var(--gold) 10%, transparent); }
-  .role-legend span { color: var(--dim); font: 620 0.42rem/1 system-ui, sans-serif; }
-  .role-legend i { margin-right: 0.18rem; color: var(--gold); font-style: normal; }
+  /* Kailash — mountain stillness first; the copper ring arrives only after the cycle is responsible. */
+  .kailash-stillpoint { width:min(45rem,calc(100vw - 29rem));margin:.12rem auto 0;padding:.42rem .62rem .5rem;border-radius:1.5rem 1.5rem .35rem .35rem;background:radial-gradient(ellipse at 23% 62%,color-mix(in srgb,#4f728a 12%,transparent),transparent 34%),linear-gradient(180deg,color-mix(in srgb,var(--panel) 91%,#080d18),color-mix(in srgb,var(--panel) 96%,#03060b)); }
+  .kailash-layout { display:grid;grid-template-columns:10rem minmax(0,1fr);gap:.55rem;align-items:center;margin-top:.25rem; }
+  .mountain-cycle { position:relative;height:7.2rem;overflow:hidden;border-bottom:1px solid color-mix(in srgb,var(--gold) 14%,transparent);background:radial-gradient(circle at 70% 20%,color-mix(in srgb,var(--gold) 8%,transparent),transparent 17%); }
+  .summit-moon { position:absolute;right:13%;top:7%;width:1.25rem;aspect-ratio:1;border:1px solid color-mix(in srgb,var(--gold) 45%,transparent);border-radius:50%;box-shadow:0 0 1.3rem color-mix(in srgb,var(--gold) 15%,transparent); }
+  .summit-moon::after { content:'';position:absolute;inset:-.12rem -.25rem .15rem .25rem;border-radius:50%;background:var(--panel); }
+  .summit-ridge { position:absolute;left:50%;bottom:.1rem;transform:translateX(-50%);clip-path:polygon(0 100%,24% 58%,37% 68%,55% 9%,69% 62%,80% 48%,100% 100%); }
+  .ridge-back { width:100%;height:76%;background:color-mix(in srgb,#345269 24%,transparent); }
+  .ridge-front { width:84%;height:66%;background:linear-gradient(145deg,color-mix(in srgb,var(--gold) 18%,#17293d),#0a1322 54%,#050a12);box-shadow:0 0 1.2rem color-mix(in srgb,var(--gold) 8%,transparent); }
+  .river-thread { position:absolute;z-index:2;left:53%;top:35%;width:2px;height:65%;background:linear-gradient(var(--gold),#6eacbd 62%,transparent);transform:rotate(7deg);box-shadow:0 0 .55rem color-mix(in srgb,var(--gold) 34%,transparent); }
+  .late-ring { position:absolute;z-index:1;left:50%;top:52%;width:6.3rem;aspect-ratio:1;transform:translate(-50%,-50%);border:1px solid transparent;border-radius:50%;opacity:.15;transition:opacity .5s ease,border-color .5s ease; }
+  .late-ring.complete { border-color:color-mix(in srgb,#c88452 50%,transparent);border-left-color:transparent;opacity:.75;box-shadow:0 0 1.2rem color-mix(in srgb,#c88452 15%,transparent); }
+  .still-center { position:absolute;z-index:3;left:53%;top:42%;width:2.15rem;aspect-ratio:1;display:grid;place-items:center;align-content:center;gap:.03rem;transform:translate(-50%,-50%);color:white;border:1px solid color-mix(in srgb,var(--gold) 32%,transparent);border-radius:50%;background:color-mix(in srgb,var(--bg) 86%,transparent);box-shadow:0 0 1.2rem color-mix(in srgb,#79b0c1 18%,transparent); }
+  .still-center > span { color:#c88452;font-size:.48rem; }.still-center strong { font:.76rem/1 ui-monospace,monospace; }.still-center small { color:var(--dim);font-size:.34rem; }
+  .cycle-console { min-width:0;display:grid;gap:.3rem; }
+  .cycle-sequence { display:grid;grid-template-columns:repeat(8,1fr);gap:.15rem; }
+  .cycle-sequence button { min-width:0;display:grid;place-items:center;gap:.03rem;padding:.18rem .08rem;color:var(--dim);background:color-mix(in srgb,var(--bg) 64%,transparent);border:1px solid color-mix(in srgb,var(--gold) 12%,transparent);border-radius:.18rem; }
+  .cycle-sequence button span { font:.48rem/1 ui-monospace,monospace; }.cycle-sequence button small { font-size:.3rem; }.cycle-sequence button[data-role='rest'] { border-style:dashed; }.cycle-sequence button.active { color:white;border-color:#c88452;box-shadow:0 0 .6rem color-mix(in srgb,#c88452 24%,transparent); }
+  .cycle-presets { display:grid;grid-template-columns:1fr 1fr;gap:.2rem; }
+  .cycle-presets button { min-width:0;display:flex;align-items:center;gap:.3rem;padding:.28rem .34rem;color:var(--dim);text-align:left;background:color-mix(in srgb,var(--bg) 62%,transparent);border:1px solid color-mix(in srgb,var(--gold) 12%,transparent);border-radius:.65rem .65rem .18rem .18rem; }
+  .cycle-presets button > span { color:#c88452;font-size:.76rem; }.cycle-presets button div { min-width:0;display:grid;gap:.06rem; }.cycle-presets b { color:color-mix(in srgb,var(--gold) 72%,white);font-size:.46rem; }.cycle-presets small { overflow:hidden;font-size:.36rem;text-overflow:ellipsis;white-space:nowrap; }.cycle-presets button[aria-pressed='true'] { color:white;border-color:var(--gold);box-shadow:inset 0 -2px #c88452; }
+  .act-legend { display:flex;flex-wrap:wrap;justify-content:center;gap:.2rem .42rem;padding-top:.25rem;border-top:1px solid color-mix(in srgb,var(--gold) 10%,transparent); }.act-legend span { color:var(--dim);font:620 .38rem/1 system-ui,sans-serif; }.act-legend i { margin-right:.16rem;color:var(--gold);font-style:normal; }
 
   @media (max-width: 800px) {
     .brahmalok-mandala,
     .vishnulok-circuit,
-    .canticle-score { width: 100%; margin-top: 0; }
+    .kailash-stillpoint { width: 100%; margin-top: 0; }
     .integrated-heading {
       grid-template-columns: minmax(0, 1fr) auto 1.4rem;
       grid-template-rows: auto auto;
@@ -601,5 +592,19 @@
     .reach-scale > span,
     .burden-scale > span { font-size: 0.34rem; }
     .circuit-route button { padding: 0.19rem 0.1rem; font-size: 0.34rem; }
+    .kailash-layout { grid-template-columns: 7.2rem minmax(0,1fr); gap: 0.28rem; }
+    .mountain-cycle { height: 5.8rem; }
+    .late-ring { width: 4.8rem; }
+    .still-center { width: 1.7rem; }
+    .cycle-sequence { gap: 0.1rem; }
+    .cycle-sequence button { padding: 0.12rem 0.04rem; }
+    .cycle-sequence button span { font-size: 0.4rem; }
+    .cycle-sequence button small { font-size: 0.25rem; }
+    .cycle-presets button { padding: 0.2rem; }
+    .cycle-presets button > span { font-size: 0.58rem; }
+    .cycle-presets b { font-size: 0.36rem; }
+    .cycle-presets small { display: none; }
+    .act-legend { gap: 0.14rem 0.28rem; }
+    .act-legend span { font-size: 0.31rem; }
   }
 </style>

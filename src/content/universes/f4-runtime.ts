@@ -242,15 +242,21 @@ export function dischargeTempest(state: NumericLawState): boolean {
 
 export const completeVishnulokReturn = dischargeTempest
 
-export const CANTICLE_ROLES = ['pulse', 'sustain', 'multiplier', 'rest', 'syncopation', 'echo'] as const
-export type CanticleRole = (typeof CANTICLE_ROLES)[number]
+export const KAILASH_ACTS = ['emergence', 'shelter', 'release', 'rest', 'veil', 'grace'] as const
+export type KailashAct = (typeof KAILASH_ACTS)[number]
 
-export const CANTICLE_MEASURES = [
-  { id: 'pulse', name: 'Pulse', glyph: '●', description: 'Short active cycles with a strong downbeat.', slots: ['pulse', 'echo', 'pulse', 'multiplier', 'pulse', 'echo', 'pulse', 'rest', 'pulse', 'syncopation', 'pulse', 'multiplier', 'pulse', 'echo', 'pulse', 'rest'] },
-  { id: 'drone', name: 'Drone', glyph: '━', description: 'A stable passive measure built from sustained relationships.', slots: ['sustain', 'sustain', 'echo', 'sustain', 'multiplier', 'sustain', 'echo', 'rest', 'sustain', 'sustain', 'echo', 'sustain', 'multiplier', 'sustain', 'echo', 'rest'] },
-  { id: 'counterpoint', name: 'Counterpoint', glyph: '≋', description: 'Two families answer one another across the measure.', slots: ['pulse', 'syncopation', 'echo', 'multiplier', 'pulse', 'syncopation', 'echo', 'rest', 'syncopation', 'pulse', 'echo', 'multiplier', 'syncopation', 'pulse', 'echo', 'rest'] },
-  { id: 'silence', name: 'Silence', glyph: '◌', description: 'Strategic rests amplify the relationships around them.', slots: ['rest', 'rest', 'pulse', 'rest', 'multiplier', 'rest', 'echo', 'rest', 'sustain', 'rest', 'syncopation', 'rest', 'multiplier', 'rest', 'echo', 'rest'] },
-] as const satisfies readonly { readonly id: string; readonly name: string; readonly glyph: string; readonly description: string; readonly slots: readonly CanticleRole[] }[]
+export const KAILASH_CYCLES = [
+  { id: 'mountain-cycle', name: 'Mountain Cycle', glyph: '△', description: 'Every change opens refuge and returns toward stillness.', slots: ['emergence', 'grace', 'emergence', 'release', 'emergence', 'grace', 'emergence', 'rest', 'emergence', 'veil', 'emergence', 'release', 'emergence', 'grace', 'emergence', 'rest'] },
+  { id: 'refuge-cycle', name: 'Refuge Cycle', glyph: '⌂', description: 'Shelter and grace surround each necessary ending.', slots: ['shelter', 'shelter', 'grace', 'shelter', 'release', 'shelter', 'grace', 'rest', 'shelter', 'shelter', 'grace', 'shelter', 'release', 'shelter', 'grace', 'rest'] },
+  { id: 'river-cycle', name: 'River Cycle', glyph: '≈', description: 'Emergence follows release downstream through visible consequence.', slots: ['emergence', 'veil', 'grace', 'release', 'emergence', 'veil', 'grace', 'rest', 'veil', 'emergence', 'grace', 'release', 'veil', 'emergence', 'grace', 'rest'] },
+  { id: 'open-ring', name: 'Open Ring', glyph: '◜', description: 'Grace and meaningful rests keep completion from becoming enclosure.', slots: ['rest', 'rest', 'emergence', 'rest', 'release', 'rest', 'grace', 'rest', 'shelter', 'rest', 'veil', 'rest', 'release', 'rest', 'grace', 'rest'] },
+] as const satisfies readonly { readonly id: string; readonly name: string; readonly glyph: string; readonly description: string; readonly slots: readonly KailashAct[] }[]
+
+/** @deprecated Save-stable compatibility names retained for existing consumers. */
+export const CANTICLE_ROLES = KAILASH_ACTS
+export type CanticleRole = KailashAct
+/** @deprecated Save-stable compatibility name retained for existing consumers. */
+export const CANTICLE_MEASURES = KAILASH_CYCLES
 
 export interface CanticleStatus {
   readonly measureIndex: number
@@ -267,12 +273,12 @@ export interface CanticleStatus {
 }
 
 const ROLE_MULTIPLIERS: Record<CanticleRole, number> = {
-  pulse: 1.45,
-  sustain: 1.38,
-  multiplier: 2.15,
+  emergence: 1.45,
+  shelter: 1.38,
+  release: 2.15,
+  veil: 1.62,
+  grace: 1.5,
   rest: 1.72,
-  syncopation: 1.62,
-  echo: 1.5,
 }
 
 export function canticleStatus(
@@ -280,12 +286,12 @@ export function canticleStatus(
   owned: Readonly<Record<string, number>>,
   nowMs = Date.now(),
 ): CanticleStatus {
-  const measureIndex = Math.min(CANTICLE_MEASURES.length - 1, Math.floor(readNumber(state, 'u7-measure', 1, 3)))
-  const measure = CANTICLE_MEASURES[measureIndex]
+  const measureIndex = Math.min(KAILASH_CYCLES.length - 1, Math.floor(readNumber(state, 'u7-measure', 1, 3)))
+  const measure = KAILASH_CYCLES[measureIndex]
   const slots = measure.slots.map((defaultRole, index) => {
-    const defaultIndex = CANTICLE_ROLES.indexOf(defaultRole)
-    const roleIndex = Math.floor(readNumber(state, `u7-slot-${String(index + 1).padStart(2, '0')}`, defaultIndex, CANTICLE_ROLES.length - 1))
-    return CANTICLE_ROLES[roleIndex]
+    const defaultIndex = KAILASH_ACTS.indexOf(defaultRole)
+    const roleIndex = Math.floor(readNumber(state, `u7-slot-${String(index + 1).padStart(2, '0')}`, defaultIndex, KAILASH_ACTS.length - 1))
+    return KAILASH_ACTS[roleIndex]
   })
   const slotDurationMs = 900
   const normalizedNow = Number.isFinite(nowMs) && nowMs >= 0 ? nowMs : 0
@@ -313,15 +319,15 @@ export function canticleStatus(
     patternBonus,
     multiplier,
     nextSlotInMs,
-    explanation: `${measure.name} slot ${slotIndex + 1}/${slots.length}: ${role}. ${restCount} rests and ${distinctRoles} roles shape a ×${patternBonus.toFixed(2)} relationship bonus.`,
+    explanation: `${measure.name} position ${slotIndex + 1}/${slots.length}: ${role}. ${restCount} rests and ${distinctRoles} acts shape a ×${patternBonus.toFixed(2)} responsible-release bonus.`,
   }
 }
 
 export function selectCanticleMeasure(state: NumericLawState, index: number): boolean {
-  if (!Number.isInteger(index) || index < 0 || index >= CANTICLE_MEASURES.length) return false
+  if (!Number.isInteger(index) || index < 0 || index >= KAILASH_CYCLES.length) return false
   writeNumber(state, 'u7-measure', index)
-  CANTICLE_MEASURES[index].slots.forEach((role, slotIndex) => {
-    writeNumber(state, `u7-slot-${String(slotIndex + 1).padStart(2, '0')}`, CANTICLE_ROLES.indexOf(role))
+  KAILASH_CYCLES[index].slots.forEach((role, slotIndex) => {
+    writeNumber(state, `u7-slot-${String(slotIndex + 1).padStart(2, '0')}`, KAILASH_ACTS.indexOf(role))
   })
   return true
 }
@@ -332,7 +338,7 @@ export function setCanticleSlotRole(
   roleIndex: number,
 ): boolean {
   if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= 16) return false
-  if (!Number.isInteger(roleIndex) || roleIndex < 0 || roleIndex >= CANTICLE_ROLES.length) return false
+  if (!Number.isInteger(roleIndex) || roleIndex < 0 || roleIndex >= KAILASH_ACTS.length) return false
   writeNumber(state, `u7-slot-${String(slotIndex + 1).padStart(2, '0')}`, roleIndex)
   return true
 }
@@ -340,9 +346,13 @@ export function setCanticleSlotRole(
 export function cycleCanticleSlot(state: NumericLawState, slotIndex: number): boolean {
   if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= 16) return false
   const status = canticleStatus(state, {}, 0)
-  const currentRoleIndex = CANTICLE_ROLES.indexOf(status.slots[slotIndex])
-  return setCanticleSlotRole(state, slotIndex, (currentRoleIndex + 1) % CANTICLE_ROLES.length)
+  const currentRoleIndex = KAILASH_ACTS.indexOf(status.slots[slotIndex])
+  return setCanticleSlotRole(state, slotIndex, (currentRoleIndex + 1) % KAILASH_ACTS.length)
 }
+
+export const selectKailashCycle = selectCanticleMeasure
+export const setKailashAct = setCanticleSlotRole
+export const cycleKailashAct = cycleCanticleSlot
 
 export function advanceF4LawState(
   universeId: string,
@@ -394,7 +404,7 @@ export function f4ClickMultiplier(
   }
   if (universeId === 'canticle') {
     const status = canticleStatus(state, owned, nowMs)
-    return status.role === 'pulse' || status.role === 'syncopation' ? 1.25 : 1
+    return status.role === 'emergence' || status.role === 'veil' ? 1.25 : 1
   }
   return 1
 }

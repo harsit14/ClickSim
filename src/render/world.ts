@@ -82,7 +82,7 @@ const GROUND_COLORS = {
   clockwork: '#262019',
   prismata: '#171013',
   tempest: '#0B1530',
-  canticle: '#241826',
+  canticle: '#0D1824',
 } as const
 
 const PARALLAX_BY_TIER = {
@@ -381,7 +381,7 @@ export class World {
       return { c0: '255, 242, 199', c1: '171, 202, 220', c2: '82, 118, 185', c3: '28, 48, 102', halo: '219, 180, 92', mid: '93, 154, 157' }
     }
     if (game.activeUniverse === 'canticle') {
-      return { c0: '255, 245, 251', c1: '230, 189, 218', c2: '185, 118, 170', c3: '85, 49, 96', halo: '216, 155, 199', mid: '120, 161, 198' }
+      return { c0: '232, 237, 242', c1: '150, 190, 203', c2: '79, 119, 145', c3: '24, 45, 63', halo: '99, 169, 191', mid: '196, 125, 79' }
     }
     switch (game.ending) {
       case 'warden':
@@ -1653,19 +1653,20 @@ export class World {
         ctx.strokeStyle = `rgba(${pal.c0}, 0.65)`
         ctx.lineWidth = 1.15
         ctx.beginPath()
-        for (let node = 0; node < 6; node++) {
-          const angle = (node / 6) * Math.PI * 2 - Math.PI / 2
-          const x = Math.cos(angle) * r * 0.72
-          const y = Math.sin(angle) * r * 0.72
-          if (node === 0) ctx.moveTo(x, y)
-          else ctx.lineTo(x, y)
-          ctx.moveTo(x + 2, y)
-          ctx.arc(x, y, 2, 0, Math.PI * 2)
-        }
-        ctx.closePath()
+        ctx.moveTo(-r * 0.78, r * 0.34)
+        ctx.lineTo(-r * 0.34, -r * 0.18)
+        ctx.lineTo(-r * 0.08, r * 0.02)
+        ctx.lineTo(r * 0.28, -r * 0.72)
+        ctx.lineTo(r * 0.78, r * 0.34)
         ctx.stroke()
+        ctx.strokeStyle = `rgba(${pal.mid}, 0.58)`
         ctx.beginPath()
-        ctx.ellipse(0, 0, r * 0.78, r * 0.34, 0, 0, Math.PI * 2)
+        ctx.arc(0, 0, r * 0.72, -Math.PI * 0.82, Math.PI * 0.82)
+        ctx.stroke()
+        ctx.strokeStyle = `rgba(${pal.c0}, 0.5)`
+        ctx.beginPath()
+        ctx.moveTo(r * 0.24, -r * 0.48)
+        ctx.quadraticCurveTo(r * 0.04, 0, r * 0.18, r * 0.72)
         ctx.stroke()
         ctx.restore()
       }

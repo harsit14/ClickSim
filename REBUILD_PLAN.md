@@ -423,9 +423,11 @@ Kailash. No live name changes until a replacement passes its full content and ar
       story, trials, crossing, audio, fallbacks, and internal cultural-guardrail review.
       External Hindu cultural and South Asian art/iconography review remains a
       public-release gate under `TRIMURTI_REFRAME.md`.
-- [ ] **9.6 Kailash:** replace the `u7` destination completely with the Still Point,
+- [x] **9.6 Kailash:** replace the `u7` destination completely with the Still Point,
       five-act cosmic rhythm, mountain-to-dance-ring progression, 18 Kindlings, 12
       records, story, trials, audio, and a consent-gated dissolution ceremony.
+      External Hindu cultural and South Asian art/iconography review remains a
+      public-release gate under `TRIMURTI_REFRAME.md`.
 - [ ] **9.7 Endgame reconciliation:** rewrite Lumen's late admissions, The Question,
       Garden presences, Chronicle, Atlas, Succession Relays, achievements, guide,
       localization, simulations, and migration fixtures around the completed cycle of

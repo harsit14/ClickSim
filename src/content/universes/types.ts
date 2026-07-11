@@ -241,7 +241,7 @@ export interface CohortRules {
 export interface SequenceRules {
   readonly minimumSlots: number
   readonly maximumSlots: number
-  readonly roles: readonly ('pulse' | 'sustain' | 'multiplier' | 'rest' | 'syncopation' | 'echo')[]
+  readonly roles: readonly ('pulse' | 'sustain' | 'multiplier' | 'syncopation' | 'echo' | 'emergence' | 'shelter' | 'release' | 'veil' | 'grace' | 'rest')[]
   readonly silentModeEquivalent: true
 }
 

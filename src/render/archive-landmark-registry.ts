@@ -84,9 +84,9 @@ const TEMPEST_ARCHIVE_LANDMARKS = descriptors(
 
 const CANTICLE_ARCHIVE_LANDMARKS = descriptors(
   Array.from({ length: 12 }, (_value, index) => `u7-archive-${String(index + 1).padStart(2, '0')}`),
-  'Resonant Memory instrument',
-  'Visible Resonant Memory landmark',
-  [['canticle-voice', 'Voice chamber'], ['canticle-memory', 'Memory chamber'], ['canticle-relationship', 'Relationship chamber']],
+  'Mountain Witness field note',
+  'Visible Mountain Witness landmark',
+  [['canticle-change', 'Change ridge'], ['canticle-refuge', 'Refuge valley'], ['canticle-return', 'Return path']],
 )
 
 const ARCHIVE_LANDMARKS_BY_UNIVERSE: Readonly<Record<string, readonly ArchiveLandmarkPresentationDescriptor[]>> = {

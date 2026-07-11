@@ -212,16 +212,15 @@
         <div class="vishnulok-return"><i></i></div>
         <div class="vishnulok-sounding"></div>
       {:else if pack.id === 'canticle'}
-        <div class="canticle-plate"></div>
-        <div class="canticle-nodal nodal-one"></div>
-        <div class="canticle-nodal nodal-two"></div>
-        <div class="canticle-nodal nodal-three"></div>
-        <div class="canticle-node node-one"></div>
-        <div class="canticle-node node-two"></div>
-        <div class="canticle-node node-three"></div>
-        <div class="canticle-wave wave-one"></div>
-        <div class="canticle-wave wave-two"></div>
-        <div class="canticle-rest"></div>
+        <div class="kailash-sky"></div>
+        <div class="kailash-moon"></div>
+        <div class="kailash-range range-far"></div>
+        <div class="kailash-range range-near"></div>
+        <div class="kailash-river"></div>
+        <div class="kailash-shelters"><i></i><i></i><i></i><i></i></div>
+        <div class="kailash-clouds"><i></i><i></i><i></i></div>
+        <div class="kailash-copper-ring"></div>
+        <div class="kailash-still"></div>
       {/if}
     </div>
     {/if}
@@ -383,16 +382,16 @@
   .vishnulok-return { position:absolute;left:50%;top:56%;width:min(46vw,40rem);aspect-ratio:2.7;transform:translate(-50%,-50%);border:2px solid color-mix(in srgb,var(--amber) 31%,transparent);border-left-color:transparent;border-radius:50%;filter:drop-shadow(0 0 1.2rem color-mix(in srgb,var(--amber) 12%,transparent)); }.vishnulok-return i { position:absolute;right:-.2rem;top:48%;width:.8rem;height:.8rem;border-top:2px solid color-mix(in srgb,var(--gold) 58%,transparent);border-right:2px solid color-mix(in srgb,var(--gold) 58%,transparent);transform:rotate(45deg); }
   .vishnulok-sounding { position:absolute;left:50%;top:29%;bottom:11%;width:1px;background:linear-gradient(transparent,color-mix(in srgb,var(--gold) 20%,transparent),transparent);box-shadow:-.4rem 1.1rem 0 color-mix(in srgb,var(--gold) 8%,transparent),.4rem 2.2rem 0 color-mix(in srgb,var(--gold) 8%,transparent); }
 
-  /* Canticle: a Chladni-like resonant plate with nodal geometry and an explicit rest. */
-  .canticle-plate { position: absolute; left: 50%; top: 53%; width: min(64vw, 58rem); aspect-ratio: 1.72; transform: translate(-50%, -50%); border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 50%; background: radial-gradient(ellipse, color-mix(in srgb, var(--amber) 7%, transparent), transparent 66%); box-shadow: inset 0 0 4rem color-mix(in srgb, var(--amber) 4%, transparent); }
-  .canticle-nodal { position: absolute; left: 50%; top: 53%; width: min(50vw, 44rem); aspect-ratio: 2.8; transform: translate(-50%, -50%) rotate(var(--node-angle, 0deg)); border-top: 1px solid color-mix(in srgb, var(--gold) 22%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--amber) 12%, transparent); border-radius: 50%; }
-  .nodal-two { --node-angle: 60deg; width: min(42vw, 38rem); } .nodal-three { --node-angle: -60deg; width: min(42vw, 38rem); }
-  .canticle-node { position: absolute; top: 53%; width: 0.72rem; aspect-ratio: 1; border: 1px solid color-mix(in srgb, var(--gold) 48%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--bg) 82%, transparent); box-shadow: 0 0 1.2rem color-mix(in srgb, var(--amber) 26%, transparent); }
-  .node-one { left: 24%; } .node-two { left: 50%; transform: translateX(-50%); } .node-three { right: 24%; }
-  .canticle-wave { position: absolute; left: 12%; right: 12%; top: 49%; height: 8%; border-top: 1px solid color-mix(in srgb, var(--gold) 34%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--amber) 12%, transparent); border-radius: 50%; }
-  .wave-one { transform: rotate(3deg); }
-  .wave-two { transform: rotate(-3deg) translateY(2.6rem); opacity: 0.6; }
-  .canticle-rest { position: absolute; left: 50%; top: 53%; width: min(13vw, 9rem); aspect-ratio: 1; transform: translate(-50%, -50%); border: 1px dashed color-mix(in srgb, var(--gold) 30%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--bg) 48%, transparent); box-shadow: 0 0 2.4rem color-mix(in srgb, var(--bg) 90%, transparent); }
+  /* Kailash: environment-first sacred geography; no deity or sacred attribute is rendered as a game object. */
+  .kailash-sky { position:absolute;inset:0;background:radial-gradient(circle at 72% 20%,color-mix(in srgb,var(--gold) 9%,transparent),transparent 16%),linear-gradient(180deg,#050913 0%,#0a1524 55%,#101b27 100%); }
+  .kailash-moon { position:absolute;right:19%;top:12%;width:clamp(2.6rem,5vw,5.4rem);aspect-ratio:1;border:1px solid color-mix(in srgb,var(--gold) 45%,transparent);border-radius:50%;box-shadow:0 0 2.8rem color-mix(in srgb,var(--gold) 18%,transparent); }.kailash-moon::after { content:'';position:absolute;inset:-.2rem -.65rem .3rem .65rem;border-radius:50%;background:#070c16; }
+  .kailash-range { position:absolute;left:50%;bottom:0;transform:translateX(-50%);clip-path:polygon(0 100%,14% 68%,25% 75%,39% 43%,48% 57%,59% 7%,70% 61%,81% 48%,100% 100%); }
+  .range-far { width:112%;height:62%;background:#15283a;opacity:.7; }.range-near { width:94%;height:54%;background:linear-gradient(145deg,color-mix(in srgb,var(--gold) 16%,#28465d),#0b1726 48%,#050a12 80%);filter:drop-shadow(0 0 1.6rem color-mix(in srgb,var(--gold) 7%,transparent)); }
+  .kailash-river { position:absolute;z-index:2;left:57%;top:37%;width:.22rem;height:63%;background:linear-gradient(var(--gold),#75b5c5 52%,transparent);transform:rotate(7deg);box-shadow:0 0 1rem color-mix(in srgb,var(--gold) 34%,transparent); }.kailash-river::after { content:'';position:absolute;left:-2rem;bottom:-.2rem;width:5rem;height:.8rem;border-top:1px solid color-mix(in srgb,#75b5c5 34%,transparent);border-radius:50%; }
+  .kailash-shelters { position:absolute;z-index:3;inset:0; }.kailash-shelters i { position:absolute;bottom:9%;width:clamp(2.2rem,4vw,4rem);height:1.8rem;border:1px solid color-mix(in srgb,var(--gold) 18%,transparent);border-bottom:0;border-radius:55% 55% 0 0;background:color-mix(in srgb,#172b39 72%,transparent); }.kailash-shelters i:nth-child(1){left:10%}.kailash-shelters i:nth-child(2){left:29%;bottom:16%;transform:scale(.78)}.kailash-shelters i:nth-child(3){right:29%;bottom:13%;transform:scale(.82)}.kailash-shelters i:nth-child(4){right:9%}
+  .kailash-clouds { position:absolute;z-index:2;inset:0; }.kailash-clouds i { position:absolute;width:24%;height:7%;border-top:1px solid color-mix(in srgb,var(--gold) 11%,transparent);border-radius:50%;opacity:.55; }.kailash-clouds i:nth-child(1){left:8%;top:27%}.kailash-clouds i:nth-child(2){right:8%;top:36%}.kailash-clouds i:nth-child(3){left:36%;top:16%;width:29%}
+  .kailash-copper-ring { position:absolute;z-index:1;left:57%;top:47%;width:min(33vw,27rem);aspect-ratio:1;transform:translate(-50%,-50%);border:1px solid color-mix(in srgb,#c47d4f 26%,transparent);border-left-color:transparent;border-radius:50%;filter:drop-shadow(0 0 1.1rem color-mix(in srgb,#c47d4f 9%,transparent)); }
+  .kailash-still { position:absolute;z-index:4;left:57%;top:41%;width:1.5rem;aspect-ratio:1;transform:translate(-50%,-50%);border:1px solid color-mix(in srgb,var(--gold) 42%,transparent);border-radius:50%;background:#060a12;box-shadow:0 0 1.6rem color-mix(in srgb,#75b5c5 18%,transparent); }
 
   .scene-composition {
     opacity: calc(0.58 + var(--scene-strength) * 0.28);
