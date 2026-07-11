@@ -3,6 +3,7 @@ import test from 'node:test'
 import {
   motionReduced,
   renderProfile,
+  resolveEffectiveVisualQuality,
   resolveVisualQuality,
 } from '../src/core/preferences'
 
@@ -22,8 +23,21 @@ test('automatic quality protects constrained mobile devices', () => {
   assert.equal(resolveVisualQuality('auto', {
     width: 1920,
     devicePixelRatio: 1,
+    hardwareConcurrency: 4,
+  }), 'low')
+
+  assert.equal(resolveVisualQuality('auto', {
+    width: 1920,
+    devicePixelRatio: 1,
     hardwareConcurrency: 12,
   }), 'high')
+})
+
+test('adaptive canvas degradation also lowers DOM scenery while manual choices stay fixed', () => {
+  const capableDesktop = { width: 1920, devicePixelRatio: 1, hardwareConcurrency: 12 }
+  assert.equal(resolveEffectiveVisualQuality('auto', capableDesktop, 'low'), 'low')
+  assert.equal(resolveEffectiveVisualQuality('auto', capableDesktop, 'balanced'), 'balanced')
+  assert.equal(resolveEffectiveVisualQuality('high', capableDesktop, 'low'), 'high')
 })
 
 test('manual quality choices remain deterministic and enforce distinct budgets', () => {

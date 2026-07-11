@@ -27,6 +27,7 @@
   let canvas: HTMLCanvasElement
   let world: World | undefined
   let hovering = $state(false)
+  let firstKindleResponse = $state('')
   let quasarRaf = 0
   let lastQuasarBeat = -1
 
@@ -61,6 +62,10 @@
     if (hasUi('music') && !isPlaying() && !silenced()) startMusic()
     const rhythm = clickReward()
     const result = clickEmber(rhythm.multiplier)
+    if (game.clicks === 1) {
+      const activeUniverse = universeById(game.activeUniverse)
+      firstKindleResponse = `${activeUniverse.centralObject} answered. Plus ${format(result.amount)} ${activeUniverse.currency}.`
+    }
     const wrongFootMode = consumeCrossingWrongClick(game.activeUniverse)
     const clickMode = wrongFootMode ?? universeById(game.activeUniverse).audio.click
     playClick(clickMode)
@@ -155,6 +160,7 @@
   onpointermove={onPointerMove}
 ></canvas>
 <div class="keyboard-focus" aria-hidden="true"></div>
+<p class="first-kindle-response" aria-live="polite">{firstKindleResponse}</p>
 
 <style>
   canvas {
@@ -169,4 +175,5 @@
   canvas:focus-visible { outline: none; }
   .keyboard-focus { position: fixed; top: 48%; left: 50%; width: clamp(9rem, 20vw, 13rem); aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; border: 2px solid transparent; border-radius: 50%; opacity: 0; z-index: 1; }
   canvas:focus-visible + .keyboard-focus { opacity: 1; border-color: #fff; box-shadow: 0 0 0 4px rgba(5,7,14,0.88), 0 0 0 6px var(--gold), 0 0 24px color-mix(in srgb, var(--gold) 55%, transparent); }
+  .first-kindle-response { position: fixed; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 </style>

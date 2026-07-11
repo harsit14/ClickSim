@@ -62,7 +62,8 @@
   import { clearToasts } from './systems/toasts.svelte'
   import type { EconomyAmount } from './content/universes/types'
   import { amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
-  import { resolveVisualQuality } from './core/preferences'
+  import { resolveEffectiveVisualQuality } from './core/preferences'
+  import { renderHealth } from './core/render-health.svelte'
   import { buildEmberGoalCandidates, previewSupernovaRecovery } from './experience/ember-cohesion'
   import {
     beginCrossingArrival,
@@ -129,11 +130,11 @@
   const activeV2Pack = $derived(universeV2ById(game.activeUniverse))
   const observatoryIdentity = $derived(progressionIdentity(activePack.id).observatory)
   const epochMatterGlyph = $derived(activeV2Pack?.economy.localPrestige.rewardCurrency.glyph ?? '✧')
-  const effectiveQuality = $derived(resolveVisualQuality(game.visualQuality, {
+  const effectiveQuality = $derived(resolveEffectiveVisualQuality(game.visualQuality, {
     width: window.innerWidth,
     devicePixelRatio: window.devicePixelRatio || 1,
     hardwareConcurrency: navigator.hardwareConcurrency || 8,
-  }))
+  }, renderHealth.profile))
   const vesselVisible = $derived(vesselRevealed())
   const vesselReady = $derived(vesselHasReadyPart())
   const endgameVisible = $derived(game.beacons.length > 0 || game.activeAtlasRoute !== null)

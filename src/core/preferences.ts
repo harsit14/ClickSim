@@ -51,15 +51,26 @@ export function resolveVisualQuality(
   environment: RenderEnvironment,
 ): RenderQuality {
   if (preference !== 'auto') return preference
-  const narrow = environment.width <= 760
-  const constrainedCpu = environment.hardwareConcurrency <= 4
-  if (narrow && constrainedCpu) return 'low'
+  if (environment.hardwareConcurrency <= 4) return 'low'
   if (
     environment.hardwareConcurrency <= 6 ||
     environment.devicePixelRatio > 2.25 ||
     environment.width <= 1100
   ) return 'balanced'
   return 'high'
+}
+
+const QUALITY_ORDER: readonly RenderQuality[] = ['low', 'balanced', 'high']
+
+/** Keeps DOM scenery on the same or a cheaper tier than the adaptive canvas. */
+export function resolveEffectiveVisualQuality(
+  preference: VisualQuality,
+  environment: RenderEnvironment,
+  runtimeQuality?: RenderQuality,
+): RenderQuality {
+  const base = resolveVisualQuality(preference, environment)
+  if (preference !== 'auto' || runtimeQuality === undefined) return base
+  return QUALITY_ORDER.indexOf(runtimeQuality) < QUALITY_ORDER.indexOf(base) ? runtimeQuality : base
 }
 
 export function renderProfile(
