@@ -200,3 +200,4 @@ assertValidUniverseAudioDef(CLOCKWORK_V2_PACK.audio)
 
 export { CLOCKWORK_MAINTENANCE_SIGNALS }
 export * from './routing'
+export * from './revelation'

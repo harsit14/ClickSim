@@ -4,8 +4,17 @@
   import { UNIVERSES, universeById } from '../content/universes'
   import { game } from '../engine/game.svelte'
   import { buildStoryTranscript } from '../experience/story-archive'
+  import { CLOCKWORK_REVELATION_TRIGGER } from '../content/universes/clockwork/revelation'
 
-  let { onclose, onremember }: { onclose: () => void; onremember: () => void } = $props()
+  let {
+    onclose,
+    onremember,
+    onreplayclockwork = () => {},
+  }: {
+    onclose: () => void
+    onremember: () => void
+    onreplayclockwork?: () => void
+  } = $props()
   let closeButton: HTMLButtonElement
   let activeTab = $state<'journal' | 'echoes'>('journal')
   let openId = $state<string | null>(null)
@@ -22,6 +31,10 @@
     game.seen,
     game.universeRuns,
   ))
+  const clockworkRevelationRemembered = $derived(
+    game.activeUniverse === 'clockwork'
+    && game.seen.includes(CLOCKWORK_REVELATION_TRIGGER.seenId),
+  )
 
   onMount(() => closeButton.focus())
 
@@ -66,6 +79,17 @@
         <article class="latest-line">
           <small>latest · {transcript.latest.universeName}</small>
           <p>“{transcript.latest.text}”</p>
+        </article>
+      {/if}
+
+      {#if clockworkRevelationRemembered}
+        <article class="revelation-memory">
+          <div>
+            <small>Clockwork finale · replayable</small>
+            <strong>The Unscheduled Interval</strong>
+            <p>The schedule’s blank date still opens beyond the restored city.</p>
+          </div>
+          <button onclick={onreplayclockwork}>Replay interval</button>
         </article>
       {/if}
 
@@ -267,6 +291,24 @@
     color: rgba(235, 231, 249, 0.94);
     font: italic 0.98rem/1.55 Georgia, serif;
   }
+  .revelation-memory {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: .62rem;
+    padding: .72rem .82rem;
+    background:
+      linear-gradient(110deg, rgba(225, 185, 108, .08), transparent 55%),
+      rgba(143, 217, 240, .025);
+    border: 1px solid rgba(225, 185, 108, .2);
+    border-radius: 5px 12px 12px 5px;
+  }
+  .revelation-memory small { display: block; color: rgba(143, 217, 240, .62); font-size: .5rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .revelation-memory strong { display: block; margin-top: .18rem; color: #e2d8c5; font: 500 .94rem/1.2 Georgia, serif; }
+  .revelation-memory p { margin: .18rem 0 0; color: var(--dim); font: italic .7rem/1.35 Georgia, serif; }
+  .revelation-memory button { flex: 0 0 auto; padding: .46rem .66rem; color: #e7d7b6; background: rgba(225,185,108,.07); border: 1px solid rgba(225,185,108,.26); border-radius: 999px; font: 700 .58rem/1 system-ui, sans-serif; cursor: pointer; }
+  .revelation-memory button:hover { background: rgba(225,185,108,.14); }
   .transcript-intro {
     display: flex;
     align-items: baseline;

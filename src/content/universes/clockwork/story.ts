@@ -96,5 +96,6 @@ export const CLOCKWORK_STORY_SCENES: readonly StorySceneDef[] = [
   { id: 'u4-scene-rewinding', kind: 'epoch', skippableAfterFirstView: true, replayable: true },
   { id: 'u4-scene-causal-vault', kind: 'deep', skippableAfterFirstView: true, replayable: true },
   { id: 'u4-scene-regulator-beacon', kind: 'beacon', skippableAfterFirstView: true, replayable: true },
+  { id: 'u4-scene-unscheduled-interval', kind: 'beacon', skippableAfterFirstView: true, replayable: true },
   { id: 'u4-scene-stopped-city-record', kind: 'transmission', skippableAfterFirstView: true, replayable: true },
 ]

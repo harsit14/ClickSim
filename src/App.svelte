@@ -32,6 +32,7 @@
   import UniverseLawPanel from './ui/UniverseLawPanel.svelte'
   import EndgameHub from './ui/EndgameHub.svelte'
   import DevPlaytestPanel from './ui/DevPlaytestPanel.svelte'
+  import ClockworkRevelation from './ui/ClockworkRevelation.svelte'
   import {
     game,
     hasUi,
@@ -75,6 +76,10 @@
   import type { ContextualPromptCandidate, ContextualPromptState } from './experience/contextual-prompts'
   import type { UiTextResolver } from './experience/ui-text'
   import type { FocusReturnDescriptor } from './accessibility/focus'
+  import {
+    CLOCKWORK_REVELATION_TRIGGER,
+    clockworkRevelationAvailable,
+  } from './content/universes/clockwork/revelation'
 
   let { offlineGain }: { offlineGain: EconomyAmount } = $props()
 
@@ -94,6 +99,8 @@
   let crossingTarget = $state<string | null>(null)
   let resetPreviewOpen = $state(false)
   let resetComparison = $state<ResetComparison | null>(null)
+  let clockworkRevelationActive = $state(false)
+  let clockworkRevelationReplay = $state(false)
   // Guidance is opt-in. The opening should remain only the Heart and the
   // systems the player has actually unlocked until Settings enables help.
   let goalLensEnabled = $state(false)
@@ -140,7 +147,9 @@
   const utilityPanelOpen = $derived(
     statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen || guideOpen || endgameOpen,
   )
-  const storyModalActive = $derived(cutsceneActive || questionOpen || remembering || crossingPrelude)
+  const storyModalActive = $derived(
+    cutsceneActive || questionOpen || remembering || crossingPrelude || clockworkRevelationActive,
+  )
   const modalActive = $derived(storyModalActive || guideOpen || resetPreviewOpen)
   const goalCandidates = $derived(buildEmberGoalCandidates(game, novaReady, Date.now()))
   const goalLensInput = $derived({
@@ -190,6 +199,19 @@
   $effect(() => {
     if (!storyModalActive && !resetPreviewOpen) return
     return acquireGamePause('story scene')
+  })
+
+  $effect(() => {
+    if (
+      game.activeUniverse !== 'clockwork'
+      || game.seen.includes(CLOCKWORK_REVELATION_TRIGGER.seenId)
+      || !clockworkRevelationAvailable(game)
+      || storyModalActive
+      || resetPreviewOpen
+    ) return
+    closeAll()
+    clockworkRevelationReplay = false
+    clockworkRevelationActive = true
   })
 
   function closeAll() {
@@ -341,6 +363,32 @@
     } else cancelCrossingArrival()
     crossingPrelude = false
     crossingTarget = null
+  }
+
+  function replayClockworkRevelation() {
+    if (
+      game.activeUniverse !== 'clockwork'
+      || !game.seen.includes(CLOCKWORK_REVELATION_TRIGGER.seenId)
+    ) return
+    closeAll()
+    clockworkRevelationReplay = true
+    clockworkRevelationActive = true
+  }
+
+  function finishClockworkRevelation() {
+    if (!game.seen.includes(CLOCKWORK_REVELATION_TRIGGER.seenId)) {
+      game.seen.push(CLOCKWORK_REVELATION_TRIGGER.seenId)
+      save()
+    }
+    const wasReplay = clockworkRevelationReplay
+    clockworkRevelationActive = false
+    clockworkRevelationReplay = false
+    requestAnimationFrame(() => {
+      const selector = wasReplay
+        ? '[aria-label="Story Archive"]'
+        : '[data-focus-region="heart"]'
+      document.querySelector<HTMLElement>(selector)?.focus({ preventScroll: true })
+    })
   }
 
   // vestments: apply the chosen accent theme to the document root
@@ -498,6 +546,7 @@
     <Codex
       onclose={() => (codexOpen = false)}
       onremember={() => { closeAll(); remembering = true }}
+      onreplayclockwork={replayClockworkRevelation}
     />
   {/if}
   {#if deepOpen}
@@ -536,6 +585,12 @@
 {/if}
 {#if crossingPrelude && crossingTarget}
   <CrossingPrelude destination={crossingTarget} onfinished={finishCrossing} />
+{/if}
+{#if clockworkRevelationActive}
+  <ClockworkRevelation
+    replay={clockworkRevelationReplay}
+    onfinished={finishClockworkRevelation}
+  />
 {/if}
 {#if playtestMode}
   <DevPlaytestPanel />

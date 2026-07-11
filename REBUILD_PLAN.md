@@ -393,6 +393,40 @@ recommends an explicit stopping point as clearly as its next goal. Subjective li
 comprehension, long-session, return-session, and emotional-closure judgments remain the
 human Phase 8.5 gate.
 
+## Phase 9 — Clockwork revelation and the Three Lokas
+
+Reframe the last act so Clockwork is the final universe restored by Lumen. The existing
+`prismata`, `tempest`, and `canticle` runtime identities remain as save-stable `u5/u6/u7`
+slots while their complete public replacements are built as Brahmalok, Vishnulok, and
+Kailash. No live name changes until a replacement passes its full content and art gate.
+
+- [x] **9.0 Canon and cultural contract:** record the story distinction between restored
+      universes and lokas, environment-first deity presence, sacred-content prohibitions,
+      naming review, and the required Hindu cultural/iconographic review in
+      `TRIMURTI_REFRAME.md`.
+- [x] **9.1 Save-safe route registry:** add the dormant public realm identities, their
+      existing save slots, inherited mechanic foundations, route order, central
+      non-deity interfaces, and completion rites without changing v23 saves.
+- [x] **9.2 Clockwork revelation contract:** author the 54-second Unscheduled Interval,
+      pure completion predicate, full/reduced/muted semantic plan, Witness boundary, old
+      forecast reclassification, and three-loka seal reveal.
+- [x] **9.3 Revelation scene:** implement the one-time post-Beacon Clockwork ceremony,
+      replay entry, Forecast Chamber transition, route-seal art, captions, and persisted
+      claim. Keep the four recurring Maintenance Signals unchanged.
+- [ ] **9.4 Brahmalok:** replace the `u5` destination completely—18 Kindlings, creation
+      mandala, Lotus of Becoming, 12 records, story, trials, crossing, audio, five-state
+      objects, Cabinet, vistas, fallbacks, and cultural review—before enabling its name.
+- [ ] **9.5 Vishnulok:** replace the `u6` destination completely with the Endless Circuit,
+      responsive preservation, calm cosmic-ocean composition, 18 Kindlings, 12 records,
+      story, trials, crossing, audio, fallbacks, and cultural review.
+- [ ] **9.6 Kailash:** replace the `u7` destination completely with the Still Point,
+      five-act cosmic rhythm, mountain-to-dance-ring progression, 18 Kindlings, 12
+      records, story, trials, audio, and a consent-gated dissolution ceremony.
+- [ ] **9.7 Endgame reconciliation:** rewrite Lumen's late admissions, The Question,
+      Garden presences, Chronicle, Atlas, Succession Relays, achievements, guide,
+      localization, simulations, and migration fixtures around the completed cycle of
+      creation, preservation, dissolution, choice, and renewal.
+
 ---
 
 ## Sequence summary
@@ -408,6 +442,7 @@ human Phase 8.5 gate.
 | 6 — Chamber pieces | 2 | Four honest movements; templates retired |
 | 7 — Garden | 1.5 | The numberless ending |
 | 8 — Pruning & release | 1 | Rhythm/omen/meta cleanup; human playtests |
+| 9 — Three Lokas | TBD after cultural review | Clockwork revelation; Brahmalok, Vishnulok, Kailash; renewed ending |
 
 **Total: ~16.5 weeks.** After Phase 0 the game already looks meaningfully better; after
 Phase 3 it is marketable; after Phase 7 it is finished in the sense that matters.
