@@ -33,6 +33,9 @@
   let selectedBrahmalokKindling = $state(0)
   let primerMounted = $state(false)
   let primerOpen = $state(false)
+  let instrumentExpanded = $state(true)
+  let instrumentExperienced = $state(false)
+  let instrumentPreference = $state<'auto' | 'expanded' | 'compact'>('auto')
   const brahmalokKindlings = universeById('prismata').generators
   const verdanceKindlings = universeById('verdance').generators
   const verdanceGraft = $derived(game.activeUniverse === 'verdance'
@@ -68,15 +71,21 @@
   )
 
   function configure(index: number) {
-    if (configureUniverseLaw(index)) save()
+    if (!configureUniverseLaw(index)) return
+    save()
+    if (game.activeUniverse === 'canticle') markInstrumentExperienced()
   }
 
   function discharge() {
-    if (activateUniverseLaw()) save()
+    if (!activateUniverseLaw()) return
+    save()
+    markInstrumentExperienced()
   }
 
   function routeBrahmalok(directionIndex: number) {
-    if (configureBrahmalokDirection(selectedBrahmalokKindling, directionIndex)) save()
+    if (!configureBrahmalokDirection(selectedBrahmalokKindling, directionIndex)) return
+    save()
+    markInstrumentExperienced()
   }
 
   function configureStorm(length: number, riskIndex: number) {
@@ -100,7 +109,9 @@
   }
 
   function editSlot(index: number) {
-    if (editCanticleSlot(index)) save()
+    if (!editCanticleSlot(index)) return
+    save()
+    markInstrumentExperienced()
   }
 
   function roleGlyph(role: (typeof KAILASH_ACTS)[number]): string {
@@ -111,13 +122,48 @@
     return `ember:instrument-primer:v1:${universeId}`
   }
 
-  function openFirstPrimer(universeId: string) {
+  function instrumentExperienceKey(universeId: string): string {
+    return `ember:instrument-experience:v1:${universeId}`
+  }
+
+  function instrumentLayoutKey(universeId: string): string {
+    return `ember:instrument-layout:v1:${universeId}`
+  }
+
+  function restoreInstrument(universeId: string) {
     if (universeId !== 'prismata' && universeId !== 'tempest' && universeId !== 'canticle') return
     try {
-      primerOpen = localStorage.getItem(primerStorageKey(universeId)) !== 'seen'
+      const primerSeen = localStorage.getItem(primerStorageKey(universeId)) === 'seen'
+      const experienced = localStorage.getItem(instrumentExperienceKey(universeId)) === 'complete' || primerSeen
+      const storedLayout = localStorage.getItem(instrumentLayoutKey(universeId))
+      const preference = storedLayout === 'expanded' || storedLayout === 'compact' ? storedLayout : 'auto'
+      const shouldOpenPrimer = !primerSeen
+      instrumentExperienced = experienced
+      instrumentPreference = preference
+      instrumentExpanded = shouldOpenPrimer || preference === 'expanded'
+        || (preference === 'auto' && !experienced)
+      primerOpen = shouldOpenPrimer
     } catch {
+      instrumentExperienced = false
+      instrumentPreference = 'auto'
+      instrumentExpanded = true
       primerOpen = true
     }
+  }
+
+  function markInstrumentExperienced() {
+    if (game.activeUniverse !== 'prismata' && game.activeUniverse !== 'tempest' && game.activeUniverse !== 'canticle') return
+    instrumentExperienced = true
+    try {
+      localStorage.setItem(instrumentExperienceKey(game.activeUniverse), 'complete')
+      if (instrumentPreference === 'auto') {
+        instrumentPreference = 'compact'
+        localStorage.setItem(instrumentLayoutKey(game.activeUniverse), 'compact')
+      }
+    } catch {
+      if (instrumentPreference === 'auto') instrumentPreference = 'compact'
+    }
+    if (!primerOpen && instrumentPreference === 'compact') instrumentExpanded = false
   }
 
   function dismissPrimer() {
@@ -127,22 +173,36 @@
       // The primer still dismisses for this session when storage is unavailable.
     }
     primerOpen = false
+    if (instrumentExperienced && instrumentPreference === 'compact') instrumentExpanded = false
   }
 
   function togglePrimer() {
     primerOpen = !primerOpen
+    if (primerOpen) instrumentExpanded = true
+    else if (instrumentExperienced && instrumentPreference === 'compact') instrumentExpanded = false
+  }
+
+  function toggleInstrument() {
+    instrumentExpanded = !instrumentExpanded
+    instrumentPreference = instrumentExpanded ? 'expanded' : 'compact'
+    if (!instrumentExpanded) primerOpen = false
+    try {
+      localStorage.setItem(instrumentLayoutKey(game.activeUniverse), instrumentPreference)
+    } catch {
+      // Layout preference still applies for this session when storage is unavailable.
+    }
   }
 
   onMount(() => {
     primerMounted = true
-    openFirstPrimer(game.activeUniverse)
+    restoreInstrument(game.activeUniverse)
     const timer = setInterval(() => (now = Date.now()), 150)
     return () => clearInterval(timer)
   })
 
   $effect(() => {
     const universeId = game.activeUniverse
-    if (primerMounted) openFirstPrimer(universeId)
+    if (primerMounted) restoreInstrument(universeId)
   })
 
 </script>
@@ -163,6 +223,7 @@
     <div class="effect-slot"><span>ACTIVE EFFECT</span><BuffBar integrated reserve /></div>
     <div class="instrument-title"><span>{eyebrow}</span><strong>{title}</strong></div>
     <div class="instrument-reading"><small>{state}</small><b>×{multiplier.toFixed(2)}</b><em>{detail}</em></div>
+    <button type="button" class="instrument-toggle" aria-label={instrumentExpanded ? 'Collapse universe instrument' : 'Open universe instrument'} aria-expanded={instrumentExpanded} onclick={toggleInstrument}>{instrumentExpanded ? '⌃' : '⌄'}</button>
     <button type="button" class="primer-toggle" aria-label="Explain this universe instrument" aria-expanded={primerOpen} onclick={togglePrimer}>?</button>
   </div>
 {/snippet}
@@ -213,11 +274,12 @@
     <p>{verdanceGraft.explanation}</p>
   </section>
 {:else if brahmalok}
-  <section class="law-panel brahmalok-mandala" aria-label="Brahmalok creation mandala">
+  <section class="law-panel brahmalok-mandala" class:instrument-compact={!instrumentExpanded} aria-label="Brahmalok creation mandala">
     {@render integratedHeader('LOTUS OF BECOMING', 'Four Directions', `${brahmalok.activeBands}/4 DIRECTIONS`, brahmalok.recipe.name, brahmalok.multiplier)}
-    {@render primerStrip()}
+    {#if instrumentExpanded}
+      {@render primerStrip()}
 
-    <div class="creation-stage" aria-label={`${brahmalok.activeBands} of 4 creation directions active; ${brahmalok.explanation}`}>
+      <div class="creation-stage" aria-label={`${brahmalok.activeBands} of 4 creation directions active; ${brahmalok.explanation}`}>
       <div class="lotus-center" aria-hidden="true"><span>{brahmalok.recipe.glyph}</span><i></i></div>
       <div class="creation-directions">
         {#each BRAHMALOK_DIRECTIONS as direction, index (direction.id)}
@@ -228,11 +290,11 @@
         {/each}
       </div>
       <div class="mandala-reading"><span>OPEN CENTER</span><b>{brahmalok.recipe.name}</b><small>{Math.round(brahmalok.balance * 100)}% balance</small></div>
-    </div>
+      </div>
 
-    <p class="law-explanation">{brahmalok.explanation}</p>
+      <p class="law-explanation">{brahmalok.explanation}</p>
 
-    <div class="mandala-controls">
+      <div class="mandala-controls">
       <div class="creation-modes" role="group" aria-label="free creation mode selection">
         {#each BRAHMALOK_MODES as mode, index}
           <button type="button" aria-pressed={brahmalok.recipeIndex === index} onclick={() => configure(index)} title={mode.description}>
@@ -257,14 +319,16 @@
           {/each}
         </div>
       </div>
-    </div>
+      </div>
+    {/if}
   </section>
 {:else if tempest}
-  <section class="law-panel vishnulok-circuit" aria-label="Vishnulok Endless Circuit">
+  <section class="law-panel vishnulok-circuit" class:instrument-compact={!instrumentExpanded} aria-label="Vishnulok Endless Circuit">
     {@render integratedHeader('THE ENDLESS CIRCUIT', tempest.path.name, tempest.boostRemainingSec > 0 ? 'RETURNING' : tempest.ready ? 'CORRECTION READY' : 'GATHERING', `${Math.round(tempest.charge)}% continuity`, tempest.multiplier)}
-    {@render primerStrip()}
+    {#if instrumentExpanded}
+      {@render primerStrip()}
 
-    <div class="ocean-layout">
+      <div class="ocean-layout">
       <div class="continuity-column" aria-label={`${Math.round(tempest.charge)} percent continuity reserve`}>
         <span>FULL</span>
         <div><i style={`height:${tempest.charge}%`}></i><b>{Math.round(tempest.charge)}%</b></div>
@@ -292,11 +356,11 @@
           <small>{tempest.ready ? 'close without enclosing' : `${Math.ceil(tempest.threshold - tempest.charge)}% continuity needed`}</small>
         </button>
       </div>
-    </div>
+      </div>
 
-    <p class="law-explanation">{tempest.explanation}</p>
+      <p class="law-explanation">{tempest.explanation}</p>
 
-    <div class="circuit-controls">
+      <div class="circuit-controls">
       <div class="circuit-cards" role="group" aria-label="correction circuit selection">
         {#each TEMPEST_PATHS as path, index}
           <button type="button" aria-pressed={tempest.pathIndex === index} onclick={() => configure(index)} title={path.description}>
@@ -324,14 +388,16 @@
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    {/if}
   </section>
 {:else if canticle}
-  <section class="law-panel kailash-stillpoint" aria-label="Kailash Still Point cycle">
+  <section class="law-panel kailash-stillpoint" class:instrument-compact={!instrumentExpanded} aria-label="Kailash Still Point cycle">
     {@render integratedHeader('THE STILL POINT', canticle.measure.name, `POSITION ${canticle.slotIndex + 1}/16`, canticle.role, canticle.multiplier)}
-    {@render primerStrip()}
+    {#if instrumentExpanded}
+      {@render primerStrip()}
 
-    <div class="kailash-layout">
+      <div class="kailash-layout">
       <div class="mountain-cycle" aria-label={canticle.explanation}>
         <div class="summit-moon" aria-hidden="true"></div>
         <div class="summit-ridge ridge-back" aria-hidden="true"></div>
@@ -367,7 +433,8 @@
           {/each}
         </div>
       </div>
-    </div>
+      </div>
+    {/if}
   </section>
 {/if}
 
@@ -405,7 +472,7 @@
   .verdance-grafting.active .graft-union span { color: #efffd9; border-color: #c9efa2; animation: graft-pulse 2.8s ease-in-out infinite alternate; }
   :global(html[data-motion='reduced']) .verdance-grafting.active .graft-union span { animation: none; }
   @keyframes graft-pulse { from { transform: scale(0.94); } to { transform: scale(1.06); } }
-  .integrated-heading { display: grid; grid-template-columns: minmax(6.5rem, 1.08fr) minmax(4.8rem, 0.72fr) minmax(6rem, 0.9fr) auto 1.5rem; align-items: center; gap: 0.4rem; min-height: 2.5rem; padding-bottom: 0.38rem; border-bottom: 1px solid color-mix(in srgb, var(--gold) 11%, transparent); }
+  .integrated-heading { display: grid; grid-template-columns: minmax(6.5rem, 1.08fr) minmax(4.8rem, 0.72fr) minmax(6rem, 0.9fr) auto 1.5rem 1.5rem; align-items: center; gap: 0.4rem; min-height: 2.5rem; padding-bottom: 0.38rem; border-bottom: 1px solid color-mix(in srgb, var(--gold) 11%, transparent); }
   .run-score { min-width: 0; display: flex; align-items: center; gap: 0.55rem; }
   .run-score > strong { color: color-mix(in srgb, var(--gold) 80%, white); font: 680 1.42rem/1 ui-sans-serif, system-ui; font-variant-numeric: tabular-nums; text-shadow: 0 0 1.1rem color-mix(in srgb, var(--amber) 22%, transparent); white-space: nowrap; }
   .run-score > strong i { margin-right: 0.3rem; color: var(--amber); font-size: 0.86rem; font-style: normal; vertical-align: 0.12rem; }
@@ -420,8 +487,10 @@
   .instrument-reading small { color: var(--dim); font: 700 0.42rem/1 system-ui, sans-serif; letter-spacing: 0.08em; }
   .instrument-reading b { grid-row: 1 / 3; grid-column: 2; color: white; font: 760 0.82rem/1 ui-monospace, monospace; }
   .instrument-reading em { color: var(--amber); font: 560 0.43rem/1 system-ui, sans-serif; font-style: normal; text-transform: uppercase; }
-  .primer-toggle { width: 1.4rem; height: 1.4rem; display: grid; place-items: center; padding: 0; color: var(--dim); background: transparent; border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 50%; font: 730 0.56rem/1 system-ui, sans-serif; }
-  .primer-toggle:hover, .primer-toggle[aria-expanded='true'] { color: white; border-color: var(--amber); background: color-mix(in srgb, var(--amber) 9%, transparent); }
+  .primer-toggle, .instrument-toggle { width: 1.4rem; height: 1.4rem; display: grid; place-items: center; padding: 0; color: var(--dim); background: transparent; border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 50%; font: 730 0.56rem/1 system-ui, sans-serif; }
+  .primer-toggle:hover, .primer-toggle[aria-expanded='true'], .instrument-toggle:hover { color: white; border-color: var(--amber); background: color-mix(in srgb, var(--amber) 9%, transparent); }
+  .instrument-compact { width: min(38rem, calc(100vw - 29rem)); padding: 0.28rem 0.55rem; border-radius: 999px; background: color-mix(in srgb, var(--panel) 78%, transparent); box-shadow: 0 0.45rem 1.8rem color-mix(in srgb, var(--bg) 68%, transparent); }
+  .instrument-compact .integrated-heading { min-height: 2.05rem; padding-bottom: 0; border-bottom: 0; }
   .instrument-primer { display: grid; grid-template-columns: 5.5rem minmax(0,1fr) 6.4rem auto; align-items: center; gap: 0.42rem; margin: 0.28rem 0 0.12rem; padding: 0.38rem 0.48rem; color: var(--gold); background: linear-gradient(90deg, color-mix(in srgb,var(--amber) 8%,transparent), transparent 58%); border: 1px solid color-mix(in srgb,var(--amber) 20%,transparent); border-radius: 0.45rem; }
   .instrument-primer > div span { display: block; color: var(--amber); font: 740 0.38rem/1 system-ui,sans-serif; letter-spacing: 0.13em; }
   .instrument-primer > div strong { display: block; margin-top: 0.14rem; font: 600 0.57rem/1.1 Georgia,serif; }
@@ -531,7 +600,7 @@
     .vishnulok-circuit,
     .kailash-stillpoint { width: 100%; margin-top: 0; }
     .integrated-heading {
-      grid-template-columns: minmax(0, 1fr) auto 1.4rem;
+      grid-template-columns: minmax(0, 1fr) auto 1.25rem 1.25rem;
       grid-template-rows: auto auto;
       gap: 0.18rem 0.35rem;
       min-height: 2.35rem;
@@ -547,7 +616,9 @@
     .instrument-reading small { font-size: 0.34rem; }
     .instrument-reading b { font-size: 0.68rem; }
     .instrument-reading em { max-width: 5.6rem; overflow: hidden; font-size: 0.34rem; text-overflow: ellipsis; white-space: nowrap; }
-    .primer-toggle { grid-column: 3; grid-row: 1 / 3; width: 1.25rem; height: 1.25rem; }
+    .instrument-toggle { grid-column: 3; grid-row: 1 / 3; width: 1.2rem; height: 1.2rem; }
+    .primer-toggle { grid-column: 4; grid-row: 1 / 3; width: 1.2rem; height: 1.2rem; }
+    .instrument-compact { width: min(100%, 34rem); padding: 0.26rem 0.45rem; }
     .instrument-primer {
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 0.26rem 0.4rem;
