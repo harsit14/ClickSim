@@ -1,6 +1,7 @@
 import { ACHIEVEMENTS, achievementDisplay } from '../content/achievements'
 import { CHALLENGE_BY_ID } from '../content/challenges'
 import { universeById } from '../content/universes'
+import { challengeCopy } from '../content/universe-progression'
 import { game, ratePerSec, endChallenge } from '../engine/game.svelte'
 import { save } from '../core/save'
 import { pushAchievementToast, pushToast } from './toasts.svelte'
@@ -12,10 +13,11 @@ function checkChallenge() {
   if (!game.challenge) return
   const c = CHALLENGE_BY_ID.get(game.challenge)
   if (!c || !c.goal(game)) return
+  const copy = challengeCopy(c, universeById(game.activeUniverse))
   endChallenge(true)
   save()
   playSupernova()
-  pushToast(`${c.name} — complete`, `${c.rewardDesc}. The trial releases you.`, 'trial')
+  pushToast(`${copy.name} — complete`, `${copy.rewardDesc}. The trial releases you.`, 'trial')
 }
 
 function check() {

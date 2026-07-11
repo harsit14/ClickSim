@@ -1,4 +1,6 @@
 import { CHALLENGES } from '../../challenges'
+import { localizeChallengeText } from '../../challenge-language'
+import { TIDEFALL } from '../tidefall'
 import type { PureLawValue, StorySceneDef, TrialDef } from '../types'
 
 interface TidefallTrialIdentity {
@@ -16,12 +18,12 @@ const TIDEFALL_TRIAL_IDENTITIES: Readonly<Record<string, TidefallTrialIdentity>>
   entropy: {
     name: 'Salt Debt',
     historicalFailure: 'Everything carried by the current left something costly behind.',
-    goal: { metricId: 'sun-owned', target: 1, description: 'Kindle one Drowned Beacon under accelerated cost growth.' },
+    goal: { metricId: 'sun-owned', target: 1, description: 'Surface one Drowned Beacon under accelerated cost growth.' },
   },
   'bare-hands': {
     name: 'Open Water',
     historicalFailure: 'Before the first Droplet, one keeper faced the depth with only a hand.',
-    goal: { metricId: 'run-glow', target: 1e6, description: 'Surface one million Glow without Kindling production.' },
+    goal: { metricId: 'run-glow', target: 1e6, description: 'Surface one million Glow without formation flow.' },
   },
   drought: {
     name: 'The Empty Current',
@@ -36,12 +38,12 @@ const TIDEFALL_TRIAL_IDENTITIES: Readonly<Record<string, TidefallTrialIdentity>>
   swarm: {
     name: 'The Shoal',
     historicalFailure: 'No great body survived; only small lights agreed to move together.',
-    goal: { metricId: 'run-glow', target: 1e9, description: 'Surface one billion Glow using only the first three Kindlings.' },
+    goal: { metricId: 'run-glow', target: 1e9, description: 'Surface one billion Glow using only Droplet, Ripple, and Tidepool.' },
   },
   'glass-ceiling': {
     name: 'The Surface Seal',
     historicalFailure: 'The sea allowed breadth but refused another layer.',
-    goal: { metricId: 'sun-owned', target: 1, description: 'Kindle one Drowned Beacon with every Kindling capped at fifteen.' },
+    goal: { metricId: 'sun-owned', target: 1, description: 'Surface one Drowned Beacon with every formation capped at fifteen.' },
   },
   'ashen-touch': {
     name: 'Numb Current',
@@ -51,7 +53,7 @@ const TIDEFALL_TRIAL_IDENTITIES: Readonly<Record<string, TidefallTrialIdentity>>
   unwritten: {
     name: 'The Uncharted',
     historicalFailure: 'No law survived long enough to become a map.',
-    goal: { metricId: 'sun-owned', target: 1, description: 'Kindle one Drowned Beacon without ordinary upgrades.' },
+    goal: { metricId: 'sun-owned', target: 1, description: 'Surface one Drowned Beacon without ordinary adaptations.' },
   },
   'broken-ladder': {
     name: 'Broken Sounding',
@@ -66,7 +68,7 @@ const TIDEFALL_TRIAL_IDENTITIES: Readonly<Record<string, TidefallTrialIdentity>>
   'small-vessels': {
     name: 'Tidepools',
     historicalFailure: 'The old ocean tried to survive inside ten of everything.',
-    goal: { metricId: 'second-ember-owned', target: 1, description: 'Kindle The Second Wave with every tier capped at ten.' },
+    goal: { metricId: 'second-ember-owned', target: 1, description: 'Surface The Second Wave with every formation capped at ten.' },
   },
 }
 
@@ -80,7 +82,7 @@ export const TIDEFALL_TRIALS: readonly TrialDef[] = CHALLENGES.map((challenge) =
     rules: Object.fromEntries(Object.entries(challenge.mods)) as Readonly<Record<string, PureLawValue>>,
     goal: identity.goal,
     rewardEffects: challenge.rewardEffects,
-    accessibilityDescription: `${identity.name}. ${challenge.rules} Goal: ${identity.goal.description} Reward: ${challenge.rewardDesc}.`,
+    accessibilityDescription: `${identity.name}. ${localizeChallengeText(challenge.rules, TIDEFALL)} Goal: ${identity.goal.description} Reward: ${localizeChallengeText(challenge.rewardDesc, TIDEFALL)}.`,
   }
 })
 

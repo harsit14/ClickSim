@@ -7,6 +7,7 @@
   import { DEEP_UPGRADES } from '../content/deep'
   import { STARDUST_WORKS, DEEP_WORKS } from '../content/repeatables'
   import { CHALLENGES } from '../content/challenges'
+  import { localizeChallengeText } from '../content/challenge-language'
   import { vesselBlueprint, vesselComplete, vesselPartIdsFor } from '../content/vessel'
   import {
     challengeCopy,
@@ -96,8 +97,8 @@
         }),
       ]),
       trials: UNIVERSES.flatMap((universe) => CHALLENGES.flatMap((trial) => {
-        const copy = challengeCopy(trial, universe.id)
-        return [copy.name, copy.flavor, trial.rules, trial.rewardDesc]
+        const copy = challengeCopy(trial, universe)
+        return [copy.name, copy.flavor, copy.rules, copy.goalText, copy.rewardDesc]
       })),
       multiverse: [...UNIVERSES.flatMap((universe) => vesselBlueprint(universe.id).parts.flatMap((part) => Object.values(vesselPartCopy(part, universe.id)))), ...WAYFINDER_NODES.flatMap((node) => [node.name, node.effect, node.flavor])],
       story: ENDING_CHOICES.flatMap((ending) => [ending.label, ending.doctrine, ending.line]),
@@ -124,12 +125,7 @@
   }
 
   function localize(text: string): string {
-    let localized = text
-      .replaceAll('✦', pack.currencyGlyph)
-      .replaceAll('light', pack.currency.toLowerCase())
-      .replaceAll('falling stars', `${pack.events.noun}s`)
-    for (const generator of pack.generators) localized = localized.replaceAll(`{${generator.id}}`, generator.name)
-    return localized
+    return localizeChallengeText(text, pack)
   }
 
   function onKeydown(event: KeyboardEvent) {
@@ -325,9 +321,9 @@
                 <div class="reference-title"><span>{game.challengesDone.length}/12 endured</span><h4>Complete trial ledger</h4></div>
                 <div class="trial-guide">
                   {#each CHALLENGES as trial, index (trial.id)}
-                    {@const copy = challengeCopy(trial, pack.id)}
+                    {@const copy = challengeCopy(trial, pack)}
                     <article class:done={game.challengesDone.includes(trial.id)} class:locked={game.challengesDone.length < (trial.unlockAfter ?? 0)}>
-                      <span>{String(index + 1).padStart(2, '0')}</span><div><small>{index < 6 ? progressionIdentity(pack.id).deep.circleNames[0] : progressionIdentity(pack.id).deep.circleNames[1]}</small><strong>{copy.name}</strong><em>{copy.flavor}</em><p>{localize(trial.rules)} <b>Goal:</b> {localize(trial.goalText)}</p><mark>{localize(trial.rewardDesc)}</mark></div>
+                      <span>{String(index + 1).padStart(2, '0')}</span><div><small>{index < 6 ? progressionIdentity(pack.id).deep.circleNames[0] : progressionIdentity(pack.id).deep.circleNames[1]}</small><strong>{copy.name}</strong><em>{copy.flavor}</em><p>{copy.rules} <b>Goal:</b> {copy.goalText}</p><mark>{copy.rewardDesc}</mark></div>
                     </article>
                   {/each}
                 </div>

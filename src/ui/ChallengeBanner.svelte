@@ -1,5 +1,7 @@
 <script lang="ts">
   import { CHALLENGE_BY_ID } from '../content/challenges'
+  import { universeById } from '../content/universes'
+  import { challengeCopy } from '../content/universe-progression'
   import { game, endChallenge } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { save } from '../core/save'
@@ -11,6 +13,7 @@
   } from '../core/numeric/amount'
 
   const trial = $derived(game.challenge ? CHALLENGE_BY_ID.get(game.challenge) : null)
+  const copy = $derived(trial ? challengeCopy(trial, universeById(game.activeUniverse)) : null)
   const progress = $derived(trial ? trial.progress(game) : null)
   const progressCurrent = $derived(progress ? toAmount(progress.current) : null)
   const progressTarget = $derived(progress ? toAmount(progress.target) : null)
@@ -30,7 +33,7 @@
 
 {#if trial && progress && progressShown && progressTarget}
   <div class="banner instrument-panel">
-    <span class="name">{trial.name}</span>
+    <span class="name">{copy?.name ?? trial.name}</span>
     <span class="goal">
       {format(progressShown)} / {format(progressTarget)}
     </span>

@@ -3,6 +3,8 @@ import type { StarNode } from './constellation'
 import type { DeepUpgrade } from './deep'
 import type { RepeatableWork } from './repeatables'
 import { vesselPartForUniverse, type VesselPartDef } from './vessel'
+import type { UniversePack } from './universes/types'
+import { localizedChallengeCopy, type ChallengeDisplayCopy } from './challenge-language'
 
 export interface ProgressionCopy {
   name: string
@@ -717,6 +719,7 @@ export function deepWorkCopy(work: RepeatableWork, universeId: string): Progress
   return progressionIdentity(universeId).deep.works?.[work.id] ?? work
 }
 
-export function challengeCopy(challenge: ChallengeDef, universeId: string): ProgressionCopy {
-  return progressionIdentity(universeId).deep.challenges?.[challenge.id] ?? challenge
+export function challengeCopy(challenge: ChallengeDef, universe: UniversePack): ChallengeDisplayCopy {
+  const identity = progressionIdentity(universe.id).deep.challenges?.[challenge.id] ?? challenge
+  return localizedChallengeCopy(challenge, universe, identity)
 }

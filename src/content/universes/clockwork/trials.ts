@@ -1,5 +1,15 @@
 import { CHALLENGES } from '../../challenges'
+import { localizeChallengeText, type ChallengeLanguageContext } from '../../challenge-language'
 import type { PureLawValue, TrialDef } from '../types'
+import { CLOCKWORK_GENERATORS } from './economy'
+
+const CLOCKWORK_TRIAL_LANGUAGE: ChallengeLanguageContext = {
+  id: 'clockwork',
+  currency: 'Ticks',
+  currencyGlyph: '⌑',
+  generators: CLOCKWORK_GENERATORS,
+  events: { noun: 'Maintenance Signal' },
+}
 
 const NAMES: Readonly<Record<string, readonly [string, string]>> = {
   silence: ['Silent Shift', 'The city learned that a schedule could remain legible when every bell was muted.'],
@@ -19,11 +29,11 @@ const NAMES: Readonly<Record<string, readonly [string, string]>> = {
 const GOALS: Readonly<Record<string, TrialDef['goal']>> = {
   silence: { metricId: 'u4-run-ticks', target: 1e9, description: 'Transmit one billion Ticks during the Silent Shift.' },
   entropy: { metricId: 'u4-difference-engine-owned', target: 1, description: 'Build one Difference Engine under immediate backlash costs.' },
-  'bare-hands': { metricId: 'u4-run-ticks', target: 1e6, description: 'Transmit one million Ticks without Kindling production.' },
+  'bare-hands': { metricId: 'u4-run-ticks', target: 1e6, description: 'Transmit one million Ticks without mechanism transmission.' },
   drought: { metricId: 'u4-run-ticks', target: 1e12, description: 'Transmit one trillion Ticks without Maintenance Signals.' },
   'half-light': { metricId: 'u4-run-ticks', target: 1e10, description: 'Transmit ten billion Ticks at one-tenth torque.' },
   swarm: { metricId: 'u4-run-ticks', target: 1e9, description: 'Transmit one billion Ticks using only Tooth, Cog, and Ratchet.' },
-  'glass-ceiling': { metricId: 'u4-difference-engine-owned', target: 1, description: 'Build one Difference Engine with every Kindling capped at fifteen.' },
+  'glass-ceiling': { metricId: 'u4-difference-engine-owned', target: 1, description: 'Build one Difference Engine with every mechanism capped at fifteen.' },
   'ashen-touch': { metricId: 'u4-run-ticks', target: 1e12, description: 'Transmit one trillion Ticks with weakened Heart torque.' },
   unwritten: { metricId: 'u4-difference-engine-owned', target: 1, description: 'Build one Difference Engine without ordinary upgrades.' },
   'broken-ladder': { metricId: 'u4-run-ticks', target: 1e13, description: 'Transmit ten trillion Ticks while even tiers are disconnected.' },
@@ -42,6 +52,6 @@ export const CLOCKWORK_TRIALS: readonly TrialDef[] = CHALLENGES.map((challenge) 
     rules: Object.fromEntries(Object.entries(challenge.mods)) as Readonly<Record<string, PureLawValue>>,
     goal,
     rewardEffects: challenge.rewardEffects,
-    accessibilityDescription: `${identity[0]}. ${challenge.rules} Goal: ${goal.description} Reward: ${challenge.rewardDesc}.`,
+    accessibilityDescription: `${identity[0]}. ${localizeChallengeText(challenge.rules, CLOCKWORK_TRIAL_LANGUAGE)} Goal: ${goal.description} Reward: ${localizeChallengeText(challenge.rewardDesc, CLOCKWORK_TRIAL_LANGUAGE)}.`,
   }
 })

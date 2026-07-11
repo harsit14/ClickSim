@@ -1,4 +1,5 @@
 import { CHALLENGES } from '../challenges'
+import { localizeChallengeText } from '../challenge-language'
 import {
   EMBERLIGHT_AUDIO_DEF,
   EMBERLIGHT_AUDIO_EVENT_MAP,
@@ -406,11 +407,11 @@ const TRIAL_TARGETS: Readonly<Record<string, TrialDef['goal']>> = {
 const TRIALS: readonly TrialDef[] = CHALLENGES.map((challenge) => ({
   id: challenge.id,
   name: challenge.name,
-  historicalFailure: `${challenge.flavor} ${challenge.rules}`,
+  historicalFailure: `${challenge.flavor} ${localizeChallengeText(challenge.rules, EMBERLIGHT)}`,
   rules: Object.fromEntries(Object.entries(challenge.mods)),
   goal: TRIAL_TARGETS[challenge.id],
   rewardEffects: challenge.rewardEffects,
-  accessibilityDescription: `${challenge.rules} Goal: ${challenge.goalText}. Reward: ${challenge.rewardDesc}.`,
+  accessibilityDescription: `${localizeChallengeText(challenge.rules, EMBERLIGHT)} Goal: ${localizeChallengeText(challenge.goalText, EMBERLIGHT)}. Reward: ${localizeChallengeText(challenge.rewardDesc, EMBERLIGHT)}.`,
 }))
 
 const BEACON_OBJECT = standaloneObject({

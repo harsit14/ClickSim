@@ -35,6 +35,7 @@
     deepWorkCopy,
     progressionIdentity,
   } from '../content/universe-progression'
+  import { localizeChallengeText } from '../content/challenge-language'
   import {
     ONE_AMOUNT,
     amountFromNumber,
@@ -61,15 +62,7 @@
     { name: identity.circleNames[0], note: identity.circleNotes[0], trials: CHALLENGES.slice(0, 6) },
     { name: identity.circleNames[1], note: identity.circleNotes[1], trials: CHALLENGES.slice(6) },
   ])
-  const localize = (text: string) => {
-    let localized = text
-      .replaceAll('✦', pack.currencyGlyph)
-      .replaceAll('light', pack.currency.toLowerCase())
-      .replaceAll('falling-star', pack.events.noun)
-      .replaceAll('falling stars', `${pack.events.noun}s`)
-    for (const generator of pack.generators) localized = localized.replaceAll(`{${generator.id}}`, generator.name)
-    return localized
-  }
+  const localize = (text: string) => localizeChallengeText(text, pack)
   const warningText = () => localize(identity.warningText).replace('stardust', `✧${format(game.stardustTotal)} stardust`)
 
   function collapse() {
@@ -255,7 +248,7 @@
     </div>
     <div class="trials">
       {#each circle.trials as c (c.id)}
-        {@const copy = challengeCopy(c, pack.id)}
+        {@const copy = challengeCopy(c, pack)}
         {@const done = game.challengesDone.includes(c.id)}
         {@const active = game.challenge === c.id}
         {@const unlocked = challengeUnlocked(game.challengesDone, c)}
@@ -273,8 +266,8 @@
             {/if}
           </div>
           <em>{copy.flavor}</em>
-          <span class="desc">{localize(c.rules)} · goal: {localize(c.goalText)}</span>
-          <span class="reward">reward: {localize(c.rewardDesc)}</span>
+          <span class="desc">{copy.rules} · goal: {copy.goalText}</span>
+          <span class="reward">reward: {copy.rewardDesc}</span>
         </div>
       {/each}
     </div>
