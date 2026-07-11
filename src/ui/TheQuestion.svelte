@@ -140,7 +140,7 @@
     <section class="choice-stage" aria-labelledby="question-title">
       <span class="eyebrow">the truth is known · the answer becomes law</span>
       <h2 id="question-title">What are you?</h2>
-      <p class="choice-intro">Every universe after this one will remember what you call yourself.</p>
+      <p class="choice-intro">The Garden and every route still possible will remember what you call yourself.</p>
 
       <div class="choices" role="group" aria-label="Choose your answer">
         {#each ENDING_CHOICES as choice, index (choice.id)}
@@ -192,14 +192,14 @@
 
       <dl class="journey" aria-label="Your journey">
         <div><dt>{universe.currency.toLowerCase()} remembered</dt><dd>{universe.currencyGlyph} {format(game.allTimeEarned)}</dd></div>
-        <div><dt>skies rekindled</dt><dd>{game.supernovae}</dd></div>
-        <div><dt>depths crossed</dt><dd>{game.collapses}</dd></div>
+        <div><dt>epoch turns completed</dt><dd>{game.supernovae}</dd></div>
+        <div><dt>deep boundaries crossed</dt><dd>{game.collapses}</dd></div>
         <div><dt>trials endured</dt><dd>{game.challengesDone.length}/12</dd></div>
         <div><dt>echoes recovered</dt><dd>{game.echoes.length}/{universe.echoes.length}</dd></div>
-        <div><dt>phenomena catalogued</dt><dd>{game.curiosities.length}</dd></div>
+        <div><dt>archive records held</dt><dd>{game.curiosities.length}</dd></div>
       </dl>
 
-      <p class="afterword">The game continues. The Story Archive now holds a path back to the first ember, if you ever choose to remember it all again.</p>
+      <p class="afterword">The game continues. The completed cycle leads toward the Garden, while the Story Archive keeps a path back to the first ember if you choose to remember it all again.</p>
       <button class="return" onclick={finish} data-story-focus>Return to the {universe.currency.toLowerCase()}</button>
     </section>
   {/if}

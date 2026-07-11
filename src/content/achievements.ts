@@ -148,7 +148,7 @@ A('remembered', 'Begin Again, Knowing', 'A whole universe, folded into memory. T
   g.remembrances >= 1)
 A('thrice-lived', 'Thrice-Lived', 'Three lifetimes. Lumen has stopped writing "final entry."', (g) =>
   g.remembrances >= 3)
-H('all-answers', 'Every Word of It', 'Warden, Hunger, and the one who stayed. You have said them all.', (g) => {
+H('all-answers', 'Every Word of It', 'Warden, Hunger, and Companion now meet as relations in the Garden.', (g) => {
   const all = new Set(g.pastEndings)
   if (g.ending) all.add(g.ending)
   return all.size >= 3
@@ -157,8 +157,12 @@ H('all-answers', 'Every Word of It', 'Warden, Hunger, and the one who stayed. Yo
 // ── The Answer ──────────────────────────────────────────────────────────
 A('ending-warden', 'The Warden', 'This light is not yours. You keep it lit anyway.', (g) => g.ending === 'warden')
 A('ending-hunger', 'The Hunger', 'Honest, at last, about what you are.', (g) => g.ending === 'hunger')
-H('ending-companion', 'What Stayed', 'Ten echoes. Three words. One answer no one else will ever find.', (g) =>
+H('ending-companion', 'What Stayed', 'The archive, the cycle, and one answer no one can author alone.', (g) =>
   g.ending === 'companion')
+A('loka-cycle', 'The Cycle Remains Open', 'Creation, preservation, and release completed their route without becoming possessions.', (g) =>
+  ['prismata', 'tempest', 'canticle'].every((id) => g.beacons.includes(id)))
+A('garden-renewal', 'A Path Down, A Garden Ahead', 'The completed cycle became a beginning without pretending nothing ended.', (g) =>
+  g.gardenEnding !== null)
 
 // ── Time ────────────────────────────────────────────────────────────────
 A('an-hour-warm', 'An Hour Warm', 'Time flies when you’re reigniting a universe.', (g) => g.playtime >= 3_600)

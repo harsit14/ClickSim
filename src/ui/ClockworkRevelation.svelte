@@ -132,10 +132,10 @@
       <small>WITNESS OUTSIDE THE CALENDAR</small>
     </div>
 
-    <section class="forecast-plates" class:visible={revealForecasts} aria-label="Reclassified Clockwork forecasts">
-      <article><span>PRISMATA</span><i class="prism-mark"></i><strong>INCOMPLETE MODEL</strong></article>
-      <article><span>TEMPEST</span><i class="storm-mark"></i><strong>INCOMPLETE MODEL</strong></article>
-      <article><span>CANTICLE</span><i class="wave-mark"></i><strong>INCOMPLETE MODEL</strong></article>
+    <section class="forecast-plates" class:visible={revealForecasts} aria-label="Clockwork forecasts beyond its incomplete models">
+      <article><span>ORIGIN MODEL</span><i class="prism-mark"></i><strong>INCOMPLETE</strong></article>
+      <article><span>CONTINUITY MODEL</span><i class="storm-mark"></i><strong>INCOMPLETE</strong></article>
+      <article><span>RELEASE MODEL</span><i class="wave-mark"></i><strong>INCOMPLETE</strong></article>
     </section>
 
     <section class="loka-seals" class:visible={revealSeals} aria-label="Three revealed lokas">

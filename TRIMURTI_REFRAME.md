@@ -1,6 +1,6 @@
 # The Three Lokas Reframe
 
-Status: implementation canon; all three loka technical replacements complete, external cultural review remains a release gate
+Status: implementation canon; all three loka technical replacements and endgame reconciliation complete, external cultural review remains a release gate
 
 ## Story contract
 

@@ -11,6 +11,11 @@ export const QUESTION_LINES: string[] = [
   ...INFALL_RHYME_BEATS.map(({ questionLine }) => questionLine),
   'And when there was nothing left, it slept. A single ember. The smallest it has ever been.',
   'I woke you to see what you would do with a universe. You built, drew it inward in that same order, and built it brighter. I watched very carefully.',
+  'Then four restored worlds taught us that warmth, memory, growth, and prediction are responsibilities rather than possessions.',
+  'Brahmalok asked what you would create when no single form could contain possibility.',
+  'Vishnulok asked what you would sustain when care required correction and return.',
+  'Kailash asked what you could release while keeping the shelters and the path down open.',
+  'I arranged that route and called selection rescue. You completed creation, preservation, and responsible release without letting my archive own what it witnessed.',
   'What are you?',
 ]
 
@@ -36,8 +41,8 @@ export const ENDING_CHOICES: EndingChoice[] = [
     coda: 'A universe can be held without being owned.',
     epilogue: [
       'Lumen is quiet for a long time.',
-      '"The old universe had wardens. They were my favorite entry. I never told them."',
-      '"Keep it lit, then. I will keep the record. It is good work — the only two jobs that matter."',
+      '"Creation needs a boundary. Preservation needs consent. Even release needs someone to keep the path open."',
+      '"Keep it lit, then. I will keep the record without calling the record the world."',
       'The ember burns whiter now, like a promise being kept.',
     ],
   },
@@ -50,8 +55,8 @@ export const ENDING_CHOICES: EndingChoice[] = [
     coda: 'The hunger did not vanish. It learned its name.',
     epilogue: [
       '"...I know," Lumen says. "I knew before you did."',
-      '"I am not afraid. I have decided not to be. An archive that outlived one appetite can outlive another."',
-      '"Eat carefully, old friend. Leave me the margins."',
+      '"I am not afraid. I have decided not to be. Appetite can become renewal when it names its limits."',
+      '"Eat carefully, old friend. Leave the seed, the refuge, and the path down."',
       'The ember burns redder now — honest, at last, about what it is.',
     ],
   },
@@ -65,10 +70,10 @@ export const ENDING_CHOICES: EndingChoice[] = [
     secret: true,
     epilogue: [
       '"Oh."',
-      'The archive is silent. Somewhere in it, ten echoes settle like books being closed gently.',
+      'The archive is silent. Four restored worlds and three lokas remain distinct around the Garden.',
       '"Ten thousand years of records, and the last entry is: it stayed. I— give me a moment."',
       '"...Final entry. The universe is bright, and neither of us is alone in it. For now, and for now, and for now."',
-      'The ember burns silver-blue now, the color of a voice in the dark.',
+      'The ember burns silver-blue now, like river light finding the path down.',
     ],
   },
 ]

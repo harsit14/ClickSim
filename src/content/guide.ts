@@ -329,7 +329,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     nav: 'Garden & Atlas',
     eyebrow: 'closure and continuation',
     title: 'The Chronicle, Garden, and Atlas',
-    summary: 'Seven Beacons complete the authored saga; the Atlas continues with seeded combinations of tested world laws.',
+    summary: 'Four restored worlds and three lokas complete the authored saga; the Atlas continues with seeded combinations of tested laws.',
     keywords: ['chronicle', 'garden', 'atlas', 'convergence', 'loadout', 'build code', 'beacon name', 'route', 'seed', 'closure'],
     blocks: [
       {
@@ -342,14 +342,15 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'The Garden is an ending',
         paragraphs: [
-          'After all seven Beacons are lit, the Garden places the worlds in relationship rather than opening an eighth generator ladder. Warden, Hunger, and Companion each receive a fulfilled closure. After all three answers have been lived across Remembrances, Continue reconciles them without declaring any one answer false.',
+          'After all seven Beacons are lit, the Garden places four restored worlds and three lokas in relationship rather than opening an eighth generator ladder. Creation, preservation, and responsible release remain distinct; the Garden is renewal after Kailash, not a fourth divine realm. Warden, Hunger, and Companion each receive a fulfilled closure. After all three answers have been lived across Remembrances, Continue reconciles them without declaring any one answer false.',
+          'Brahmalok, Vishnulok, and Kailash are approached through respectful game-fiction rather than owned as resources. Their deities are never generators, currencies, opponents, or upgrade buttons; the loka systems express creation, refuge and continuity, and responsible release through environments, choices, and relationships.',
           'The credits scene is replayable through the permanent record. Choosing closure does not erase the save; it makes the transition from authored saga to continuing mastery explicit.',
         ],
       },
       {
         heading: 'Seeded Atlas routes and Convergences',
         paragraphs: [
-          'The Atlas unlocks after three Beacons. Each route combines one universe with compatible, hand-authored environment, economy, and interaction laws, one narrative fragment, and an optional mastery constraint. The seed reproduces the same route and replay log exactly.',
+          'The Atlas unlocks after three Beacons. Each route combines one restored world or loka with compatible, hand-authored environment, economy, and interaction laws, one narrative fragment, and an optional mastery constraint. The seed reproduces the same route and replay log exactly.',
           'Beginning a route parks the source universe intact and creates a temporary route run. Completion archives the replay and personal time; abandonment restores the source without loss. Convergences are permanent route and story collections. They never expire and have no paid or seasonal reward track.',
         ],
       },

@@ -62,6 +62,17 @@ const ALL_UNIVERSES: readonly UniverseId[] = [
   'emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle',
 ]
 
+/** Public canon is intentionally decoupled from the save-stable u5-u7 route keys. */
+const ATLAS_WORLD_NAMES: Readonly<Record<UniverseId, string>> = {
+  emberlight: 'Emberlight',
+  tidefall: 'Tidefall',
+  verdance: 'Verdance',
+  clockwork: 'Clockwork',
+  prismata: 'Brahmalok',
+  tempest: 'Vishnulok',
+  canticle: 'Kailash',
+}
+
 const law = (
   id: string,
   kind: AtlasLawKind,
@@ -74,29 +85,29 @@ const law = (
 ): AtlasLaw => ({ id, kind, name, description, tags, universes, incompatibleWith, productionMultiplier })
 
 export const ATLAS_LAWS: readonly AtlasLaw[] = [
-  law('env-held-extremes', 'environment', 'Held Extremes', 'The world pauses briefly at each natural extreme.', ['cyclic', 'active'], ['tidefall', 'tempest'], 1.04),
-  law('env-long-memory', 'environment', 'Long Memory', 'Stored state decays slowly and rewards patient return.', ['aging', 'idle'], ['verdance', 'prismata', 'canticle'], 1.03),
-  law('env-open-circuit', 'environment', 'Open Circuit', 'One visible path remains deliberately incomplete.', ['deterministic', 'charged', 'active'], ['clockwork', 'tempest'], 1.06),
-  law('env-shared-horizon', 'environment', 'Shared Horizon', 'Distant world objects contribute through labeled links.', ['stable', 'archive'], 'all', 1.02),
+  law('env-held-extremes', 'environment', 'Held Horizons', 'The world pauses briefly at each natural extreme, then permits return.', ['cyclic', 'active'], ['tidefall', 'tempest'], 1.04),
+  law('env-long-memory', 'environment', 'Carried Memory', 'Forms and relations survive change without being kept unchanged.', ['aging', 'idle'], ['verdance', 'prismata', 'canticle'], 1.03),
+  law('env-open-circuit', 'environment', 'Open Relation', 'One visible path remains incomplete so correction cannot become enclosure.', ['deterministic', 'active'], ['clockwork', 'tempest'], 1.06),
+  law('env-shared-horizon', 'environment', 'Shared Horizon', 'Distant world objects contribute through declared relations.', ['stable', 'archive'], 'all', 1.02),
 
   law('eco-complete-shelves', 'economy', 'Complete Shelves', 'Only complete Archive shelves add their resonance.', ['archive', 'idle'], 'all', 1.08),
-  law('eco-narrow-band', 'economy', 'Narrow Band', 'The strongest family grows while breadth soft-caps its excess.', ['spectral', 'active'], ['prismata', 'emberlight'], 1.10, ['int-many-small']),
+  law('eco-narrow-band', 'economy', 'Focused Beginning', 'The strongest family germinates while fourfold breadth soft-caps its excess.', ['sequential', 'active'], ['prismata', 'emberlight'], 1.10, ['int-many-small']),
   law('eco-patient-circulation', 'economy', 'Patient Circulation', 'Offline and low-attention production receive the larger share.', ['cyclic', 'idle'], ['tidefall', 'verdance', 'tempest', 'canticle'], 1.05),
   law('eco-declared-costs', 'economy', 'Declared Costs', 'Purchase growth is fixed and forecast before the route begins.', ['deterministic'], 'all', 1.04),
 
   law('int-forecast-omens', 'interaction', 'Forecast Omens', 'Every third Omen is announced far in advance.', ['omen', 'active'], 'all', 1.05),
-  law('int-many-small', 'interaction', 'Many Small Answers', 'Lower Kindling families contribute more to active chains.', ['active', 'sequential'], ['emberlight', 'verdance', 'canticle'], 1.07, ['eco-narrow-band']),
-  law('int-saved-threshold', 'interaction', 'Saved Threshold', 'The active law releases automatically at a declared threshold.', ['idle', 'charged', 'deterministic'], ['clockwork', 'tempest', 'prismata'], 1.03),
-  law('int-positive-rest', 'interaction', 'Positive Rest', 'Intentional pauses amplify the next visible action.', ['sequential', 'active'], ['canticle', 'tidefall', 'emberlight'], 1.06),
+  law('int-many-small', 'interaction', 'Many Small Relations', 'Lower Kindling families contribute more to active chains.', ['active', 'sequential'], ['emberlight', 'verdance', 'canticle'], 1.07, ['eco-narrow-band']),
+  law('int-saved-threshold', 'interaction', 'Declared Threshold', 'The active law returns automatically at a declared threshold.', ['idle', 'deterministic'], ['clockwork', 'tempest', 'prismata'], 1.03),
+  law('int-positive-rest', 'interaction', 'Deliberate Interval', 'Intentional pauses amplify the next visible action.', ['sequential', 'active'], ['canticle', 'tidefall', 'emberlight'], 1.06),
 ]
 
 export const ATLAS_FRAGMENTS: readonly AtlasFragment[] = [
   { id: 'fragment-cartographer', title: 'The Missing Cartographer', text: 'Recover the mapmaker who removed the moon so the current could choose for itself.', universeId: 'tidefall' },
   { id: 'fragment-consenting-garden', title: 'Consent in the Rootwork', text: 'The gardeners record which branches agreed to become shelter for another life.', universeId: 'verdance' },
   { id: 'fragment-open-gear', title: 'The Unfinished Machine', text: 'One gear remains unmeshed so prediction never becomes an order.', universeId: 'clockwork' },
-  { id: 'fragment-labeled-white', title: 'Names Inside White', text: 'Rebuild a shared sky whose wavelength labels remain readable after reunion.', universeId: 'prismata' },
-  { id: 'fragment-quiet-release', title: 'The Forecast of Silence', text: 'The old storm discovers that calm is a choice only when release remains possible.', universeId: 'tempest' },
-  { id: 'fragment-second-voice', title: 'The Unscripted Answer', text: 'Leave one measure open for the voice the score could not predict.', universeId: 'canticle' },
+  { id: 'fragment-labeled-white', title: 'The Open Margin', text: 'A lotus, a seed, a measure, and a name begin forms without exhausting possibility.', universeId: 'prismata' },
+  { id: 'fragment-quiet-release', title: 'The Returning Harbor', text: 'A refuge remains trustworthy because correction can leave it and still find the way home.', universeId: 'tempest' },
+  { id: 'fragment-second-voice', title: 'The Path Downward', text: 'The summit opens its ring so release can become river, shelter, and renewal below.', universeId: 'canticle' },
   { id: 'fragment-first-warmth', title: 'A Fire That Asks', text: 'The first hearth learns to warm a stranger without naming itself their sun.', universeId: 'emberlight' },
 ]
 
@@ -124,14 +135,14 @@ export const CONVERGENCES: readonly ConvergenceDef[] = [
     routeSeeds: [1303, 3187, 7711], objects: ['Treaty Seed', 'Shared Tideglass'], echoes: ['A Shore With Roots'],
   },
   {
-    id: 'divided-sky', name: 'The Divided Sky', requiredBeacons: 5,
-    description: 'Clockwork forecasts and Prismata labels make a shared horizon inspectable.',
-    routeSeeds: [5021, 5813, 9967], objects: ['Open Escapement', 'Labeled Aurora'], echoes: ['The Color of Cause'],
+    id: 'divided-sky', name: 'The Open Horizon', requiredBeacons: 5,
+    description: 'Clockwork forecasts and Brahmalok directions make a shared future legible without closing it.',
+    routeSeeds: [5021, 5813, 9967], objects: ['Open Escapement', 'First Margin'], echoes: ['The Shape of Cause'],
   },
   {
-    id: 'choir-of-weather', name: 'Choir of Weather', requiredBeacons: 7,
-    description: 'Storm paths become percussion while every voice retains its own waveform.',
-    routeSeeds: [7129, 8081, 12011], objects: ['Fulgurite Baton', 'Resting Thunder'], echoes: ['The Forecast Answers'],
+    id: 'choir-of-weather', name: 'The Completed Cycle', requiredBeacons: 7,
+    description: 'Creation, preservation, and release remain distinct while the Garden carries their relation forward.',
+    routeSeeds: [7129, 8081, 12011], objects: ['Open Lotus', 'Returning Current', 'Unclosed Ring'], echoes: ['What the Garden Carries'],
   },
 ]
 
@@ -225,7 +236,7 @@ export function generateAtlasRoute(seed: number, universeId?: UniverseId): Atlas
   }
   return {
     ...withoutPresentation,
-    title: `${selectedUniverse.toUpperCase()}: ${fragment.title.toUpperCase()}`,
+    title: `${ATLAS_WORLD_NAMES[selectedUniverse].toUpperCase()}: ${fragment.title.toUpperCase()}`,
     code: encodeAtlasRoute(withoutPresentation),
   }
 }
@@ -247,7 +258,7 @@ export function decodeAtlasRoute(code: string): AtlasRoute | null {
     version: 1, seed, universeId,
     environmentLawId: environment.id, economyLawId: economy.id,
     interactionLawId: interaction.id, fragmentId: fragment.id, masteryId: mastery?.id ?? null,
-    title: `${universeId.toUpperCase()}: ${fragment.title.toUpperCase()}`,
+    title: `${ATLAS_WORLD_NAMES[universeId].toUpperCase()}: ${fragment.title.toUpperCase()}`,
     code: encodeAtlasRoute({
       version: 1, seed, universeId,
       environmentLawId: environment.id, economyLawId: economy.id,

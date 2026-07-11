@@ -45,9 +45,9 @@
     tidefall: 'returning water and salt',
     verdance: 'root, leaf, and living shade',
     clockwork: 'open brass and an unclaimed interval',
-    prismata: 'labeled glass and separated light',
-    tempest: 'charged cloud and grounded glass',
-    canticle: 'standing air and a deliberate rest',
+    prismata: 'lotus water, manuscript margin, and fourfold light',
+    tempest: 'still ocean, open refuge, and returning current',
+    canticle: 'moonlit snow, blue stone, and the path downward',
   }
 
   function materialFor(universeId: UniverseId): string {
@@ -286,11 +286,11 @@
           {:else if node.universeId === 'clockwork'}
             <i class="wheel"></i><i class="tooth"></i><b class="hand"></b><b class="interval"></b>
           {:else if node.universeId === 'prismata'}
-            <i class="prism"></i><i class="spectrum"></i><b class="white-ray"></b>
+            <i class="lotus-petal north"></i><i class="lotus-petal east"></i><i class="lotus-petal south"></i><i class="lotus-petal west"></i><b class="lotus-center"></b><b class="open-margin"></b>
           {:else if node.universeId === 'tempest'}
-            <i class="cloud"></i><i class="bolt"></i><b class="fulgurite"></b>
+            <i class="returning-current"></i><i class="refuge-arc"></i><b class="harbor-light"></b>
           {:else}
-            <i class="wave"></i><i class="wave echo"></i><b class="rest"></b>
+            <i class="summit left"></i><i class="summit right"></i><b class="downward-river"></b><b class="open-ring"></b>
           {/if}
         </div>
         {#if ritual === 'warden' && !ending}
@@ -438,9 +438,9 @@
   .presence.tidefall { left: 12%; top: 63%; --world: #57d9c1; }
   .presence.verdance { left: 37%; top: 70%; --world: #9bcc71; }
   .presence.clockwork { left: 83%; top: 29%; --world: #d7b46f; }
-  .presence.prismata { left: 72%; top: 25%; --world: #c8a4ff; }
-  .presence.tempest { left: 87%; top: 62%; --world: #8ec9e7; }
-  .presence.canticle { left: 62%; top: 72%; --world: #e4a8dc; }
+  .presence.prismata { left: 72%; top: 25%; --world: #d9a060; }
+  .presence.tempest { left: 87%; top: 62%; --world: #e2cb7e; }
+  .presence.canticle { left: 62%; top: 72%; --world: #78aec0; }
   .material { position: relative; width: 5.8rem; height: 5.8rem; margin: 0 auto .25rem; filter: drop-shadow(0 0 .8rem color-mix(in srgb, var(--world) 22%, transparent)); }
   .material i, .material b { position: absolute; display: block; box-sizing: border-box; }
   figcaption strong { display: block; color: color-mix(in srgb, var(--world) 60%, #f3e8cf); font: 600 .78rem Fraunces, Georgia, serif; }
@@ -472,15 +472,19 @@
   .tooth { inset: 1.3rem; border: 1px solid rgba(215,180,111,.42); border-radius: 50%; }
   .hand { left: 2.82rem; top: 1.15rem; width: .12rem; height: 1.75rem; background: #e0c98f; transform-origin: bottom; transform: rotate(28deg); }
   .interval { left: 2.63rem; top: 2.63rem; width: .55rem; height: .55rem; border: 1px solid #d7b46f; border-radius: 50%; background: #090b0d; }
-  .prism { left: 1.1rem; top: .75rem; width: 3.6rem; height: 3.6rem; border: 1px solid rgba(216,195,255,.6); clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(135deg, transparent, rgba(200,164,255,.12)); }
-  .white-ray { left: .1rem; top: 2.55rem; width: 2.4rem; height: 1px; background: rgba(255,255,235,.65); transform: rotate(-8deg); }
-  .spectrum { right: -.3rem; top: 2.9rem; width: 3.1rem; height: .8rem; background: linear-gradient(90deg, rgba(255,92,92,.4), rgba(255,213,84,.4), rgba(108,218,151,.4), rgba(106,174,255,.4), rgba(194,126,255,.4)); clip-path: polygon(0 38%, 100% 0, 100% 100%, 0 62%); }
-  .cloud { left: .65rem; top: 1.3rem; width: 4.6rem; height: 1.8rem; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(186,220,237,.38), rgba(53,76,88,.2) 68%, transparent 72%); }
-  .bolt { left: 2.65rem; top: 2.65rem; width: .9rem; height: 2.2rem; background: rgba(164,219,244,.76); clip-path: polygon(45% 0, 100% 0, 60% 43%, 94% 43%, 10% 100%, 35% 55%, 0 55%); animation: charge-ground 6.5s ease-in-out infinite; }
-  .fulgurite { left: 1.85rem; bottom: .35rem; width: 2.2rem; height: .18rem; border-radius: 50%; background: rgba(142,201,231,.3); box-shadow: 0 0 .7rem rgba(142,201,231,.25); }
-  .wave { left: .45rem; top: 1.25rem; width: 4.9rem; height: 2.8rem; border-top: .12rem solid rgba(228,168,220,.55); border-radius: 50%; transform: rotate(12deg); }
-  .wave.echo { top: 2rem; transform: scaleY(-1) rotate(12deg); opacity: .55; }
-  .rest { left: 2.55rem; top: 2.35rem; width: .7rem; height: .7rem; border: 1px solid rgba(236,194,231,.8); border-radius: 50%; background: #080a0c; box-shadow: 0 0 1rem rgba(228,168,220,.34); }
+  .lotus-petal { left: 2.14rem; top: .55rem; width: 1.5rem; height: 2.15rem; border: 1px solid rgba(230,174,112,.58); border-radius: 65% 35% 62% 38%; background: linear-gradient(rgba(218,133,98,.16), transparent); transform-origin: 50% 2.35rem; }
+  .lotus-petal.east { transform: rotate(90deg); }
+  .lotus-petal.south { transform: rotate(180deg); }
+  .lotus-petal.west { transform: rotate(270deg); }
+  .lotus-center { left: 2.38rem; top: 2.35rem; width: 1.05rem; height: 1.05rem; border: 1px solid rgba(244,204,120,.72); border-radius: 50%; background: radial-gradient(circle, rgba(244,204,120,.48), transparent 64%); }
+  .open-margin { left: .65rem; right: .65rem; bottom: .42rem; height: .48rem; border-top: 1px solid rgba(217,160,96,.38); border-left: 1px solid rgba(217,160,96,.22); border-right: 1px solid rgba(217,160,96,.22); }
+  .returning-current { inset: .65rem .35rem 1rem; border: .14rem solid rgba(103,169,198,.48); border-left-color: transparent; border-radius: 50%; transform: rotate(-24deg); animation: current-return 9s ease-in-out infinite alternate; }
+  .refuge-arc { left: 1.2rem; top: 1.35rem; width: 3.4rem; height: 2.6rem; border: 1px solid rgba(226,203,126,.58); border-bottom-color: transparent; border-radius: 55% 55% 42% 42%; }
+  .harbor-light { left: 2.47rem; top: 2.25rem; width: .85rem; height: .85rem; border-radius: 50%; background: radial-gradient(circle, #fff7c7, rgba(226,203,126,.68) 34%, transparent 72%); box-shadow: 0 0 1rem rgba(226,203,126,.3); }
+  .summit { left: .6rem; bottom: .72rem; width: 3.2rem; height: 3.85rem; border-left: 1px solid rgba(120,174,192,.54); border-top: 1px solid rgba(120,174,192,.54); transform: rotate(45deg); background: linear-gradient(135deg, rgba(67,95,108,.18), transparent 52%); }
+  .summit.right { left: 2.7rem; bottom: .55rem; width: 2.4rem; height: 2.8rem; opacity: .58; }
+  .downward-river { left: 2.7rem; top: 1.2rem; width: .28rem; height: 3.6rem; border-left: .12rem solid rgba(181,225,231,.6); border-radius: 50%; transform: rotate(9deg); }
+  .open-ring { left: 2.12rem; top: 2.25rem; width: 1.5rem; height: 1.5rem; border: 1px solid rgba(203,147,91,.7); border-right-color: transparent; border-radius: 50%; transform: rotate(-18deg); }
 
   .clearing { position: absolute; z-index: 1; left: 50%; top: 47%; width: min(27vw, 23rem); aspect-ratio: 1.8; border-radius: 50%; transform: translate(-50%, -50%); background: radial-gradient(ellipse, rgba(224,205,151,.08), transparent 68%); }
   .clearing i { position: absolute; inset: 24%; border: 1px solid rgba(224,205,151,.13); border-radius: 50%; }
@@ -538,18 +542,18 @@
   @keyframes ember-tend { to { transform: scale(.82) rotate(3deg); opacity: .72; } }
   @keyframes water-return { 0% { transform: translateY(0) rotate(45deg); opacity: .2; } 48% { opacity: .8; } 70% { transform: translateY(2.3rem) rotate(45deg); opacity: 0; } 100% { transform: translateY(0) rotate(45deg); opacity: 0; } }
   @keyframes escapement { to { transform: rotate(360deg); } }
-  @keyframes charge-ground { 0%, 72% { opacity: .24; } 75% { opacity: 1; filter: drop-shadow(0 0 .5rem #bcecff); } 82%, 100% { opacity: .34; } }
+  @keyframes current-return { from { transform: rotate(-24deg); opacity: .42; } to { transform: rotate(12deg); opacity: .78; } }
 
   @media (max-width: 900px) {
     .garden-scene { min-height: 42rem; overflow-y: auto; }
     .garden-heading { top: 4rem; }
     .relations, .relation-names { display: none; }
-    .presences { position: relative; inset: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem .5rem; padding: 8rem 1rem 15rem; }
+    .presences { position: relative; inset: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem .5rem; padding: 8rem 1rem 2rem; }
     .presence { position: relative; left: auto !important; top: auto !important; width: auto; transform: none; }
     .presence.canticle { grid-column: 1 / -1; }
     figcaption small { color: rgba(235,226,204,.58); }
     .clearing { display: none; }
-    .garden-answers, .garden-credits, .ritual-instruction { position: absolute; top: auto; bottom: 1.5rem; width: calc(100% - 2rem); transform: translateX(-50%); }
+    .garden-answers, .garden-credits, .ritual-instruction { position: relative; left: auto; top: auto; bottom: auto; width: calc(100% - 2rem); margin: 0 auto 2rem; transform: none; }
     .answer-paths { flex-wrap: wrap; }
     .answer-paths .path { flex: 1 1 42%; }
   }

@@ -61,7 +61,7 @@ export const SUCCESSION_RELAYS: readonly SuccessionRelay[] = [
     sourceUniverseId: 'tempest',
     targetUniverseId: 'canticle',
     name: 'The Quiet Ascent',
-    description: 'Vishnulok’s completed return leaves one still current approaching the mountain passage.',
+    description: 'Vishnulok’s completed return leaves one still current approaching Kailash’s mountain passage.',
     sourceGift: 'spent continuity pressure becomes +12% Kailash production per rank',
   },
 ]
@@ -118,7 +118,7 @@ export const LUMEN_VAULT_ITEMS: readonly LumenVaultItem[] = [
   {
     id: 'lore-seventh-witness', kind: 'lore', name: 'The Seventh Witness', glyph: 'Ⅶ', cost: 1,
     description: 'The same silhouette, recorded independently by every restored sky.',
-    lore: 'Seven worlds disagreed about matter, time, color, weather, and song. All seven drew the Devourer with an empty place where a face should be.',
+    lore: 'Four restored worlds and three lokas disagreed about ignition, memory, life, causality, creation, preservation, and release. Each record drew the Devourer with an empty place where a face should be.',
   },
   {
     id: 'lore-name-before-lumen', kind: 'lore', name: 'Before “Lumen”', glyph: '¶', cost: 1,

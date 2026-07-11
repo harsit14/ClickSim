@@ -58,7 +58,7 @@ test('the Garden has one distinct material presence for every restored world', (
     assert.match(scene, new RegExp(`${universeId}: '[^']+'`), `${universeId} lost its authored material`)
     assert.match(scene, new RegExp(`node\\.universeId === '${universeId}'|presence\\.${universeId}`))
   }
-  for (const motif of ['coal', 'pool', 'branch', 'wheel', 'prism', 'bolt', 'wave']) {
+  for (const motif of ['coal', 'pool', 'branch', 'wheel', 'lotus-petal', 'returning-current', 'summit']) {
     assert.match(scene, new RegExp(`class="${motif}`), `${motif} motif is absent`)
   }
 })

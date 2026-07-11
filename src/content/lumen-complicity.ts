@@ -50,7 +50,7 @@ export const LUMEN_COMPLICITY_LINES: readonly LumenComplicityLine[] = [
     id: 'act7-lumen-inevitable',
     universeIds: ['tempest'],
     act: 'VII',
-    text: 'That path was chosen. So were you. I wrote “inevitable” over awakenings I had already selected, because weather sounded kinder than agency.',
+    text: 'I called preservation neutral after I had already chosen what counted as order, which losses could be corrected, and whose refuge remained outside my route.',
     when: (game) => game.ending !== null && game.supernovae >= 1,
   },
   {
@@ -64,14 +64,14 @@ export const LUMEN_COMPLICITY_LINES: readonly LumenComplicityLine[] = [
     id: 'act7-lumen-curation-rest',
     universeIds: ['canticle'],
     act: 'VII',
-    text: 'Listen to the rest. I used to call the silence between archived worlds empty. It was full of voices I had decided not to hear.',
+    text: 'At the Still Point, I called an archived ending complete because I had chosen what would carry through it. I kept the summit and ignored the path down.',
     when: (game) => game.ending !== null && game.supernovae >= 1,
   },
   {
     id: 'act7-lumen-seven',
     universeIds: ['canticle'],
     act: 'VII',
-    text: 'Seven Beacons. Seven choices I made before you woke. I did not save the worthy; I selected the questions I wanted answered. The Garden must include that debt.',
+    text: 'Four restored worlds and three lokas. I chose their order before you woke and called the sequence discovery. The Garden must include that debt without pretending I chose the whole of what they mean.',
     when: (game) => saw(game, 'act7-lumen-curation-rest') && game.beacons.includes('canticle'),
   },
 ]

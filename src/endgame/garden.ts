@@ -29,18 +29,18 @@ export const GARDEN_NODES: readonly GardenNode[] = [
   { universeId: 'tidefall', name: 'Pool of Returns', offering: 'grief that can move without vanishing', question: 'What can be released without being erased?' },
   { universeId: 'verdance', name: 'Canopy of Consent', offering: 'growth that leaves room for endings', question: 'What must change so another life can begin?' },
   { universeId: 'clockwork', name: 'Open Escapement', offering: 'prediction with one deliberate uncertainty', question: 'Can a forecast advise without ruling?' },
-  { universeId: 'prismata', name: 'Labeled White', offering: 'unity whose differences remain inspectable', question: 'Can a shared sky keep every wavelength’s name?' },
-  { universeId: 'tempest', name: 'Grounded Path', offering: 'power released through a chosen boundary', question: 'When does restraint become another kind of violence?' },
-  { universeId: 'canticle', name: 'Place for an Answer', offering: 'harmony with a positive rest', question: 'Can belonging preserve an unscripted voice?' },
+  { universeId: 'prismata', name: 'Open Lotus', offering: 'possibility with no single ordained form', question: 'Can creation leave room for what it did not imagine?' },
+  { universeId: 'tempest', name: 'Returning Harbor', offering: 'continuity that changes in order to care', question: 'What must preservation allow to return differently?' },
+  { universeId: 'canticle', name: 'Open Summit', offering: 'release with shelter still below', question: 'Can an ending clear a path without abandoning the living?' },
 ]
 
 export const GARDEN_LINKS: readonly GardenLink[] = [
-  { id: 'shared-sky', from: 'emberlight', to: 'prismata', name: 'The Shared Sky', result: 'warmth passes through labeled lenses without becoming the only color' },
+  { id: 'shared-sky', from: 'emberlight', to: 'prismata', name: 'The First Margin', result: 'first warmth opens possibility without authoring every form' },
   { id: 'rain-treaty', from: 'tidefall', to: 'verdance', name: 'The Rain Treaty', result: 'returning water ages a forest without forcing its season' },
-  { id: 'weather-clock', from: 'clockwork', to: 'tempest', name: 'The Weather Clock', result: 'a forecast declares the threshold but never chooses the lightning path' },
-  { id: 'choir-storms', from: 'tempest', to: 'canticle', name: 'The Choir of Storms', result: 'discharge becomes percussion and leaves a rest after every branch' },
-  { id: 'garden-map', from: 'verdance', to: 'canticle', name: 'The Garden Map', result: 'living relationships become routes the Atlas can revisit' },
-  { id: 'open-future', from: 'clockwork', to: 'prismata', name: 'The Open Future', result: 'cause and color remain visible without becoming destiny' },
+  { id: 'weather-clock', from: 'clockwork', to: 'tempest', name: 'The Unscheduled Current', result: 'a forecast yields when responsive refuge requires another course' },
+  { id: 'choir-storms', from: 'tempest', to: 'canticle', name: 'The Returning Ascent', result: 'completed return approaches release with every shelter still open' },
+  { id: 'garden-map', from: 'verdance', to: 'canticle', name: 'The Renewal Path', result: 'living change becomes a route through responsible release and return' },
+  { id: 'open-future', from: 'clockwork', to: 'prismata', name: 'The Open Future', result: 'cause and creation remain legible without becoming destiny' },
   { id: 'first-water', from: 'emberlight', to: 'tidefall', name: 'First Water', result: 'the first warmth learns that tending is not possession' },
 ]
 
@@ -57,8 +57,8 @@ export const GARDEN_CLOSURES: readonly GardenClosure[] = [
   },
   {
     id: 'companion', name: 'Join the network', requiresAllAnswers: false,
-    consequence: 'The player gives up central control. The Heart becomes one node among seven worlds and their possible successors.',
-    finalLine: 'The answer arrives in a voice that is not yours.',
+    consequence: 'The player gives up central control. The Heart becomes one relation among four restored worlds, three lokas, and their possible successors.',
+    finalLine: 'The answer arrives through a relation you did not author.',
   },
   {
     id: 'continue', name: 'Continue', requiresAllAnswers: true,
@@ -96,7 +96,7 @@ export function gardenCredits(ending: GardenEnding): readonly string[] {
   const closure = GARDEN_CLOSURES.find((entry) => entry.id === ending)
   if (!closure) return []
   return [
-    'SEVEN WORLDS, RESTORED WITHOUT BECOMING ONE',
+    'FOUR RESTORED WORLDS · THREE LOKAS · ONE OPEN GARDEN',
     ...GARDEN_NODES.map((node) => `${node.name} — ${node.offering}`),
     closure.finalLine,
     'The Atlas of Possible Worlds is now a permanent continuation, not an unfinished ending.',

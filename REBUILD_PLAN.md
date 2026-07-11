@@ -428,7 +428,7 @@ Kailash. No live name changes until a replacement passes its full content and ar
       records, story, trials, audio, and a consent-gated dissolution ceremony.
       External Hindu cultural and South Asian art/iconography review remains a
       public-release gate under `TRIMURTI_REFRAME.md`.
-- [ ] **9.7 Endgame reconciliation:** rewrite Lumen's late admissions, The Question,
+- [x] **9.7 Endgame reconciliation:** rewrite Lumen's late admissions, The Question,
       Garden presences, Chronicle, Atlas, Succession Relays, achievements, guide,
       localization, simulations, and migration fixtures around the completed cycle of
       creation, preservation, dissolution, choice, and renewal.
