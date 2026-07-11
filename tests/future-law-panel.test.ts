@@ -43,6 +43,20 @@ test('the authored worlds reinforce lotus court, sustaining ocean, and mountain 
   assert.doesNotMatch(worldSource, /class="prismata-bench"/)
 })
 
+test('loka law state is legible in the world without opening its instrument', () => {
+  assert.match(worldSource, /brahmalokStatus\(numericLawState, owned\)/)
+  assert.match(worldSource, /tempestStatus\(numericLawState\)/)
+  assert.match(worldSource, /canticleStatus\(numericLawState, owned, now\)/)
+  assert.match(worldSource, /data-brahmalok-directions=/)
+  assert.match(worldSource, /class:active=\{index < Math\.ceil\(\(vishnulokWorldState\?\.length/)
+  assert.match(worldSource, /class="vishnulok-continuity"/)
+  assert.match(worldSource, /class="kailash-cycle-marker"/)
+  assert.match(worldSource, /data-kailash-act=/)
+  assert.match(worldSource, /Brahmalok world state:/)
+  assert.match(worldSource, /Vishnulok world state:/)
+  assert.match(worldSource, /Kailash world state:/)
+})
+
 test('late-universe score and instrument share one compact surface', () => {
   assert.match(panelSource, /snippet integratedHeader[\s\S]*class="run-score"[\s\S]*class="instrument-title"/)
   assert.match(panelSource, /\.creation-stage \{[^}]*height: 5rem/)
