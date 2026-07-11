@@ -15,7 +15,7 @@ const MUSIC_BPM: Record<MusicMode, number> = {
   tidefall: 60,
   verdance: 84,
   clockwork: 90,
-  prismata: 96,
+  prismata: 84,
   tempest: 108,
   canticle: 72,
 }

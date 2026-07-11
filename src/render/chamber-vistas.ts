@@ -7,7 +7,7 @@ import {
 
 export type ChamberVistaId =
   | 'canopy-dawn'
-  | 'white-synthesis'
+  | 'lotus-unfolding'
   | 'full-discharge'
   | 'standing-wave-cathedral'
 
@@ -60,11 +60,11 @@ export function planChamberVista({
 
   if (universeId === 'prismata') {
     const status = prismataStatus(numericLawState, owned)
-    if (status.recipe.id !== 'synthesis' || status.activeBands < 6) return null
+    if (status.recipe.id !== 'mandala' || status.activeBands < 4) return null
     return {
-      id: 'white-synthesis',
+      id: 'lotus-unfolding',
       universeId,
-      label: `White synthesis: all six labeled wavelength families resolve into one beam at ${Math.round(status.balance * 100)}% balance.`,
+      label: `Lotus unfolding: seed, measure, name, and form surround an open center at ${Math.round(status.balance * 100)}% balance.`,
       intensity: clampUnit(0.7 + status.balance * 0.3),
       detail: status.balance,
     }

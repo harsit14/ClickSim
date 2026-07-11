@@ -39,7 +39,7 @@
     universeId === 'tidefall' ? '≈'
       : universeId === 'verdance' ? '❧'
         : universeId === 'clockwork' ? '⌁'
-          : universeId === 'prismata' ? '◇'
+          : universeId === 'prismata' ? '✤'
             : universeId === 'tempest' ? 'ϟ'
               : universeId === 'canticle' ? '◌'
                 : '✦',

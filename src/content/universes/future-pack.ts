@@ -186,9 +186,9 @@ function makeGenerator(spec: FutureUniverseSpec, seed: FutureKindlingSeed, index
 function makeUpgrades(spec: FutureUniverseSpec, generators: readonly GeneratorDef[]): UpgradeDef[] {
   const upgrades: UpgradeDef[] = []
   const refinements = [
-    { at: 10, scale: 15, glyph: 'I', adjective: spec.id === 'prismata' ? 'Aligned' : spec.id === 'tempest' ? 'Charged' : 'Voiced' },
-    { at: 25, scale: 75, glyph: 'II', adjective: spec.id === 'prismata' ? 'Coherent' : spec.id === 'tempest' ? 'Branching' : 'Harmonic' },
-    { at: 50, scale: 750, glyph: 'III', adjective: spec.id === 'prismata' ? 'White-lit' : spec.id === 'tempest' ? 'Grounded' : 'Resonant' },
+    { at: 10, scale: 15, glyph: 'I', adjective: spec.id === 'prismata' ? 'Rooted' : spec.id === 'tempest' ? 'Charged' : 'Voiced' },
+    { at: 25, scale: 75, glyph: 'II', adjective: spec.id === 'prismata' ? 'Revised' : spec.id === 'tempest' ? 'Branching' : 'Harmonic' },
+    { at: 50, scale: 750, glyph: 'III', adjective: spec.id === 'prismata' ? 'Unfolded' : spec.id === 'tempest' ? 'Grounded' : 'Resonant' },
   ] as const
   for (const generator of generators) {
     for (const refinement of refinements) {
@@ -649,12 +649,12 @@ export function createFutureUniversePack(spec: FutureUniverseSpec): {
     palette: { theme: spec.id, accentHue: spec.palette.accentHue, vars: { '--bg': spec.palette.bg, '--amber': spec.palette.accent, '--gold': spec.palette.gold, '--panel': spec.palette.panel } },
     audio: { music: spec.id, click: spec.id, event: spec.id },
     events: {
-      noun: spec.id === 'prismata' ? 'Optical Omen' : spec.id === 'tempest' ? 'Storm Omen' : 'Wandering Phrase',
+      noun: spec.id === 'prismata' ? 'Creative Opening' : spec.id === 'tempest' ? 'Storm Omen' : 'Wandering Phrase',
       motion: spec.id === 'tempest' ? 'meteor' : 'bubble',
-      powerUps: spec.omens.map((omen, index) => ({ id: `${spec.prefix}-power-${index + 1}`, label: omen.name, glyph: spec.id === 'prismata' ? '◇' : spec.id === 'tempest' ? 'ϟ' : '◌', hue: (spec.palette.accentHue + index * 29) % 360, weight: 25, prodMult: 2 + index * 0.5, durationSec: 24 + index * 6, toast: omen.description })),
+      powerUps: spec.omens.map((omen, index) => ({ id: `${spec.prefix}-power-${index + 1}`, label: omen.name, glyph: spec.id === 'prismata' ? '✤' : spec.id === 'tempest' ? 'ϟ' : '◌', hue: (spec.palette.accentHue + index * 29) % 360, weight: 25, prodMult: 2 + index * 0.5, durationSec: 24 + index * 6, toast: omen.description })),
     },
     cabinet,
-    twist: { id: `${spec.prefix}-world-law`, name: spec.physics.spectrum ? 'The Spectrum Bench' : spec.physics.charge ? 'The Potential Field' : 'The Living Measure', randomnessAllowed: spec.physics.randomAllowed, description: spec.physics.spectrum ? 'Route wavelength families through free lens recipes; the selected optical relationship changes production.' : spec.physics.charge ? 'Production builds bounded potential; choose a path and release it as a deliberate discharge.' : 'Arrange pulses, drones, counterpoint, and rests into a repeating production measure.' },
+    twist: { id: `${spec.prefix}-world-law`, name: spec.physics.spectrum ? 'The Lotus of Becoming' : spec.physics.charge ? 'The Potential Field' : 'The Living Measure', randomnessAllowed: spec.physics.randomAllowed, description: spec.physics.spectrum ? 'Route Kindlings through seed, measure, name, and form; the selected creation relationship changes production.' : spec.physics.charge ? 'Production builds bounded potential; choose a path and release it as a deliberate discharge.' : 'Arrange pulses, drones, counterpoint, and rests into a repeating production measure.' },
     route: { glyph: spec.routeGlyph, epithet: spec.epithet.toLowerCase(), arrival: spec.routeArrival, unlockText: spec.unlockText },
     beacon: { generatorId: generators[17].id, count: 1, reward: spec.beaconReward, description: `${spec.beaconName} continues the world law without the player.` },
   }

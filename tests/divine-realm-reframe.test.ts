@@ -34,7 +34,8 @@ test('Clockwork remains the final restored universe and the three lokas occupy s
   for (const realm of DIVINE_REALMS) {
     const currentPack = universeById(realm.saveSlotUniverseId)
     assert.ok(currentPack.generators.every(({ id }) => id.startsWith(`${realm.stablePrefix}-`)))
-    assert.notEqual(currentPack.shortName, realm.publicName, 'Public loka names stay dormant until complete')
+    if (realm.id === 'brahmalok') assert.equal(currentPack.shortName, realm.publicName)
+    else assert.notEqual(currentPack.shortName, realm.publicName, 'Unbuilt loka names stay dormant until complete')
     assert.equal(divineRealmForSaveSlot(realm.saveSlotUniverseId)?.id, realm.id)
     assert.ok(realm.sacredPresences.every((presence) => !realm.centralInterface.includes(presence)))
   }
@@ -52,6 +53,7 @@ test('the cultural contract prohibits turning sacred content into ordinary econo
   assert.match(canon, /Saraswati, Lakshmi, and Parvati are not accessories/)
   assert.match(canon, /cultural consultant/)
   assert.match(canon, /No live UI adopts a loka name until/)
+  assert.match(canon, /external cultural review remains a release gate/i)
 })
 
 test('the Unscheduled Interval is one contiguous, deterministic, accessible revelation', () => {

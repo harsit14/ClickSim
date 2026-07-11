@@ -89,7 +89,7 @@ export function playRhythmAccent(mode: UniverseId = 'emberlight', streak = 1): b
     tidefall: 293.66,
     verdance: 261.63,
     clockwork: 330,
-    prismata: 523.25,
+    prismata: 293.66,
     tempest: 392,
     canticle: 220,
   }
@@ -162,9 +162,9 @@ function playFutureClick(mode: 'prismata' | 'tempest' | 'canticle') {
   const oscillator = a.ctx.createOscillator()
   const gain = a.ctx.createGain()
   const filter = a.ctx.createBiquadFilter()
-  oscillator.type = mode === 'prismata' ? 'triangle' : mode === 'tempest' ? 'sawtooth' : 'sine'
-  const start = mode === 'prismata' ? 980 : mode === 'tempest' ? 260 : 330
-  const end = mode === 'prismata' ? 620 : mode === 'tempest' ? 82 : 185
+  oscillator.type = mode === 'tempest' ? 'sawtooth' : 'sine'
+  const start = mode === 'prismata' ? 420 : mode === 'tempest' ? 260 : 330
+  const end = mode === 'prismata' ? 285 : mode === 'tempest' ? 82 : 185
   oscillator.frequency.setValueAtTime(start, t)
   oscillator.frequency.exponentialRampToValueAtTime(end, t + (mode === 'canticle' ? 0.2 : 0.09))
   filter.type = mode === 'tempest' ? 'highpass' : 'lowpass'
@@ -248,7 +248,7 @@ function playFutureBuy(gainScale: number, mode: Exclude<UniverseId, 'emberlight'
   const pairs: Record<typeof mode, readonly [number, number]> = {
     verdance: [293.66, 440],
     clockwork: [330, 495],
-    prismata: [659.25, 987.77],
+    prismata: [293.66, 440],
     tempest: [196, 392],
     canticle: [220, 329.63],
   }
@@ -258,7 +258,7 @@ function playFutureBuy(gainScale: number, mode: Exclude<UniverseId, 'emberlight'
   pairs[mode].forEach((frequency, index) => {
     const oscillator = a.ctx.createOscillator()
     const gain = a.ctx.createGain()
-    oscillator.type = mode === 'tempest' ? 'sawtooth' : mode === 'prismata' ? 'triangle' : 'sine'
+    oscillator.type = mode === 'tempest' ? 'sawtooth' : 'sine'
     oscillator.frequency.value = frequency
     const start = t + index * 0.075
     gain.gain.setValueAtTime(0.0001, start)
@@ -390,12 +390,12 @@ function playFutureEpoch(mode: Exclude<UniverseId, 'emberlight' | 'tidefall'>) {
   const roots: Record<typeof mode, number> = {
     verdance: 146.83,
     clockwork: 165,
-    prismata: 261.63,
+    prismata: 146.83,
     tempest: 73.42,
     canticle: 110,
   }
   const root = roots[mode]
-  const intervals = mode === 'prismata' ? [1, 1.25, 1.5, 2] : mode === 'canticle' ? [1, 1.5, 2, 3] : [1, 4 / 3, 1.75, 2]
+  const intervals = mode === 'prismata' ? [1, 1.5, 2, 2.5] : mode === 'canticle' ? [1, 1.5, 2, 3] : [1, 4 / 3, 1.75, 2]
   intervals.forEach((interval, index) => {
     const oscillator = a.ctx.createOscillator()
     const gain = a.ctx.createGain()
@@ -459,7 +459,7 @@ export function playOmenApproach(mode: UniverseId = 'emberlight'): boolean {
     tidefall: 196,
     verdance: 261.63,
     clockwork: 440,
-    prismata: 659.25,
+    prismata: 293.66,
     tempest: 146.83,
     canticle: 220,
   }

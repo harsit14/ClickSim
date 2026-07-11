@@ -4,7 +4,7 @@
     activeRatePerSec,
     game,
     activateUniverseLaw,
-    configurePrismataRoute,
+    configureBrahmalokDirection,
     configureVerdanceGrafting,
     configureTempestPath,
     configureUniverseLaw,
@@ -16,12 +16,12 @@
   import {
     CANTICLE_ROLES,
     CANTICLE_MEASURES,
-    PRISMATA_BANDS,
-    PRISMATA_RECIPES,
+    BRAHMALOK_DIRECTIONS,
+    BRAHMALOK_MODES,
     TEMPEST_PATHS,
     TEMPEST_RISKS,
     canticleStatus,
-    prismataStatus,
+    brahmalokStatus,
     tempestStatus,
   } from '../content/universes/f4-runtime'
   import { save } from '../core/save'
@@ -30,15 +30,15 @@
   import BuffBar from './BuffBar.svelte'
 
   let now = $state(Date.now())
-  let selectedPrismataKindling = $state(0)
+  let selectedBrahmalokKindling = $state(0)
   let primerMounted = $state(false)
   let primerOpen = $state(false)
-  const prismataKindlings = universeById('prismata').generators
+  const brahmalokKindlings = universeById('prismata').generators
   const verdanceKindlings = universeById('verdance').generators
   const verdanceGraft = $derived(game.activeUniverse === 'verdance'
     ? verdanceGraftingStatus(verdanceKindlings.map(({ id }) => id), game.owned, game.numericLawState)
     : null)
-  const prismata = $derived(game.activeUniverse === 'prismata' ? prismataStatus(game.numericLawState, game.owned) : null)
+  const brahmalok = $derived(game.activeUniverse === 'prismata' ? brahmalokStatus(game.numericLawState, game.owned) : null)
   const tempest = $derived(game.activeUniverse === 'tempest' ? tempestStatus(game.numericLawState) : null)
   const canticle = $derived(game.activeUniverse === 'canticle' ? canticleStatus(game.numericLawState, game.owned, now) : null)
   const pack = $derived(universeById(game.activeUniverse))
@@ -46,9 +46,9 @@
   const epochMatter = $derived(universeV2ById(game.activeUniverse)?.economy.localPrestige.rewardCurrency)
   const instrumentPrimers = {
     prismata: {
-      title: 'Reading the chamber',
-      steps: ['Choose a lens recipe', 'Choose a Kindling source and route its wavelength', 'Watch band coverage and balance change the multiplier'],
-      note: 'Routing and lens changes are free.',
+      title: 'Reading the creation mandala',
+      steps: ['Choose how the lotus unfolds', 'Route a Kindling through seed, measure, name, or form', 'Watch direction coverage and balance change the multiplier'],
+      note: 'Mandala changes are free and never consume a Kindling.',
     },
     tempest: {
       title: 'Reading the storm',
@@ -75,8 +75,8 @@
     if (activateUniverseLaw()) save()
   }
 
-  function routePrismata(bandIndex: number) {
-    if (configurePrismataRoute(selectedPrismataKindling, bandIndex)) save()
+  function routeBrahmalok(directionIndex: number) {
+    if (configureBrahmalokDirection(selectedBrahmalokKindling, directionIndex)) save()
   }
 
   function configureStorm(length: number, riskIndex: number) {
@@ -212,49 +212,47 @@
     </div>
     <p>{verdanceGraft.explanation}</p>
   </section>
-{:else if prismata}
-  <section class="law-panel prismata-chamber" aria-label="Prismata refraction chamber">
-    {@render integratedHeader('REFRACTION CHAMBER', 'Split. Name. Recombine.', `${prismata.activeBands}/6 BANDS`, prismata.recipe.name, prismata.multiplier)}
+{:else if brahmalok}
+  <section class="law-panel brahmalok-mandala" aria-label="Brahmalok creation mandala">
+    {@render integratedHeader('LOTUS OF BECOMING', 'Four Directions', `${brahmalok.activeBands}/4 DIRECTIONS`, brahmalok.recipe.name, brahmalok.multiplier)}
     {@render primerStrip()}
 
-    <div class="optics-stage" aria-label={`${prismata.activeBands} of 6 wavelength families active; ${prismata.explanation}`}>
-      <div class="white-source"><i></i><span>WHITE<br />INPUT</span></div>
-      <div class="incident-beam"></div>
-      <div class="prism-core" aria-hidden="true"><span>{prismata.recipe.glyph}</span></div>
-      <div class="spectral-rays">
-        {#each PRISMATA_BANDS as band, index (band.id)}
-          {@const quantity = prismata.bands[index]}
-          <i class:active={quantity > 0} data-band={band.id} style={`--ray-index:${index}`}>
-            <span>{band.glyph}</span><b>{quantity}</b>
-          </i>
+    <div class="creation-stage" aria-label={`${brahmalok.activeBands} of 4 creation directions active; ${brahmalok.explanation}`}>
+      <div class="lotus-center" aria-hidden="true"><span>{brahmalok.recipe.glyph}</span><i></i></div>
+      <div class="creation-directions">
+        {#each BRAHMALOK_DIRECTIONS as direction, index (direction.id)}
+          {@const quantity = brahmalok.bands[index]}
+          <article class:active={quantity > 0} data-direction={direction.id} style={`--direction-index:${index}`}>
+            <span>{direction.glyph}</span><strong>{direction.name}</strong><b>{quantity}</b>
+          </article>
         {/each}
       </div>
-      <div class="spectrum-detector"><span>DETECTOR</span><b>{prismata.recipe.name}</b><small>{Math.round(prismata.balance * 100)}% balance</small></div>
+      <div class="mandala-reading"><span>OPEN CENTER</span><b>{brahmalok.recipe.name}</b><small>{Math.round(brahmalok.balance * 100)}% balance</small></div>
     </div>
 
-    <p class="law-explanation">{prismata.explanation}</p>
+    <p class="law-explanation">{brahmalok.explanation}</p>
 
-    <div class="optics-controls">
-      <div class="lens-modes" role="group" aria-label="free lens recipe selection">
-        {#each PRISMATA_RECIPES as recipe, index}
-          <button type="button" aria-pressed={prismata.recipeIndex === index} onclick={() => configure(index)} title={recipe.description}>
-            <span>{recipe.glyph}</span><b>{recipe.name}</b><small>{recipe.description}</small>
+    <div class="mandala-controls">
+      <div class="creation-modes" role="group" aria-label="free creation mode selection">
+        {#each BRAHMALOK_MODES as mode, index}
+          <button type="button" aria-pressed={brahmalok.recipeIndex === index} onclick={() => configure(index)} title={mode.description}>
+            <span>{mode.glyph}</span><b>{mode.name}</b><small>{mode.description}</small>
           </button>
         {/each}
       </div>
-      <div class="ray-router">
+      <div class="creation-router">
         <label>
-          <span>ROUTE SOURCE</span>
-          <select bind:value={selectedPrismataKindling} aria-label="Kindling family to route">
-            {#each prismataKindlings as kindling, index (kindling.id)}
+          <span>KINDLING TO UNFOLD</span>
+          <select bind:value={selectedBrahmalokKindling} aria-label="Brahmalok Kindling to route">
+            {#each brahmalokKindlings as kindling, index (kindling.id)}
               <option value={index}>{kindling.name}</option>
             {/each}
           </select>
         </label>
-        <div class="band-routes" role="group" aria-label={`Route ${prismataKindlings[selectedPrismataKindling].name} to wavelength band`}>
-          {#each PRISMATA_BANDS as band, index (band.id)}
-            <button type="button" data-band={band.id} aria-pressed={prismata.routes[selectedPrismataKindling] === index} onclick={() => routePrismata(index)} title={band.name}>
-              <span>{band.glyph}</span>{band.name}
+        <div class="direction-routes" role="group" aria-label={`Route ${brahmalokKindlings[selectedBrahmalokKindling].name} through a creation direction`}>
+          {#each BRAHMALOK_DIRECTIONS as direction, index (direction.id)}
+            <button type="button" data-direction={direction.id} aria-pressed={brahmalok.routes[selectedBrahmalokKindling] === index} onclick={() => routeBrahmalok(index)} title={direction.name}>
+              <span>{direction.glyph}</span>{direction.name}
             </button>
           {/each}
         </div>
@@ -410,7 +408,7 @@
   .verdance-grafting.active .graft-union span { color: #efffd9; border-color: #c9efa2; animation: graft-pulse 2.8s ease-in-out infinite alternate; }
   :global(html[data-motion='reduced']) .verdance-grafting.active .graft-union span { animation: none; }
   @keyframes graft-pulse { from { transform: scale(0.94); } to { transform: scale(1.06); } }
-  .integrated-heading { display: grid; grid-template-columns: minmax(9rem, 1.08fr) minmax(7rem, 0.78fr) minmax(8rem, 0.92fr) auto 1.5rem; align-items: center; gap: 0.55rem; min-height: 2.5rem; padding-bottom: 0.38rem; border-bottom: 1px solid color-mix(in srgb, var(--gold) 11%, transparent); }
+  .integrated-heading { display: grid; grid-template-columns: minmax(6.5rem, 1.08fr) minmax(4.8rem, 0.72fr) minmax(6rem, 0.9fr) auto 1.5rem; align-items: center; gap: 0.4rem; min-height: 2.5rem; padding-bottom: 0.38rem; border-bottom: 1px solid color-mix(in srgb, var(--gold) 11%, transparent); }
   .run-score { min-width: 0; display: flex; align-items: center; gap: 0.55rem; }
   .run-score > strong { color: color-mix(in srgb, var(--gold) 80%, white); font: 680 1.42rem/1 ui-sans-serif, system-ui; font-variant-numeric: tabular-nums; text-shadow: 0 0 1.1rem color-mix(in srgb, var(--amber) 22%, transparent); white-space: nowrap; }
   .run-score > strong i { margin-right: 0.3rem; color: var(--amber); font-size: 0.86rem; font-style: normal; vertical-align: 0.12rem; }
@@ -418,7 +416,7 @@
   .run-score em { color: color-mix(in srgb, var(--gold) 58%, var(--dim)); font-style: normal; }
   .effect-slot { min-width: 0; display: grid; gap: 0.14rem; padding-left: 0.55rem; border-left: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); }
   .effect-slot > span { color: var(--dim); font: 720 0.36rem/1 system-ui, sans-serif; letter-spacing: 0.12em; }
-  .instrument-title { min-width: 0; padding-left: 0.75rem; border-left: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); }
+  .instrument-title { min-width: 0; padding-left: 0.48rem; border-left: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); }
   .instrument-title span { display: block; color: var(--dim); font: 750 0.43rem/1 system-ui, sans-serif; letter-spacing: 0.17em; }
   .instrument-title strong { display: block; margin-top: 0.16rem; overflow: hidden; color: color-mix(in srgb, var(--gold) 74%, white); font: 560 0.72rem/1.1 Georgia, serif; text-overflow: ellipsis; white-space: nowrap; }
   .instrument-reading { display: grid; grid-template-columns: auto auto; align-items: center; gap: 0.08rem 0.38rem; text-align: right; }
@@ -427,7 +425,7 @@
   .instrument-reading em { color: var(--amber); font: 560 0.43rem/1 system-ui, sans-serif; font-style: normal; text-transform: uppercase; }
   .primer-toggle { width: 1.4rem; height: 1.4rem; display: grid; place-items: center; padding: 0; color: var(--dim); background: transparent; border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 50%; font: 730 0.56rem/1 system-ui, sans-serif; }
   .primer-toggle:hover, .primer-toggle[aria-expanded='true'] { color: white; border-color: var(--amber); background: color-mix(in srgb, var(--amber) 9%, transparent); }
-  .instrument-primer { display: grid; grid-template-columns: 7.2rem minmax(0,1fr) 8.5rem auto; align-items: center; gap: 0.55rem; margin: 0.28rem 0 0.12rem; padding: 0.38rem 0.48rem; color: var(--gold); background: linear-gradient(90deg, color-mix(in srgb,var(--amber) 8%,transparent), transparent 58%); border: 1px solid color-mix(in srgb,var(--amber) 20%,transparent); border-radius: 0.45rem; }
+  .instrument-primer { display: grid; grid-template-columns: 5.5rem minmax(0,1fr) 6.4rem auto; align-items: center; gap: 0.42rem; margin: 0.28rem 0 0.12rem; padding: 0.38rem 0.48rem; color: var(--gold); background: linear-gradient(90deg, color-mix(in srgb,var(--amber) 8%,transparent), transparent 58%); border: 1px solid color-mix(in srgb,var(--amber) 20%,transparent); border-radius: 0.45rem; }
   .instrument-primer > div span { display: block; color: var(--amber); font: 740 0.38rem/1 system-ui,sans-serif; letter-spacing: 0.13em; }
   .instrument-primer > div strong { display: block; margin-top: 0.14rem; font: 600 0.57rem/1.1 Georgia,serif; }
   .instrument-primer ol { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
@@ -436,54 +434,54 @@
   .instrument-primer p { color: var(--dim); font: italic 0.4rem/1.25 Georgia,serif; text-align: left; }
   .instrument-primer > button { padding: 0.28rem 0.4rem; color: var(--gold); background: color-mix(in srgb,var(--amber) 10%,transparent); border: 1px solid color-mix(in srgb,var(--amber) 28%,transparent); border-radius: 0.35rem; font: 650 0.43rem/1 system-ui,sans-serif; white-space: nowrap; }
 
-  /* Prismata — a darkroom instrument built around one spatial act of refraction. */
-  .prismata-chamber {
+  /* Brahmalok — a four-direction writing court around an intentionally open center. */
+  .brahmalok-mandala {
     width: min(45rem, calc(100vw - 29rem));
     margin: 0.32rem auto 0;
     padding: 0.42rem 0.62rem 0.5rem;
-    clip-path: polygon(0.8rem 0, calc(100% - 0.8rem) 0, 100% 0.8rem, 100% calc(100% - 0.8rem), calc(100% - 0.8rem) 100%, 0.8rem 100%, 0 calc(100% - 0.8rem), 0 0.8rem);
+    border-radius: 1.1rem 1.1rem 0.3rem 0.3rem;
     background:
-      linear-gradient(115deg, color-mix(in srgb, var(--amber) 8%, transparent), transparent 28%),
-      color-mix(in srgb, var(--panel) 92%, #05030d);
+      radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--amber) 10%, transparent), transparent 28%),
+      linear-gradient(120deg, color-mix(in srgb, #5f7e9d 7%, transparent), transparent 36%),
+      color-mix(in srgb, var(--panel) 93%, #08060c);
   }
-  .optics-stage { position: relative; height: 3.75rem; margin: 0.28rem 0 0.2rem; overflow: hidden; border-bottom: 1px solid color-mix(in srgb, var(--gold) 10%, transparent); background: radial-gradient(ellipse at 45% 50%, color-mix(in srgb, var(--amber) 7%, transparent), transparent 22%); }
-  .white-source { position: absolute; left: 0.3rem; top: 50%; width: 4rem; display: flex; align-items: center; gap: 0.4rem; transform: translateY(-50%); color: white; }
-  .white-source i { width: 1.15rem; aspect-ratio: 1; border-radius: 50%; background: white; box-shadow: 0 0 1.1rem white; }
-  .white-source span, .spectrum-detector span { font: 750 0.46rem/1.25 system-ui, sans-serif; letter-spacing: 0.1em; }
-  .incident-beam { position: absolute; left: 4.2rem; right: 55%; top: 50%; height: 2px; background: linear-gradient(90deg, white, color-mix(in srgb, white 28%, transparent)); box-shadow: 0 0 0.55rem white; }
-  .prism-core { position: absolute; left: 45%; top: 50%; width: 3.35rem; height: 3rem; display: grid; place-items: center; transform: translate(-50%, -50%); clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(135deg, color-mix(in srgb, white 12%, transparent), color-mix(in srgb, var(--amber) 22%, transparent)); filter: drop-shadow(0 0 0.65rem color-mix(in srgb, var(--amber) 28%, transparent)); }
-  .prism-core::after { content: ''; position: absolute; inset: 2px; clip-path: inherit; background: color-mix(in srgb, var(--panel) 80%, transparent); }
-  .prism-core span { z-index: 1; margin-top: 1rem; color: white; font-size: 1rem; }
-  .spectral-rays { position: absolute; inset: 0; }
-  .spectral-rays i { position: absolute; left: 49%; top: 50%; width: 42%; height: 1px; transform: rotate(calc((var(--ray-index) - 2.5) * 4.6deg)); transform-origin: left center; background: var(--ray-color); opacity: 0.18; box-shadow: 0 0 0.35rem var(--ray-color); }
-  .spectral-rays i.active { opacity: 0.88; }
-  .spectral-rays span, .spectral-rays b { position: absolute; right: 0; color: var(--ray-color); font: 700 0.46rem/1 ui-monospace, monospace; }
-  .spectral-rays span { transform: translate(0.1rem, -0.8rem); }
-  .spectral-rays b { transform: translate(1.2rem, -0.25rem); }
-  [data-band='red'] { --ray-color: #ff6f72; }
-  [data-band='amber'] { --ray-color: #ffb95f; }
-  [data-band='green'] { --ray-color: #7ce5a2; }
-  [data-band='blue'] { --ray-color: #62c9ff; }
-  [data-band='violet'] { --ray-color: #ba91ff; }
-  [data-band='invisible'] { --ray-color: #f4eaff; }
-  .spectrum-detector { position: absolute; right: 0.25rem; top: 50%; width: 5.3rem; display: grid; gap: 0.13rem; padding: 0.35rem 0.42rem; transform: translateY(-50%); color: var(--dim); background: color-mix(in srgb, var(--bg) 72%, transparent); border-left: 2px solid white; }
-  .spectrum-detector b { color: white; font-size: 0.58rem; }
-  .spectrum-detector small { font-size: 0.46rem; }
-  .optics-controls { display: grid; grid-template-columns: 1fr 1.08fr; gap: 0.45rem; margin-top: 0.3rem; }
-  .lens-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.24rem; }
-  .lens-modes button { min-width: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.06rem 0.26rem; padding: 0.23rem 0.34rem; color: var(--dim); text-align: left; background: color-mix(in srgb, var(--bg) 62%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); }
-  .lens-modes button > span { grid-row: 1 / 3; align-self: center; color: var(--amber); font-size: 0.88rem; }
-  .lens-modes b { color: color-mix(in srgb, var(--gold) 66%, white); font-size: 0.54rem; }
-  .lens-modes small { overflow: hidden; font-size: 0.42rem; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
-  .lens-modes button[aria-pressed='true'] { border-color: white; box-shadow: inset 2px 0 var(--amber), inset 0 0 1rem color-mix(in srgb, var(--amber) 10%, transparent); }
-  .ray-router { min-width: 0; display: grid; gap: 0.28rem; align-content: center; padding-left: 0.55rem; border-left: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); }
-  .ray-router label { display: flex; align-items: center; gap: 0.4rem; }
-  .ray-router label > span { color: var(--dim); font: 720 0.46rem/1 system-ui, sans-serif; letter-spacing: 0.1em; }
-  .ray-router select { min-width: 0; flex: 1; padding: 0.28rem 0.35rem; color: var(--gold); background: var(--bg); border: 1px solid color-mix(in srgb, var(--gold) 20%, transparent); }
-  .band-routes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.22rem; }
-  .band-routes button { min-width: 0; padding: 0.26rem; color: var(--dim); background: color-mix(in srgb, var(--bg) 62%, transparent); border: 1px solid color-mix(in srgb, var(--ray-color) 30%, transparent); font: 650 0.47rem/1 system-ui, sans-serif; }
-  .band-routes button span { margin-right: 0.2rem; color: var(--ray-color); }
-  .band-routes button[aria-pressed='true'] { color: white; border-color: var(--ray-color); box-shadow: inset 0 0 0.8rem color-mix(in srgb, var(--ray-color) 12%, transparent); }
+  .creation-stage { position: relative; height: 5rem; margin: 0.25rem 0 0.18rem; overflow: hidden; border-top: 1px solid color-mix(in srgb, var(--gold) 8%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--gold) 10%, transparent); background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--amber) 10%, transparent), transparent 33%); }
+  .creation-stage::before,
+  .creation-stage::after { content: ''; position: absolute; left: 50%; top: 50%; width: 68%; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 18%, transparent), transparent); }
+  .creation-stage::before { transform: translate(-50%, -50%); }
+  .creation-stage::after { transform: translate(-50%, -50%) rotate(90deg); }
+  .lotus-center { position: absolute; left: 50%; top: 50%; z-index: 2; width: 3rem; aspect-ratio: 1; display: grid; place-items: center; transform: translate(-50%, -50%) rotate(45deg); color: var(--gold); border: 1px solid color-mix(in srgb, var(--amber) 52%, transparent); background: color-mix(in srgb, var(--bg) 82%, transparent); box-shadow: 0 0 1.4rem color-mix(in srgb, var(--amber) 17%, transparent); }
+  .lotus-center::before,
+  .lotus-center::after { content: ''; position: absolute; width: 1.2rem; height: 2.3rem; border: 1px solid color-mix(in srgb, var(--gold) 34%, transparent); border-radius: 70% 20% 70% 20%; }
+  .lotus-center::before { transform: rotate(45deg); }
+  .lotus-center::after { transform: rotate(135deg); }
+  .lotus-center span { z-index: 2; transform: rotate(-45deg); font-size: 0.8rem; }
+  .lotus-center i { position: absolute; inset: 31%; z-index: 1; border: 1px dashed color-mix(in srgb, #8ecbe0 52%, transparent); background: var(--bg); }
+  .creation-directions { position: absolute; inset: 0; }
+  .creation-directions article { --direction-angle: calc(var(--direction-index) * 90deg - 90deg); position: absolute; left: calc(50% - 2.5rem); top: calc(50% - 0.75rem); width: 5rem; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.22rem; padding: 0.25rem 0.32rem; transform: rotate(var(--direction-angle)) translateY(-2rem) rotate(calc(-1 * var(--direction-angle))); color: var(--dim); border: 1px solid color-mix(in srgb, var(--gold) 10%, transparent); background: color-mix(in srgb, var(--bg) 74%, transparent); }
+  .creation-directions article.active { color: var(--gold); border-color: color-mix(in srgb, var(--amber) 40%, transparent); box-shadow: inset 2px 0 color-mix(in srgb, var(--amber) 70%, transparent); }
+  .creation-directions span { color: var(--amber); font-size: 0.68rem; }
+  .creation-directions strong { font-size: 0.48rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .creation-directions b { font: 700 0.5rem/1 ui-monospace, monospace; }
+  .mandala-reading { position: absolute; right: 0.25rem; bottom: 0.2rem; display: grid; gap: 0.08rem; min-width: 6.2rem; padding: 0.26rem 0.35rem; text-align: right; background: color-mix(in srgb, var(--bg) 78%, transparent); border-right: 2px solid color-mix(in srgb, var(--amber) 62%, transparent); }
+  .mandala-reading span { color: var(--dim); font: 730 0.38rem/1 system-ui, sans-serif; letter-spacing: 0.1em; }
+  .mandala-reading b { color: var(--gold); font-size: 0.52rem; }
+  .mandala-reading small { color: var(--dim); font-size: 0.42rem; }
+  .mandala-controls { display: grid; grid-template-columns: 1fr 1.08fr; gap: 0.45rem; margin-top: 0.3rem; }
+  .creation-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.24rem; }
+  .creation-modes button { min-width: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.06rem 0.26rem; padding: 0.23rem 0.34rem; color: var(--dim); text-align: left; background: color-mix(in srgb, var(--bg) 62%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); border-radius: 0.7rem 0.2rem 0.7rem 0.2rem; }
+  .creation-modes button > span { grid-row: 1 / 3; align-self: center; color: var(--amber); font-size: 0.88rem; }
+  .creation-modes b { color: color-mix(in srgb, var(--gold) 66%, white); font-size: 0.54rem; }
+  .creation-modes small { overflow: hidden; font-size: 0.42rem; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
+  .creation-modes button[aria-pressed='true'] { border-color: var(--gold); box-shadow: inset 2px 0 var(--amber), inset 0 0 1rem color-mix(in srgb, var(--amber) 10%, transparent); }
+  .creation-router { min-width: 0; display: grid; gap: 0.28rem; align-content: center; padding-left: 0.55rem; border-left: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); }
+  .creation-router label { display: flex; align-items: center; gap: 0.4rem; }
+  .creation-router label > span { color: var(--dim); font: 720 0.43rem/1 system-ui, sans-serif; letter-spacing: 0.09em; }
+  .creation-router select { min-width: 0; flex: 1; padding: 0.28rem 0.35rem; color: var(--gold); background: var(--bg); border: 1px solid color-mix(in srgb, var(--gold) 20%, transparent); }
+  .direction-routes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.22rem; }
+  .direction-routes button { min-width: 0; padding: 0.26rem 0.18rem; color: var(--dim); background: color-mix(in srgb, var(--bg) 62%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 16%, transparent); font: 650 0.44rem/1 system-ui, sans-serif; }
+  .direction-routes button span { margin-right: 0.18rem; color: var(--amber); }
+  .direction-routes button[aria-pressed='true'] { color: white; border-color: var(--gold); box-shadow: inset 0 -2px color-mix(in srgb, var(--amber) 72%, transparent); }
 
   /* Tempest — an atmospheric cross-section, not a recolored optical control panel. */
   .tempest-field { width: min(45rem, calc(100vw - 29rem)); margin: 0.12rem auto 0; padding: 0.42rem 0.62rem 0.5rem; border-radius: 1.2rem 0.18rem 1.2rem 0.18rem; background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 86%, #071526), color-mix(in srgb, var(--panel) 94%, #03070d)); }
@@ -559,4 +557,49 @@
   .role-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.22rem 0.46rem; padding-top: 0.35rem; border-top: 1px solid color-mix(in srgb, var(--gold) 10%, transparent); }
   .role-legend span { color: var(--dim); font: 620 0.42rem/1 system-ui, sans-serif; }
   .role-legend i { margin-right: 0.18rem; color: var(--gold); font-style: normal; }
+
+  @media (max-width: 800px) {
+    .brahmalok-mandala,
+    .tempest-field,
+    .canticle-score { width: 100%; margin-top: 0; }
+    .integrated-heading {
+      grid-template-columns: minmax(0, 1fr) auto 1.4rem;
+      grid-template-rows: auto auto;
+      gap: 0.18rem 0.35rem;
+      min-height: 2.35rem;
+    }
+    .run-score { grid-column: 1; grid-row: 1; }
+    .run-score > strong { font-size: 1.08rem; }
+    .run-score > div { font-size: 0.4rem; }
+    .effect-slot { display: none; }
+    .instrument-title { grid-column: 1; grid-row: 2; padding-left: 0; border-left: 0; }
+    .instrument-title span { font-size: 0.34rem; }
+    .instrument-title strong { margin-top: 0.08rem; font-size: 0.52rem; }
+    .instrument-reading { grid-column: 2; grid-row: 1 / 3; }
+    .instrument-reading small { font-size: 0.34rem; }
+    .instrument-reading b { font-size: 0.68rem; }
+    .instrument-reading em { max-width: 5.6rem; overflow: hidden; font-size: 0.34rem; text-overflow: ellipsis; white-space: nowrap; }
+    .primer-toggle { grid-column: 3; grid-row: 1 / 3; width: 1.25rem; height: 1.25rem; }
+    .instrument-primer {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.26rem 0.4rem;
+      padding: 0.3rem 0.4rem;
+    }
+    .instrument-primer ol { grid-column: 1 / -1; gap: 0.18rem; }
+    .instrument-primer li { align-items: flex-start; font-size: 0.34rem; }
+    .instrument-primer li i { width: 0.7rem; height: 0.7rem; }
+    .instrument-primer p { display: none; }
+    .instrument-primer > button { grid-column: 2; grid-row: 1; }
+    .creation-stage { height: 4.35rem; }
+    .mandala-controls { grid-template-columns: 1fr; gap: 0.28rem; }
+    .creation-modes { grid-template-columns: repeat(4, 1fr); }
+    .creation-modes button { grid-template-columns: auto 1fr; padding: 0.2rem; }
+    .creation-modes button > span { grid-row: auto; font-size: 0.65rem; }
+    .creation-modes small { display: none; }
+    .creation-modes b { font-size: 0.4rem; }
+    .creation-router { gap: 0.2rem; padding-left: 0; padding-top: 0.25rem; border-top: 1px solid color-mix(in srgb, var(--gold) 12%, transparent); border-left: 0; }
+    .creation-router label > span { font-size: 0.36rem; }
+    .creation-router select { padding: 0.2rem 0.3rem; font-size: 0.44rem; }
+    .direction-routes button { font-size: 0.38rem; }
+  }
 </style>

@@ -8,15 +8,18 @@ import { CANTICLE, CANTICLE_V2_PACK } from '../src/content/universes/canticle'
 import {
   CANTICLE_MEASURES,
   advanceF4LawState,
+  brahmalokStatus,
   canticleStatus,
   configureTempestRoute,
   cycleCanticleSlot,
   dischargeTempest,
   prismataStatus,
+  routeBrahmalokKindling,
   retainedF4LawConfiguration,
   routePrismataKindling,
   selectCanticleMeasure,
   selectPrismataRecipe,
+  selectBrahmalokMode,
   selectTempestPath,
   tempestStatus,
 } from '../src/content/universes/f4-runtime'
@@ -59,30 +62,31 @@ test('F4 registers seven complete playable universe packs', () => {
   assert.equal(new Set(PACKS.map(([, legacy]) => legacy.lumen.find(({ id }) => id.endsWith('lumen-epoch'))?.text)).size, 3)
 })
 
-test('Prismata lens recipes reward different optical relationships', () => {
+test('Brahmalok creation modes reward different four-direction relationships', () => {
   const state = {}
   const balancedOwned = Object.fromEntries(Array.from({ length: 18 }, (_, index) => [`u5-kindling-${String(index + 1).padStart(2, '0')}`, 10]))
-  assert.equal(selectPrismataRecipe(state, 1), true)
-  const synthesis = prismataStatus(state, balancedOwned)
-  assert.equal(synthesis.activeBands, 6)
-  assert.equal(synthesis.balance, 1)
-  assert.ok(synthesis.multiplier > 2)
+  assert.equal(selectBrahmalokMode(state, 1), true)
+  const mandala = brahmalokStatus(state, balancedOwned)
+  assert.equal(mandala.activeBands, 4)
+  assert.equal(mandala.balance, 0.8)
+  assert.ok(mandala.multiplier > 2)
 
   assert.equal(selectPrismataRecipe(state, 0), true)
-  const focusedOwned = { ...balancedOwned, 'u5-kindling-01': 500, 'u5-kindling-02': 500, 'u5-kindling-03': 500 }
-  const coherence = prismataStatus(state, focusedOwned)
-  assert.equal(coherence.recipe.id, 'coherence')
-  assert.notEqual(coherence.multiplier, synthesis.multiplier)
+  const focusedOwned = { ...balancedOwned, 'u5-kindling-01': 500, 'u5-kindling-05': 500, 'u5-kindling-09': 500 }
+  const germination = prismataStatus(state, focusedOwned)
+  assert.equal(germination.recipe.id, 'germination')
+  assert.notEqual(germination.multiplier, mandala.multiplier)
 
   assert.equal(selectPrismataRecipe(state, 2), true)
   advanceF4LawState('prismata', state, balancedOwned, 400)
   assert.equal(prismataStatus(state, balancedOwned).fluorescence, 100)
 
-  assert.equal(routePrismataKindling(state, 0, 5), true)
+  assert.equal(routeBrahmalokKindling(state, 0, 3), true)
+  assert.equal(routePrismataKindling(state, 0, 4), false)
   const routed = prismataStatus(state, balancedOwned)
-  assert.equal(routed.routes[0], 5)
-  assert.equal(routed.bands[0], 20)
-  assert.equal(routed.bands[5], 40)
+  assert.equal(routed.routes[0], 3)
+  assert.equal(routed.bands[0], 40)
+  assert.equal(routed.bands[3], 50)
 })
 
 test('Tempest accumulates bounded potential and discharges only through a ready selected path', () => {

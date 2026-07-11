@@ -11,7 +11,7 @@ const CHAMBER_IDS = ['verdance', 'prismata', 'tempest', 'canticle'] as const
 test('Phase 6.2 gives every chamber world a ten-line authored Lumen arc', () => {
   const expectedEpochLanguage = {
     verdance: /Pruning.*(?:cut|memory|seed)/i,
-    prismata: /Refraction.*Facet/i,
+    prismata: /Recomposition.*Folio/i,
     tempest: /Grounding.*Fulgurite/i,
     canticle: /Refrain.*Overtone/i,
   }
@@ -43,16 +43,16 @@ test('each chamber Epoch decision uses native ceremony prose instead of shared s
   assert.doesNotMatch(futureCopySource, /is ready\. Inspect the boundary before committing/)
   assert.deepEqual(decisions.map(({ goText }) => goText), [
     'Open the canopy',
-    'Close the aperture',
+    'Recompose the folio',
     'Complete the path',
     'Let the bar resolve',
   ])
 })
 
-test('Pruning, Refraction, Grounding, and Refrain have distinct semantic cadences', () => {
+test('Pruning, Recomposition, Grounding, and Refrain have distinct semantic cadences', () => {
   const expectedCadence = {
     verdance: /pruning/i,
-    prismata: /refraction.*aperture/i,
+    prismata: /folio-close.*open final interval/i,
     tempest: /grounding.*fulgurite/i,
     canticle: /refrain.*open-rest/i,
   }
@@ -111,5 +111,5 @@ test('Phase 6.5 gives every chamber its own 3–6 hour competent Beacon curve', 
   beaconHours.forEach((hours, index) => {
     assert.ok(hours >= 3 && hours <= 6, `${CHAMBER_IDS[index]} reached its Beacon in ${hours.toFixed(2)}h`)
   })
-  assert.deepEqual(beaconHours, [3.6, 4.7, 4.1, 5.55])
+  assert.deepEqual(beaconHours, [3.6, 3.1, 4.1, 5.55])
 })

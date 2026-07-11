@@ -2,9 +2,9 @@ import { PRISMATA_V2_PACK } from '../../content/universes/prismata'
 import { createFuturePresentation } from '../future-presentation'
 
 export const PRISMATA_PRESENTATION = createFuturePresentation(PRISMATA_V2_PACK, {
-  palette: { primary: '#a68cff', secondary: '#62d8ff', highlight: '#fff8ff', shadow: '#28203f', void: '#070812' },
-  objectPrimitives: ['polygon', 'ribbon', 'arc'],
-  heartPrimitives: ['ellipse', 'polygon', 'ribbon'],
-  pattern: 'labeled optical path, functional aperture, and separated component bands',
-  heartPattern: 'asymmetric lens triplet, hexagonal white aperture, and six patterned wavelength notches',
+  palette: { primary: '#d7a34c', secondary: '#7ebed2', highlight: '#fff0c7', shadow: '#38243a', void: '#080810' },
+  objectPrimitives: ['arc', 'ribbon', 'polygon'],
+  heartPrimitives: ['arc', 'ellipse', 'polygon'],
+  pattern: 'lotus-fiber manuscript, four-direction construction marks, and an intentionally open margin',
+  heartPattern: 'nested lotus whorls around an empty manuscript square with seed, measure, name, and form marks',
 })

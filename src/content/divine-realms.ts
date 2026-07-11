@@ -66,7 +66,7 @@ export const DIVINE_REALM_BY_SAVE_SLOT: ReadonlyMap<DivineRealmPlan['saveSlotUni
   DIVINE_REALMS.map((realm) => [realm.saveSlotUniverseId, realm]),
 )
 
-/** Existing runtime order. Public loka names remain dormant until each replacement ships. */
+/** Existing runtime order. Save-slot IDs stay stable as each public loka replacement ships. */
 export const SAVE_STABLE_STORY_ROUTE = [
   ...RESTORED_UNIVERSE_ROUTE,
   ...DIVINE_REALMS.map(({ saveSlotUniverseId }) => saveSlotUniverseId),

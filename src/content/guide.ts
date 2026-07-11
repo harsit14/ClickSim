@@ -125,7 +125,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     eyebrow: 'different laws, different senses',
     title: 'Universe identities and physics',
     summary: 'A crossing changes far more than color: economy names, living physics, music, clicks, events, collections, lore, and world rendering all belong to the destination.',
-    keywords: ['universe', 'emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle', 'physics', 'tide', 'cohort', 'spectrum', 'charge', 'measure', 'music', 'crossing', 'world'],
+    keywords: ['universe', 'realm', 'emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'prismata', 'tempest', 'canticle', 'physics', 'tide', 'cohort', 'creation', 'mandala', 'charge', 'measure', 'music', 'crossing', 'world'],
     blocks: [
       {
         heading: 'Emberlight',
@@ -144,8 +144,8 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'The five farther worlds',
         paragraphs: [
           'Verdance ages each Kindling through new, rooted, mature, and ancient growth; old cohorts produce more and contribute Memory Seeds during Pruning. Clockwork removes random economics and asks you to inspect deterministic transmission routes and scheduled Maintenance Signals.',
-          'Prismata freely switches between Coherence, White Synthesis, Fluorescence, and Diffraction recipes. Tempest fills a bounded potential meter, then releases it through a chosen Conductor, Supercell, Jetstream, or Stormchaser path. Canticle arranges production into a visible repeating measure where pulses, drones, counterpoint, echoes, and strategic rests all have mechanical roles.',
-          'Every timing or color state has text and shape equivalents. Canticle remains mechanically complete when muted, and Prismata labels bands by geometry and pattern as well as hue.',
+          'Brahmalok is the first loka beyond the restored worlds. Its Lotus of Becoming routes Kindlings through seed, measure, name, and form, then rewards focused germination, balanced mandalas, manuscript memory, or proliferation. Tempest fills a bounded potential meter, then releases it through a chosen Conductor, Supercell, Jetstream, or Stormchaser path. Canticle arranges production into a visible repeating measure where pulses, drones, counterpoint, echoes, and strategic rests all have mechanical roles.',
+          'Every timing and state has text and shape equivalents. Canticle remains mechanically complete when muted, and Brahmalok identifies every creation direction through name, glyph, pattern, position, and quantity.',
         ],
       },
       {
@@ -284,7 +284,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Building each universe’s Vessel',
         paragraphs: [
-          'The Vessel appears after sufficiently vast progress. Every universe owns a different five-part design tied to its local physics: Tidefall seals a pressure ark, Verdance grows a Seed Ark from aged cohorts, Prismata routes every band, Tempest proves a chosen discharge can end, and Canticle composes a chamber with deliberate rests.',
+          'The Vessel appears after sufficiently vast progress. Every destination owns a different five-part design tied to its local law: Tidefall seals a pressure ark, Verdance grows a Seed Ark from aged cohorts, Brahmalok binds a four-direction folio without closing its final margin, Tempest proves a chosen discharge can end, and Canticle composes a chamber with deliberate rests.',
           'Vessel completion is local to the active universe. Parts built in Emberlight remain recorded there, but they do not activate Tidefall’s Ark or any later crossing craft. Requirements, consumed materials, construction actions, and the visible schematic all change with the world.',
         ],
       },

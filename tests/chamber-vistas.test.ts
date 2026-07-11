@@ -27,20 +27,20 @@ test('Verdance canopy dawn requires an ancient cohort and reports the grafted fo
   assert.match(vista?.label ?? '', /active graft/)
 })
 
-test('Prismata resolves white only from six labeled bands under synthesis', () => {
+test('Brahmalok unfolds its vista only from four active directions under Mandala', () => {
   const generatorIds = ids('u5')
   const routes = Object.fromEntries(Array.from({ length: 18 }, (_, index) => [
     `u5-route-${String(index + 1).padStart(2, '0')}`,
-    amountFromNumber(Math.floor(index / 3)),
+    amountFromNumber(index % 4),
   ]))
   const vista = planChamberVista({
     universeId: 'prismata', generatorIds, owned: owned('u5'),
     numericLawState: { ...routes, 'u5-recipe': amountFromNumber(1) },
   })
-  assert.equal(vista?.id, 'white-synthesis')
-  assert.match(vista?.label ?? '', /all six labeled wavelength families/)
+  assert.equal(vista?.id, 'lotus-unfolding')
+  assert.match(vista?.label ?? '', /seed, measure, name, and form/)
   assert.equal(planChamberVista({
-    universeId: 'prismata', generatorIds, owned: owned('u5', 15),
+    universeId: 'prismata', generatorIds, owned: owned('u5', 3),
     numericLawState: { ...routes, 'u5-recipe': amountFromNumber(1) },
   }), null)
 })

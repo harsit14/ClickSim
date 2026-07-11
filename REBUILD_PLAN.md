@@ -413,9 +413,11 @@ Kailash. No live name changes until a replacement passes its full content and ar
 - [x] **9.3 Revelation scene:** implement the one-time post-Beacon Clockwork ceremony,
       replay entry, Forecast Chamber transition, route-seal art, captions, and persisted
       claim. Keep the four recurring Maintenance Signals unchanged.
-- [ ] **9.4 Brahmalok:** replace the `u5` destination completely—18 Kindlings, creation
+- [x] **9.4 Brahmalok:** replace the `u5` destination completely—18 Kindlings, creation
       mandala, Lotus of Becoming, 12 records, story, trials, crossing, audio, five-state
-      objects, Cabinet, vistas, fallbacks, and cultural review—before enabling its name.
+      objects, Cabinet, vistas, fallbacks, and internal cultural-guardrail review—before
+      enabling its name. External Hindu cultural and South Asian art/iconography review
+      remains a public-release gate under `TRIMURTI_REFRAME.md`.
 - [ ] **9.5 Vishnulok:** replace the `u6` destination completely with the Endless Circuit,
       responsive preservation, calm cosmic-ocean composition, 18 Kindlings, 12 records,
       story, trials, crossing, audio, fallbacks, and cultural review.

@@ -524,9 +524,9 @@
   }
   .nova.armed[data-universe='prismata']::after {
     background:
-      linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 13%, transparent) 50%, transparent),
-      repeating-linear-gradient(166deg, transparent 0 11%, color-mix(in srgb, var(--amber) 10%, transparent) 11.4% 12%, transparent 12.4% 22%);
-    clip-path: polygon(0 18%, 48% 0, 100% 18%, 96% 82%, 52% 100%, 0 82%);
+      radial-gradient(circle at 12% 50%, color-mix(in srgb, var(--amber) 14%, transparent), transparent 24%),
+      repeating-linear-gradient(0deg, transparent 0 17%, color-mix(in srgb, var(--gold) 7%, transparent) 17.4% 18%, transparent 18.4% 34%);
+    clip-path: polygon(0 10%, 92% 10%, 100% 22%, 100% 90%, 8% 90%, 0 78%);
   }
   .nova.armed[data-universe='tempest']::after {
     background:
@@ -552,7 +552,7 @@
   .nova.armed[data-universe='tidefall']::before { content: '≈'; border-radius: 58% 42% 58% 42%; }
   .nova.armed[data-universe='verdance']::before { content: '❧'; border-radius: 60% 40% 60% 40%; }
   .nova.armed[data-universe='clockwork']::before { content: '⌁'; outline: 1px dashed color-mix(in srgb, var(--gold) 20%, transparent); outline-offset: 0.16rem; }
-  .nova.armed[data-universe='prismata']::before { content: '◇'; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+  .nova.armed[data-universe='prismata']::before { content: '✤'; border-radius: 54% 46% 54% 46%; outline: 1px dashed color-mix(in srgb, #8ecbe0 26%, transparent); outline-offset: .16rem; }
   .nova.armed[data-universe='tempest']::before { content: 'ϟ'; border-radius: 50% 50% 58% 42%; }
   .nova.armed[data-universe='canticle']::before { content: '◌'; border-style: dashed; border-radius: 50%; }
   .nova.armed .nova-text {

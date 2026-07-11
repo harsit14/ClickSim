@@ -20,9 +20,9 @@ import {
   cycleCanticleSlot,
   dischargeTempest,
   retainedF4LawConfiguration,
-  routePrismataKindling,
+  routeBrahmalokKindling,
   selectCanticleMeasure,
-  selectPrismataRecipe,
+  selectBrahmalokMode,
   selectTempestPath,
 } from '../content/universes/f4-runtime'
 import {
@@ -1100,18 +1100,21 @@ export function tick(dtSeconds: number) {
 /** Free, local reconfiguration for the active F4 world law. */
 export function configureUniverseLaw(index: number): boolean {
   if (game.challenge) return false
-  if (game.activeUniverse === 'prismata') return selectPrismataRecipe(game.numericLawState, index)
+  if (game.activeUniverse === 'prismata') return selectBrahmalokMode(game.numericLawState, index)
   if (game.activeUniverse === 'tempest') return selectTempestPath(game.numericLawState, index)
   if (game.activeUniverse === 'canticle') return selectCanticleMeasure(game.numericLawState, index)
   return false
 }
 
-/** Routes one Prismata Kindling family into one of six labeled wavelength bands. */
-export function configurePrismataRoute(kindlingIndex: number, bandIndex: number): boolean {
+/** Routes one Brahmalok Kindling through seed, measure, name, or form. */
+export function configureBrahmalokDirection(kindlingIndex: number, directionIndex: number): boolean {
   return game.challenge === null && game.activeUniverse === 'prismata'
-    ? routePrismataKindling(game.numericLawState, kindlingIndex, bandIndex)
+    ? routeBrahmalokKindling(game.numericLawState, kindlingIndex, directionIndex)
     : false
 }
+
+/** @deprecated Save-slot compatibility alias. */
+export const configurePrismataRoute = configureBrahmalokDirection
 
 /** Freely binds one Verdance rootstock cohort to one younger scion. */
 export function configureVerdanceGrafting(rootstockIndex: number, scionIndex: number): boolean {

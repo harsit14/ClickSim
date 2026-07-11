@@ -18,7 +18,7 @@ test('the Heart sits at the landscape seam and the canvas draws one universe-col
   assert.deepEqual(heartTargetCenter({ width: 1280, height: 720 }), { x: 640, y: 446.4 })
   assert.match(worldSource, /private drawGround\(\)/)
   assert.match(worldSource, /ctx\.bezierCurveTo\([\s\S]*ctx\.bezierCurveTo\(/)
-  for (const color of ['#221A24', '#0A2432', '#1C2415', '#262019', '#191627', '#1C2633', '#241826']) {
+  for (const color of ['#221A24', '#0A2432', '#1C2415', '#262019', '#171013', '#1C2633', '#241826']) {
     assert.match(worldSource, new RegExp(color, 'i'))
   }
 })

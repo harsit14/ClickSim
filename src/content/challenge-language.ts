@@ -63,10 +63,10 @@ const LEXICONS: Readonly<Record<string, ChallengeLexicon>> = {
     silenceRhythm: 'cadence', silencePlace: 'the unpowered city',
   },
   prismata: {
-    unitSingular: 'instrument', unitPlural: 'instruments', actionVerb: 'align', earnVerb: 'resolve',
-    inputPlural: 'focuses', upgradePlural: 'recipes', productionNoun: 'output', produceVerb: 'produce',
-    functionVerb: 'carry a labeled band', relationshipPlural: 'recipes', manualCurrencyVerb: 'resolved', silenceSound: 'tone',
-    silenceRhythm: 'pulse', silencePlace: 'the dark line',
+    unitSingular: 'form', unitPlural: 'forms', actionVerb: 'unfold', earnVerb: 'unfold',
+    inputPlural: 'marks', upgradePlural: 'revisions', productionNoun: 'possibility', produceVerb: 'contribute',
+    functionVerb: 'answer a creation direction', relationshipPlural: 'mandala relations', manualCurrencyVerb: 'unfolded', silenceSound: 'page-breath',
+    silenceRhythm: 'fourfold cycle', silencePlace: 'the unwritten margin',
   },
   tempest: {
     unitSingular: 'formation', unitPlural: 'formations', actionVerb: 'form', earnVerb: 'ground',

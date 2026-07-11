@@ -40,13 +40,13 @@
       <div class="crown crown-left"><i></i><i></i><i></i></div>
       <div class="crown crown-right"><i></i><i></i><i></i></div>
       <div class="graft-thread"></div>
-    {:else if vista.id === 'white-synthesis'}
-      <div class="synthesis-rays">
-        <i></i><i></i><i></i><i></i><i></i><i></i>
+    {:else if vista.id === 'lotus-unfolding'}
+      <div class="unfolding-dawn"></div>
+      <div class="unfolding-courts"><i></i><i></i><i></i><i></i></div>
+      <div class="unfolding-lotus">
+        {#each Array.from({ length: 4 }) as _, index}<i style={`--petal:${index}`}></i>{/each}
       </div>
-      <div class="synthesis-focus"></div>
-      <div class="synthesis-beam"></div>
-      <div class="synthesis-screen"><i></i></div>
+      <div class="unfolding-center"></div>
     {:else if vista.id === 'full-discharge'}
       <div class="discharge-flash"></div>
       <div class="discharge-bolt"><i></i><i></i><i></i></div>
@@ -110,19 +110,14 @@
   .crown i:nth-child(3) { right: 4%; transform: rotate(-4deg) scale(0.8); }
   .graft-thread { left: 50%; top: 38%; width: 1px; height: 42%; background: linear-gradient(var(--gold), color-mix(in srgb, var(--amber) 12%, transparent)); box-shadow: 0 0 1rem color-mix(in srgb, var(--gold) 36%, transparent); }
 
-  /* Prismata — six named inputs only become white after convergence. */
-  .white-synthesis .synthesis-rays { inset: 0; }
-  .synthesis-rays i { left: 8%; top: calc(34% + var(--ray) * 6.6%); width: 43%; height: 2px; transform-origin: right center; transform: rotate(calc((var(--ray) - 2.5) * -5.4deg)); background: linear-gradient(90deg, transparent, var(--ray-color)); box-shadow: 0 0 0.6rem var(--ray-color); animation: spectral-arrival 2.8s ease-in-out infinite alternate; animation-delay: calc(var(--ray) * -0.24s); }
-  .synthesis-rays i:nth-child(1) { --ray: 0; --ray-color: #ff6576; }
-  .synthesis-rays i:nth-child(2) { --ray: 1; --ray-color: #ffad55; }
-  .synthesis-rays i:nth-child(3) { --ray: 2; --ray-color: #74e89e; }
-  .synthesis-rays i:nth-child(4) { --ray: 3; --ray-color: #61ceff; }
-  .synthesis-rays i:nth-child(5) { --ray: 4; --ray-color: #a986ff; }
-  .synthesis-rays i:nth-child(6) { --ray: 5; --ray-color: #ef8fff; }
-  .synthesis-focus { left: 51%; top: 53%; width: 3.8rem; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, white, color-mix(in srgb, white 72%, transparent) 18%, transparent 66%); box-shadow: 0 0 2.8rem white; animation: synthesis-focus 2.2s ease-in-out infinite alternate; }
-  .synthesis-beam { left: 51%; right: 8%; top: calc(53% - 0.34rem); height: 0.68rem; background: linear-gradient(90deg, white, color-mix(in srgb, #e8f8ff 72%, transparent)); clip-path: polygon(0 35%, 100% 0, 100% 100%, 0 65%); filter: drop-shadow(0 0 0.8rem white); }
-  .synthesis-screen { right: 7%; top: 30%; bottom: 24%; width: 1.5rem; border: 1px solid color-mix(in srgb, white 44%, transparent); background: color-mix(in srgb, white 7%, transparent); }
-  .synthesis-screen i { left: -0.4rem; top: 50%; width: 2.3rem; height: 2.3rem; transform: translateY(-50%); border-radius: 50%; background: radial-gradient(circle, white, color-mix(in srgb, white 20%, transparent) 44%, transparent 68%); }
+  /* Brahmalok — all four creation directions open a lotus without occupying its center. */
+  .lotus-unfolding .unfolding-dawn { inset: 0; background: radial-gradient(ellipse at 50% 56%, color-mix(in srgb, var(--amber) 20%, transparent), transparent 46%); }
+  .unfolding-courts { inset: 0; }
+  .unfolding-courts i { left: calc(50% - 3rem); top: calc(50% - 1.5rem); width: 6rem; height: 3rem; border: 1px solid color-mix(in srgb, var(--gold) 24%, transparent); transform: rotate(calc(var(--court, 0) * 90deg)) translateY(-8rem); transform-origin: 50% 1.5rem; background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--gold) 5%, transparent) 0 1px, transparent 1px 22%); }
+  .unfolding-courts i:nth-child(1) { --court: 0; } .unfolding-courts i:nth-child(2) { --court: 1; } .unfolding-courts i:nth-child(3) { --court: 2; } .unfolding-courts i:nth-child(4) { --court: 3; }
+  .unfolding-lotus { left: 50%; top: 56%; width: min(33vw, 27rem); aspect-ratio: 1; transform: translate(-50%, -50%); animation: lotus-breathe 5.6s ease-in-out infinite alternate; }
+  .unfolding-lotus i { left: 50%; top: 50%; width: 24%; height: 47%; transform-origin: 0 0; transform: rotate(calc(var(--petal) * 90deg)) translate(-50%, -91%); border: 1px solid color-mix(in srgb, var(--gold) 36%, transparent); border-radius: 78% 18% 78% 18%; background: linear-gradient(180deg, color-mix(in srgb, var(--amber) 10%, transparent), transparent 74%); }
+  .unfolding-center { left: 50%; top: 56%; width: 7.2rem; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(45deg); border: 1px dashed color-mix(in srgb, #8ecbe0 38%, transparent); background: transparent; box-shadow: inset 0 0 2rem color-mix(in srgb, var(--bg) 42%, transparent); }
 
   /* Tempest — the stored field resolves as one ground-seeking discharge. */
   .full-discharge .discharge-flash { inset: 0; background: radial-gradient(ellipse at 50% 49%, color-mix(in srgb, white 14%, transparent), transparent 48%); animation: storm-flash 4.6s steps(1, end) infinite; }
@@ -151,7 +146,7 @@
   .cathedral-rest { left: 50%; top: 53%; width: 5.4rem; aspect-ratio: 1; transform: translate(-50%, -50%); border: 1px dashed color-mix(in srgb, white 46%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--bg) 82%, transparent); box-shadow: 0 0 2.8rem var(--bg); }
 
   [data-vista-quality='low'] .dawn-rays i:nth-child(n+4),
-  [data-vista-quality='low'] .synthesis-screen,
+  [data-vista-quality='low'] .unfolding-courts,
   [data-vista-quality='low'] .ring-b,
   [data-vista-quality='low'] .arch-b { display: none; }
   .motion-paused,
@@ -159,8 +154,7 @@
 
   @keyframes dawn-open { to { opacity: 0.72; transform: translateX(-50%) scaleX(1.04); } }
   @keyframes dawn-turn { to { transform: rotate(360deg); } }
-  @keyframes spectral-arrival { to { opacity: 0.58; filter: brightness(1.35); } }
-  @keyframes synthesis-focus { to { transform: translate(-50%, -50%) scale(1.16); opacity: 0.74; } }
+  @keyframes lotus-breathe { to { transform: translate(-50%, -50%) scale(1.045); opacity: .78; } }
   @keyframes storm-flash { 0%, 8%, 11%, 100% { opacity: 0.16; } 3%, 10% { opacity: 1; } }
   @keyframes bolt-hold { 0%, 8%, 11%, 100% { opacity: 0.34; } 3%, 10% { opacity: 1; } }
   @keyframes thunder-expand { from { opacity: 0.48; transform: translate(-50%, -50%) scale(0.35); } to { opacity: 0; transform: translate(-50%, -50%) scale(1.35); } }
@@ -168,7 +162,7 @@
 
   @media (max-width: 680px) {
     .crown { width: 48%; }
-    .synthesis-rays i { left: 3%; width: 48%; }
+    .unfolding-lotus { width: 58vw; }
     .arch-a { width: 84vw; }
     .arch-b { width: 61vw; }
     .arch-c { width: 37vw; }

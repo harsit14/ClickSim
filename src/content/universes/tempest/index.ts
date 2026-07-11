@@ -114,7 +114,7 @@ export const TEMPEST_SPEC: FutureUniverseSpec = {
   audioFamilies: ['dry static snap', 'rising pressure interval', 'contained electrical crack', 'distant storm call', 'grounding leader-to-fulgurite cadence'],
   silenceState: 'Charge percentage, notched meter, path shape, countdown, and captions carry every mechanical signal.',
   fatiguePolicy: 'Electrical highs are tightly limited; overlapping discharges duck rain and thunder beds; no cue exceeds the semantic loudness ceiling.',
-  routeGlyph: '☈', routeArrival: 'a calm aperture opens inside a storm whose every leader points away from the Heart', unlockText: 'light Prismata’s Beacon',
+  routeGlyph: '☈', routeArrival: 'a calm aperture opens inside a storm whose every leader points away from the Heart', unlockText: 'open Brahmalok’s final lotus passage',
   beaconName: 'Auroral Column Beacon', beaconSilhouette: 'stable vertical auroral column rising from a branching fulgurite into two magnetic loops', beaconReward: 5,
   nonColorSignals: [
     { id: 'u6-building', text: 'potential building', shape: 'open segmented ring', pattern: 'ascending numbered notches' },

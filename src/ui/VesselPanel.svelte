@@ -342,12 +342,12 @@
   [data-motif='clock-engine'] .piece-3 { width: 0.35rem; height: 4.7rem; transform: translate(-50%, -50%) rotate(32deg); }
   [data-motif='clock-engine'] .piece-4 { left: 66%; top: 35%; width: 2rem; height: 2.4rem; border-radius: 0.2rem; }
 
-  [data-motif='spectrum-prism'] .motif-field { inset: 11% 29% 21%; border-radius: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
-  [data-motif='spectrum-prism'] .piece-0 { width: 7rem; height: 5.8rem; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
-  [data-motif='spectrum-prism'] .piece-1 { left: 72%; width: 7rem; height: 1.4rem; clip-path: polygon(0 35%, 100% 0, 100% 100%, 0 65%); }
-  [data-motif='spectrum-prism'] .piece-2 { width: 2.1rem; height: 2.1rem; transform: translate(-50%, -50%) rotate(45deg); }
-  [data-motif='spectrum-prism'] .piece-3 { left: 27%; width: 6rem; height: 0.55rem; }
-  [data-motif='spectrum-prism'] .piece-4 { top: 72%; width: 3.4rem; height: 1.1rem; border-radius: 999px; }
+  [data-motif='spectrum-prism'] .motif-field { inset: 8% 24% 18%; border-radius: 48% 48% 12% 12%; background: repeating-linear-gradient(0deg, transparent 0 .7rem, hsla(var(--vessel-hue),70%,74%,.07) .72rem .76rem); }
+  [data-motif='spectrum-prism'] .piece-0 { width: 7.5rem; height: 4.9rem; border-radius: 55% 45% 15% 15%; }
+  [data-motif='spectrum-prism'] .piece-1 { left: 67%; top: 48%; width: 5.5rem; height: 3.7rem; border-radius: 60% 40% 60% 40%; }
+  [data-motif='spectrum-prism'] .piece-2 { width: 2rem; height: 2rem; transform: translate(-50%, -50%) rotate(45deg); border-style: dashed; }
+  [data-motif='spectrum-prism'] .piece-3 { left: 33%; width: 5.5rem; height: .45rem; }
+  [data-motif='spectrum-prism'] .piece-4 { top: 70%; width: 3.8rem; height: 1.25rem; border-radius: 70% 30% 70% 30%; }
 
   [data-motif='storm-conductor'] .motif-field { inset: 22% 22% 30%; border-radius: 50% 50% 42% 42%; }
   [data-motif='storm-conductor'] .piece-0 { top: 39%; width: 9rem; height: 3.3rem; border-radius: 55% 55% 38% 38%; }

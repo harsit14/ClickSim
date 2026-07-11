@@ -721,6 +721,7 @@
     to { opacity: 1; transform: translateY(0); }
   }
   @media (max-width: 800px) {
+    .top-stack.future-law { width: calc(100vw - 1rem); }
     .cohesion-stack {
       top: 21.5rem;
       left: 4rem;
@@ -744,7 +745,8 @@
   }
   :global(html[data-lumen-history='open']) .cohesion-stack { opacity: 0; pointer-events: none; }
   @media (max-width: 650px) {
-    .top-stack { width: calc(100vw - 1rem); }
+    .top-stack,
+    .top-stack.future-law { width: calc(100vw - 1rem); }
     .cohesion-stack { right: 0.45rem; max-height: 11vh; }
   }
   @media (max-width: 380px) {

@@ -159,14 +159,13 @@
   [data-native-universe='verdance'] .chamber-frame { stroke-dasharray: 1.2 1.8; }
   [data-native-universe='verdance'] .chamber-accent { stroke: #d9f3a9; }
   [data-native-universe='prismata'] {
-    border-radius: 0;
-    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    border-radius: 48% 48% 42% 42%;
     background:
-      linear-gradient(135deg, rgba(255,255,255,0.08), transparent 42%),
-      linear-gradient(45deg, hsla(var(--record-hue), 64%, 28%, 0.28), rgba(6, 5, 19, 0.98));
+      repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,231,178,.035) 6px 7px),
+      radial-gradient(circle, hsla(var(--record-hue), 54%, 30%, 0.24), rgba(10, 7, 15, 0.98) 72%);
   }
-  [data-native-universe='prismata'] .chamber-frame { stroke: rgba(238, 232, 255, 0.28); }
-  [data-native-universe='prismata'] .chamber-accent { stroke: #ffffff; animation-timing-function: steps(4, end); }
+  [data-native-universe='prismata'] .chamber-frame { stroke: rgba(255, 235, 195, 0.28); stroke-dasharray: 1.2 1.4; }
+  [data-native-universe='prismata'] .chamber-accent { stroke: #8ecbe0; animation-timing-function: ease-in-out; }
   [data-native-universe='tempest'] {
     border-radius: 52% 48% 24% 28%;
     background:

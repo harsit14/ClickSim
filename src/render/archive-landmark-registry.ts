@@ -70,9 +70,9 @@ const CLOCKWORK_ARCHIVE_LANDMARKS = descriptors(
 
 const PRISMATA_ARCHIVE_LANDMARKS = descriptors(
   Array.from({ length: 12 }, (_value, index) => `u5-archive-${String(index + 1).padStart(2, '0')}`),
-  'Spectrum Vault optic',
-  'Visible Spectrum Vault landmark',
-  [['prismata-separation', 'Separation optical array'], ['prismata-transmission', 'Transmission lens array'], ['prismata-reunion', 'Reunion synthesis array']],
+  'Archive of First Forms record',
+  'Visible Archive of First Forms landmark',
+  [['prismata-first-thought', 'First Thought writing court'], ['prismata-given-form', 'Given Form workshop'], ['prismata-open-future', 'Open Future folio garden']],
 )
 
 const TEMPEST_ARCHIVE_LANDMARKS = descriptors(

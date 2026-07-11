@@ -68,11 +68,11 @@ export type ClockworkTypeFixture = AssertPack<UniverseFixture<
 
 export type PrismataTypeFixture = AssertPack<UniverseFixture<
   'prismata',
-  'Chroma',
-  'White Lens',
-  'Refraction',
-  'Facets',
-  'Spectrum Vault'
+  'Possibility',
+  'Lotus of Becoming',
+  'Recomposition',
+  'Folios',
+  'Archive of First Forms'
 >>
 
 export type TempestTypeFixture = AssertPack<UniverseFixture<

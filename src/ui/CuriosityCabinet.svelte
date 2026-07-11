@@ -89,10 +89,10 @@
       action: 'file', past: 'filed', heldLabel: 'ratified', sleepingLabel: 'unfiled', revealVerb: 'file', thresholdNoun: 'lifetime Ticks',
     },
     prismata: {
-      seal: '◈', fieldLabel: 'labeled spectrum bench', fieldTitle: 'Difference stays visible', fieldDescription: 'Separation, transmission, and reunion remain distinct even when the bench resolves white.',
-      countLabel: 'resolved', collectionLabel: 'band', resonanceLabel: 'spectral coherence', completedLabel: 'bands coherent', hiddenShelfTitle: 'An Unlit Band', hiddenShelfCopy: 'The detector holds a labeled place for a wavelength it cannot yet resolve.', unknownReward: 'unknown relationship',
-      nearClassification: 'unresolved spectral trace', emptyClassification: 'no exposure recorded', nearName: 'Unfocused instrument', emptyName: 'Dark wavelength', nearFlavor: 'The trace is coherent enough to resolve.', emptyFlavor: 'Invisible does not mean absent; the label remains.',
-      action: 'resolve', past: 'resolved', heldLabel: 'resolved', sleepingLabel: 'unlit', revealVerb: 'resolve', thresholdNoun: 'lifetime Chroma',
+      seal: '✤', fieldLabel: 'fourfold manuscript court', fieldTitle: 'Every first form keeps a margin', fieldDescription: 'First thought, given form, and open future remain revisable around an unoccupied lotus center.',
+      countLabel: 'encountered', collectionLabel: 'folio', resonanceLabel: 'creative relation', completedLabel: 'folios open', hiddenShelfTitle: 'An Unwritten Folio', hiddenShelfCopy: 'Ruled margins wait without demanding an authorized first sentence.', unknownReward: 'unknown possibility',
+      nearClassification: 'unread first-form record', emptyClassification: 'no folio encountered', nearName: 'Unread margin', emptyName: 'Unwritten leaf', nearFlavor: 'The record is ready to be encountered without becoming property.', emptyFlavor: 'A blank margin is protected possibility, not missing inventory.',
+      action: 'encounter', past: 'encountered', heldLabel: 'read', sleepingLabel: 'unwritten', revealVerb: 'encounter', thresholdNoun: 'lifetime Possibility',
     },
     tempest: {
       seal: 'ϟ', fieldLabel: 'forecast wall', fieldTitle: 'Every path leaves evidence', fieldDescription: 'Formation, discharge, and aftermath are logged as one weather system with no hidden strike.',
@@ -314,7 +314,7 @@
                 {:else if owned && c.kind === 'letter'}
                   <div class="special letter">
                     <button class="small" aria-expanded={letterOpen} onclick={() => (letterOpen = !letterOpen)}>
-                      {letterOpen ? 'close archive record' : cabinet.id === 'tidefall' ? 'decode tide record' : 'decode spectral record'}
+                      {letterOpen ? 'close archive record' : cabinet.id === 'tidefall' ? 'decode tide record' : cabinet.id === 'prismata' ? 'read first-form record' : 'decode archive record'}
                     </button>
                     {#if letterOpen}
                       <p>{cabinet.archiveRecord}</p>
@@ -598,10 +598,10 @@
     background-size: 1.1rem 1.1rem, 1.1rem 1.1rem, auto;
   }
   .cabinet.prismata {
-    --archive-accent: #c6b4ff;
-    --archive-surface: #111027;
-    --archive-bg: linear-gradient(122deg, transparent 0 42%, rgba(255,255,255,0.035) 42.2% 42.5%, transparent 42.8%), linear-gradient(58deg, transparent 0 59%, rgba(167,139,255,0.04) 59.2% 59.6%, transparent 59.8%), linear-gradient(145deg, rgba(22, 19, 49, 0.99), rgba(6, 6, 18, 0.985));
-    --archive-header: linear-gradient(180deg, rgba(27, 23, 56, 0.995), rgba(13, 11, 34, 0.98));
+    --archive-accent: #e2b35f;
+    --archive-surface: #171019;
+    --archive-bg: repeating-linear-gradient(0deg, transparent 0 3.1rem, rgba(255,231,178,.025) 3.1rem 3.15rem), radial-gradient(circle at 50% 7%, rgba(215,163,76,.14), transparent 33%), linear-gradient(145deg, rgba(32, 23, 31, 0.99), rgba(7, 7, 15, 0.985));
+    --archive-header: linear-gradient(180deg, rgba(37, 27, 34, 0.995), rgba(17, 13, 22, 0.98));
   }
   .cabinet.tempest {
     --archive-accent: #9bdfff;

@@ -12,7 +12,7 @@
   import { isZeroAmount } from '../core/numeric/amount'
   import {
     canticleStatus,
-    prismataStatus,
+    brahmalokStatus,
     tempestStatus,
   } from '../content/universes/f4-runtime'
 
@@ -25,7 +25,7 @@
   const clickRate = $derived(recentClickRatePerSec())
   const tidefall = $derived(pack.id === 'tidefall')
   const verdance = $derived(pack.id === 'verdance')
-  const prismata = $derived(pack.id === 'prismata' ? prismataStatus(game.numericLawState, game.owned) : null)
+  const brahmalok = $derived(pack.id === 'prismata' ? brahmalokStatus(game.numericLawState, game.owned) : null)
   const tempest = $derived(pack.id === 'tempest' ? tempestStatus(game.numericLawState) : null)
   const canticle = $derived(pack.id === 'canticle' ? canticleStatus(game.numericLawState, game.owned, now) : null)
   const tide = $derived(universeRateMult(game, now))
@@ -82,11 +82,11 @@
         </span>
         <strong>×{growth.multiplier.toFixed(2)}</strong>
       </div>
-    {:else if prismata}
-      <div class="law-state prismata" aria-label={`${prismata.recipe.name}; ${prismata.activeBands} of 6 bands active; production ×${prismata.multiplier.toFixed(2)}`}>
-        <span>{prismata.recipe.glyph} {prismata.recipe.name}</span>
-        <i aria-hidden="true">{prismata.activeBands}/6 bands</i>
-        <strong>×{prismata.multiplier.toFixed(2)}</strong>
+    {:else if brahmalok}
+      <div class="law-state prismata" aria-label={`${brahmalok.recipe.name}; ${brahmalok.activeBands} of 4 creation directions active; production ×${brahmalok.multiplier.toFixed(2)}`}>
+        <span>{brahmalok.recipe.glyph} {brahmalok.recipe.name}</span>
+        <i aria-hidden="true">{brahmalok.activeBands}/4 directions</i>
+        <strong>×{brahmalok.multiplier.toFixed(2)}</strong>
       </div>
     {:else if tempest}
       <div class="law-state tempest" aria-label={`${tempest.path.name}; ${Math.round(tempest.charge)} percent charge; production ×${tempest.multiplier.toFixed(2)}`}>

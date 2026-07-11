@@ -80,7 +80,7 @@ const GROUND_COLORS = {
   tidefall: '#0A2432',
   verdance: '#1C2415',
   clockwork: '#262019',
-  prismata: '#191627',
+  prismata: '#171013',
   tempest: '#1C2633',
   canticle: '#241826',
 } as const
@@ -375,7 +375,7 @@ export class World {
       return { c0: '255, 244, 210', c1: '239, 199, 116', c2: '194, 135, 62', c3: '105, 72, 42', halo: '216, 168, 78', mid: '118, 143, 158' }
     }
     if (game.activeUniverse === 'prismata') {
-      return { c0: '255, 252, 255', c1: '215, 198, 255', c2: '156, 116, 239', c3: '66, 45, 126', halo: '166, 140, 255', mid: '96, 197, 230' }
+      return { c0: '255, 244, 207', c1: '231, 196, 128', c2: '196, 139, 76', c3: '91, 59, 56', halo: '218, 166, 80', mid: '103, 166, 189' }
     }
     if (game.activeUniverse === 'tempest') {
       return { c0: '235, 252, 255', c1: '151, 221, 246', c2: '71, 155, 213', c3: '35, 73, 126', halo: '112, 201, 238', mid: '103, 121, 222' }
@@ -1617,20 +1617,19 @@ export class World {
       } else if (game.activeUniverse === 'prismata') {
         ctx.save()
         ctx.translate(c.x, c.y)
-        ctx.strokeStyle = `rgba(${pal.c0}, 0.7)`
-        ctx.lineWidth = 1.3
-        ctx.beginPath()
-        ctx.ellipse(0, 0, r * 0.7, r * 1.04, -0.18, 0, Math.PI * 2)
-        ctx.stroke()
-        ctx.beginPath()
-        ctx.ellipse(0, 0, r * 0.7, r * 1.04, 0.18, 0, Math.PI * 2)
-        ctx.stroke()
-        for (let band = -2; band <= 2; band++) {
+        ctx.strokeStyle = `rgba(${pal.c0}, 0.66)`
+        ctx.lineWidth = 1.15
+        for (let petal = 0; petal < 8; petal++) {
+          const angle = (petal / 8) * Math.PI * 2
+          ctx.save()
+          ctx.rotate(angle)
           ctx.beginPath()
-          ctx.moveTo(r * 0.55, band * r * 0.16)
-          ctx.lineTo(r * 1.2, band * r * 0.28)
+          ctx.ellipse(0, -r * 0.55, r * 0.22, r * 0.52, 0, 0, Math.PI * 2)
           ctx.stroke()
+          ctx.restore()
         }
+        ctx.strokeStyle = `rgba(${pal.mid}, 0.54)`
+        ctx.strokeRect(-r * 0.19, -r * 0.19, r * 0.38, r * 0.38)
         ctx.restore()
       } else if (game.activeUniverse === 'tempest') {
         ctx.save()

@@ -194,12 +194,15 @@
           {/each}
         </div>
       {:else if pack.id === 'prismata'}
-        <div class="prismata-darkroom"></div>
-        <div class="prismata-aperture"></div>
-        <div class="prismata-world-prism"></div>
-        <div class="prismata-spectrum"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="prismata-detector"></div>
-        <div class="prismata-caustic"></div>
+        <div class="brahmalok-dawn"></div>
+        <div class="brahmalok-manuscript"></div>
+        <div class="brahmalok-rivers"><i></i><i></i><i></i><i></i></div>
+        <div class="brahmalok-courts"><i></i><i></i><i></i><i></i></div>
+        <div class="brahmalok-lotus">
+          {#each Array.from({ length: 12 }) as _, index}<i style={`--petal-index:${index}`}></i>{/each}
+          <b></b><span></span>
+        </div>
+        <div class="brahmalok-script"><i></i><i></i><i></i><i></i><i></i></div>
       {:else if pack.id === 'tempest'}
         <div class="tempest-depth"></div>
         <div class="tempest-anvil"><i></i><i></i><i></i></div>
@@ -354,98 +357,23 @@
     inset: 0;
   }
 
-  /* Prismata: one darkroom-scale prism separates a source into named spatial rays. */
-  .prismata-darkroom {
-    position: absolute;
-    inset: 18% 5% 10%;
-    background:
-      linear-gradient(90deg, color-mix(in srgb, var(--bg) 88%, transparent), transparent 30% 72%, color-mix(in srgb, var(--bg) 78%, transparent)),
-      repeating-linear-gradient(0deg, transparent 0 4.8rem, color-mix(in srgb, var(--gold) 3%, transparent) 4.85rem 4.9rem);
-    border-top: 1px solid color-mix(in srgb, var(--gold) 9%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--gold) 9%, transparent);
-    clip-path: polygon(3% 0, 97% 0, 100% 8%, 100% 92%, 97% 100%, 3% 100%, 0 92%, 0 8%);
-  }
-  .prismata-aperture {
-    position: absolute;
-    left: 11%;
-    top: 53%;
-    width: 3.2rem;
-    height: 10rem;
-    transform: translateY(-50%);
-    background: linear-gradient(90deg, color-mix(in srgb, var(--panel) 92%, transparent), color-mix(in srgb, var(--gold) 11%, transparent));
-    border: 1px solid color-mix(in srgb, var(--gold) 22%, transparent);
-    clip-path: polygon(0 0, 100% 8%, 65% 42%, 65% 58%, 100% 92%, 0 100%);
-  }
-  .prismata-aperture::after {
-    content: '';
-    position: absolute;
-    left: 62%;
-    top: 48%;
-    width: min(24vw, 19rem);
-    height: 2px;
-    background: white;
-    box-shadow: 0 0 1rem white;
-  }
-  .prismata-world-prism {
-    position: absolute;
-    left: 48%;
-    top: 53%;
-    width: min(18vw, 14rem);
-    aspect-ratio: 1.08;
-    transform: translate(-50%, -50%);
-    clip-path: polygon(50% 0, 100% 100%, 0 100%);
-    background: linear-gradient(138deg, color-mix(in srgb, white 16%, transparent), color-mix(in srgb, var(--amber) 17%, transparent) 50%, color-mix(in srgb, var(--gold) 5%, transparent));
-    filter: drop-shadow(0 0 2.4rem color-mix(in srgb, var(--amber) 18%, transparent));
-  }
-  .prismata-world-prism::after {
-    content: '';
-    position: absolute;
-    inset: 2px;
-    clip-path: inherit;
-    background: color-mix(in srgb, var(--bg) 72%, transparent);
-  }
-  .prismata-spectrum { position: absolute; inset: 0; }
-  .prismata-spectrum i {
-    --ray-color: var(--gold);
-    position: absolute;
-    left: 52%;
-    top: 53%;
-    width: 43%;
-    height: 1px;
-    transform: rotate(calc((var(--offset, 0) - 2.5) * 5deg));
-    transform-origin: left center;
-    background: linear-gradient(90deg, var(--ray-color), color-mix(in srgb, var(--ray-color) 18%, transparent));
-    box-shadow: 0 0 0.55rem var(--ray-color);
-    opacity: 0.5;
-  }
-  .prismata-spectrum i:nth-child(1) { --offset: 0; --ray-color: #ff6f72; }
-  .prismata-spectrum i:nth-child(2) { --offset: 1; --ray-color: #ffb95f; }
-  .prismata-spectrum i:nth-child(3) { --offset: 2; --ray-color: #7ce5a2; }
-  .prismata-spectrum i:nth-child(4) { --offset: 3; --ray-color: #62c9ff; }
-  .prismata-spectrum i:nth-child(5) { --offset: 4; --ray-color: #ba91ff; }
-  .prismata-spectrum i:nth-child(6) { --offset: 5; --ray-color: #f4eaff; }
-  .prismata-detector {
-    position: absolute;
-    right: 8%;
-    top: 31%;
-    bottom: 25%;
-    width: 1.4rem;
-    border-left: 2px solid color-mix(in srgb, white 58%, transparent);
-    border-right: 1px solid color-mix(in srgb, var(--gold) 18%, transparent);
-    background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--gold) 9%, transparent) 0 1px, transparent 1px 12%);
-    box-shadow: -1rem 0 2.4rem color-mix(in srgb, var(--amber) 7%, transparent);
-  }
-  .prismata-caustic {
-    position: absolute;
-    left: 48%;
-    top: 53%;
-    width: min(29vw, 24rem);
-    aspect-ratio: 1;
-    transform: translate(-50%, -50%);
-    background: radial-gradient(circle, color-mix(in srgb, var(--gold) 12%, transparent), transparent 64%);
-    -webkit-mask: conic-gradient(from 30deg, #000, transparent 16%, #000 32%, transparent 48%, #000 64%, transparent 80%, #000);
-    mask: conic-gradient(from 30deg, #000, transparent 16%, #000 32%, transparent 48%, #000 64%, transparent 80%, #000);
-  }
+  /* Brahmalok: libraries and making courts unfold from one unoccupied lotus center. */
+  .brahmalok-dawn { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 68%, color-mix(in srgb, var(--amber) 14%, transparent), transparent 38%), linear-gradient(180deg, color-mix(in srgb, #587a98 7%, transparent), transparent 46%); }
+  .brahmalok-manuscript { position: absolute; left: 7%; right: 7%; top: 22%; bottom: 9%; border: 1px solid color-mix(in srgb, var(--gold) 9%, transparent); border-radius: 46% 46% 2rem 2rem; background: repeating-linear-gradient(0deg, transparent 0 3.2rem, color-mix(in srgb, var(--gold) 3%, transparent) 3.25rem 3.3rem); clip-path: polygon(8% 0, 92% 0, 100% 12%, 100% 100%, 0 100%, 0 12%); }
+  .brahmalok-manuscript::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: linear-gradient(transparent, color-mix(in srgb, var(--gold) 12%, transparent), transparent); }
+  .brahmalok-rivers { position: absolute; inset: 0; }
+  .brahmalok-rivers i { position: absolute; left: 50%; top: 59%; width: 44%; height: 1px; transform-origin: left center; background: linear-gradient(90deg, color-mix(in srgb, #83c8dd 24%, transparent), transparent); }
+  .brahmalok-rivers i:nth-child(1) { transform: rotate(12deg); } .brahmalok-rivers i:nth-child(2) { transform: rotate(168deg); } .brahmalok-rivers i:nth-child(3) { transform: rotate(42deg); } .brahmalok-rivers i:nth-child(4) { transform: rotate(138deg); }
+  .brahmalok-courts { position: absolute; inset: 0; }
+  .brahmalok-courts i { position: absolute; width: clamp(5rem, 9vw, 8rem); aspect-ratio: 1.45; border: 1px solid color-mix(in srgb, var(--gold) 15%, transparent); background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--amber) 5%, transparent) 0 1px, transparent 1px 22%); clip-path: polygon(10% 0, 90% 0, 100% 24%, 100% 100%, 0 100%, 0 24%); }
+  .brahmalok-courts i:nth-child(1) { left: 15%; top: 33%; } .brahmalok-courts i:nth-child(2) { right: 15%; top: 33%; transform: scaleX(-1); } .brahmalok-courts i:nth-child(3) { left: 20%; bottom: 14%; transform: scale(.78); } .brahmalok-courts i:nth-child(4) { right: 20%; bottom: 14%; transform: scale(-.78,.78); }
+  .brahmalok-lotus { position: absolute; left: 50%; top: 59%; width: min(27vw, 22rem); aspect-ratio: 1; transform: translate(-50%, -50%); filter: drop-shadow(0 0 2.4rem color-mix(in srgb, var(--amber) 15%, transparent)); }
+  .brahmalok-lotus > i { --petal-angle: calc(var(--petal-index) * 30deg); position: absolute; left: 50%; top: 50%; width: 17%; height: 42%; transform-origin: 0 0; transform: rotate(var(--petal-angle)) translate(-50%, -86%); border: 1px solid color-mix(in srgb, var(--gold) 42%, transparent); border-radius: 70% 18% 70% 18%; background: linear-gradient(180deg, color-mix(in srgb, var(--amber) 12%, transparent), transparent 70%); }
+  .brahmalok-lotus b { position: absolute; inset: 31%; border: 1px solid color-mix(in srgb, var(--amber) 50%, transparent); border-radius: 50%; }
+  .brahmalok-lotus span { position: absolute; inset: 42%; border: 1px dashed color-mix(in srgb, #8ecbe0 48%, transparent); background: color-mix(in srgb, var(--bg) 88%, transparent); transform: rotate(45deg); }
+  .brahmalok-script { position: absolute; left: 8%; right: 8%; bottom: 6%; height: 3rem; display: flex; justify-content: center; gap: 3.5%; opacity: .42; }
+  .brahmalok-script i { width: 12%; border-top: 1px solid color-mix(in srgb, var(--gold) 24%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--amber) 12%, transparent); transform: skewX(-16deg); }
+  .motion-paused .brahmalok-lotus { filter: none; }
 
   /* Tempest: a vertical convective tower with separated charge and a branching leader. */
   .tempest-depth { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 31%, color-mix(in srgb, var(--amber) 12%, transparent), transparent 42%), linear-gradient(180deg, color-mix(in srgb, var(--gold) 4%, transparent), transparent 42% 68%, color-mix(in srgb, var(--panel) 30%, transparent)); }

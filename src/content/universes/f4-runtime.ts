@@ -48,23 +48,27 @@ export function retainedF4LawConfiguration(
   return Object.fromEntries(Object.entries(state).filter(([key]) => keep(key)))
 }
 
-export const PRISMATA_RECIPES = [
-  { id: 'coherence', name: 'Coherence', glyph: '┃', description: 'Focus the strongest wavelength family into one narrow, high-output beam.' },
-  { id: 'synthesis', name: 'White Synthesis', glyph: '✧', description: 'Reward broad, balanced coverage across every labeled wavelength family.' },
-  { id: 'fluorescence', name: 'Fluorescence', glyph: '◫', description: 'Store delayed light, then release it as a stable afterglow.' },
-  { id: 'diffraction', name: 'Diffraction', glyph: '╱', description: 'Spread output across many bands for active opportunities and archive discovery.' },
+export const BRAHMALOK_MODES = [
+  { id: 'germination', name: 'Germination', glyph: '•', description: 'Concentrate possibility in the strongest direction until a first form opens.' },
+  { id: 'mandala', name: 'Fourfold Mandala', glyph: '⌘', description: 'Reward balanced participation from seed, measure, name, and form.' },
+  { id: 'memory', name: 'Manuscript Memory', glyph: '▤', description: 'Store revisions, then return them as a visible marginal memory.' },
+  { id: 'proliferation', name: 'Proliferation', glyph: '✤', description: 'Spread possibility across distinct forms and active openings.' },
 ] as const
 
-export type PrismataRecipeId = (typeof PRISMATA_RECIPES)[number]['id']
+/** @deprecated Save-slot compatibility alias. */
+export const PRISMATA_RECIPES = BRAHMALOK_MODES
+export type BrahmalokModeId = (typeof BRAHMALOK_MODES)[number]['id']
+export type PrismataRecipeId = BrahmalokModeId
 
-export const PRISMATA_BANDS = [
-  { id: 'red', name: 'Red', glyph: 'Ⅰ' },
-  { id: 'amber', name: 'Amber', glyph: 'Ⅱ' },
-  { id: 'green', name: 'Green', glyph: 'Ⅲ' },
-  { id: 'blue', name: 'Blue', glyph: 'Ⅳ' },
-  { id: 'violet', name: 'Violet', glyph: 'Ⅴ' },
-  { id: 'invisible', name: 'Invisible', glyph: 'Ⅵ' },
+export const BRAHMALOK_DIRECTIONS = [
+  { id: 'seed', name: 'Seed', glyph: '•' },
+  { id: 'measure', name: 'Measure', glyph: '⌁' },
+  { id: 'name', name: 'Name', glyph: '⌜' },
+  { id: 'form', name: 'Form', glyph: '◇' },
 ] as const
+
+/** @deprecated Save-slot compatibility alias. */
+export const PRISMATA_BANDS = BRAHMALOK_DIRECTIONS
 
 export interface PrismataStatus {
   readonly recipeIndex: number
@@ -78,18 +82,20 @@ export interface PrismataStatus {
   readonly explanation: string
 }
 
+export type BrahmalokStatus = PrismataStatus
+
 export function prismataStatus(
   state: Readonly<NumericLawState> | undefined,
   owned: Readonly<Record<string, number>>,
 ): PrismataStatus {
-  const recipeIndex = Math.min(PRISMATA_RECIPES.length - 1, Math.floor(readNumber(state, 'u5-recipe', 1, 3)))
+  const recipeIndex = Math.min(BRAHMALOK_MODES.length - 1, Math.floor(readNumber(state, 'u5-recipe', 1, 3)))
   const routes = Array.from({ length: 18 }, (_, index) => Math.floor(readNumber(
     state,
     `u5-route-${String(index + 1).padStart(2, '0')}`,
-    Math.floor(index / 3),
-    PRISMATA_BANDS.length - 1,
+    index % BRAHMALOK_DIRECTIONS.length,
+    BRAHMALOK_DIRECTIONS.length - 1,
   )))
-  const bands = Array.from({ length: PRISMATA_BANDS.length }, () => 0)
+  const bands = Array.from({ length: BRAHMALOK_DIRECTIONS.length }, () => 0)
   routes.forEach((band, index) => {
     bands[band] += Math.max(0, owned[`u5-kindling-${String(index + 1).padStart(2, '0')}`] ?? 0)
   })
@@ -101,29 +107,33 @@ export function prismataStatus(
   const balance = strongest > 0 ? weakestActive / strongest : 0
   const fluorescence = readNumber(state, 'u5-fluorescence', 0, 100)
   let multiplier = 1
-  let explanation = 'Establish a wavelength family to begin optical synthesis.'
+  let explanation = 'Unfold a Kindling to begin the four-direction creation field.'
   if (recipeIndex === 0 && total > 0) {
     const focus = strongest / total
     multiplier = 1 + focus * 2.4
-    explanation = `${Math.round(focus * 100)}% of Chroma is focused through the strongest band.`
+    explanation = `${Math.round(focus * 100)}% of Possibility gathers in the strongest creation direction.`
   } else if (recipeIndex === 1 && activeBands > 0) {
-    multiplier = 1 + activeBands * 0.18 + balance * 0.5 + (activeBands === 6 ? 0.45 : 0)
-    explanation = `${activeBands}/6 labeled bands contribute; balance is ${Math.round(balance * 100)}%.`
+    multiplier = 1 + activeBands * 0.21 + balance * 0.5 + (activeBands === 4 ? 0.45 : 0)
+    explanation = `${activeBands}/4 creation directions contribute; balance is ${Math.round(balance * 100)}%.`
   } else if (recipeIndex === 2) {
     multiplier = 0.9 + fluorescence * 0.022
-    explanation = `${Math.round(fluorescence)}% delayed light is held in the fluorescent lattice.`
+    explanation = `${Math.round(fluorescence)}% manuscript memory remains visible in the margins.`
   } else if (recipeIndex === 3) {
-    multiplier = 1 + activeBands * 0.16
-    explanation = `${activeBands}/6 bands are spread into distinct diffraction paths.`
+    multiplier = 1 + activeBands * 0.24
+    explanation = `${activeBands}/4 directions are opening distinct, revisable forms.`
   }
-  return { recipeIndex, recipe: PRISMATA_RECIPES[recipeIndex], bands, routes, activeBands, balance, fluorescence, multiplier, explanation }
+  return { recipeIndex, recipe: BRAHMALOK_MODES[recipeIndex], bands, routes, activeBands, balance, fluorescence, multiplier, explanation }
 }
 
+export const brahmalokStatus = prismataStatus
+
 export function selectPrismataRecipe(state: NumericLawState, index: number): boolean {
-  if (!Number.isInteger(index) || index < 0 || index >= PRISMATA_RECIPES.length) return false
+  if (!Number.isInteger(index) || index < 0 || index >= BRAHMALOK_MODES.length) return false
   writeNumber(state, 'u5-recipe', index)
   return true
 }
+
+export const selectBrahmalokMode = selectPrismataRecipe
 
 export function routePrismataKindling(
   state: NumericLawState,
@@ -131,10 +141,12 @@ export function routePrismataKindling(
   bandIndex: number,
 ): boolean {
   if (!Number.isInteger(kindlingIndex) || kindlingIndex < 0 || kindlingIndex >= 18) return false
-  if (!Number.isInteger(bandIndex) || bandIndex < 0 || bandIndex >= PRISMATA_BANDS.length) return false
+  if (!Number.isInteger(bandIndex) || bandIndex < 0 || bandIndex >= BRAHMALOK_DIRECTIONS.length) return false
   writeNumber(state, `u5-route-${String(kindlingIndex + 1).padStart(2, '0')}`, bandIndex)
   return true
 }
+
+export const routeBrahmalokKindling = routePrismataKindling
 
 export const TEMPEST_PATHS = [
   { id: 'conductor', name: 'Conductor', glyph: 'ϟ', threshold: 20, boost: 1.8, durationSec: 22, defaultLength: 2, defaultRisk: 0, description: 'Frequent short discharges with a reliable return.' },
@@ -330,8 +342,8 @@ export function advanceF4LawState(
   const elapsed = Math.min(elapsedSeconds, 7 * 24 * 60 * 60)
   if (universeId === 'prismata') {
     const status = prismataStatus(state, owned)
-    const direction = status.recipe.id === 'fluorescence' ? 1 : -0.22
-    const breadth = Math.max(0.25, status.activeBands / 6)
+    const direction = status.recipe.id === 'memory' ? 1 : -0.22
+    const breadth = Math.max(0.25, status.activeBands / 4)
     writeNumber(state, 'u5-fluorescence', Math.max(0, Math.min(100, status.fluorescence + direction * breadth * elapsed / 4)))
   } else if (universeId === 'tempest') {
     const status = tempestStatus(state)
@@ -362,7 +374,7 @@ export function f4ClickMultiplier(
 ): number {
   if (universeId === 'prismata') {
     const status = prismataStatus(state, owned)
-    return status.recipe.id === 'coherence' ? 1.35 : status.recipe.id === 'diffraction' ? 1.2 : 1
+    return status.recipe.id === 'germination' ? 1.35 : status.recipe.id === 'proliferation' ? 1.2 : 1
   }
   if (universeId === 'tempest') {
     const status = tempestStatus(state)

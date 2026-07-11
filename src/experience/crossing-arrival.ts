@@ -92,9 +92,9 @@ const HABIT_BREAKS: Readonly<Record<UniverseId, readonly CrossingHabitBreak[]>> 
     { id: 'cross-habit-clockwork-3', atMs: 540_000, text: 'Route first. The city considers unexplained efficiency a defect.' },
   ],
   prismata: [
-    { id: 'cross-habit-prismata-1', atMs: 75_000, text: 'White is not one answer here. Separate the light before deciding what it can make.' },
-    { id: 'cross-habit-prismata-2', atMs: 270_000, text: 'A brighter beam can still be the wrong wavelength. Follow the labeled path.' },
-    { id: 'cross-habit-prismata-3', atMs: 540_000, text: 'Resolve difference without erasing it. Prismata calls that synthesis.' },
+    { id: 'cross-habit-prismata-1', atMs: 75_000, text: 'This is a passage, not another ruin waiting for us. Approach the making already underway.' },
+    { id: 'cross-habit-prismata-2', atMs: 270_000, text: 'Seed, measure, name, and form answer one another. Follow the whole mandala, not only its strongest direction.' },
+    { id: 'cross-habit-prismata-3', atMs: 540_000, text: 'Leave the center open. Brahmalok calls a creation complete only while revision remains possible.' },
   ],
   tempest: [
     { id: 'cross-habit-tempest-1', atMs: 75_000, text: 'Stored charge is not production yet. Choose where the discharge is allowed to end.' },

@@ -12,7 +12,7 @@
     { id: 'tidefall', label: 'Tidefall' },
     { id: 'verdance', label: 'Verdance' },
     { id: 'clockwork', label: 'Clockwork' },
-    { id: 'prismata', label: 'Prismata' },
+    { id: 'prismata', label: 'Brahmalok' },
     { id: 'tempest', label: 'Tempest' },
     { id: 'canticle', label: 'Canticle' },
   ] as const satisfies readonly { id: DevScenario; label: string }[]

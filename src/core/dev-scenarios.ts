@@ -264,7 +264,7 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
     } else if (name === 'prismata') {
       scenario.numericLawState = {
         'u5-recipe': amountFromNumber(1),
-        'u5-route-12': amountFromNumber(5),
+        'u5-route-12': amountFromNumber(3),
       }
     } else if (name === 'tempest') {
       scenario.numericLawState = {

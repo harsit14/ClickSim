@@ -58,7 +58,7 @@
     universeId === 'tidefall' ? '≈'
       : universeId === 'verdance' ? '❧'
         : universeId === 'clockwork' ? '⌁'
-          : universeId === 'prismata' ? '◇'
+          : universeId === 'prismata' ? '✤'
             : universeId === 'tempest' ? 'ϟ'
               : universeId === 'canticle' ? '◌'
                 : '✦',
@@ -370,9 +370,9 @@
       rgba(4, 5, 7, 0.9);
   }
   .scrim[data-universe='prismata'] {
-    --turn-accent: #f4edff;
-    --turn-warm: #a68cff;
-    background: repeating-linear-gradient(166deg, transparent 0 8%, rgba(166, 140, 255, 0.022) 8.2% 8.5%, transparent 8.7% 16%), rgba(4, 4, 12, 0.9);
+    --turn-accent: #fff0c7;
+    --turn-warm: #d7a34c;
+    background: repeating-linear-gradient(0deg, transparent 0 4.2rem, rgba(255, 240, 199, 0.02) 4.25rem 4.3rem), radial-gradient(circle at 50% 46%, rgba(215, 163, 76, .08), transparent 42%), rgba(6, 5, 11, 0.91);
   }
   .scrim[data-universe='tempest'] {
     --turn-accent: #e3f7ff;
@@ -423,9 +423,8 @@
       linear-gradient(118deg, color-mix(in srgb, var(--panel) 94%, #0c0d10), color-mix(in srgb, var(--panel) 82%, transparent));
   }
   [data-universe='prismata'] .reset-card {
-    border-radius: 0.2rem;
-    clip-path: polygon(1.2% 0, 98.8% 0, 100% 3%, 100% 97%, 98.8% 100%, 1.2% 100%, 0 97%, 0 3%);
-    background: repeating-linear-gradient(166deg, transparent 0 7rem, color-mix(in srgb, var(--turn-warm) 4%, transparent) 7.05rem 7.12rem), linear-gradient(118deg, color-mix(in srgb, var(--panel) 94%, #080814), color-mix(in srgb, var(--panel) 82%, transparent));
+    border-radius: 1.4rem 1.4rem .35rem .35rem;
+    background: repeating-linear-gradient(0deg, transparent 0 4.5rem, color-mix(in srgb, var(--turn-warm) 4%, transparent) 4.55rem 4.62rem), radial-gradient(circle at 8% 12%, color-mix(in srgb, var(--turn-warm) 9%, transparent), transparent 23%), linear-gradient(118deg, color-mix(in srgb, var(--panel) 94%, #0c0810), color-mix(in srgb, var(--panel) 82%, transparent));
   }
   [data-universe='tempest'] .reset-card {
     border-radius: 1.8rem 0.3rem 1.5rem 0.3rem;
@@ -474,8 +473,8 @@
   [data-universe='verdance'] .turn-orbit { inset: -0.3rem; border-right: 1px solid color-mix(in srgb, var(--turn-accent) 28%, transparent); transform: rotate(38deg); }
   [data-universe='clockwork'] .turn-mark { outline: 1px dashed color-mix(in srgb, var(--turn-accent) 24%, transparent); outline-offset: 0.28rem; }
   [data-universe='clockwork'] .turn-orbit { inset: 0.3rem; border: 1px dashed color-mix(in srgb, var(--turn-accent) 35%, transparent); transform: rotate(8deg); }
-  [data-universe='prismata'] .turn-mark { border-radius: 0; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
-  [data-universe='prismata'] .turn-orbit { inset: 0.15rem -0.4rem; border-radius: 0; transform: rotate(45deg); }
+  [data-universe='prismata'] .turn-mark { border-radius: 54% 46% 54% 46%; outline: 1px dashed color-mix(in srgb, #8ecbe0 24%, transparent); outline-offset: .25rem; }
+  [data-universe='prismata'] .turn-orbit { inset: .2rem; border-radius: 50%; transform: rotate(45deg); }
   [data-universe='tempest'] .turn-mark { border-radius: 52% 48% 64% 36%; }
   [data-universe='tempest'] .turn-orbit { inset: -0.2rem; border-left-style: dashed; transform: rotate(-38deg); }
   [data-universe='canticle'] .turn-mark { border-style: dashed; }

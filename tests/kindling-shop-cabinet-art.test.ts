@@ -57,7 +57,7 @@ test('Cabinet is a universe-specific archive field instead of one shared card st
   for (const theme of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']) {
     assert.match(cabinet, new RegExp(`class:${theme}=\\{pack\\.id === '${theme}'\\}`))
   }
-  for (const localName of ['relation field', 'pressure transect', 'specimen press', 'patent register', 'spectrum bench', 'forecast wall', 'memory score']) {
+  for (const localName of ['relation field', 'pressure transect', 'specimen press', 'patent register', 'fourfold manuscript court', 'forecast wall', 'memory score']) {
     assert.match(cabinet, new RegExp(localName))
   }
 })
