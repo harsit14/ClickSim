@@ -52,6 +52,13 @@
     ['68%', '57%', '14deg'], ['87%', '19%', '-12deg'], ['91%', '33%', '18deg'],
   ] as const
 
+  const KAILASH_SNOW = [
+    ['7%', '18%', '.7'], ['15%', '61%', '1'], ['23%', '34%', '.8'], ['31%', '76%', '.6'],
+    ['39%', '12%', '1'], ['47%', '54%', '.7'], ['55%', '25%', '.9'], ['63%', '69%', '.6'],
+    ['70%', '40%', '1'], ['77%', '16%', '.7'], ['83%', '58%', '.9'], ['89%', '31%', '.6'],
+    ['94%', '73%', '.8'], ['52%', '83%', '.6'],
+  ] as const
+
   let {
     pack,
     owned,
@@ -186,6 +193,7 @@
   class:tempest={pack.id === 'tempest'}
   class:canticle={pack.id === 'canticle'}
   class:motion-paused={preferences.reducedMotion}
+  class:low-quality={preferences.quality === 'low'}
   aria-label={`${pack.identity.shortName} authored world`}
   data-universe-v2={pack.id}
   data-layout-diagnostics={plan.diagnostics.length}
@@ -248,8 +256,12 @@
         <div class="kailash-range range-far"></div>
         <div class="kailash-range range-near"></div>
         <div class="kailash-river"></div>
+        <div class="kailash-river-glints"><i></i><i></i><i></i></div>
         <div class="kailash-shelters"><i></i><i></i><i></i><i></i></div>
         <div class="kailash-clouds"><i></i><i></i><i></i></div>
+        <div class="kailash-snow">
+          {#each KAILASH_SNOW as flake, index}<i style={`--snow-index:${index};--snow-x:${flake[0]};--snow-y:${flake[1]};--snow-size:${flake[2]}`}></i>{/each}
+        </div>
         <div class="kailash-copper-ring" class:responsible={(kailashWorldState?.distinctRoles ?? 0) === 6 && (kailashWorldState?.restCount ?? 0) >= 3}></div>
         <div class="kailash-cycle-marker" data-role={kailashWorldState?.role ?? 'rest'}><span>{kailashWorldState ? kailashActGlyph(kailashWorldState.role) : '○'}</span></div>
         <div class="kailash-still" data-role={kailashWorldState?.role ?? 'rest'}><span>{kailashWorldState ? kailashActGlyph(kailashWorldState.role) : '○'}</span></div>
@@ -431,15 +443,26 @@
   .kailash-range { position:absolute;left:50%;bottom:0;transform:translateX(-50%);clip-path:polygon(0 100%,14% 68%,25% 75%,39% 43%,48% 57%,59% 7%,70% 61%,81% 48%,100% 100%); }
   .range-far { width:112%;height:62%;background:#15283a;opacity:.7; }.range-near { width:94%;height:54%;background:linear-gradient(145deg,color-mix(in srgb,var(--gold) 16%,#28465d),#0b1726 48%,#050a12 80%);filter:drop-shadow(0 0 1.6rem color-mix(in srgb,var(--gold) 7%,transparent)); }
   .kailash-river { position:absolute;z-index:2;left:57%;top:37%;width:.22rem;height:63%;background:linear-gradient(var(--gold),#75b5c5 52%,transparent);transform:rotate(7deg);box-shadow:0 0 1rem color-mix(in srgb,var(--gold) 34%,transparent); }.kailash-river::after { content:'';position:absolute;left:-2rem;bottom:-.2rem;width:5rem;height:.8rem;border-top:1px solid color-mix(in srgb,#75b5c5 34%,transparent);border-radius:50%; }
-  .kailash-shelters { position:absolute;z-index:3;inset:0; }.kailash-shelters i { position:absolute;bottom:9%;width:clamp(2.2rem,4vw,4rem);height:1.8rem;border:1px solid color-mix(in srgb,var(--gold) 18%,transparent);border-bottom:0;border-radius:55% 55% 0 0;background:color-mix(in srgb,#172b39 72%,transparent); }.kailash-shelters i:nth-child(1){left:10%}.kailash-shelters i:nth-child(2){left:29%;bottom:16%;transform:scale(.78)}.kailash-shelters i:nth-child(3){right:29%;bottom:13%;transform:scale(.82)}.kailash-shelters i:nth-child(4){right:9%}
+  .kailash-river-glints { position:absolute;z-index:3;inset:0;pointer-events:none; }.kailash-river-glints i { position:absolute;left:calc(55.8% + var(--glint-offset, 0%));width:clamp(1.2rem,2.4vw,2.4rem);height:.32rem;border-top:1px solid color-mix(in srgb,#bce8ee 48%,transparent);border-radius:50%;filter:drop-shadow(0 0 .32rem color-mix(in srgb,#75b5c5 28%,transparent));opacity:.5;animation:river-glint 5.6s ease-in-out infinite alternate; }.kailash-river-glints i:nth-child(1){top:56%;--glint-offset:-.5%;animation-delay:-1.6s}.kailash-river-glints i:nth-child(2){top:70%;--glint-offset:-1.1%;transform:scale(.82);animation-delay:-3.2s}.kailash-river-glints i:nth-child(3){top:84%;--glint-offset:-1.8%;transform:scale(.68);animation-delay:-4.5s}
+  .kailash-shelters { position:absolute;z-index:3;inset:0; }.kailash-shelters i { position:absolute;bottom:9%;width:clamp(2.2rem,4vw,4rem);height:1.8rem;border:1px solid color-mix(in srgb,var(--gold) 18%,transparent);border-bottom:0;border-radius:55% 55% 0 0;background:color-mix(in srgb,#172b39 72%,transparent); }.kailash-shelters i::before { content:'';position:absolute;left:50%;bottom:.12rem;width:.38rem;height:.46rem;transform:translateX(-50%);border:1px solid color-mix(in srgb,#f0d5a1 42%,transparent);border-bottom:0;border-radius:50% 50% 0 0;background:color-mix(in srgb,#dca45d 42%,transparent);box-shadow:0 0 .85rem color-mix(in srgb,#e7b96f 38%,transparent);animation:shelter-lamp 4.8s ease-in-out infinite alternate; }.kailash-shelters i::after { content:'';position:absolute;left:54%;top:-.55rem;width:.55rem;height:.8rem;border-left:1px solid color-mix(in srgb,#cbd9df 14%,transparent);border-radius:50%;transform:rotate(-15deg);opacity:.45; }.kailash-shelters i:nth-child(1){left:10%}.kailash-shelters i:nth-child(2){left:29%;bottom:16%;transform:scale(.78)}.kailash-shelters i:nth-child(3){right:29%;bottom:13%;transform:scale(.82)}.kailash-shelters i:nth-child(4){right:9%}
   .kailash-clouds { position:absolute;z-index:2;inset:0; }.kailash-clouds i { position:absolute;width:24%;height:7%;border-top:1px solid color-mix(in srgb,var(--gold) 11%,transparent);border-radius:50%;opacity:.55; }.kailash-clouds i:nth-child(1){left:8%;top:27%}.kailash-clouds i:nth-child(2){right:8%;top:36%}.kailash-clouds i:nth-child(3){left:36%;top:16%;width:29%}
+  .kailash-snow { position:absolute;z-index:3;inset:7% 2% 20%;overflow:hidden;pointer-events:none; }.kailash-snow i { position:absolute;left:var(--snow-x);top:var(--snow-y);width:calc(.13rem * var(--snow-size));aspect-ratio:1;border-radius:50%;background:color-mix(in srgb,#dbe9ee 48%,transparent);box-shadow:0 0 .3rem color-mix(in srgb,#bfd9e3 18%,transparent);opacity:calc(.35 + var(--snow-size) * .25);animation:snow-drift calc(8s + var(--snow-index) * .28s) ease-in-out infinite alternate;animation-delay:calc(var(--snow-index) * -.73s); }
   .kailash-copper-ring { position:absolute;z-index:1;left:57%;top:47%;width:min(33vw,27rem);aspect-ratio:1;transform:translate(-50%,-50%);border:1px solid color-mix(in srgb,#c47d4f calc(16% + var(--loka-pattern) * 82%),transparent);border-left-color:transparent;border-radius:50%;filter:drop-shadow(0 0 calc(.5rem + var(--loka-pattern) * 2.2rem) color-mix(in srgb,#c47d4f calc(7% + var(--loka-pattern) * 38%),transparent)); }.kailash-copper-ring.responsible { border-width:2px; }
   .kailash-cycle-marker { position:absolute;z-index:4;left:57%;top:47%;width:min(33vw,27rem);aspect-ratio:1;transform:translate(-50%,-50%) rotate(calc(var(--loka-cycle) * 1turn));border-radius:50%;pointer-events:none; }.kailash-cycle-marker span { position:absolute;left:50%;top:-.55rem;width:1.1rem;height:1.1rem;display:grid;place-items:center;transform:translateX(-50%) rotate(calc(var(--loka-cycle) * -1turn));color:#d89a6d;background:#07101a;border:1px solid color-mix(in srgb,#c47d4f 58%,transparent);border-radius:50%;font:.55rem/1 ui-monospace,monospace;box-shadow:0 0 .8rem color-mix(in srgb,#c47d4f 24%,transparent); }
   .kailash-cycle-marker[data-role='rest'] span { color:#c8dce3;border-style:dashed; }.kailash-cycle-marker[data-role='shelter'] span { color:#e8d3a8; }.kailash-cycle-marker[data-role='release'] span { color:#e08b5d; }
   .kailash-still { position:absolute;z-index:4;left:57%;top:41%;width:1.7rem;aspect-ratio:1;display:grid;place-items:center;transform:translate(-50%,-50%);border:1px solid color-mix(in srgb,var(--gold) 42%,transparent);border-radius:50%;background:#060a12;box-shadow:0 0 1.6rem color-mix(in srgb,#75b5c5 18%,transparent); }.kailash-still span { color:#c8dce3;font:.58rem/1 ui-monospace,monospace; }.kailash-still[data-role='release'] span { color:#df8a5c; }.kailash-still[data-role='grace'] span { color:#e3d4b2; }
 
   @keyframes return-breathe { from { opacity:.68; } to { opacity:1; } }
+  @keyframes river-glint { to { opacity:.82;transform:translateX(.35rem) scaleX(1.12); } }
+  @keyframes shelter-lamp { to { opacity:.72;box-shadow:0 0 1.1rem color-mix(in srgb,#e7b96f 48%,transparent); } }
+  @keyframes snow-drift { to { transform:translate(.8rem,1.4rem);opacity:.28; } }
   .motion-paused .vishnulok-return.returning { animation:none; }
+  .motion-paused .kailash-snow i,
+  .motion-paused .kailash-river-glints i,
+  .motion-paused .kailash-shelters i::before { animation:none; }
+  .low-quality .kailash-snow i:nth-child(n + 7),
+  .low-quality .kailash-river-glints i:nth-child(n + 3),
+  .low-quality .kailash-shelters i::after { display:none; }
 
   .scene-composition {
     opacity: calc(0.58 + var(--scene-strength) * 0.28);
