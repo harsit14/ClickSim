@@ -1,171 +1,117 @@
-# ✦ EMBER — Reignite the Universe
+# ✦ EMBER
 
-The universe is dead. You are the last ember.
+> A story-driven incremental game about rebuilding a dead universe—and deciding what the next one should become.
 
-EMBER is a desktop-first incremental browser game built with Svelte 5, TypeScript,
-Canvas 2D, and the Web Audio API. It begins with one faint Heart in an empty sky.
-Clicks create the first currency, Kindlings rebuild the world, and even the interface
-arrives through progression. A quiet archivist named Lumen remembers why the prior
-universe ended—and what may exist beyond it.
+![Emberlight rebuilt into a living sky of constellations, celestial machines, and Kindlings](docs/screenshots/emberlight.webp)
 
-## Current state
+The universe is dark. One ember remains.
 
-- Seven complete playable universes: Emberlight, Tidefall, Verdance, Clockwork,
-  Prismata, Tempest, and Canticle.
-- Eighteen authored Kindling tiers per universe, each with local names, economy,
-  visible world states, Archive records, sound, story, and progression laws.
-- Every universe has its own five-part Vessel. A Beacon and universe crossing remain
-  locked until that world's Vessel is activated; completing an earlier Vessel cannot
-  bypass a later world.
-- Completed worlds now keep a useful endgame economy: each can spend its own local
-  Singularities on a permanent Succession Relay that strengthens only the immediately
-  following universe.
-- Lumen Shards form a rare persistent seven-world currency, earned through first-time
-  Beacons, first Atlas completions, and capped high-cost local distillation. Their
-  purchases now live where they act: lore in Archives, vestments in the Observatory,
-  and route instruments in the Wayfinder.
-- Save writer version 23 with migration support for every historical release, parked
-  universe runs, per-universe Vessels, atomic backups, and rollback recovery.
-- Desktop release hardening is complete. Mobile-specific interface work is intentionally
-  deferred.
-- The complete project gate currently passes 318 automated tests, TypeScript checks,
-  content proofreading, production builds, bundle budgets, and offline inspection.
+Begin with a single touch, gather light, and kindle the first structures in an empty sky. As the world grows, the game itself awakens around it: the shop, records, music, archives, prestige systems, and eventually the routes to other universes. Lumen, a quiet archivist with an incomplete account of the past, remembers more with every cycle.
 
-## Highlights
+EMBER is a desktop-first browser game for players who enjoy incremental progression, atmospheric world-building, unusual interfaces, and stories that unfold through play.
 
-- **Progressive opening** — the counter, shop, upgrades, records, options, music, and
-  advanced systems emerge through play. Guidance and contextual prompts are off by
-  default and remain available from the menu.
-- **Seven genuinely different worlds** — stable resonance, a living tide, aging
-  cohorts, deterministic clockwork routing, spectral recipes, bounded storm discharge,
-  and musical measures with strategic rests.
-- **Three distinct late-world instruments** — Prismata uses a spatial refraction
-  chamber, Tempest exposes a charged convective storm field, and Canticle arranges its
-  sixteen-beat score around a visible nodal figure instead of sharing one control-bench
-  layout. Their compact integrated HUD reserves a fixed active-effect cell, so catching
-  a power-up never moves the score or instrument.
-- **First-arrival instrument primers** — each late universe teaches its three core
-  interactions inside the instrument itself, dismisses persistently, and remains
-  reopenable from a small `?` control without enabling global guidance prompts.
-- **Calm achievement delivery** — achievements queue through one compact top-edge
-  ribbon; large unlock bursts collapse into a final archive summary instead of stacking
-  over the playfield.
-- **Living playfields** — every purchase changes the world through authored objects,
-  ownership states, motion, and audio. Decorative and interactive objects preserve the
-  Heart's click area and the readable status zone.
-- **Local Epoch Turns** — Supernova, Undertow, Pruning, Rewinding, Refraction,
-  Discharge, and Refrain exchange the current run for persistent local matter with an
-  exact before/after preview.
-- **The Observatory layer** — each universe localizes its permanent progression map.
-  Verdance uses four contained Growth Ring paths and a World-Tree capstone.
-- **Cross-generator economies** — the Resonance Atlas exposes every live relationship,
-  its feeder, target, unlock, cost, and exact multiplier. Verdance has a twelve-link
-  Rhizome network involving all eighteen Kindlings.
-- **Field Archives** — twelve purposeful records per universe, grouped into three
-  shelves with lore, mechanical effects, visible landmarks, and retained-state rules.
-- **Story Archive** — every Lumen ticker line in the current saved universe histories is
-  shown in occurrence order, with the latest line highlighted beside recovered Echoes
-  and ending records.
-- **Omens and active opportunities** — Falling Stars, tide phenomena, pollinators,
-  Maintenance Signals, optical events, storms, and refrains use bounded rewards and
-  never punish a missed event. Shared entry rules favor top/bottom traversal and keep
-  every side entrance inside the upper half for a fair reaction window.
-- **The Deep** — a second prestige layer with local presentation, permanent laws,
-  automation, repeatable works, and twelve trials.
-- **The Crossing and Garden** — completed local Vessels carry restored worlds into the
-  Dark Between. Seven Beacons open the authored Garden conclusion and continuing play.
-- **Three permanent homes** — the Deep owns Singularity upgrades and capped Lumen
-  distillation; the Observatory owns constellation works and shared vestments; the
-  Vessel-Wayfinder owns laws, Succession Relays, and route instruments.
-- **Archive bonuses stay in the Archive** — rare Lumen Shards still persist through
-  every reset and crossing, but their hidden passages and Archive Resonator now sit
-  beside the records they interpret.
-- **Chronicle, builds, and Atlas routes** — dated milestones, named Beacons, law
-  loadouts, shareable configuration codes, deterministic route records, and permanent
-  Convergences.
-- **Adaptive synthesized audio** — all music and effects are generated at runtime; no
-  audio assets are shipped.
-- **Accessibility and presentation controls** — keyboard play, reduced motion, strong
-  or disabled beat guides, large text, high contrast, non-color state signals, mute-safe
-  semantics, and automatic/high/balanced/low render budgets.
-- **Player-respecting persistence** — autosave, offline progress, copy/download/import
-  codes, rolling checkpoints, a daily backup, and an offline-capable static build.
-- No advertisements, energy systems, expiring paid timers, or loss-based engagement
-  traps.
+## What awaits
 
-## Run locally
+- **Seven authored realms.** Emberlight, Tidefall, Verdance, Clockwork, Brahmalok, Vishnulok, and Kailash each have their own economy, visual language, soundscape, active system, Archive, trials, story, and ending ritual.
+- **A world that visibly grows.** Every Kindling purchase changes the playfield through new objects, settlements, routes, machines, currents, gardens, and celestial structures.
+- **More than bigger numbers.** Shape tides, age living cohorts, route a civic machine, unfold a creation mandala, carry a sustaining current, and arrange responsible release around a still point.
+- **Layered progression.** Local Epoch Turns, the Deep, Vessels, universe crossings, Succession Relays, the Chronicle, deterministic Atlas routes, and the Garden keep completed worlds meaningful.
+- **A complete narrative arc.** Recover Echoes, learn what ended the former universe, answer Lumen's question, and carry that answer into the worlds that follow.
+- **Player-respecting design.** No ads, gacha, energy timers, paid boosts, expiring rewards, or punishment for missing an event.
 
-Requirements: a current Node.js release and npm.
+## The worlds
+
+| Realm | What makes it different |
+|---|---|
+| **Emberlight** | Rebuild warmth, settlement, and a sky of remembered constellations. |
+| **Tidefall** | Raise light through a moonless ocean whose living tide changes production. |
+| **Verdance** | Grow cohorts that age, graft, remember, and renew instead of merely multiplying. |
+| **Clockwork** | Route deterministic power through a civic machine governed by maintenance schedules. |
+| **Brahmalok** | Unfold possibility through seed, measure, name, form, and a four-direction creation mandala. |
+| **Vishnulok** | Sustain continuity through refuge, correction, return, and a calm cosmic ocean. |
+| **Kailash** | Approach dissolution as responsible release, with shelter, grace, stillness, and renewal kept visible. |
+
+## In-game gallery
+
+<table>
+  <tr>
+    <td width="50%">
+      <a href="docs/screenshots/tidefall.webp"><img src="docs/screenshots/tidefall.webp" alt="Tidefall's moonless ocean, Tideheart, Omens, and Kindling shop"></a><br>
+      <sub><b>Tidefall</b> — a living ocean with fair, catchable Omens and a changing tide.</sub>
+    </td>
+    <td width="50%">
+      <a href="docs/screenshots/clockwork.webp"><img src="docs/screenshots/clockwork.webp" alt="Clockwork's machine floor, maintenance schedule, routed mechanisms, and Kindling shop"></a><br>
+      <sub><b>Clockwork</b> — a deterministic city-machine with visible power routing.</sub>
+    </td>
+  </tr>
+</table>
+
+### The three lokas
+
+<table>
+  <tr>
+    <td width="33%">
+      <a href="docs/screenshots/brahmalok.webp"><img src="docs/screenshots/brahmalok.webp" alt="Brahmalok's Lotus of Becoming and four-direction creation mandala"></a><br>
+      <sub><b>Brahmalok</b> — creation without enclosing every possibility.</sub>
+    </td>
+    <td width="33%">
+      <a href="docs/screenshots/vishnulok.webp"><img src="docs/screenshots/vishnulok.webp" alt="Vishnulok's Endless Circuit above a calm cosmic ocean"></a><br>
+      <sub><b>Vishnulok</b> — preservation through responsive correction and return.</sub>
+    </td>
+    <td width="33%">
+      <a href="docs/screenshots/kailash.webp"><img src="docs/screenshots/kailash.webp" alt="Kailash's Still Point, mountain passage, open ring, and release sequence"></a><br>
+      <sub><b>Kailash</b> — release that keeps refuge and renewal in view.</sub>
+    </td>
+  </tr>
+</table>
+
+## Play locally
+
+EMBER currently runs from source. Install a current version of [Node.js](https://nodejs.org/) and npm, then:
 
 ```bash
+git clone https://github.com/harsit14/ClickSim.git
+cd ClickSim
 npm install
 npm run dev
 ```
 
-The development server is available at `http://localhost:5173` by default.
+Open the local address printed by Vite, usually `http://localhost:5173`.
 
-For an isolated manual playtest build with deterministic universe presets and live
-currency/progression cheats, open:
+The game autosaves in the browser and supports offline progress, exportable save codes, downloadable backups, import validation, and recovery checkpoints. It is best experienced on desktop with sound, but every mechanic remains playable while muted and with reduced motion.
 
-```text
-http://localhost:5173/?playtest=1&scenario=endgame
-```
+## Controls
 
-The development-only console can load all seven universes, the opening, first crossing,
-Question, Garden, repeatable markets, reset-ready states, and funded Concordance/Vault
-testing. Press `F10` to show or hide
-it. “Ready” cheats prepare the real in-game milestone but leave its normal button and
-ceremony for the playtester to trigger. The console is excluded from production mode.
+| Input | Action |
+|---|---|
+| Click, <kbd>Space</kbd>, or <kbd>Enter</kbd> | Activate the Heart |
+| <kbd>1</kbd>–<kbd>9</kbd> | Buy a visible Kindling |
+| <kbd>B</kbd> | Cycle the bulk-purchase amount |
+| <kbd>G</kbd> | Open the Field Guide |
+| <kbd>I</kbd> | Open run records |
+| <kbd>O</kbd> | Open options |
+| <kbd>C</kbd> | Open the current world's Archive |
+| <kbd>V</kbd> | Open the Vessel |
+| <kbd>S</kbd> | Open the local Epoch system |
+| <kbd>D</kbd> | Enter the Deep |
+| <kbd>E</kbd> | Open the Story Archive |
+| <kbd>L</kbd> | Open the Legacy hub |
+| <kbd>Escape</kbd> | Close the active panel |
 
-Production commands:
+Controls appear only after their systems awaken. The options menu includes reduced motion, large text, high contrast, beat-guide strength, render quality, audio controls, and alternative number formats.
+
+## Project status
+
+The complete seven-realm route is playable in development, including its endings and continuing Atlas. EMBER is still being refined for a formal public release.
+
+Brahmalok, Vishnulok, and Kailash use environment-first art and original game fiction; deities are not currencies, opponents, collectibles, or upgrade buttons. External Hindu cultural consultation and South Asian art/iconography review remain required before release.
+
+## For developers
 
 ```bash
-npm run build      # static output in dist/
-npm run preview    # serve the production build locally
-npm run verify     # types, tests, proofreading, build, budgets, and offline audit
-npm run sim        # deterministic long-horizon balance simulation
+npm run verify   # TypeScript, tests, content proofing, production build, budgets, and offline audit
+npm run build    # Static production build in dist/
+npm run preview  # Preview the production build
 ```
 
-The simulator covers 168 primary cases across seven universes, six activity profiles,
-first visits, accelerated revisits, and Archive states. It also audits long-horizon
-numeric safety and the endless law interaction matrix.
-
-## How to play
-
-Click the Heart at the center of the universe. The game reveals everything else through
-progression.
-
-- **Space / Enter** activates the Heart.
-- **1–9** purchases visible Kindlings.
-- **B** cycles the bulk-purchase amount.
-- **G / I / O / C / V / S / D / E / L** opens the Field Guide, records, options,
-  Archive, Vessel, local Epoch panel, Deep, Codex, and Legacy hub when available.
-- **Escape** closes the active utility panel.
-- Hover or focus an upgrade to inspect its effect and cost.
-- Export a save code from Options before changing browsers or machines.
-
-## Architecture
-
-- `src/engine/` — economic transactions, formulas, and runtime state.
-- `src/content/` — declarative universes, Kindlings, upgrades, story, progression, and
-  retained-state definitions.
-- `src/render/` — canvas world rendering, manifests, salience, Heart protection, and
-  HUD-clearance geometry.
-- `src/ui/` — Svelte panels and interaction layers.
-- `src/audio/` — semantic synthesized music and effects.
-- `balance/` — deterministic simulation and multi-profile contracts.
-- `tests/` — economic, migration, content, accessibility, layout, release, and
-  long-horizon regression coverage.
-- `docs/` — current canonical-system, save, simulator, universe, and release contracts.
-
-Game content is data-driven. The economic core is expressed as pure functions shared by
-the live game, formula inspector, tests, and headless simulator. Production output is
-split into core, expansion, endgame, and vendor chunks. CI rejects builds above the 3 MB
-initial payload budget, assets above 1 MB, incomplete localization, invalid offline
-precaches, failing tests, or stalled simulations.
-
-## Design references
-
-The original production design lives in [GAME_DESIGN.md](GAME_DESIGN.md). The integrated
-seven-universe design bible and long-term contracts live in [FUTURE.md](FUTURE.md).
-Current implementation decisions are recorded in [docs/](docs/).
+The game is built with Svelte 5, TypeScript, Canvas 2D, and the Web Audio API. Music and sound effects are synthesized at runtime; no prerecorded audio files are shipped.
