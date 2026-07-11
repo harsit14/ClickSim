@@ -32,6 +32,7 @@
   import UniverseLawPanel from './ui/UniverseLawPanel.svelte'
   import EndgameHub from './ui/EndgameHub.svelte'
   import DevPlaytestPanel from './ui/DevPlaytestPanel.svelte'
+  import NumberSuffixHint from './ui/NumberSuffixHint.svelte'
   import ClockworkRevelation from './ui/ClockworkRevelation.svelte'
   import {
     game,
@@ -425,6 +426,7 @@
 
 <div class="game-shell" class:comparative-blind={comparativeBlind} inert={modalActive} aria-hidden={modalActive}>
   <EmberCanvas {averagedRhythm} {comparativeBlind} />
+  <NumberSuffixHint amount={game.light} currencyName={activePack.currency} />
   {#if activeV2Pack}
     <ManifestWorldLayer
       pack={activeV2Pack}
