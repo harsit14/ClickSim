@@ -181,7 +181,9 @@
   }
 </script>
 
-<section
+<div class="inspection-backdrop" aria-hidden="true"></div>
+
+<div
   class="cabinet instrument-panel"
   class:emberlight={pack.id === 'emberlight'}
   class:tidefall={pack.id === 'tidefall'}
@@ -191,6 +193,8 @@
   class:tempest={pack.id === 'tempest'}
   class:canticle={pack.id === 'canticle'}
   data-universe={pack.id}
+  role="dialog"
+  aria-modal="true"
   aria-labelledby="cabinet-title"
 >
   <header class="cabinet-header">
@@ -330,9 +334,21 @@
   </div>
 
   <LumenVaultShelf home="archive" />
-</section>
+</div>
 
 <style>
+  .inspection-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 11;
+    padding: 0;
+    border: 0;
+    background:
+      radial-gradient(ellipse at 33% 48%, transparent 0 26%, rgba(2, 5, 11, 0.18) 58%, rgba(2, 5, 11, 0.42) 100%),
+      rgba(2, 5, 11, 0.2);
+    backdrop-filter: blur(2px) saturate(0.72);
+    animation: inspection-in 0.28s ease both;
+  }
   .cabinet {
     --archive-accent: #ffbd70;
     --archive-surface: #17131f;
@@ -353,7 +369,7 @@
     border-radius: 18px;
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42), inset 0 1px rgba(255, 255, 255, 0.035);
     backdrop-filter: blur(16px);
-    z-index: 6;
+    z-index: 12;
     scrollbar-width: thin;
     animation: cabinet-in 0.5s cubic-bezier(0.2, 0.8, 0.25, 1) both;
   }
@@ -361,6 +377,7 @@
     from { opacity: 0; transform: translateX(-18px); }
     to { opacity: 1; transform: translateX(0); }
   }
+  @keyframes inspection-in { from { opacity: 0; } to { opacity: 1; } }
   .cabinet-header {
     position: sticky;
     top: -1.15rem;
@@ -642,7 +659,7 @@
     .cabinet {
       right: 1.1rem;
       width: auto;
-      z-index: 10;
+      z-index: 12;
     }
   }
 
@@ -661,7 +678,7 @@
       width: auto;
       padding: 0.9rem;
       border-radius: 15px;
-      z-index: 10;
+      z-index: 12;
     }
     .cabinet-header {
       top: -0.9rem;
@@ -679,6 +696,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .inspection-backdrop,
     .cabinet { animation: none; }
     .progress-track span { transition: none; }
   }

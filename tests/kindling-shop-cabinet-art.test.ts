@@ -48,6 +48,11 @@ test('Cabinet is a universe-specific archive field instead of one shared card st
   assert.match(cabinet, /data-universe=\{pack\.id\}/)
   assert.match(cabinet, /class="archive-field"/)
   assert.match(cabinet, /class="archive-index"/)
+  assert.match(cabinet, /class="inspection-backdrop"/)
+  assert.match(cabinet, /role="dialog"/)
+  assert.match(cabinet, /aria-modal="true"/)
+  assert.match(cabinet, /\.inspection-backdrop\s*\{[^}]*z-index:\s*11;/s)
+  assert.match(cabinet, /\.cabinet\s*\{[^}]*z-index:\s*12;/s)
   assert.match(cabinet, /width:\s*min\(56rem,/)
   for (const theme of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']) {
     assert.match(cabinet, new RegExp(`class:${theme}=\\{pack\\.id === '${theme}'\\}`))
