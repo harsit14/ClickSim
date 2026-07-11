@@ -49,7 +49,7 @@ test('the Still Point sequence remains labeled, save-safe, and deterministic', (
   const status = canticleStatus(legacyState, {}, 0)
   assert.equal(status.measure.id, 'open-ring')
   assert.equal(status.slots[0], 'grace')
-  assert.match(status.explanation, /responsible-release bonus/)
+  assert.match(status.explanation, /composition bonus.*continuous cycle total/)
 })
 
 test('sacred presences and attributes remain outside ordinary mechanics and collectible art', () => {

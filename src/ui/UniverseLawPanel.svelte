@@ -207,7 +207,7 @@
 
 </script>
 
-{#snippet integratedHeader(eyebrow: string, title: string, state: string, detail: string, multiplier: number)}
+{#snippet integratedHeader(eyebrow: string, title: string, state: string, multiplierLabel: string, multiplier: number)}
   <div class="integrated-heading">
     <div class="run-score">
       <strong><i>{pack.currencyGlyph}</i>{format(game.light)}</strong>
@@ -222,7 +222,7 @@
     </div>
     <div class="effect-slot"><span>ACTIVE EFFECT</span><BuffBar integrated reserve /></div>
     <div class="instrument-title"><span>{eyebrow}</span><strong>{title}</strong></div>
-    <div class="instrument-reading"><small>{state}</small><b>×{multiplier.toFixed(2)}</b><em>{detail}</em></div>
+    <div class="instrument-reading"><small>{state}</small><b>×{multiplier.toFixed(2)}</b><em>{multiplierLabel}</em></div>
     <button type="button" class="instrument-toggle" aria-label={instrumentExpanded ? 'Collapse universe instrument' : 'Open universe instrument'} aria-expanded={instrumentExpanded} onclick={toggleInstrument}>{instrumentExpanded ? '⌃' : '⌄'}</button>
     <button type="button" class="primer-toggle" aria-label="Explain this universe instrument" aria-expanded={primerOpen} onclick={togglePrimer}>?</button>
   </div>
@@ -275,7 +275,7 @@
   </section>
 {:else if brahmalok}
   <section class="law-panel brahmalok-mandala" class:instrument-compact={!instrumentExpanded} aria-label="Brahmalok creation mandala">
-    {@render integratedHeader('LOTUS OF BECOMING', 'Four Directions', `${brahmalok.activeBands}/4 DIRECTIONS`, brahmalok.recipe.name, brahmalok.multiplier)}
+    {@render integratedHeader('LOTUS OF BECOMING', 'Four Directions', `${brahmalok.activeBands}/4 DIRECTIONS · ${Math.round(brahmalok.balance * 100)}% BALANCE`, 'CONTINUOUS CREATION', brahmalok.multiplier)}
     {#if instrumentExpanded}
       {@render primerStrip()}
 
@@ -324,7 +324,7 @@
   </section>
 {:else if tempest}
   <section class="law-panel vishnulok-circuit" class:instrument-compact={!instrumentExpanded} aria-label="Vishnulok Endless Circuit">
-    {@render integratedHeader('THE ENDLESS CIRCUIT', tempest.path.name, tempest.boostRemainingSec > 0 ? 'RETURNING' : tempest.ready ? 'CORRECTION READY' : 'GATHERING', `${Math.round(tempest.charge)}% continuity`, tempest.multiplier)}
+    {@render integratedHeader('THE ENDLESS CIRCUIT', tempest.path.name, `${tempest.boostRemainingSec > 0 ? 'RETURNING' : tempest.ready ? 'CORRECTION READY' : 'GATHERING'} · ${Math.round(tempest.charge)}% CONTINUITY`, tempest.boostRemainingSec > 0 ? 'TEMPORARY RETURN' : 'GATHERING BASELINE', tempest.multiplier)}
     {#if instrumentExpanded}
       {@render primerStrip()}
 
@@ -348,12 +348,12 @@
       </div>
 
       <div class="return-stack">
-        <small>SUSTAINING RETURN</small>
+        <small>TEMPORARY RETURN</small>
         <strong>×{tempest.boost.toFixed(2)}</strong>
         <span>{tempest.length} shelters · {tempest.durationSec}s</span>
         <button type="button" disabled={!tempest.ready || tempest.boostRemainingSec > 0} onclick={discharge}>
           <b>{tempest.boostRemainingSec > 0 ? `${Math.ceil(tempest.boostRemainingSec)}s` : '↶ COMPLETE RETURN'}</b>
-          <small>{tempest.ready ? 'close without enclosing' : `${Math.ceil(tempest.threshold - tempest.charge)}% continuity needed`}</small>
+          <small>{tempest.boostRemainingSec > 0 ? 'continuity rests during return' : tempest.ready ? 'close without enclosing' : `${Math.ceil(tempest.threshold - tempest.charge)}% continuity needed`}</small>
         </button>
       </div>
       </div>
@@ -393,7 +393,7 @@
   </section>
 {:else if canticle}
   <section class="law-panel kailash-stillpoint" class:instrument-compact={!instrumentExpanded} aria-label="Kailash Still Point cycle">
-    {@render integratedHeader('THE STILL POINT', canticle.measure.name, `POSITION ${canticle.slotIndex + 1}/16`, canticle.role, canticle.multiplier)}
+    {@render integratedHeader('THE STILL POINT', canticle.measure.name, `POSITION ${canticle.slotIndex + 1}/16 · ${canticle.role.toUpperCase()}`, 'CONTINUOUS CYCLE', canticle.multiplier)}
     {#if instrumentExpanded}
       {@render primerStrip()}
 

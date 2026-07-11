@@ -59,6 +59,11 @@ test('loka law state is legible in the world without opening its instrument', ()
 
 test('late-universe score and instrument share one compact surface', () => {
   assert.match(panelSource, /snippet integratedHeader[\s\S]*class="run-score"[\s\S]*class="instrument-title"/)
+  assert.match(panelSource, /CONTINUOUS CREATION/)
+  assert.match(panelSource, /TEMPORARY RETURN/)
+  assert.match(panelSource, /GATHERING BASELINE/)
+  assert.match(panelSource, /CONTINUOUS CYCLE/)
+  assert.match(panelSource, /continuity rests during return/)
   assert.match(panelSource, /\.creation-stage \{[^}]*height: 5rem/)
   assert.match(panelSource, /\.ocean-layout \{[^}]*height: 4\.6rem/)
   assert.match(panelSource, /\.mountain-cycle \{[^}]*height:7\.2rem/)

@@ -150,7 +150,7 @@ export const routeBrahmalokKindling = routePrismataKindling
 
 export const VISHNULOK_CIRCUITS = [
   { id: 'daily-return', name: 'Daily Return', glyph: '↶', threshold: 20, boost: 1.8, durationSec: 22, defaultLength: 2, defaultRisk: 0, description: 'Frequent modest corrections with a reliable return.' },
-  { id: 'refuge-circuit', name: 'Refuge Circuit', glyph: '⌂', threshold: 70, boost: 4.4, durationSec: 30, defaultLength: 7, defaultRisk: 2, description: 'Carry a large burden through a long chain of shelters.' },
+  { id: 'refuge-circuit', name: 'Refuge Circuit', glyph: '⌂', threshold: 70, boost: 3.4, durationSec: 30, defaultLength: 7, defaultRisk: 2, description: 'Carry a large burden through a long chain of shelters.' },
   { id: 'measured-correction', name: 'Measured Correction', glyph: '≋', threshold: 45, boost: 2.6, durationSec: 48, defaultLength: 6, defaultRisk: 1, description: 'Sustain a broad, stable correction through the middle current.' },
   { id: 'ocean-balance', name: 'Ocean Balance', glyph: '∞', threshold: 35, boost: 3.1, durationSec: 26, defaultLength: 4, defaultRisk: 3, description: 'Follow changing strain through a sharper responsive return.' },
 ] as const
@@ -200,10 +200,10 @@ export function tempestStatus(
   const ready = charge >= threshold
   const multiplier = boostRemainingSec > 0 ? boost : Math.max(0.72, 0.9 + charge * 0.0038 - riskIndex * 0.035)
   const explanation = boostRemainingSec > 0
-    ? `${path.name} is returning across ${length} shelters for ${Math.ceil(boostRemainingSec)}s with a ${risk.name.toLowerCase()} burden.`
+    ? `${path.name} is returning across ${length} shelters for ${Math.ceil(boostRemainingSec)}s with a ${risk.name.toLowerCase()} burden: ×${boost.toFixed(2)} temporary return.`
     : ready
-      ? `${path.name} is ready: ${length} shelters, ${risk.name.toLowerCase()} burden, ×${boost.toFixed(2)} return.`
-      : `${Math.ceil(threshold - charge)}% more continuity is required for this ${length}-shelter ${path.name}.`
+      ? `${path.name} is ready: ${length} shelters, ${risk.name.toLowerCase()} burden, ×${boost.toFixed(2)} temporary return.`
+      : `${Math.ceil(threshold - charge)}% more continuity is required for this ${length}-shelter ${path.name}; current ×${multiplier.toFixed(2)} gathering baseline.`
   return { pathIndex, path, length, riskIndex, risk, threshold, boost, durationSec, charge, boostRemainingSec, ready, multiplier, explanation }
 }
 
@@ -319,7 +319,7 @@ export function canticleStatus(
     patternBonus,
     multiplier,
     nextSlotInMs,
-    explanation: `${measure.name} position ${slotIndex + 1}/${slots.length}: ${role}. ${restCount} rests and ${distinctRoles} acts shape a ×${patternBonus.toFixed(2)} responsible-release bonus.`,
+    explanation: `${measure.name} position ${slotIndex + 1}/${slots.length}: ${role}. ${restCount} rests and ${distinctRoles} acts shape a ×${patternBonus.toFixed(2)} composition bonus inside the current ×${multiplier.toFixed(2)} continuous cycle total.`,
   }
 }
 
@@ -371,7 +371,9 @@ export function advanceF4LawState(
     const status = tempestStatus(state)
     const productionScale = 0.55 + Math.min(1.8, Math.log10(totalOwned(owned, 'u6') + 1) * 0.42)
     const routeScale = (1 + status.riskIndex * 0.06) / (1 + (status.length - 1) * 0.025)
-    writeNumber(state, 'u6-charge', Math.min(100, status.charge + elapsed * productionScale * routeScale))
+    const returningSeconds = Math.min(elapsed, status.boostRemainingSec)
+    const gatheringSeconds = elapsed - returningSeconds
+    writeNumber(state, 'u6-charge', Math.min(100, status.charge + gatheringSeconds * productionScale * routeScale))
     writeNumber(state, 'u6-boost-seconds', Math.max(0, status.boostRemainingSec - elapsed))
   }
 }
