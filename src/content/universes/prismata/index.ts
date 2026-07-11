@@ -96,7 +96,7 @@ export const BRAHMALOK_SPEC: FutureUniverseSpec = {
   ],
   lumen: {
     awake: 'This is not another broken world. The lotus opened before we arrived and does not need us to finish it.',
-    first: 'A Seed Point is possibility without an assigned body. Let us not mistake uncertainty for emptiness.',
+    first: 'A Seed Point is possibility without an assigned body. Also, a loose page has caught in my sleeve three times. I think it has decided we are its margin.',
     law: 'Seed, measure, name, form. Move one Kindling and the whole mandala must answer for the change.',
     civil: 'The Memory Pool keeps every revision beneath the newest page. Knowledge here refuses the clean lie of a final draft.',
     archive: 'The Archive of First Forms records beginnings, corrections, and all the hands that declined to sign the final margin.',

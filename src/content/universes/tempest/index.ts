@@ -93,7 +93,7 @@ export const VISHNULOK_SPEC: FutureUniverseSpec = {
   ],
   lumen: {
     awake: 'The ocean is calm because every current knows where it may return. Nothing here is asleep.',
-    first: 'A Still Drop can endure without refusing change. I had confused preservation with holding perfectly still.',
+    first: 'A Still Drop can endure without refusing change. That little reed boat has passed us twice now—outward, homeward, outward again. It has the better map.',
     law: 'Choose the circuit, its reach, and the burden it can safely carry. A correction is complete only when it comes home.',
     civil: 'The Refuge Archipelago distributes safety. No central harbor can turn welcome into ownership.',
     archive: 'The Ocean of Continuance keeps routes and repairs, including the harms that made repair necessary.',

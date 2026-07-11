@@ -83,7 +83,7 @@ export const KAILASH_SPEC: FutureUniverseSpec = {
   ],
   lumen: {
     awake: 'The mountain is not waiting to be conquered. Read the routes of snow, shelter, ash, cloud, and return.',
-    first: 'Snowmelt is an ending with a recipient. Follow the water before you call the ice gone.',
+    first: 'Snowmelt is an ending with a recipient. There is a lamp at the lowest shelter and a warm cup beside it. Someone expected us to remember the way down.',
     law: 'Five acts and one rest surround the Still Point. These labels are our working map, not a claim that one tradition has only one account.',
     civil: 'The valley opens refuge before the ridge releases anything. Consequence is part of the act, not a later correction.',
     archive: 'Mountain Witness records what changed, who found shelter, and which path remained open afterward.',
