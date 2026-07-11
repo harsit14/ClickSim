@@ -25,9 +25,7 @@
     type VerdanceGeneratorCohortStatus,
   } from '../content/universes/verdance'
   import { resolveVisualQuality } from '../core/preferences'
-  import SetPieceArt from './SetPieceArt.svelte'
-  import { emberlightSetPieceStage } from '../render/emberlight/set-piece-registry'
-  import { emberlightOwnershipThreshold } from '../render/emberlight/flagship-scene'
+  import KindlingShopArt from './KindlingShopArt.svelte'
 
   const AMOUNTS: BuyAmount[] = [1, 10, 100, 'max']
 
@@ -109,6 +107,15 @@
     const hours = Math.ceil(minutes / 60)
     return `next ring in ${hours}h`
   }
+
+  function ownershipThreshold(count: number): 0 | 1 | 10 | 25 | 50 | 100 {
+    if (count >= 100) return 100
+    if (count >= 50) return 50
+    if (count >= 25) return 25
+    if (count >= 10) return 10
+    if (count >= 1) return 1
+    return 0
+  }
 </script>
 
 {#if visible && !suppressed}
@@ -146,13 +153,12 @@
       {#each shown as g (g.id)}
         {@const p = purchase(g)}
         {@const owned = game.owned[g.id] ?? 0}
-        {@const kindlingArt = pack.id === 'emberlight' ? emberlightSetPieceStage(`ember-kindling-${g.id}`) : null}
-        {@const ownershipThreshold = emberlightOwnershipThreshold(owned) ?? 0}
+        {@const artThreshold = ownershipThreshold(owned)}
         {@const cohort = pack.id === 'verdance' ? verdanceGeneratorCohortStatus(g.id, owned, game.numericLawState) : null}
         <button
           class="row"
           data-generator-id={g.id}
-          data-ownership-threshold={kindlingArt ? ownershipThreshold : undefined}
+          data-ownership-threshold={artThreshold}
           class:unaffordable={ltAmount(game.light, p.cost) || genPurchaseDisabled(game, g)}
           onclick={() => tryBuy(g)}
           title={genDisabled(game, g)
@@ -163,15 +169,11 @@
                 ? `${g.flavor} — ${cohort.stageLabel} cohort, production ×${cohort.multiplier.toFixed(2)}, ${cohortTiming(cohort)}`
                 : g.flavor}
         >
-          {#if kindlingArt}
-            {#key `${g.id}-${ownershipThreshold}`}
-              <span class="kindling-icon" class:state-glint={owned > 0} style:--hue={g.hue}>
-                <SetPieceArt stage={kindlingArt} monochrome />
-              </span>
-            {/key}
-          {:else}
-            <span class="dot" style:--hue={g.hue}></span>
-          {/if}
+          {#key `${pack.id}-${g.id}-${artThreshold}`}
+            <span class="kindling-icon" class:state-glint={owned > 0} style:--hue={g.hue}>
+              <KindlingShopArt universeId={pack.id} generatorId={g.id} tier={g.tier} label={g.name} />
+            </span>
+          {/key}
           <span class="info">
             <span class="name">
               <span class="name-label">{g.name}</span>
@@ -349,15 +351,15 @@
   .kindling-icon {
     position: relative;
     flex: none;
-    width: 1.35rem;
-    height: 1.35rem;
+    width: 0.95rem;
+    height: 0.95rem;
     color: hsl(var(--hue, 38), 88%, 68%);
     filter: drop-shadow(0 0 0.24rem hsla(var(--hue, 38), 90%, 62%, 0.34));
   }
   .kindling-icon.state-glint::after {
     content: '';
     position: absolute;
-    inset: -0.15rem;
+    inset: -0.1rem;
     border-radius: 50%;
     border-top: 1px solid rgba(255, 241, 205, 0.8);
     animation: state-glint 520ms ease-out both;

@@ -1,0 +1,86 @@
+import type { UniverseId } from '../content/universes/types'
+
+export interface KindlingShopMark {
+  readonly universeId: UniverseId
+  readonly tier: number
+  readonly family: number
+  readonly phase: number
+  readonly framePath: string
+  readonly bodyPath: string
+  readonly accentPath: string
+}
+
+type ShopMarkUniverse = Exclude<UniverseId, 'emberlight' | 'tidefall'>
+
+const FRAMES: Readonly<Record<ShopMarkUniverse, string>> = {
+  verdance: 'M20 4C30 4 36 11 35 21C34 31 27 36 18 35C9 34 4 27 5 18C6 9 12 4 20 4Z',
+  clockwork: 'M6 6H30L34 10V34H6ZM30 6V10H34M9 9H12M28 31H31',
+  prismata: 'M20 3L37 20L20 37L3 20ZM20 7V33M7 20H33',
+  tempest: 'M7 9C14 4 27 4 34 10V29C27 35 14 36 6 29Z',
+  canticle: 'M20 4A16 16 0 1 1 20 36A16 16 0 1 1 20 4Z',
+}
+
+const BODIES: Readonly<Record<ShopMarkUniverse, readonly [string, string, string, string, string, string]>> = {
+  verdance: [
+    'M20 10C27 14 29 21 25 27C22 32 15 31 12 26C8 20 12 13 20 10ZM20 15V29',
+    'M10 27C11 15 20 9 30 11C29 22 22 30 10 27ZM13 25L27 13',
+    'M20 9V22M20 18L12 27M20 20L20 31M20 17L29 27M15 13C12 11 10 13 10 16M25 13C28 10 31 13 30 16',
+    'M10 21C12 13 28 13 30 21ZM14 21V30M20 21V32M26 21V29',
+    'M20 12C15 7 10 11 12 17C7 18 8 26 14 27C15 34 25 34 26 27C32 27 34 19 28 17C30 11 24 7 20 12ZM20 18V30',
+    'M20 7V31M20 12L11 18M20 16L29 11M20 21L9 28M20 23L31 29M14 32H26',
+  ],
+  clockwork: [
+    'M9 17H15L18 12L23 12L26 17H32V23H26L23 28H18L15 23H9ZM20 17A3 3 0 1 1 20 23A3 3 0 1 1 20 17',
+    'M20 10A10 10 0 1 1 20 30A10 10 0 1 1 20 10ZM20 15A5 5 0 1 1 20 25A5 5 0 1 1 20 15M20 7V10M20 30V33M7 20H10M30 20H33',
+    'M10 28V13H15V18L20 13L25 18L30 13V28ZM14 24L19 20L24 24L29 20',
+    'M9 25C11 14 16 13 18 22C20 31 25 30 28 19C30 12 33 14 32 24M9 29H32',
+    'M20 9V30M12 27L20 16L28 27M9 27A3 3 0 1 1 15 27M25 27A3 3 0 1 1 31 27M15 32H25',
+    'M9 29V13H30V29ZM13 25V18H18V22H23V16H27V25ZM13 11H27',
+  ],
+  prismata: [
+    'M20 8L28 20L20 32L12 20ZM20 8V32M12 20H28',
+    'M7 25L31 12M9 29L33 16M13 17L17 21M23 13L27 17',
+    'M9 29L19 9L31 29ZM19 9V29M19 15L32 12M19 20L34 20M19 25L32 29',
+    'M8 20C12 10 28 10 33 20C28 30 12 30 8 20ZM14 20C17 16 23 16 27 20C23 24 17 24 14 20',
+    'M9 11V29M14 11V29M19 11V29M24 11V29M29 11V29M7 15H33M7 25H33',
+    'M20 7L23 15L32 12L27 20L34 24L25 24L25 33L20 27L15 33L15 24L6 24L13 20L8 12L17 15Z',
+  ],
+  tempest: [
+    'M12 14A5 5 0 1 1 12 24A5 5 0 1 1 12 14M28 16A4 4 0 1 1 28 24A4 4 0 1 1 28 16M9 19H15M12 16V22M25 20H31M17 19H24',
+    'M20 7C26 15 30 21 28 26C26 33 14 33 12 26C10 21 14 15 20 7ZM15 25C18 22 22 28 26 23',
+    'M9 25C6 20 10 15 15 16C16 10 25 9 27 15C33 15 35 22 30 26H11ZM13 30H28',
+    'M12 29C13 23 18 22 18 16C18 12 15 10 14 8M20 31C21 25 27 23 27 17C27 13 25 11 23 9M9 28H31',
+    'M23 7L12 21H19L15 33L29 17H22Z',
+    'M20 9C29 9 33 19 29 26C25 33 14 32 11 24C8 16 15 10 22 13C28 16 26 24 20 25C15 26 12 21 14 17C16 14 21 15 22 18',
+  ],
+  canticle: [
+    'M8 20H13M16 20A4 4 0 1 1 24 20A4 4 0 1 1 16 20M27 20H32M20 8V13M20 27V32',
+    'M8 24C12 10 16 30 20 16C24 5 28 28 33 12M9 29H31',
+    'M9 20C13 11 17 29 21 20C25 11 29 29 32 20M9 26C15 22 25 30 32 24',
+    'M20 9A11 11 0 1 1 20 31A11 11 0 1 1 20 9ZM12 20H28M20 12V28',
+    'M13 9V17C13 27 27 27 27 17V9M20 26V33M15 33H25',
+    'M9 29V13H31V29ZM12 19C15 12 19 27 22 18C25 11 28 25 30 18M12 24C17 20 22 29 29 23',
+  ],
+}
+
+const PHASE_ACCENTS = [
+  'M8 33H16',
+  'M8 33H20M24 33H32',
+  'M7 33H33M11 29H29',
+] as const
+
+export function kindlingShopMark(universeId: UniverseId, tier: number): KindlingShopMark | null {
+  if (universeId === 'emberlight' || universeId === 'tidefall') return null
+  if (!Number.isInteger(tier) || tier < 1 || tier > 18) return null
+  const family = (tier - 1) % 6
+  const phase = Math.floor((tier - 1) / 6)
+  return {
+    universeId,
+    tier,
+    family,
+    phase,
+    framePath: FRAMES[universeId],
+    bodyPath: BODIES[universeId][family],
+    accentPath: PHASE_ACCENTS[phase],
+  }
+}

@@ -114,11 +114,13 @@ test('six Remnants use the shared structural thresholds and have two Lumen lines
 
 test('Phase 2 UI uses authored monochrome artifacts and preserves physical painter order', () => {
   const art = readFileSync(new URL('../src/ui/SetPieceArt.svelte', import.meta.url), 'utf8')
+  const shopArt = readFileSync(new URL('../src/ui/KindlingShopArt.svelte', import.meta.url), 'utf8')
   const shop = readFileSync(new URL('../src/ui/ShopPanel.svelte', import.meta.url), 'utf8')
   const upgrades = readFileSync(new URL('../src/ui/UpgradeBar.svelte', import.meta.url), 'utf8')
   const world = readFileSync(new URL('../src/render/world.ts', import.meta.url), 'utf8')
   assert.match(art, /class:monochrome/)
-  assert.match(shop, /<SetPieceArt stage=\{kindlingArt\} monochrome/)
+  assert.match(shop, /<KindlingShopArt universeId=\{pack\.id\}/)
+  assert.match(shopArt, /<SetPieceArt \{stage\} monochrome/)
   assert.match(shop, /state-glint/)
   assert.match(upgrades, /<SetPieceArt stage=\{artifact\} monochrome/)
   assert.match(world, /sparkCount > 0/)

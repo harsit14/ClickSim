@@ -96,9 +96,14 @@ export const TIDEFALL_SET_PIECES: readonly TidefallSetPiece[] = [
 ] as const
 
 const STAGES = new Map(TIDEFALL_SET_PIECES.flatMap((piece) => piece.stages.map((item) => [item.objectId, item] as const)))
+const STAGES_BY_SOURCE = new Map(TIDEFALL_SET_PIECES.flatMap((piece) => piece.stages.map((item) => [item.sourceId, item] as const)))
 
 export function tidefallSetPieceStage(objectId: string): SetPieceStage | null {
   return STAGES.get(objectId) ?? null
+}
+
+export function tidefallSetPieceStageForSource(sourceId: string): SetPieceStage | null {
+  return STAGES_BY_SOURCE.get(sourceId) ?? null
 }
 
 export type TidefallOwnershipThreshold = 1 | 10 | 25 | 50 | 100
