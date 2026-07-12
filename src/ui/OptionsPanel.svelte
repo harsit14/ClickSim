@@ -6,7 +6,8 @@
   import {
     exportSave,
     exportV12Rollback,
-    importSave,
+    describeSaveImportFailure,
+    importSaveDetailed,
     hardReset,
     listSaveBackups,
     restoreSaveBackup,
@@ -49,6 +50,7 @@
 
   let exportCode = $state('')
   let importCode = $state('')
+  let importError = $state('')
   let message = $state('')
   let backups = $state<SaveBackupSummary[]>([])
   let diagnosticCode = $state('')
@@ -156,14 +158,17 @@
 
   function doImport() {
     if (!importCode.trim()) return
-    if (importSave(importCode)) {
+    const result = importSaveDetailed(importCode)
+    if (result.ok) {
+      importError = ''
       message = 'The light remembers.'
       importCode = ''
       // Imported saves replace nearly every reactive branch. Reloading after the
       // validated snapshot is committed guarantees one coherent mounted world.
       window.location.reload()
     } else {
-      message = 'That code isn’t light. Check it and try again.'
+      message = ''
+      importError = describeSaveImportFailure(result.failure)
     }
   }
 
@@ -338,9 +343,20 @@
     {/if}
 
     <div class="import-row">
-      <textarea aria-label="save code to import" rows="3" bind:value={importCode} placeholder="paste a save code…"></textarea>
+      <textarea
+        aria-label="save code to import"
+        aria-invalid={importError ? 'true' : undefined}
+        aria-describedby={importError ? 'save-import-feedback' : undefined}
+        rows="3"
+        bind:value={importCode}
+        oninput={() => (importError = '')}
+        placeholder="paste a save code…"
+      ></textarea>
       <button class="action" onclick={doImport} disabled={!importCode.trim()}>Import</button>
     </div>
+    {#if importError}
+      <p id="save-import-feedback" class="import-error" role="alert">{importError}</p>
+    {/if}
 
     <details class="backups">
       <summary>Recovery checkpoints <span>{backups.length}</span></summary>
@@ -437,6 +453,7 @@
   .action:disabled { opacity: 0.35; cursor: default; }
   textarea { width: 100%; margin-top: 0.45rem; resize: vertical; padding: 0.45rem; font: 0.57rem/1.4 ui-monospace,monospace; color: var(--text); background: rgba(0,0,0,0.32); border: 1px solid rgba(255,255,255,0.09); border-radius: 8px; user-select: text; -webkit-user-select: text; }
   .import-row { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 0.4rem; }
+  .import-error { margin: 0.4rem 0 0; padding: 0.48rem 0.55rem; color: #ffd7a8; background: rgba(255, 128, 96, 0.065); border-left: 2px solid #ff9d7a; font: 0.6875rem/1.45 system-ui, sans-serif; }
   .backups { margin-top: 0.55rem; padding: 0.5rem 0.55rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.065); border-radius: 8px; }
   .backups summary, .credits summary, .danger-zone summary { font-size: 0.62rem; color: var(--dim); cursor: pointer; }
   .backups summary span { float: right; color: var(--gold); }

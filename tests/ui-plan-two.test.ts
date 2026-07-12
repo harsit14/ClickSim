@@ -100,3 +100,19 @@ test('phase four makes unavailable purchases and goal progress readable without 
     assert.deepEqual(compile(source, { filename: name, generate: 'client' }).warnings, [])
   }
 })
+
+test('phase five places actionable import failures beside the invalid field', () => {
+  const options = read('../src/ui/OptionsPanel.svelte')
+  const save = read('../src/core/save.ts')
+  const feedback = read('../src/core/save-import.ts')
+
+  assert.match(options, /importSaveDetailed\(importCode\)/)
+  assert.match(options, /describeSaveImportFailure\(result\.failure\)/)
+  assert.match(options, /id="save-import-feedback" class="import-error" role="alert"/)
+  assert.match(options, /aria-invalid=\{importError \? 'true'/)
+  assert.match(save, /export function importSaveDetailed/)
+  for (const reason of ['invalid-encoding', 'invalid-json', 'newer-version', 'damaged-save', 'storage-unavailable']) {
+    assert.match(feedback, new RegExp(`case '${reason}'`))
+  }
+  assert.deepEqual(compile(options, { filename: 'OptionsPanel.svelte', generate: 'client' }).warnings, [])
+})

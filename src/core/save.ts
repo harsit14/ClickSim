@@ -4,10 +4,17 @@ import { universeById } from '../content/universes'
 import { advanceVerdanceCohortLawState } from '../content/universes/verdance/runtime'
 import { advanceF4LawState } from '../content/universes/f4-runtime'
 import {
+  LEGACY_SAVE_VERSION,
   migrateAndSanitizeSave,
   stringifySaveDataV23,
   type SaveDataV23,
 } from './save-data'
+import {
+  decodeSaveImportCode,
+  type SaveImportResult,
+} from './save-import'
+export { describeSaveImportFailure } from './save-import'
+export type { SaveImportFailure, SaveImportResult } from './save-import'
 import type { EconomyAmount } from '../content/universes/types'
 import {
   ZERO_AMOUNT,
@@ -459,18 +466,18 @@ export function exportV12Rollback(): string | null {
   }
 }
 
-export function importSave(code: string): boolean {
+export function importSaveDetailed(code: string): SaveImportResult {
+  const decoded = decodeSaveImportCode(code)
+  if (!('json' in decoded)) return { ok: false, failure: decoded }
   try {
-    const json = decodeURIComponent(escape(atob(code.trim())))
-    const version = storedVersion(json)
-    let data = migrateAndSanitizeSave(JSON.parse(json))
-    if (!data) return false
+    let data = migrateAndSanitizeSave(decoded.parsed)
+    if (!data) return { ok: false, failure: { reason: 'damaged-save', version: decoded.version } }
     const current = localStorage.getItem(KEY)
     if (current) writeRecentBackup(current)
-    if (version !== null && version <= 12) {
-      const numeric = commitV13Migration(localStorage, KEY, json, Date.now())
+    if (decoded.version <= LEGACY_SAVE_VERSION) {
+      const numeric = commitV13Migration(localStorage, KEY, decoded.json, Date.now())
       data = numeric ? migrateAndSanitizeSave(numeric) : null
-      if (!data) return false
+      if (!data) return { ok: false, failure: { reason: 'migration-failed', version: decoded.version } }
       localStorage.setItem(KEY, stringifySaveDataV23(data))
       recoveryMessage = 'Imported save upgraded through the numeric migration to v23. The original v12 data is preserved for recovery and export.'
     } else {
@@ -479,10 +486,14 @@ export function importSave(code: string): boolean {
       recoveryMessage = ''
     }
     apply(data)
-    return true
+    return { ok: true }
   } catch {
-    return false
+    return { ok: false, failure: { reason: 'storage-unavailable' } }
   }
+}
+
+export function importSave(code: string): boolean {
+  return importSaveDetailed(code).ok
 }
 
 /** Replaces the stored snapshot without mutating the mounted game. Used by dev scenarios before mount. */
