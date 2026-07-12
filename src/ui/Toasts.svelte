@@ -2,7 +2,7 @@
   import { toastState } from '../systems/toasts.svelte'
 
   let { clearOfShop = false, governed = false }: { clearOfShop?: boolean; governed?: boolean } = $props()
-  const visibleToasts = $derived(governed ? toastState.list.slice(0, 1) : toastState.list)
+  const visibleToasts = $derived(toastState.list.slice(0, 1))
   const queuedCount = $derived(toastState.queue.length + Math.max(0, toastState.list.length - visibleToasts.length))
 </script>
 
@@ -39,11 +39,8 @@
 
 <style>
   .achievement-banner {
-    position: fixed;
-    top: 0.7rem;
-    left: 0.85rem;
-    z-index: 10;
-    width: min(17rem, calc(100vw - 2rem));
+    position: relative;
+    width: 100%;
     min-height: 2.7rem;
     box-sizing: border-box;
     display: grid;
@@ -70,25 +67,14 @@
   @keyframes achievement-arrive { from { opacity: 0; transform: translateY(-0.7rem); } to { opacity: 1; transform: translateY(0); } }
   @keyframes achievement-time { from { transform: scaleX(1); } to { transform: scaleX(0); } }
   .toasts {
-    position: fixed;
-    top: 4rem;
-    right: 1.25rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    width: 16rem;
-    z-index: 9;
+    width: 100%;
     pointer-events: none;
   }
-  .toasts.shop-clear {
-    top: 3.6rem;
-    right: 18rem;
-  }
-  .toasts.governed {
-    top: auto;
-    right: 18rem;
-    bottom: 4.5rem;
-  }
+  .toasts.shop-clear,
+  .toasts.governed { position: relative; }
   .toast {
     padding: 0.65rem 0.85rem;
     background: rgba(14, 13, 26, 0.92);
@@ -132,18 +118,13 @@
     letter-spacing: 0.04em;
   }
   @media (max-width: 800px) {
-    .achievement-banner { top: 8.2rem; left: 50%; width: min(17rem, calc(100vw - 1.2rem)); transform: translateX(-50%); animation: none; }
+    .achievement-banner { width: 100%; animation: none; }
     .toasts,
-    .toasts.shop-clear {
-      top: 14.5rem;
-      bottom: auto;
-      right: 0.6rem;
-      width: 13rem;
-    }
+    .toasts.shop-clear { width: 100%; }
   }
   :global(html[data-lumen-history='open']) .toasts { display: none; }
   @media (max-width: 380px) {
-    .achievement-banner { top: 8.2rem; width: calc(100vw - 1rem); }
+    .achievement-banner { width: 100%; }
     .toasts,
     .toasts.shop-clear { width: min(12rem, calc(100vw - 4rem)); }
   }

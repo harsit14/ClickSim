@@ -9,7 +9,7 @@ export interface Toast {
 let nextKey = 1
 let achievementTimer: ReturnType<typeof setTimeout> | null = null
 const toastTimers = new Map<number, ReturnType<typeof setTimeout>>()
-export const MAX_VISIBLE_TOASTS = 2
+export const MAX_VISIBLE_TOASTS = 1
 
 export const toastState = $state<{ list: Toast[]; queue: Toast[]; achievements: Toast[] }>({
   list: [],

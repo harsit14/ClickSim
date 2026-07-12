@@ -50,7 +50,7 @@ test('phase two governs transients and clears every visible prior-run channel on
   assert.match(app, /offlineGainDismissed = true/)
   assert.match(app, /transientResetToken \+= 1/)
   assert.match(options, /onhardreset\?\.\(\)/)
-  assert.match(toasts, /visibleToasts = \$derived\(governed \? toastState\.list\.slice\(0, 1\)/)
+  assert.match(toasts, /visibleToasts = \$derived\(toastState\.list\.slice\(0, 1\)\)/)
   assert.match(lumen, /if \(resetToken === handledResetToken\) return[\s\S]*history = \[\]/)
   assert.match(omen, /if \(resetToken === handledResetToken\) return[\s\S]*bankedEmbers = null/)
   assert.match(runtime, /for \(const timer of purchaseTimers\) clearTimeout\(timer\)/)

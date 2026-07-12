@@ -582,11 +582,6 @@
 
 <div class="game-shell" class:comparative-blind={comparativeBlind} inert={modalActive} aria-hidden={modalActive}>
   <EmberCanvas {averagedRhythm} {comparativeBlind} />
-  <NumberSuffixHint
-    amount={game.light}
-    currencyName={activePack.currency}
-    suppressed={utilityPanelOpen || storyModalActive || resetPreviewOpen || universeInstrumentActive}
-  />
   {#if activeV2Pack}
     <ManifestWorldLayer
       pack={activeV2Pack}
@@ -651,7 +646,14 @@
   <ComboMeter />
   <LumenTicker resetToken={transientResetToken} onactivitychange={(active) => (lumenActive = active)} />
   <FallingStar resetToken={transientResetToken} reserveShop={hasUi('shop') && !utilityPanelOpen} />
-  <Toasts governed={transientGoverned} clearOfShop={hasUi('shop') && !utilityPanelOpen} />
+  <aside class="notification-lane" aria-label="Notifications">
+    <NumberSuffixHint
+      amount={game.light}
+      currencyName={activePack.currency}
+      suppressed={utilityPanelOpen || storyModalActive || resetPreviewOpen || universeInstrumentActive}
+    />
+    <Toasts governed={transientGoverned} clearOfShop={hasUi('shop') && !utilityPanelOpen} />
+  </aside>
   <WelcomeBack amount={visibleOfflineGain} />
 
   {#if !hasUi('options')}
@@ -798,6 +800,17 @@
     width: min(44rem, calc(100vw - 18rem));
     gap: 0.28rem;
   }
+  .notification-lane {
+    position: fixed;
+    top: 4.25rem;
+    left: 0.75rem;
+    z-index: 10;
+    width: min(16.5rem, calc(50vw - 22.75rem));
+    min-width: 13rem;
+    display: grid;
+    gap: 0.5rem;
+    pointer-events: none;
+  }
   .cohesion-stack {
     position: fixed;
     top: clamp(7.2rem, 17vh, 9.2rem);
@@ -929,6 +942,7 @@
     to { opacity: 1; transform: translateY(0); }
   }
   @media (max-width: 800px) {
+    .notification-lane { top: 14.5rem; right: 0.6rem; left: auto; width: min(13rem, calc(100vw - 1.2rem)); min-width: 0; }
     .top-stack.future-law { width: calc(100vw - 1rem); }
     .cohesion-stack {
       top: 21.5rem;

@@ -5,6 +5,7 @@
   import { save } from '../core/save'
   import { universeById, universeV2ById } from '../content/universes'
   import { game } from '../engine/game.svelte'
+  import { pushAchievementToast, pushToast } from '../systems/toasts.svelte'
 
   const worldPresets = [
     { id: 'opening', label: 'Fresh Opening' },
@@ -46,6 +47,10 @@
       label: 'Completion',
       ids: ['complete-world', 'unlock-multiverse', 'unlock-everything'],
     },
+    {
+      label: 'Presentation QA',
+      ids: ['notification-storm'],
+    },
   ] as const satisfies readonly { label: string; ids: readonly DevCheatId[] }[]
 
   const cheatById = new Map(DEV_CHEATS.map((cheat) => [cheat.id, cheat]))
@@ -66,6 +71,13 @@
   function apply(id: DevCheatId) {
     try {
       notice = applyDevCheat(game, id)
+      if (id === 'notification-storm') {
+        pushAchievementToast('Lane check: achievement', 'The reserved notification lane remains clear of the active instrument.', 'achievement')
+        pushToast('Lane check: Echo', 'A recovered fragment waits without covering controls.', 'echo')
+        pushToast('Lane check: shorthand', 'Number notation stays inside the same reserved lane.', 'number shorthand')
+        pushToast('Lane check: return', 'Continuity is returning through the declared shelters.', 'return')
+        pushToast('Lane check: queue', 'Five messages were fired together and remain ordered.', 'qa')
+      }
       save()
     } catch (error) {
       notice = error instanceof Error ? error.message : String(error)

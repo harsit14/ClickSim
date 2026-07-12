@@ -94,3 +94,23 @@ test('late-universe score and instrument share one compact surface', () => {
   assert.match(buffSource, /class:empty={active\.length === 0}/)
   assert.deepEqual(compile(buffSource, { filename: buffUrl.pathname, generate: 'client' }).warnings, [])
 })
+
+test('loka instruments separate settled status from explicit configuration', () => {
+  assert.match(panelSource, /snippet settledHeader/)
+  assert.match(panelSource, /Refuge Circuit|tempest\.path\.name/)
+  assert.match(panelSource, /shelters · ×/)
+  assert.match(panelSource, /returns in \$\{Math\.ceil\(tempest\.boostRemainingSec\)\}s/)
+  assert.match(panelSource, /aria-label="Configure universe instrument"/)
+  assert.match(panelSource, /class="settled-meter"/)
+  assert.match(panelSource, /returnInProgress[\s\S]*boostRemainingSec > 0/)
+  assert.match(panelSource, /brahmalok\.recipe\.name[\s\S]*canticle\.measure\.name/)
+})
+
+test('Vishnulok microcopy participates in layout flow at every text scale', () => {
+  assert.match(panelSource, /class="circuit-microgrid"[\s\S]*threshold[\s\S]*OPEN REFUGE[\s\S]*burden/)
+  assert.doesNotMatch(panelSource, /class="continuity-threshold"/)
+  assert.doesNotMatch(panelSource, /class="return-line"/)
+  assert.match(panelSource, /\.circuit-microgrid \{[^}]*display:grid/)
+  assert.doesNotMatch(panelSource, /\.circuit-microgrid \{[^}]*position:absolute/)
+  assert.match(panelSource, /data-text-scale='large'[\s\S]*\.circuit-controls \{ grid-template-columns: 1fr;/)
+})

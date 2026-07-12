@@ -145,11 +145,13 @@
       const experienced = localStorage.getItem(instrumentExperienceKey(universeId)) === 'complete' || primerSeen
       const storedLayout = localStorage.getItem(instrumentLayoutKey(universeId))
       const preference = storedLayout === 'expanded' || storedLayout === 'compact' ? storedLayout : 'auto'
-      const shouldOpenPrimer = !primerSeen
-      instrumentExperienced = experienced
+      const returnInProgress = universeId === 'tempest'
+        && tempestStatus(game.numericLawState).boostRemainingSec > 0
+      const shouldOpenPrimer = !primerSeen && !returnInProgress
+      instrumentExperienced = experienced || returnInProgress
       instrumentPreference = preference
-      instrumentExpanded = shouldOpenPrimer || preference === 'expanded'
-        || (preference === 'auto' && !experienced)
+      instrumentExpanded = preference === 'expanded'
+        || (preference !== 'compact' && (shouldOpenPrimer || (!experienced && !returnInProgress)))
       primerOpen = shouldOpenPrimer
     } catch {
       instrumentExperienced = false
@@ -236,6 +238,21 @@
   </div>
 {/snippet}
 
+{#snippet settledHeader(summary: string, meterLabel: string, meterValue: number)}
+  <div class="settled-heading">
+    <div class="run-score">
+      <strong><i>{pack.currencyGlyph}</i>{format(game.light)}</strong>
+      <div>{#if !isZeroAmount(rate)}<span>{format(rate)} {pack.currency.toLowerCase()}/s</span>{/if}</div>
+    </div>
+    <p>{summary}</p>
+    <div class="settled-meter" aria-label={meterLabel}>
+      <i style={`width:${Math.max(0, Math.min(100, meterValue))}%`}></i>
+      <span>{meterLabel}</span>
+    </div>
+    <button type="button" class="configure-toggle" aria-label="Configure universe instrument" aria-expanded="false" onclick={toggleInstrument}>configure</button>
+  </div>
+{/snippet}
+
 {#snippet primerStrip()}
   {#if primerOpen && instrumentPrimer}
     <aside class="instrument-primer" aria-label={`${instrumentPrimer.title}. First-arrival instructions.`}>
@@ -283,8 +300,10 @@
   </section>
 {:else if brahmalok}
   <section class="law-panel brahmalok-mandala" class:instrument-compact={!instrumentExpanded} aria-label="Brahmalok creation mandala">
-    {@render integratedHeader('LOTUS OF BECOMING', 'Four Directions', `${brahmalok.activeBands}/4 DIRECTIONS · ${Math.round(brahmalok.balance * 100)}% BALANCE`, 'CONTINUOUS CREATION', brahmalok.multiplier)}
-    {#if instrumentExpanded}
+    {#if !instrumentExpanded}
+      {@render settledHeader(`${brahmalok.recipe.name} · ${brahmalok.activeBands}/4 directions · ${Math.round(brahmalok.balance * 100)}% balance · ×${brahmalok.multiplier.toFixed(2)}`, `${Math.round(brahmalok.balance * 100)}% balance`, brahmalok.balance * 100)}
+    {:else}
+      {@render integratedHeader('LOTUS OF BECOMING', 'Four Directions', `${brahmalok.activeBands}/4 DIRECTIONS · ${Math.round(brahmalok.balance * 100)}% BALANCE`, 'CONTINUOUS CREATION', brahmalok.multiplier)}
       {@render primerStrip()}
 
       <div class="creation-stage" aria-label={`${brahmalok.activeBands} of 4 creation directions active; ${brahmalok.explanation}`}>
@@ -297,8 +316,9 @@
           </article>
         {/each}
       </div>
-      <div class="mandala-reading"><span>OPEN CENTER</span><b>{brahmalok.recipe.name}</b><small>{Math.round(brahmalok.balance * 100)}% balance</small></div>
       </div>
+
+      <div class="mandala-reading"><span>OPEN CENTER</span><b>{brahmalok.recipe.name}</b><small>{Math.round(brahmalok.balance * 100)}% balance</small></div>
 
       <p class="law-explanation">{brahmalok.explanation}</p>
 
@@ -332,8 +352,10 @@
   </section>
 {:else if tempest}
   <section class="law-panel vishnulok-circuit" class:instrument-compact={!instrumentExpanded} aria-label="Vishnulok Endless Circuit">
-    {@render integratedHeader('THE ENDLESS CIRCUIT', tempest.path.name, `${tempest.boostRemainingSec > 0 ? 'RETURNING' : tempest.ready ? 'CORRECTION READY' : 'GATHERING'} · ${Math.round(tempest.charge)}% CONTINUITY`, tempest.boostRemainingSec > 0 ? 'TEMPORARY RETURN' : 'GATHERING BASELINE', tempest.multiplier)}
-    {#if instrumentExpanded}
+    {#if !instrumentExpanded}
+      {@render settledHeader(`${tempest.path.name} · ${tempest.length} shelters · ×${tempest.multiplier.toFixed(2)} · ${tempest.boostRemainingSec > 0 ? `returns in ${Math.ceil(tempest.boostRemainingSec)}s` : tempest.ready ? 'return ready' : `ready in ${Math.ceil(tempest.threshold - tempest.charge)}%`}`, `${Math.round(tempest.charge)}% of ${tempest.threshold}% threshold`, tempest.threshold > 0 ? (tempest.charge / tempest.threshold) * 100 : 0)}
+    {:else}
+      {@render integratedHeader('THE ENDLESS CIRCUIT', tempest.path.name, `${tempest.boostRemainingSec > 0 ? 'RETURNING' : tempest.ready ? 'CORRECTION READY' : 'GATHERING'} · ${Math.round(tempest.charge)}% CONTINUITY`, tempest.boostRemainingSec > 0 ? 'TEMPORARY RETURN' : 'GATHERING BASELINE', tempest.multiplier)}
       {@render primerStrip()}
 
       <div class="ocean-layout">
@@ -344,15 +366,20 @@
       </div>
 
       <div class="circuit-map" data-burden={tempest.risk.id} aria-label={`${tempest.path.name}, ${tempest.length} shelters, ${tempest.risk.name} burden`}>
-        <div class="ocean-horizon"></div>
-        <div class="refuge-center"><span>OPEN REFUGE</span><b>{tempest.risk.glyph}</b></div>
-        <div class="current-network" aria-hidden="true">
-          {#each Array(8) as _, index}
-            <i class:lit={index < tempest.length} style={`--current-index:${index}`}></i>
-          {/each}
+        <div class="circuit-microgrid">
+          <span>{tempest.threshold}% threshold</span>
+          <span>OPEN REFUGE</span>
+          <span>{tempest.risk.name} burden</span>
         </div>
-        <div class="return-line"><span>{tempest.risk.name} burden</span></div>
-        <div class="continuity-threshold" style={`--threshold:${tempest.threshold}%`}><span>{tempest.threshold}% threshold</span></div>
+        <div class="circuit-art" aria-hidden="true">
+          <div class="ocean-horizon"></div>
+          <div class="refuge-center"><b>{tempest.risk.glyph}</b></div>
+          <div class="current-network">
+            {#each Array(8) as _, index}
+              <i class:lit={index < tempest.length} style={`--current-index:${index}`}></i>
+            {/each}
+          </div>
+        </div>
       </div>
 
       <div class="return-stack">
@@ -401,8 +428,10 @@
   </section>
 {:else if canticle}
   <section class="law-panel kailash-stillpoint" class:instrument-compact={!instrumentExpanded} aria-label="Kailash Still Point cycle">
-    {@render integratedHeader('THE STILL POINT', canticle.measure.name, `POSITION ${canticle.slotIndex + 1}/16 · ${canticle.role.toUpperCase()}`, 'CONTINUOUS CYCLE', canticle.multiplier)}
-    {#if instrumentExpanded}
+    {#if !instrumentExpanded}
+      {@render settledHeader(`${canticle.measure.name} · position ${canticle.slotIndex + 1}/16 · ${canticle.role} · ×${canticle.multiplier.toFixed(2)}`, `${canticle.distinctRoles} acts · ${canticle.restCount} rests`, (canticle.distinctRoles / 6) * 100)}
+    {:else}
+      {@render integratedHeader('THE STILL POINT', canticle.measure.name, `POSITION ${canticle.slotIndex + 1}/16 · ${canticle.role.toUpperCase()}`, 'CONTINUOUS CYCLE', canticle.multiplier)}
       {@render primerStrip()}
 
       <div class="kailash-layout">
@@ -499,6 +528,12 @@
   .primer-toggle:hover, .primer-toggle[aria-expanded='true'], .instrument-toggle:hover { color: white; border-color: var(--amber); background: color-mix(in srgb, var(--amber) 9%, transparent); }
   .instrument-compact { width: min(38rem, calc(100vw - 29rem)); padding: 0.28rem 0.55rem; border-radius: 999px; background: color-mix(in srgb, var(--panel) 78%, transparent); box-shadow: 0 0.45rem 1.8rem color-mix(in srgb, var(--bg) 68%, transparent); }
   .instrument-compact .integrated-heading { min-height: 2.05rem; padding-bottom: 0; border-bottom: 0; }
+  .settled-heading { min-width: 0; display: grid; grid-template-columns: minmax(8rem, auto) minmax(12rem, 1fr) minmax(8rem, 0.7fr) auto; align-items: center; gap: 0.65rem; }
+  .settled-heading > p { min-width: 0; margin: 0; color: color-mix(in srgb, var(--gold) 72%, white); font: 650 0.72rem/1.25 system-ui, sans-serif; }
+  .settled-meter { position: relative; min-width: 0; height: 1.2rem; overflow: hidden; background: color-mix(in srgb, var(--bg) 64%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 999px; }
+  .settled-meter i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, color-mix(in srgb, var(--amber) 38%, transparent), color-mix(in srgb, var(--gold) 48%, transparent)); }
+  .settled-meter span { position: relative; z-index: 1; display: grid; place-items: center; height: 100%; padding: 0 0.35rem; color: white; font: 700 0.58rem/1 system-ui, sans-serif; white-space: nowrap; }
+  .configure-toggle { min-height: 1.7rem; padding: 0.25rem 0.5rem; color: var(--gold); background: color-mix(in srgb, var(--bg) 62%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 24%, transparent); border-radius: 0.45rem; font: 720 0.58rem/1 system-ui, sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
   .instrument-primer { display: grid; grid-template-columns: 5.5rem minmax(0,1fr) 6.4rem auto; align-items: center; gap: 0.42rem; margin: 0.28rem 0 0.12rem; padding: 0.38rem 0.48rem; color: var(--gold); background: linear-gradient(90deg, color-mix(in srgb,var(--amber) 8%,transparent), transparent 58%); border: 1px solid color-mix(in srgb,var(--amber) 20%,transparent); border-radius: 0.45rem; }
   .instrument-primer > div span { display: block; color: var(--amber); font: 740 0.38rem/1 system-ui,sans-serif; letter-spacing: 0.13em; }
   .instrument-primer > div strong { display: block; margin-top: 0.14rem; font: 600 0.57rem/1.1 Georgia,serif; }
@@ -537,7 +572,7 @@
   .creation-directions span { color: var(--amber); font-size: 0.68rem; }
   .creation-directions strong { font-size: 0.48rem; letter-spacing: 0.06em; text-transform: uppercase; }
   .creation-directions b { font: 700 0.5rem/1 ui-monospace, monospace; }
-  .mandala-reading { position: absolute; right: 0.25rem; bottom: 0.2rem; display: grid; gap: 0.08rem; min-width: 6.2rem; padding: 0.26rem 0.35rem; text-align: right; background: color-mix(in srgb, var(--bg) 78%, transparent); border-right: 2px solid color-mix(in srgb, var(--amber) 62%, transparent); }
+  .mandala-reading { display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 0.45rem; margin-top: 0.24rem; padding: 0.28rem 0.4rem; text-align: left; background: color-mix(in srgb, var(--bg) 78%, transparent); border-left: 2px solid color-mix(in srgb, var(--amber) 62%, transparent); }
   .mandala-reading span { color: var(--dim); font: 730 0.38rem/1 system-ui, sans-serif; letter-spacing: 0.1em; }
   .mandala-reading b { color: var(--gold); font-size: 0.52rem; }
   .mandala-reading small { color: var(--dim); font-size: 0.42rem; }
@@ -559,25 +594,27 @@
 
   /* Vishnulok — a responsive ocean circuit, with refuge at its open center. */
   .vishnulok-circuit { width:min(45rem,calc(100vw - 29rem));margin:.12rem auto 0;padding:.42rem .62rem .5rem;border-radius:1.1rem;background:radial-gradient(ellipse at 50% 80%,color-mix(in srgb,#49739c 12%,transparent),transparent 48%),linear-gradient(180deg,color-mix(in srgb,var(--panel) 88%,#08102a),color-mix(in srgb,var(--panel) 95%,#030711)); }
-  .ocean-layout { display: grid; grid-template-columns: 2.2rem minmax(14rem, 1fr) 7.4rem; align-items: stretch; gap: .4rem; height: 4.6rem; margin-top: .28rem; }
+  .ocean-layout { display: grid; grid-template-columns: 2.2rem minmax(14rem, 1fr) 7.4rem; align-items: stretch; gap: .4rem; min-height: 4.6rem; margin-top: .28rem; }
   .continuity-column { display: grid; grid-template-rows: auto 1fr auto; place-items: center; color: var(--dim); font: 720 .34rem/1 system-ui,sans-serif; letter-spacing: .08em; }
   .continuity-column > div { position: relative; width: 1.15rem; height: 3.4rem; overflow: hidden; border: 1px solid color-mix(in srgb,var(--gold) 24%,transparent); border-radius: 999px; background: color-mix(in srgb,var(--bg) 66%,transparent); }
   .continuity-column i { position: absolute; inset: auto 0 0; background: linear-gradient(0deg,#315a92,var(--gold)); box-shadow: 0 0 .8rem color-mix(in srgb,var(--amber) 36%,transparent); }
   .continuity-column b { position:absolute;left:50%;top:50%;color:white;font-size:.42rem;transform:translate(-50%,-50%) rotate(-90deg); }
-  .circuit-map { position:relative;overflow:hidden;border-top:1px solid color-mix(in srgb,var(--gold) 13%,transparent);border-bottom:1px solid color-mix(in srgb,var(--gold) 17%,transparent);background:radial-gradient(ellipse at 50% 58%,color-mix(in srgb,var(--gold) 7%,transparent),transparent 54%); }
+  .circuit-map { min-width:0;display:grid;grid-template-rows:auto 1fr;overflow:hidden;border-top:1px solid color-mix(in srgb,var(--gold) 13%,transparent);border-bottom:1px solid color-mix(in srgb,var(--gold) 17%,transparent);background:radial-gradient(ellipse at 50% 58%,color-mix(in srgb,var(--gold) 7%,transparent),transparent 54%); }
+  .circuit-microgrid { position:relative;z-index:3;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:.35rem;padding:.28rem .35rem;color:var(--dim);background:color-mix(in srgb,var(--bg) 76%,transparent);font:720 .52rem/1.15 system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase; }
+  .circuit-microgrid span:nth-child(2) { color:var(--gold);text-align:center; }
+  .circuit-microgrid span:last-child { text-align:right; }
+  .circuit-art { position:relative;min-height:2.6rem;overflow:hidden; }
   .ocean-horizon { position:absolute;inset:48% -5% auto;height:42%;border-top:1px solid color-mix(in srgb,var(--gold) 30%,transparent);border-radius:50%;background:repeating-radial-gradient(ellipse at 50% 0,transparent 0 .7rem,color-mix(in srgb,#6a94c8 7%,transparent) .72rem .76rem); }
   .refuge-center { position:absolute;left:50%;top:48%;z-index:2;width:3.8rem;aspect-ratio:1.45;display:grid;place-items:center;align-content:center;gap:.12rem;transform:translate(-50%,-50%);color:var(--gold);border:1px solid color-mix(in srgb,var(--gold) 28%,transparent);border-radius:55% 55% 18% 18%;background:color-mix(in srgb,var(--bg) 82%,transparent); }
-  .refuge-center span { font:710 .34rem/1 system-ui,sans-serif;letter-spacing:.07em; }.refuge-center b { color:var(--amber);font-size:.72rem; }
+  .refuge-center b { color:var(--amber);font-size:.72rem; }
   .current-network { position:absolute;inset:0; }.current-network i { --angle:calc(var(--current-index) * 22deg - 78deg);position:absolute;left:50%;top:50%;width:calc(3rem + var(--current-index) * .45rem);height:calc(1.25rem + var(--current-index) * .08rem);transform:translate(-50%,-50%) rotate(var(--angle));border-top:1px solid color-mix(in srgb,var(--gold) 12%,transparent);border-radius:50%; }
   .current-network i::after { content:'';position:absolute;right:0;top:-.13rem;width:.28rem;height:.28rem;border-right:1px solid currentColor;border-top:1px solid currentColor;transform:rotate(45deg); }.current-network i.lit { color:var(--gold);border-color:color-mix(in srgb,var(--amber) 58%,transparent);filter:drop-shadow(0 0 .3rem color-mix(in srgb,var(--amber) 28%,transparent)); }
-  .return-line { position:absolute;inset:auto 0 .1rem;display:grid;place-items:center;height:.8rem;border-top:1px solid color-mix(in srgb,var(--gold) 22%,transparent); }.return-line span { padding:0 .3rem;color:var(--dim);background:var(--panel);font:700 .4rem/1 system-ui,sans-serif;text-transform:uppercase; }
-  .continuity-threshold { position:absolute;left:.2rem;top:calc(100% - var(--threshold));color:var(--dim);border-top:1px dashed color-mix(in srgb,var(--amber) 32%,transparent); }.continuity-threshold span { display:block;transform:translateY(-.5rem);font:620 .38rem/1 ui-monospace,monospace; }
   .return-stack { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.35rem;text-align:center;border:1px solid color-mix(in srgb,var(--gold) 14%,transparent);border-radius:.8rem .8rem .2rem .2rem;background:color-mix(in srgb,var(--bg) 56%,transparent); }
   .return-stack > small { color:var(--dim);font:720 .4rem/1 system-ui,sans-serif;letter-spacing:.07em; }.return-stack > strong { margin-top:.16rem;color:white;font:780 1rem/1 ui-monospace,monospace; }.return-stack > span { margin-top:.1rem;color:var(--dim);font-size:.42rem; }
   .return-stack button { width:100%;margin-top:.38rem;padding:.32rem .16rem;color:var(--bg);background:linear-gradient(180deg,var(--gold),var(--amber));border:0;border-radius:.5rem; }.return-stack button b,.return-stack button small { display:block; }.return-stack button b { font-size:.5rem; }.return-stack button small { margin-top:.1rem;font-size:.34rem; }
-  .circuit-controls { display:grid;grid-template-columns:1fr 1.25fr;gap:.45rem;margin-top:.3rem; }.circuit-cards { display:grid;grid-template-columns:repeat(4,1fr);gap:.2rem; }
+  .circuit-controls { display:grid;grid-template-columns:1fr;gap:.35rem;margin-top:.3rem; }.circuit-cards { display:grid;grid-template-columns:repeat(4,1fr);gap:.2rem; }
   .circuit-cards button { min-width:0;display:grid;grid-template-columns:auto 1fr;gap:.08rem .18rem;place-items:center start;padding:.22rem .2rem;color:var(--dim);text-align:left;background:color-mix(in srgb,var(--bg) 62%,transparent);border:1px solid color-mix(in srgb,var(--gold) 12%,transparent);border-radius:.65rem .2rem .65rem .2rem; }.circuit-cards button span { grid-row:1 / 3;color:var(--amber);font-size:.78rem; }.circuit-cards button b { font-size:.45rem; }.circuit-cards button small { font-size:.38rem; }.circuit-cards button[aria-pressed='true'] { color:white;border-color:var(--gold);box-shadow:inset 0 -2px var(--amber); }
-  .circuit-route { display:grid;align-content:center;gap:.32rem;padding-left:.5rem;border-left:1px solid color-mix(in srgb,var(--gold) 12%,transparent); }.reach-scale,.burden-scale { display:grid;grid-template-columns:6rem 1fr;align-items:center;gap:.3rem; }.reach-scale > span,.burden-scale > span { color:var(--dim);font:720 .4rem/1 system-ui,sans-serif;letter-spacing:.07em; }.reach-scale > div,.burden-scale > div { display:flex;gap:.16rem; }
+  .circuit-route { display:grid;align-content:center;gap:.32rem;padding-top:.35rem;border-top:1px solid color-mix(in srgb,var(--gold) 12%,transparent); }.reach-scale,.burden-scale { display:grid;grid-template-columns:6rem 1fr;align-items:center;gap:.3rem; }.reach-scale > span,.burden-scale > span { color:var(--dim);font:720 .4rem/1 system-ui,sans-serif;letter-spacing:.07em; }.reach-scale > div,.burden-scale > div { display:flex;gap:.16rem; }
   .circuit-route button { flex:1;min-width:0;padding:.22rem .16rem;color:var(--dim);background:color-mix(in srgb,var(--bg) 62%,transparent);border:1px solid color-mix(in srgb,var(--gold) 12%,transparent);font:650 .4rem/1 system-ui,sans-serif; }.circuit-route button[aria-pressed='true'] { color:white;border-color:var(--gold);background:color-mix(in srgb,var(--amber) 9%,transparent); }
 
   /* Kailash — mountain stillness first; the copper ring arrives only after the cycle is responsible. */
@@ -632,9 +669,7 @@
     .direction-routes button,
     .continuity-column,
     .continuity-column b,
-    .refuge-center span,
-    .return-line span,
-    .continuity-threshold span,
+    .circuit-microgrid,
     .return-stack > small,
     .return-stack > span,
     .return-stack button b,
@@ -671,6 +706,15 @@
     .instrument-primer li i { width: 1.1rem; height: 1.1rem; }
     .creation-modes small,
     .cycle-presets small { overflow: visible; text-overflow: clip; white-space: normal; }
+    :global(html[data-text-scale='large']) .effect-slot { display: none; }
+    :global(html[data-text-scale='large']) .integrated-heading { grid-template-columns: minmax(10rem, 1fr) minmax(8rem, 1fr) minmax(8rem, .9fr) 1.5rem 1.5rem; }
+    :global(html[data-text-scale='large']) .instrument-title strong,
+    :global(html[data-text-scale='large']) .instrument-title span,
+    :global(html[data-text-scale='large']) .instrument-reading em { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+    :global(html[data-text-scale='large']) .ocean-layout { height: auto; min-height: 5.8rem; }
+    :global(html[data-text-scale='large']) .circuit-controls { grid-template-columns: 1fr; }
+    :global(html[data-text-scale='large']) .circuit-route { padding: .35rem 0 0; border-top: 1px solid color-mix(in srgb,var(--gold) 12%,transparent); border-left: 0; }
+    :global(html[data-text-scale='large']) .circuit-cards button { align-content: start; }
   }
 
   @media (max-width: 800px) {
@@ -697,6 +741,11 @@
     .instrument-toggle { grid-column: 3; grid-row: 1 / 3; width: 1.2rem; height: 1.2rem; }
     .primer-toggle { grid-column: 4; grid-row: 1 / 3; width: 1.2rem; height: 1.2rem; }
     .instrument-compact { width: min(100%, 34rem); padding: 0.26rem 0.45rem; }
+    .settled-heading { grid-template-columns: minmax(0, 1fr) auto; gap: .3rem .45rem; }
+    .settled-heading .run-score { display: none; }
+    .settled-heading > p { font-size: .64rem; }
+    .settled-meter { grid-column: 1; grid-row: 2; }
+    .configure-toggle { grid-column: 2; grid-row: 1 / 3; }
     .instrument-primer {
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 0.26rem 0.4rem;
@@ -723,6 +772,7 @@
     .continuity-column > div { width: 0.9rem; height: 2.9rem; }
     .continuity-column b { font-size: 0.34rem; }
     .refuge-center { width: 3.1rem; }
+    .circuit-microgrid { gap: .18rem; padding: .22rem; font-size: .42rem; }
     .return-stack { padding: 0.2rem; }
     .return-stack > small { font-size: 0.31rem; }
     .return-stack > strong { font-size: 0.68rem; }

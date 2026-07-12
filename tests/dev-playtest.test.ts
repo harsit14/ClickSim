@@ -55,6 +55,16 @@ test('development cheats reject invalid caller time', () => {
   assert.throws(() => applyDevCheat(state, 'show-all-controls', Number.NaN), /finite and nonnegative/)
 })
 
+test('presentation QA exposes a five-notification storm without changing progression', () => {
+  const state = scenario('opening')
+  const before = JSON.stringify(state)
+  assert.match(applyDevCheat(state, 'notification-storm', 1_000), /Fire 5 Notifications/)
+  assert.equal(JSON.stringify(state), before)
+  const panel = readFileSync(new URL('../src/ui/DevPlaytestPanel.svelte', import.meta.url), 'utf8')
+  assert.equal((panel.match(/pushToast\(/g) ?? []).length, 4)
+  assert.match(panel, /pushAchievementToast\(/)
+})
+
 test('playtest console compiles accessibly and remains behind an explicit dev URL gate', () => {
   const componentUrl = new URL('../src/ui/DevPlaytestPanel.svelte', import.meta.url)
   const componentSource = readFileSync(componentUrl, 'utf8')

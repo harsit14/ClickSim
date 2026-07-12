@@ -30,6 +30,7 @@ export const DEV_CHEATS = [
   { id: 'complete-world', label: 'Complete Current World', description: 'Finish the current world and light its Beacon.' },
   { id: 'unlock-multiverse', label: 'Unlock All Universes', description: 'Light all seven Beacons and unlock every Wayfinder law.' },
   { id: 'unlock-everything', label: 'Unlock Everything', description: 'Complete all current-world and shared progression while leaving endings replayable.' },
+  { id: 'notification-storm', label: 'Fire 5 Notifications', description: 'Queue five presentation-only transients for overlap testing.' },
 ] as const
 
 export type DevCheatId = (typeof DEV_CHEATS)[number]['id']
