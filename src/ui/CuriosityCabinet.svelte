@@ -29,11 +29,13 @@
   } from '../core/numeric/amount'
   import ArchiveRecordArt from './ArchiveRecordArt.svelte'
   import LumenVaultShelf from './LumenVaultShelf.svelte'
+  import { containModalKeydown } from '../accessibility/modal-focus'
 
   let { onclose }: { onclose: () => void } = $props()
   let now = $state(Date.now())
   let letterOpen = $state(false)
   let closeButton: HTMLButtonElement
+  let cabinetDialog: HTMLDivElement
   const pack = $derived(universeById(game.activeUniverse))
   const cabinet = $derived(pack.cabinet)
 
@@ -185,6 +187,7 @@
 <div class="inspection-backdrop" aria-hidden="true"></div>
 
 <div
+  bind:this={cabinetDialog}
   class="cabinet instrument-panel"
   class:emberlight={pack.id === 'emberlight'}
   class:tidefall={pack.id === 'tidefall'}
@@ -197,6 +200,8 @@
   role="dialog"
   aria-modal="true"
   aria-labelledby="cabinet-title"
+  tabindex="-1"
+  onkeydown={(event) => containModalKeydown(event, cabinetDialog, onclose)}
 >
   <header class="cabinet-header">
     <div class="cabinet-heading">

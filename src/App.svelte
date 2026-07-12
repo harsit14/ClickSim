@@ -103,6 +103,7 @@
   let resetComparison = $state<ResetComparison | null>(null)
   let clockworkRevelationActive = $state(false)
   let clockworkRevelationReplay = $state(false)
+  let modalReturnFocus: HTMLElement | null = null
   // Guidance is opt-in. The opening should remain only the Heart and the
   // systems the player has actually unlocked until Settings enables help.
   let goalLensEnabled = $state(false)
@@ -133,6 +134,7 @@
   const activeV2Pack = $derived(universeV2ById(game.activeUniverse))
   const observatoryIdentity = $derived(progressionIdentity(activePack.id).observatory)
   const epochMatterGlyph = $derived(activeV2Pack?.economy.localPrestige.rewardCurrency.glyph ?? '✧')
+  const observatoryDockGlyph = $derived(activePack.id === 'prismata' ? '✤' : epochMatterGlyph)
   const effectiveQuality = $derived(resolveEffectiveVisualQuality(game.visualQuality, {
     width: window.innerWidth,
     devicePixelRatio: window.devicePixelRatio || 1,
@@ -154,7 +156,7 @@
   const storyModalActive = $derived(
     cutsceneActive || questionOpen || remembering || crossingPrelude || clockworkRevelationActive,
   )
-  const modalActive = $derived(storyModalActive || guideOpen || resetPreviewOpen)
+  const modalActive = $derived(storyModalActive || guideOpen || resetPreviewOpen || curiositiesOpen || endgameOpen)
   const goalCandidates = $derived(buildEmberGoalCandidates(game, novaReady, Date.now()))
   const goalLensInput = $derived({
     enabled: goalLensEnabled,
@@ -238,6 +240,7 @@
   }
   function toggleCuriosities() {
     const next = !curiositiesOpen
+    if (next) modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
     closeAll()
     curiositiesOpen = next
   }
@@ -268,8 +271,17 @@
   }
   function toggleEndgame() {
     const next = !endgameOpen
+    if (next) modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
     closeAll()
     endgameOpen = next
+  }
+
+  function closeModalPanel(panel: 'curiosities' | 'endgame') {
+    if (panel === 'curiosities') curiositiesOpen = false
+    else endgameOpen = false
+    const target = modalReturnFocus
+    modalReturnFocus = null
+    requestAnimationFrame(() => target?.focus({ preventScroll: true }))
   }
 
   function onGlobalKeydown(event: KeyboardEvent) {
@@ -532,31 +544,31 @@
 
   <nav class="dock" aria-label="Game sections">
     {#if hasUi('counter')}
-      <button class="dock-btn guide-button" class:open={guideOpen} onclick={toggleGuide} title="The Field Guide · G" data-hint="Field Guide · G" aria-label="The Field Guide" aria-keyshortcuts="G">?</button>
+      <button class="dock-btn guide-button" class:open={guideOpen} onclick={toggleGuide} title="The Field Guide · G" data-hint="Field Guide · G" aria-label="The Field Guide" aria-keyshortcuts="G"><span aria-hidden="true">?</span><small>Guide</small></button>
     {/if}
     {#if hasUi('stats')}
-      <button class="dock-btn" class:open={statsOpen} onclick={toggleStats} title="Run records · I" data-hint="Run records · I" aria-label="Run records" aria-keyshortcuts="I">▤</button>
+      <button class="dock-btn" class:open={statsOpen} onclick={toggleStats} title="Run records · I" data-hint="Run records · I" aria-label="Run records" aria-keyshortcuts="I"><span aria-hidden="true">▤</span><small>Records</small></button>
     {/if}
     {#if hasUi('options')}
-      <button class="dock-btn" class:open={optionsOpen} onclick={toggleOptions} title="Options · O" data-hint="Options · O" aria-label="Options" aria-keyshortcuts="O">⚙</button>
+      <button class="dock-btn" class:open={optionsOpen} onclick={toggleOptions} title="Options · O" data-hint="Options · O" aria-label="Options" aria-keyshortcuts="O"><span aria-hidden="true">⚙</span><small>Options</small></button>
     {/if}
     {#if curiositiesVisible}
-      <button class="dock-btn curiosity" class:open={curiositiesOpen} onclick={toggleCuriosities} title={`${activePack.cabinet.dockTitle} · C`} data-hint={`${activePack.cabinet.dockTitle} · C`} aria-label={activePack.cabinet.dockTitle} aria-keyshortcuts="C">{activePack.cabinet.dockGlyph}</button>
+      <button class="dock-btn curiosity" class:open={curiositiesOpen} onclick={toggleCuriosities} title={`${activePack.cabinet.dockTitle} · C`} data-hint={`${activePack.cabinet.dockTitle} · C`} aria-label={activePack.cabinet.dockTitle} aria-keyshortcuts="C"><span aria-hidden="true">{activePack.cabinet.dockGlyph}</span><small>Cabinet</small></button>
     {/if}
     {#if vesselVisible}
-      <button class="dock-btn vessel" class:open={vesselOpen} class:ready={vesselReady} onclick={toggleVessel} title="The Vessel · V" data-hint="The Vessel · V" aria-label="The Vessel" aria-keyshortcuts="V">⌁</button>
+      <button class="dock-btn vessel" class:open={vesselOpen} class:ready={vesselReady} onclick={toggleVessel} title="The Vessel · V" data-hint="The Vessel · V" aria-label="The Vessel" aria-keyshortcuts="V"><span aria-hidden="true">⌁</span><small>Vessel</small></button>
     {/if}
     {#if observatoryVisible}
-      <button class="dock-btn stardust" class:open={observatoryOpen} class:ready={novaReady} onclick={toggleObservatory} title={`${observatoryIdentity.title} · S`} data-hint={`${observatoryIdentity.title} · S`} aria-label={observatoryIdentity.title} aria-keyshortcuts="S">{epochMatterGlyph}</button>
+      <button class="dock-btn stardust" class:open={observatoryOpen} class:ready={novaReady} onclick={toggleObservatory} title={`${observatoryIdentity.title} · S`} data-hint={`${observatoryIdentity.title} · S`} aria-label={observatoryIdentity.title} aria-keyshortcuts="S"><span aria-hidden="true">{observatoryDockGlyph}</span><small>Epoch reset</small></button>
     {/if}
     {#if deepVisible}
-      <button class="dock-btn deep" class:open={deepOpen} class:ready={deepReady} onclick={toggleDeep} title="The Deep · D" data-hint="The Deep · D" aria-label="The Deep" aria-keyshortcuts="D">◉</button>
+      <button class="dock-btn deep" class:open={deepOpen} class:ready={deepReady} onclick={toggleDeep} title="The Deep · D" data-hint="The Deep · D" aria-label="The Deep" aria-keyshortcuts="D"><span aria-hidden="true">◉</span><small>Deep reset</small></button>
     {/if}
     {#if storyArchiveVisible}
-      <button class="dock-btn" class:open={codexOpen} onclick={toggleCodex} title="Story Archive · E" data-hint="Story Archive · E" aria-label="Story Archive" aria-keyshortcuts="E">❖</button>
+      <button class="dock-btn" class:open={codexOpen} onclick={toggleCodex} title="Story Archive · E" data-hint="Story Archive · E" aria-label="Story Archive" aria-keyshortcuts="E"><span aria-hidden="true">❖</span><small>Story</small></button>
     {/if}
     {#if endgameVisible}
-      <button class="dock-btn legacy" class:open={endgameOpen} class:ready={endgameReady} onclick={toggleEndgame} title="The Legacy of Light · L" data-hint="Legacy · L" aria-label="The Legacy of Light" aria-keyshortcuts="L">⌘</button>
+      <button class="dock-btn legacy" class:open={endgameOpen} class:ready={endgameReady} onclick={toggleEndgame} title="The Legacy of Light · L" data-hint="Legacy · L" aria-label="The Legacy of Light" aria-keyshortcuts="L"><span aria-hidden="true">⌘</span><small>Legacy</small></button>
     {/if}
   </nav>
 
@@ -577,9 +589,6 @@
   {#if openingAccessOpen}
     <OptionsPanel accessOnly onclose={() => (openingAccessOpen = false)} />
   {/if}
-  {#if curiositiesOpen}
-    <CuriosityCabinet onclose={() => (curiositiesOpen = false)} />
-  {/if}
   {#if vesselOpen}
     <VesselPanel onclose={() => (vesselOpen = false)} oncross={beginCrossingPrelude} />
   {/if}
@@ -596,11 +605,14 @@
   {#if deepOpen}
     <TheDeep onclose={() => (deepOpen = false)} />
   {/if}
-  {#if endgameOpen}
-    <EndgameHub onclose={() => (endgameOpen = false)} />
-  {/if}
   <QuestionChip onopen={() => { closeAll(); questionOpen = true }} />
 </div>
+{#if curiositiesOpen}
+  <CuriosityCabinet onclose={() => closeModalPanel('curiosities')} />
+{/if}
+{#if endgameOpen}
+  <EndgameHub onclose={() => closeModalPanel('endgame')} />
+{/if}
 {#if resetPreviewOpen && resetComparison}
   <ResetComparisonCard
     id="supernova-reset-preview"
@@ -704,10 +716,13 @@
   }
   .dock-btn {
     position: relative;
-    width: 2.1rem;
-    height: 2.1rem;
+    min-width: 3.7rem;
+    min-height: 2.75rem;
     display: grid;
+    grid-template-rows: 1.1rem auto;
     place-items: center;
+    gap: 0.12rem;
+    padding: 0.3rem 0.4rem;
     font-size: 1rem;
     color: var(--dim);
     background: var(--panel);
@@ -717,6 +732,8 @@
     animation: dock-in 1s ease both;
     transition: color 0.15s, border-color 0.15s;
   }
+  .dock-btn > span { font-size: 1rem; line-height: 1; }
+  .dock-btn > small { color: color-mix(in srgb, currentColor 84%, white); font: 650 0.625rem/1.1 system-ui, sans-serif; white-space: nowrap; }
   .dock-btn::after {
     content: attr(data-hint);
     position: absolute;

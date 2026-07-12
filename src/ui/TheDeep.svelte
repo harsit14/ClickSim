@@ -260,7 +260,7 @@
             {:else if active}
               <span class="held">underway</span>
             {:else if unlocked}
-              <button class="buy" disabled={!!game.challenge} onclick={() => beginTrial(c.id)}>begin</button>
+              <button class="buy" disabled={!!game.challenge} aria-label={`Begin ${copy.name}. Rule: ${copy.rules}. Goal: ${copy.goalText}.`} onclick={() => beginTrial(c.id)}>begin</button>
             {:else}
               <span class="sealed">after {c.unlockAfter} trials</span>
             {/if}

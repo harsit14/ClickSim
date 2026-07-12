@@ -66,7 +66,7 @@
           <strong>{item.name}</strong>
           <p>{item.description}</p>
           {#if owned && item.lore}<blockquote>{item.lore}</blockquote>{/if}
-          <button disabled={owned || game.lumenShards < item.cost} onclick={() => purchase(item.id)}>
+          <button disabled={owned || game.lumenShards < item.cost} aria-label={owned ? `${item.name} held permanently` : `Unlock ${item.name} for ${item.cost} Lumen Shards`} onclick={() => purchase(item.id)}>
             {owned ? 'held permanently' : `${LUMEN_SHARD_GLYPH} ${item.cost} · unlock`}
           </button>
         </article>
@@ -79,19 +79,19 @@
 <style>
   .vault-shelf { --shelf-hue: var(--hue, 42); margin-top: 1rem; padding: .9rem; border: 1px solid hsla(var(--shelf-hue),65%,72%,.18); border-radius: .85rem; background: radial-gradient(ellipse at 50% 0%,hsla(var(--shelf-hue),70%,58%,.08),transparent 45%),rgba(0,0,0,.2); }
   .vault-shelf > header { display: flex; justify-content: space-between; align-items: start; gap: 1rem; margin-bottom: .75rem; }
-  header span,.item-head span { color: var(--dim); font-size: .55rem; letter-spacing: .13em; text-transform: uppercase; }
+  header span,.item-head span { color: var(--dim); font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; }
   h3 { margin: .14rem 0; font: 700 1rem/1.15 var(--font-story,Georgia,serif); }
-  header p { max-width: 35rem; color: var(--dim); font-size: .68rem; line-height: 1.4; }
+  header p { max-width: 35rem; color: var(--dim); font-size: .6875rem; line-height: 1.4; }
   .balance { display: grid; grid-template-columns: auto auto; column-gap: .42rem; align-items: center; min-width: 7.2rem; padding: .45rem .65rem; border: 1px solid hsla(var(--shelf-hue),65%,72%,.2); border-radius: 4rem; background: rgba(0,0,0,.22); }
-  .balance i { grid-row: 1 / 3; color: var(--gold); font-size: 1.25rem; font-style: normal; } .balance strong { line-height: 1; } .balance small { color: var(--dim); font-size: .48rem; text-transform: uppercase; }
+  .balance i { grid-row: 1 / 3; color: var(--gold); font-size: 1.25rem; font-style: normal; } .balance strong { line-height: 1; } .balance small { color: var(--dim); font-size: .6875rem; text-transform: uppercase; }
   .items { display: grid; grid-template-columns: repeat(auto-fit,minmax(10.5rem,1fr)); gap: .5rem; }
   article { display: flex; flex-direction: column; min-height: 9.4rem; padding: .7rem; border: 1px solid rgba(255,255,255,.07); border-radius: .65rem; background: rgba(255,255,255,.018); }
   article.owned { border-color: hsla(var(--shelf-hue),70%,72%,.28); }
   .item-head { display: flex; justify-content: space-between; align-items: center; } .item-head i { color: var(--gold); font-size: 1.15rem; font-style: normal; }
   article > strong { margin: .25rem 0; font: 700 .82rem/1.2 var(--font-story,Georgia,serif); }
-  article p { flex: 1; color: var(--dim); font-size: .65rem; line-height: 1.4; }
-  blockquote { margin: .42rem 0; padding: .45rem; color: var(--gold); background: hsla(var(--shelf-hue),55%,52%,.05); font: italic .62rem/1.4 var(--font-story,Georgia,serif); }
-  button { width: 100%; min-height: 2rem; font-size: .64rem; }
-  .message { position: sticky; bottom: 0; width: fit-content; margin: .65rem auto 0; padding: .42rem .7rem; color: var(--gold); background: var(--panel); border: 1px solid hsla(var(--shelf-hue),70%,72%,.32); border-radius: 2rem; font-size: .64rem; }
+  article p { flex: 1; color: var(--dim); font-size: .6875rem; line-height: 1.4; }
+  blockquote { margin: .42rem 0; padding: .45rem; color: var(--gold); background: hsla(var(--shelf-hue),55%,52%,.05); font: italic .6875rem/1.4 var(--font-story,Georgia,serif); }
+  button { width: 100%; min-height: 2rem; font-size: .6875rem; }
+  .message { position: sticky; bottom: 0; width: fit-content; margin: .65rem auto 0; padding: .42rem .7rem; color: var(--gold); background: var(--panel); border: 1px solid hsla(var(--shelf-hue),70%,72%,.32); border-radius: 2rem; font-size: .6875rem; }
   @media (max-width: 560px) { .vault-shelf > header { flex-direction: column; } .balance { align-self: stretch; } }
 </style>

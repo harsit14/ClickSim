@@ -56,6 +56,7 @@
 
   type Ritual = 'choice' | 'warden' | 'hunger' | 'companion'
   let ritual = $state<Ritual>('choice')
+  let selectedUniverseId = $state<UniverseId | null>(null)
   let tended = $state<readonly UniverseId[]>([])
   let hungerHolding = $state(false)
   let hungerStartedAt = $state<number | null>(null)
@@ -88,6 +89,7 @@
         : ritualRatio < .7 ? 'They are beginning without you.'
           : 'Stay outside the answer.',
   )
+  const selectedNode = $derived(nodes.find((node) => node.universeId === selectedUniverseId) ?? nodes[0] ?? null)
 
   function cancelFrame() {
     if (animationFrame !== null) cancelAnimationFrame(animationFrame)
@@ -257,6 +259,14 @@
     <h2 id="garden-title">The Garden</h2>
   </header>
 
+  {#if ritual === 'choice' && selectedNode}
+    <section class="presence-reading" aria-live="polite" aria-label={`Question from ${selectedNode.name}`}>
+      <span>{selectedNode.name} asks</span>
+      <strong>{selectedNode.question}</strong>
+      <em>{selectedNode.offering} · {materialFor(selectedNode.universeId)}</em>
+    </section>
+  {/if}
+
   <svg class="relations" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
     <path class="shared-sky" d="M 135 170 C 330 80, 520 110, 780 150" />
     <path class="rain-treaty" d="M 125 420 C 230 520, 350 520, 455 455" />
@@ -275,7 +285,7 @@
 
   <div class="presences">
     {#each nodes as node (node.universeId)}
-      <figure class="presence {node.universeId}" class:tended={tended.includes(node.universeId)}>
+      <figure class="presence {node.universeId}" class:selected={selectedNode?.universeId === node.universeId} class:tended={tended.includes(node.universeId)}>
         <div class="material" aria-hidden="true">
           {#if node.universeId === 'emberlight'}
             <i class="coal"></i><i class="coal"></i><i class="coal"></i><b class="ember"></b>
@@ -293,6 +303,15 @@
             <i class="summit left"></i><i class="summit right"></i><b class="downward-river"></b><b class="open-ring"></b>
           {/if}
         </div>
+        <button
+          class="presence-reader"
+          disabled={ritual !== 'choice' || !!ending}
+          aria-pressed={selectedNode?.universeId === node.universeId}
+          aria-label={`Read ${node.name}: ${node.question}`}
+          onfocus={() => (selectedUniverseId = node.universeId)}
+          onpointerenter={() => (selectedUniverseId = node.universeId)}
+          onclick={() => (selectedUniverseId = node.universeId)}
+        ><span class="sr-only">Read {node.name}</span></button>
         {#if ritual === 'warden' && !ending}
           <button
             class="tend-presence"
@@ -415,8 +434,13 @@
   }
   button:hover, button:focus-visible { color: #fff3d9; outline: 1px solid rgba(232, 221, 198, .42); outline-offset: .25rem; }
   .garden-heading { position: absolute; z-index: 4; top: 4.5%; left: 50%; text-align: center; transform: translateX(-50%); }
-  .garden-heading span { display: block; color: rgba(202, 198, 178, .46); font-size: .58rem; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; }
+  .garden-heading span { display: block; color: rgba(232, 226, 204, .76); font-size: .6875rem; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
   .garden-heading h2 { margin: .25rem 0 0; color: rgba(239, 226, 196, .86); font: italic clamp(1.45rem, 2.3vw, 2.35rem) Fraunces, Georgia, serif; font-weight: 400; letter-spacing: .03em; }
+
+  .presence-reading { position: absolute; z-index: 6; top: 11.5%; left: 50%; width: min(29rem, 72vw); padding: .55rem .8rem; transform: translateX(-50%); text-align: center; background: rgba(5,8,8,.84); border: 1px solid rgba(232,221,198,.2); border-radius: .65rem; }
+  .presence-reading span { display: block; color: rgba(232,226,204,.76); font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; }
+  .presence-reading strong { display: block; margin-top: .18rem; color: #fff3d9; font: italic 700 .82rem/1.35 Fraunces, Georgia, serif; }
+  .presence-reading em { display: block; margin-top: .18rem; color: rgba(232,226,204,.72); font-size: .6875rem; font-style: normal; }
 
   .relations { z-index: -1; width: 100%; height: 100%; opacity: .48; transition: opacity .8s ease, filter .8s ease; }
   .relations path { fill: none; stroke: rgba(198, 186, 143, .28); stroke-width: 1.1; stroke-dasharray: 2 8; vector-effect: non-scaling-stroke; animation: relation-breathe 9s ease-in-out infinite alternate; }
@@ -424,7 +448,7 @@
   .relations .weather-clock, .relations .open-future { stroke: rgba(145, 190, 212, .24); }
   .relations .choir-storms, .relations .garden-map { stroke: rgba(170, 145, 213, .22); }
   .relation-names { z-index: 0; pointer-events: none; }
-  .relation-names span { position: absolute; color: rgba(206, 198, 167, .33); font: italic .55rem Fraunces, Georgia, serif; letter-spacing: .05em; }
+  .relation-names span { position: absolute; color: rgba(238, 229, 195, .72); font: italic .6875rem Fraunces, Georgia, serif; letter-spacing: .04em; text-shadow: 0 1px .35rem #000; }
   .relation-names .shared-sky { top: 16%; left: 44%; }
   .relation-names .rain-treaty { left: 25%; bottom: 18%; }
   .relation-names .weather-clock { top: 37%; right: 8%; }
@@ -434,6 +458,10 @@
   .relation-names .first-water { top: 44%; left: 6%; }
 
   .presence { position: absolute; z-index: 2; width: 11rem; margin: 0; text-align: center; transform: translate(-50%, -50%); transition: opacity .8s ease, filter .8s ease, translate .8s ease, scale .8s ease; }
+  .presence-reader { position: absolute; z-index: 1; inset: -.2rem 1.1rem 0; padding: 0; color: transparent; background: transparent; border: 1px solid transparent; border-radius: 50%; cursor: pointer; }
+  .presence-reader:disabled { pointer-events: none; }
+  .presence-reader:focus-visible,
+  .presence.selected .presence-reader { outline: 2px solid color-mix(in srgb, var(--world) 72%, white); outline-offset: .2rem; }
   .presence.emberlight { left: 13%; top: 27%; --world: #ff9b4a; }
   .presence.tidefall { left: 12%; top: 63%; --world: #57d9c1; }
   .presence.verdance { left: 37%; top: 70%; --world: #9bcc71; }
@@ -445,11 +473,12 @@
   .material i, .material b { position: absolute; display: block; box-sizing: border-box; }
   figcaption strong { display: block; color: color-mix(in srgb, var(--world) 60%, #f3e8cf); font: 600 .78rem Fraunces, Georgia, serif; }
   figcaption span, figcaption small, figcaption em { display: block; margin-top: .15rem; line-height: 1.35; }
-  figcaption span { color: rgba(221, 214, 194, .52); font-size: .55rem; }
-  figcaption small { color: rgba(221, 214, 194, 0); font: italic .56rem Fraunces, Georgia, serif; transition: color .5s ease; }
-  figcaption em { color: rgba(221, 214, 194, .27); font-size: .45rem; font-style: normal; letter-spacing: .06em; }
-  .presence:hover figcaption small { color: rgba(235, 226, 204, .7); }
-  .tend-presence { margin-top: .35rem; padding: .28rem .4rem; color: color-mix(in srgb, var(--world) 55%, #efe2c9); background: rgba(4,8,8,.72); border: 1px solid color-mix(in srgb, var(--world) 35%, transparent); border-radius: 50%; font-size: .48rem; letter-spacing: .07em; cursor: pointer; }
+  figcaption span { color: rgba(238, 231, 211, .76); font-size: .6875rem; }
+  figcaption small { color: transparent; font: italic .6875rem/1.35 Fraunces, Georgia, serif; transition: color .2s ease; }
+  figcaption em { color: rgba(238, 231, 211, .7); font-size: .6875rem; font-style: normal; letter-spacing: .03em; }
+  .presence.selected figcaption small,
+  .presence:focus-within figcaption small { color: rgba(255, 246, 224, .92); }
+  .tend-presence { position: relative; z-index: 2; min-height: 1.5rem; margin-top: .35rem; padding: .28rem .4rem; color: color-mix(in srgb, var(--world) 55%, #efe2c9); background: rgba(4,8,8,.72); border: 1px solid color-mix(in srgb, var(--world) 35%, transparent); border-radius: 50%; font-size: .6875rem; letter-spacing: .04em; cursor: pointer; }
   .tend-presence.complete { color: rgba(232,221,198,.5); border-style: dotted; }
   .presence.tended .material { filter: drop-shadow(0 0 1.1rem color-mix(in srgb, var(--world) 48%, transparent)); }
   .presence.tended::after { content: ''; position: absolute; inset: -.3rem 1.2rem 1.6rem; border: 1px solid color-mix(in srgb, var(--world) 24%, transparent); border-radius: 50%; pointer-events: none; }

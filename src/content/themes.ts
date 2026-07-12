@@ -42,7 +42,7 @@ export const THEMES: ThemeDef[] = [
         '--panel': 'rgba(18, 21, 25, 0.88)',
       },
       prismata: { '--amber': '#d7a34c', '--gold': '#fff0c7', '--panel': 'rgba(22, 16, 24, 0.9)' },
-      tempest: { '--amber': '#5577c8', '--gold': '#f5e5ae', '--panel': 'rgba(8, 14, 35, 0.9)' },
+      tempest: { '--amber': '#587bcd', '--gold': '#f5e5ae', '--panel': 'rgba(8, 14, 35, 0.9)' },
       canticle: { '--amber': '#63a9bf', '--gold': '#e8edf2', '--panel': 'rgba(12, 18, 29, 0.91)' },
     },
   },

@@ -403,7 +403,7 @@
   .cohort {
     margin-top: 0.08rem;
     color: color-mix(in srgb, var(--gold) 66%, var(--dim));
-    font-size: 0.58rem;
+    font-size: 0.6875rem;
     font-weight: 650;
     letter-spacing: 0.045em;
     text-transform: uppercase;

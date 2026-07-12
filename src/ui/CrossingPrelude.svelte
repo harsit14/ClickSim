@@ -153,7 +153,7 @@
   .between-field i:nth-child(3) { transform: translate(-50%, -50%) rotate(90deg); opacity: 0.45; }
   .route-name {
     position: absolute; top: 9%; left: 50%; width: min(31rem, 78vw); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.8rem;
-    transform: translateX(-50%); font: 700 0.58rem/1 var(--font-interface, ui-sans-serif, system-ui); letter-spacing: 0.14em; text-transform: uppercase; color: rgba(185, 226, 239, 0.62);
+    transform: translateX(-50%); font: 700 0.6875rem/1.2 var(--font-interface, ui-sans-serif, system-ui); letter-spacing: 0.12em; text-transform: uppercase; color: rgba(211, 239, 248, 0.82);
   }
   .route-name > i { height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.08), hsla(var(--cross-hue), 80%, 70%, 0.52), rgba(255,255,255,0.08)); }
   .phase-rail { position: absolute; left: 50%; top: 15%; width: min(42rem, 88vw); display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.28rem; margin: 0; padding: 0; transform: translateX(-50%); list-style: none; }
@@ -179,7 +179,7 @@
   .sail.right { left: 52%; clip-path: polygon(0 12%, 0 100%, 100% 86%); }
   .hull { left: 14%; right: 10%; bottom: 18%; height: 2.7rem; border-bottom: 3px solid rgba(255, 217, 138, 0.7); border-radius: 0 0 70% 70%; }
   .heart { left: calc(50% - 0.32rem); bottom: 29%; width: 0.64rem; height: 0.64rem; border-radius: 50%; background: rgba(255, 226, 140, 0.9); box-shadow: 0 0 24px rgba(255, 210, 100, 0.55); }
-  .wrong-foot-mark { position: absolute; left: 50%; top: 84%; display: flex; align-items: center; gap: 0.65rem; transform: translateX(-50%); opacity: 0; font: 700 0.55rem/1 var(--font-interface, ui-sans-serif, system-ui); letter-spacing: 0.1em; text-transform: uppercase; }
+  .wrong-foot-mark { position: absolute; left: 50%; top: 84%; display: flex; align-items: center; gap: 0.65rem; transform: translateX(-50%); opacity: 0; font: 700 0.6875rem/1.2 var(--font-interface, ui-sans-serif, system-ui); letter-spacing: 0.08em; text-transform: uppercase; }
   .wrong-foot-mark span { color: rgba(255, 191, 126, 0.74); text-decoration: line-through; }
   .wrong-foot-mark b { color: hsla(var(--cross-hue), 88%, 78%, 0.9); }
   [data-crossing-phase='between'] .vessel-mark { animation: vessel-uncounted 3.2s steps(6, end) infinite; }

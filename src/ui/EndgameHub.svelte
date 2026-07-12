@@ -40,6 +40,7 @@
   } from '../endgame/garden'
   import type { AutomationProfile, LawLoadout } from '../endgame/types'
   import GardenScene from './GardenScene.svelte'
+  import { containModalKeydown } from '../accessibility/modal-focus'
 
   let { onclose }: { onclose: () => void } = $props()
 
@@ -172,7 +173,7 @@
   }
 </script>
 
-<div bind:this={dialog} class="endgame instrument-panel" class:garden-open={tab === 'garden'} role="dialog" aria-modal="true" aria-labelledby={tab === 'garden' ? 'garden-title' : 'legacy-title'} tabindex="-1">
+<div bind:this={dialog} class="endgame instrument-panel" class:garden-open={tab === 'garden'} role="dialog" aria-modal="true" aria-labelledby={tab === 'garden' ? 'garden-title' : 'legacy-title'} tabindex="-1" onkeydown={(event) => containModalKeydown(event, dialog, onclose)}>
   {#if tab !== 'garden'}
   <header>
     <div>
