@@ -33,6 +33,7 @@ export interface ResetComparisonCardModel {
   readonly requiresExplicitConfirmation: boolean
   readonly sections: readonly ResetComparisonSection[]
   readonly recovery: ResetRecoveryUiModel
+  readonly reward: ResetComparison['reward']
 }
 
 export type ResetCardAction = 'confirm' | 'cancel'
@@ -80,6 +81,7 @@ export function buildResetComparisonCardModel(
       section('parked', 'reset.section.parked', comparison.parked),
     ],
     recovery: comparison.recovery,
+    reward: comparison.reward,
   }
 }
 

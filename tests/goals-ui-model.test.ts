@@ -91,6 +91,7 @@ test('reset card model preserves exact impact categories and caller recovery inp
       basis: 'simulation',
       detailKey: 'recovery.route.simulated',
     },
+    reward: { glyph: '✧', localName: 'Stardust', canonicalName: 'Epoch Matter', current: '2', gain: '3', after: '5' },
   })
   const card = buildResetComparisonCardModel(comparison)
   const lost = card.sections.find(({ id }) => id === 'lost')
@@ -106,6 +107,7 @@ test('reset card model preserves exact impact categories and caller recovery inp
     ['between', 13],
   ])
   assert.deepEqual(card.recovery.inputs, comparison.recovery.inputs)
+  assert.deepEqual(card.reward, comparison.reward)
   assert.equal(card.requiresExplicitConfirmation, true)
 })
 

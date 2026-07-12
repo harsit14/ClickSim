@@ -72,9 +72,20 @@ export interface RecoveryEstimateReport {
   readonly inputs: RecoveryEstimateInputs | null
 }
 
+export interface ResetRewardPreview {
+  readonly glyph: string
+  readonly localName: string
+  readonly canonicalName: string
+  readonly current: string
+  readonly gain: string
+  readonly after: string
+}
+
 export interface ResetComparisonInput {
   readonly boundary: ProgressionBoundary
   readonly recovery?: RecoveryEstimateInputs | null
+  /** Exact, caller-calculated boundary reward. The comparison never recalculates economy. */
+  readonly reward?: ResetRewardPreview | null
   /** Atlas route-only state is either discarded or archived; the source run is never changed. */
   readonly atlasRouteDisposition?: 'discard' | 'archive'
   /** A full wipe retains only an export made outside the save before confirmation. */
@@ -95,6 +106,7 @@ export interface ResetComparison {
   /** Retained but inactive while another universe is active. */
   readonly parked: readonly ResetCategory[]
   readonly recovery: RecoveryEstimateReport
+  readonly reward: ResetRewardPreview | null
   readonly resultKey: string
 }
 
@@ -189,12 +201,13 @@ function recoveryReport(
 
 function base(
   input: ResetComparisonInput,
-  comparison: Omit<ResetComparison, 'boundary' | 'recovery'>,
+  comparison: Omit<ResetComparison, 'boundary' | 'recovery' | 'reward'>,
 ): ResetComparison {
   return {
     boundary: input.boundary,
     ...comparison,
     recovery: recoveryReport(input.boundary, input.recovery),
+    reward: input.reward ?? null,
   }
 }
 

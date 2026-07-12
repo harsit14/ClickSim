@@ -471,6 +471,8 @@
 
   .nova {
     position: relative;
+    min-height: 4.4rem;
+    box-sizing: border-box;
     padding: 0.72rem 1rem;
     margin-bottom: 0.6rem;
     border-top: 1px solid color-mix(in srgb, var(--gold) 16%, transparent);

@@ -20,7 +20,8 @@ const recovery: RecoveryEstimateInputs = {
 }
 
 test('Epoch Turn reports exact World loss and preserves every higher scope', () => {
-  const result = compareProgressionBoundary({ boundary: 'epoch-turn', recovery })
+  const reward = { glyph: '◇', localName: 'Memory Seeds', canonicalName: 'Epoch Matter', current: '4', gain: '3', after: '7' }
+  const result = compareProgressionBoundary({ boundary: 'epoch-turn', recovery, reward })
   assert.deepEqual(ids(result.lost), [
     'world-currency',
     'run-earnings',
@@ -36,6 +37,7 @@ test('Epoch Turn reports exact World loss and preserves every higher scope', () 
   assert.ok(ids(result.retained).includes('beacons'))
   assert.equal(result.recovery.status, 'estimated')
   assert.deepEqual(result.recovery.inputs, recovery)
+  assert.deepEqual(result.reward, reward)
 })
 
 test('Deep Collapse clears World and Epoch scopes but not Deep/history or Between', () => {

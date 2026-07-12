@@ -126,6 +126,14 @@
         <h2 id={titleId}>{resolveText(model.actionLabelKey)}</h2>
         <p id={descriptionId}>{resolveText(model.resultKey)}</p>
       </div>
+      {#if model.reward}
+        <dl class="reward-preview" aria-label={`${model.reward.localName} reward preview`}>
+          <div><dt>now</dt><dd>{model.reward.glyph}{model.reward.current}</dd></div>
+          <div class="reward-gain"><dt>this turn</dt><dd>+{model.reward.glyph}{model.reward.gain}</dd></div>
+          <div><dt>after</dt><dd>{model.reward.glyph}{model.reward.after}</dd></div>
+          <span>{model.reward.localName} · {model.reward.canonicalName}</span>
+        </dl>
+      {/if}
     </header>
 
     <div class="card-body">
@@ -332,7 +340,7 @@
   .reset-card.destructive { border-color: color-mix(in srgb, var(--turn-accent) 34%, transparent); }
   .turn-header {
     display: grid;
-    grid-template-columns: 4.8rem minmax(0, 1fr);
+    grid-template-columns: 4.8rem minmax(0, 1fr) auto;
     align-items: center;
     gap: 1rem;
     padding: 1.05rem 1.25rem 1rem;
@@ -391,6 +399,24 @@
     padding: 0.9rem 1.05rem 1rem;
     scrollbar-width: thin;
   }
+  .reward-preview {
+    min-width: 18rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 0.55rem 0.65rem 0.42rem;
+    background: color-mix(in srgb, var(--turn-warm) 7%, rgba(0, 0, 0, 0.22));
+    border: 1px solid color-mix(in srgb, var(--turn-accent) 24%, transparent);
+    border-radius: 0.5rem 1rem 1rem 0.5rem;
+    box-shadow: inset 2px 0 color-mix(in srgb, var(--turn-warm) 54%, transparent);
+  }
+  .reward-preview div { padding: 0 0.55rem; border-right: 1px solid color-mix(in srgb, var(--turn-accent) 13%, transparent); }
+  .reward-preview div:last-of-type { border-right: 0; }
+  .reward-preview dt { color: var(--dim); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .reward-preview dd { margin-top: 0.16rem; color: color-mix(in srgb, var(--turn-accent) 76%, white); font-size: 0.82rem; font-weight: 720; white-space: nowrap; }
+  .reward-preview .reward-gain dd { color: var(--turn-accent); }
+  .reward-preview > span { grid-column: 1 / -1; margin: 0.38rem 0.55rem 0; color: var(--dim); font-size: 0.62rem; }
   .comparison-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -612,6 +638,10 @@
     footer { flex-direction: column-reverse; }
     .actions { width: 100%; }
     button { flex: 1; }
+  }
+  @media (max-width: 1000px) {
+    .turn-header { grid-template-columns: 4.8rem minmax(0, 1fr); }
+    .reward-preview { grid-column: 1 / -1; width: 100%; min-width: 0; box-sizing: border-box; }
   }
   @media (prefers-reduced-motion: reduce) {
     .reduced-motion-safe,

@@ -60,7 +60,8 @@
   import { worldRef } from './render/world-ref'
   import { clearToasts } from './systems/toasts.svelte'
   import type { EconomyAmount } from './content/universes/types'
-  import { amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
+  import { addAmounts, amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
+  import { format } from './core/format'
   import { resolveEffectiveVisualQuality } from './core/preferences'
   import { renderHealth } from './core/render-health.svelte'
   import { buildEmberGoalCandidates, previewSupernovaRecovery } from './experience/ember-cohesion'
@@ -302,9 +303,19 @@
 
   function beginSupernova() {
     closeAll()
+    const gain = supernovaGain()
+    const rewardCurrency = activeV2Pack?.economy.localPrestige.rewardCurrency
     resetComparison = compareProgressionBoundary({
       boundary: 'epoch-turn',
-      recovery: previewSupernovaRecovery(game, supernovaGain(), Date.now()),
+      recovery: previewSupernovaRecovery(game, gain, Date.now()),
+      reward: rewardCurrency ? {
+        glyph: rewardCurrency.glyph,
+        localName: rewardCurrency.localName,
+        canonicalName: rewardCurrency.canonicalName,
+        current: format(game.stardust),
+        gain: format(gain),
+        after: format(addAmounts(game.stardust, gain)),
+      } : null,
     })
     resetPreviewOpen = true
   }
