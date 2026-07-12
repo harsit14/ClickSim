@@ -1,4 +1,4 @@
-import { game, ratePerSec, snapshotUniverseRun, type RunSnapshot } from '../engine/game.svelte'
+import { applyF4LawEvents, game, ratePerSec, snapshotUniverseRun, type RunSnapshot } from '../engine/game.svelte'
 import { perkBonus } from '../content/constellation'
 import { universeById } from '../content/universes'
 import { advanceVerdanceCohortLawState } from '../content/universes/verdance/runtime'
@@ -122,6 +122,7 @@ function snapshot(): SaveDataV23 {
       ? { ...game.universeRuns }
       : { ...game.universeRuns, [game.activeUniverse]: snapshotUniverseRun() },
     numericLawState: { ...game.numericLawState },
+    lokaProgress: { ...game.lokaProgress },
     endgame: {
       chronicleEvents: game.chronicleEvents.map((event) => ({ ...event })),
       beaconNames: { ...game.beaconNames },
@@ -218,9 +219,11 @@ function apply(d: SaveDataV23) {
       challengesDone: [...run.challengesDone],
       curiosities: [...run.curiosities],
       numericLawState: { ...run.numericLawState },
+      lokaProgress: { ...run.lokaProgress },
     }]),
   )
   game.numericLawState = { ...d.numericLawState }
+  game.lokaProgress = { ...d.lokaProgress }
   game.chronicleEvents = d.endgame.chronicleEvents.map((event) => ({ ...event }))
   game.beaconNames = { ...d.endgame.beaconNames }
   game.lawLoadouts = d.endgame.lawLoadouts.map((loadout) => ({
@@ -440,10 +443,18 @@ export function load(): EconomyAmount {
     return multiplyAmountByNumber(midpointRate, counted * Math.min(1, efficiency))
   }
   if (game.activeUniverse === 'prismata' || game.activeUniverse === 'tempest') {
-    advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5)
+    const context = { upgrades: game.upgrades, archiveCount: game.curiosities.length, promptsPaused: game.challenge !== null }
+    applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5, context))
     const midpointRate = ratePerSec()
-    advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5)
+    applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5, context))
     return multiplyAmountByNumber(midpointRate, counted * Math.min(1, efficiency))
+  }
+  if (game.activeUniverse === 'canticle') {
+    applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted, {
+      upgrades: game.upgrades,
+      archiveCount: game.curiosities.length,
+      promptsPaused: game.challenge !== null,
+    }))
   }
   return multiplyAmountByNumber(ratePerSec(), counted * Math.min(1, efficiency))
 }

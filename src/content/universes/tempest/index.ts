@@ -4,6 +4,18 @@ const kindling = (name: string, flavor: string, silhouette: string) => ({ name, 
 const archive = (name: string, glyph: string, observation: string, implication: string, effect: string, silhouette: string) => ({ name, glyph, observation, implication, effect, silhouette })
 const story = (title: string, provenance: string, text: string) => ({ title, provenance, text })
 
+export const VISHNULOK_STRAIN_COPY = [
+  { id: 'thinning-coast', name: 'Thinning Coast', glyph: '⌇', description: 'A coast thins where a long sustaining route has fallen quiet.', preference: 'long route (6+ shelters), sheltered burden', silhouette: 'broken shore arc beside six numbered shelter marks', pattern: 'wide-spaced shore hatching', restoredFeature: 'repaired reef seam' },
+  { id: 'scattered-school', name: 'Scattered School', glyph: '∴', description: 'A returning school has scattered across the open water.', preference: 'short route, far-reaching burden', silhouette: 'three separated school marks around one short return line', pattern: 'three dotted groups', restoredFeature: 'returning ferry line' },
+  { id: 'crowded-shelter', name: 'Crowded Shelter', glyph: '⌂', description: 'One shelter is carrying more relation than its threshold can hold.', preference: 'medium route, strained burden', silhouette: 'open arch crossed by three measured threshold bars', pattern: 'dense ruled center', restoredFeature: 'lit harbor lamp' },
+  { id: 'divided-currents', name: 'Divided Currents', glyph: '≍', description: 'Two sustaining currents are running too far apart to exchange warmth.', preference: 'Ocean Balance circuit at any length', silhouette: 'two parallel currents joined by one open return', pattern: 'paired lines with a single bridge', restoredFeature: 'joined current marker' },
+] as const
+
+export const VISHNULOK_STRAIN_LUMEN = {
+  firstStrain: 'The ocean did not ask us to defeat anything. It made one strained relation visible and waited for a route that could come home.',
+  firstAnswer: 'The correction returned what it carried. A gold thread remains on the chart, but the refuge is still open.',
+} as const
+
 /** Vishnulok occupies the save-stable `tempest` / `u6` slot. */
 export const VISHNULOK_SPEC: FutureUniverseSpec = {
   id: 'tempest',
@@ -127,7 +139,7 @@ export const VISHNULOK_SPEC: FutureUniverseSpec = {
   tempo: 72,
   meter: 'slow four-part tide of burden, refuge, correction, and return; no devotional melody is imitated',
   audioFamilies: ['low water contact and shell-like breath', 'warm current interval', 'harbor-stone and water response', 'distant open-water call', 'returning current cadence ending in quiet'],
-  silenceState: 'Reserve percentage, segmented route, burden label, return countdown, and captions carry every mechanical signal.',
+  silenceState: 'Reserve percentages, segmented and numbered routes, burden and strain labels, return countdowns, confluence state, and captions carry every mechanical signal.',
   fatiguePolicy: 'Water and low material transients soften above four inputs per second; no mantra, raga, conch ceremony, temple bell, or sacred instrument performance is simulated.',
   routeGlyph: '∞',
   routeArrival: 'an indigo ocean opens one gold returning current around an unoccupied refuge; no sacred figure or attribute is offered for use',
@@ -140,6 +152,9 @@ export const VISHNULOK_SPEC: FutureUniverseSpec = {
     { id: 'u6-ready', text: 'correction ready', shape: 'closed return line with open harbor', pattern: 'bold threshold mark' },
     { id: 'u6-discharging', text: 'return in progress', shape: 'gold path crossing selected shelters', pattern: 'numbered route sequence' },
     { id: 'u6-calm', text: 'still water', shape: 'unbroken horizon over moving depth line', pattern: 'one deep sounding mark' },
+    { id: 'u6-strain', text: 'ocean strain present', shape: 'labeled middle-water marker', pattern: 'strain-specific hatch beside its preferred route' },
+    { id: 'u6-strain-answered', text: 'matching correction ready', shape: 'open marker joined to a numbered return', pattern: 'one bridge line through the strain mark' },
+    { id: 'u6-confluence', text: 'two returns in confluence', shape: 'paired return lines', pattern: 'two numbered paths overlapping without merging' },
   ],
 }
 

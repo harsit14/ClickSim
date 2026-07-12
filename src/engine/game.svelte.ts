@@ -19,11 +19,17 @@ import {
   configureTempestRoute,
   cycleCanticleSlot,
   dischargeTempest,
+  dischargeTempestSecond,
+  enterKailashLongRest as enterKailashLongRestState,
+  exitKailashLongRest as exitKailashLongRestState,
+  kailashLongRestStatus,
   retainedF4LawConfiguration,
   routeBrahmalokKindling,
   selectCanticleMeasure,
   selectBrahmalokMode,
+  selectBrahmalokMarginMode,
   selectTempestPath,
+  type F4LawEvents,
 } from '../content/universes/f4-runtime'
 import {
   DEEP_WORK_BY_ID,
@@ -59,6 +65,7 @@ import {
   type VesselPartId,
 } from '../content/vessel'
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
+import { pushToast } from '../systems/toasts.svelte'
 import type { BeatVisual, MotionPreference, TextScale, VisualQuality } from '../core/preferences'
 import type { EconomyAmount } from '../content/universes/types'
 import {
@@ -172,6 +179,8 @@ export interface UniverseRunState {
   crits: number
   bestCrit: EconomyAmount
   numericLawState: Record<string, EconomyAmount>
+  /** Save-stable lifetime loka traces; survives local Epoch and Deep resets. */
+  lokaProgress: Record<string, number>
 }
 
 export interface ClickResult {
@@ -247,6 +256,8 @@ export interface GameState extends EcoState, Omit<EndgameState,
   universeRuns: Record<string, UniverseRunState>
   /** Amount-valued law state reserved for pure universe hooks. */
   numericLawState: Record<string, EconomyAmount>
+  /** Save-stable lifetime loka traces for the active universe. */
+  lokaProgress: Record<string, number>
 }
 
 /** The Question becomes available once its moment has been witnessed. */
@@ -357,6 +368,7 @@ export const game: GameState = $state({
   vesselPartsByUniverse: {},
   universeRuns: {},
   numericLawState: {},
+  lokaProgress: {},
   ...emptyEndgameState(),
 })
 
@@ -430,6 +442,7 @@ export function snapshotUniverseRun(): UniverseRunState {
     crits: game.crits,
     bestCrit: game.bestCrit,
     numericLawState: { ...game.numericLawState },
+    lokaProgress: { ...game.lokaProgress },
   }
 }
 
@@ -470,6 +483,7 @@ function freshUniverseRun(universeId: string): UniverseRunState {
     crits: 0,
     bestCrit: ZERO_AMOUNT,
     numericLawState: {},
+    lokaProgress: {},
   }
 }
 
@@ -507,6 +521,7 @@ function restoreUniverseRun(run: UniverseRunState) {
   game.crits = run.crits
   game.bestCrit = run.bestCrit
   game.numericLawState = { ...run.numericLawState }
+  game.lokaProgress = { ...run.lokaProgress }
 }
 
 export function universeVisited(id: string): boolean {
@@ -921,12 +936,26 @@ export function buyDeepWork(id: DeepWorkId): boolean {
 
 // ── Curiosities ─────────────────────────────────────────────────────────
 export function buyCuriosity(id: string): boolean {
-  const def = universeById(game.activeUniverse).cabinet.itemById.get(id)
+  const cabinet = universeById(game.activeUniverse).cabinet
+  const def = cabinet.itemById.get(id)
   const cost = def ? toAmount(def.cost) : ZERO_AMOUNT
   if (game.challenge || !def || game.curiosities.includes(id) || !gteAmount(game.light, cost)) return false
   game.light = subtractAmounts(game.light, cost)
   game.curiosities.push(id)
+  const lokaPrefix = game.activeUniverse === 'prismata' ? 'u5' : game.activeUniverse === 'tempest' ? 'u6' : game.activeUniverse === 'canticle' ? 'u7' : null
+  if (lokaPrefix) {
+    const held = new Set(game.curiosities)
+    const shelfIndex = cabinet.shelves.findIndex((shelf) => shelf.ids.includes(id) && shelf.ids.every((recordId) => held.has(recordId)))
+    const key = shelfIndex >= 0 ? `${lokaPrefix}-shelf-${shelfIndex + 1}-at` : ''
+    if (key && !game.lokaProgress[key]) game.lokaProgress[key] = Date.now()
+  }
   if (id === 'snail') game.snailLastGiftAt = Date.now()
+  return true
+}
+
+export function skipLokaShelfSetPiece(key: string): boolean {
+  if (!/^u[567]-shelf-[123]-at$/.test(key) || !game.lokaProgress[key]) return false
+  game.lokaProgress[key] = 1
   return true
 }
 
@@ -1022,6 +1051,9 @@ export function buyNode(id: string): boolean {
 
 /** extraMult carries the rhythm-combo multiplier from the UI layer. */
 export function clickEmber(extraMult = 1): ClickResult {
+  if (game.activeUniverse === 'canticle' && kailashLongRestStatus(game.numericLawState).resting) {
+    return { amount: ZERO_AMOUNT, crit: false, critMult: 1 }
+  }
   const randomAllowed = universeById(game.activeUniverse).twist.randomnessAllowed
   const roll = randomAllowed ? Math.random() : 1
   const chance = critChance()
@@ -1092,9 +1124,32 @@ export function tick(dtSeconds: number) {
       dtSeconds * 1_000,
     )
   }
-  advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, dtSeconds)
+  const lawEvents = advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, dtSeconds, {
+    upgrades: game.upgrades,
+    archiveCount: game.curiosities.length,
+    promptsPaused: game.challenge !== null,
+  })
+  applyF4LawEvents(lawEvents)
   const rate = passiveRatePerSec()
   if (!isZeroAmount(rate)) earn(multiplyAmountByNumber(rate, dtSeconds))
+}
+
+export function applyF4LawEvents(events: F4LawEvents): void {
+  const add = (key: string, value: number) => {
+    if (value <= 0) return
+    game.lokaProgress[key] = Math.min(1_000_000_000, (game.lokaProgress[key] ?? 0) + value)
+  }
+  add('u5-folios', events.foliosEarned)
+  add('u6-routes', events.routesEarned)
+  add('u6-returns', events.returnsCompleted)
+  add('u7-traces', events.tracesEarned)
+  for (const announcement of events.announcements) {
+    pushToast(
+      game.activeUniverse === 'canticle' ? 'Mountain weather' : game.activeUniverse === 'tempest' ? 'Ocean strain' : 'Folio Commission',
+      announcement.text,
+      announcement.key,
+    )
+  }
 }
 
 /** Free, local reconfiguration for the active F4 world law. */
@@ -1115,6 +1170,14 @@ export function configureBrahmalokDirection(kindlingIndex: number, directionInde
 
 /** @deprecated Save-slot compatibility alias. */
 export const configurePrismataRoute = configureBrahmalokDirection
+
+export function configureBrahmalokMargin(index: number | null): boolean {
+  return game.challenge === null
+    && game.activeUniverse === 'prismata'
+    && game.curiosities.length >= 12
+    ? selectBrahmalokMarginMode(game.numericLawState, index)
+    : false
+}
 
 /** Freely binds one Verdance rootstock cohort to one younger scion. */
 export function configureVerdanceGrafting(rootstockIndex: number, scionIndex: number): boolean {
@@ -1152,10 +1215,34 @@ export function editCanticleSlot(slotIndex: number): boolean {
 
 export const editKailashAct = editCanticleSlot
 
+export function kailashLongRestUnlocked(): boolean {
+  return game.activeUniverse === 'canticle' && game.curiosities.length >= 12
+}
+
+export function beginKailashLongRest(): boolean {
+  return game.challenge === null && kailashLongRestUnlocked()
+    ? enterKailashLongRestState(game.numericLawState)
+    : false
+}
+
+export function endKailashLongRest(): boolean {
+  return game.activeUniverse === 'canticle'
+    ? exitKailashLongRestState(game.numericLawState)
+    : false
+}
+
 /** Executes the active law action; Vishnulok completes its declared return. */
 export function activateUniverseLaw(): boolean {
   return game.challenge === null && game.activeUniverse === 'tempest'
     ? dischargeTempest(game.numericLawState)
+    : false
+}
+
+export function activateVishnulokConfluence(): boolean {
+  return game.challenge === null
+    && game.activeUniverse === 'tempest'
+    && game.upgrades.includes('u6-auroral-return')
+    ? dischargeTempestSecond(game.numericLawState)
     : false
 }
 
@@ -1209,5 +1296,6 @@ export function wipe() {
   game.vesselPartsByUniverse = {}
   game.universeRuns = {}
   game.numericLawState = {}
+  game.lokaProgress = {}
   Object.assign(game, emptyEndgameState())
 }

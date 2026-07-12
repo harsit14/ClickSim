@@ -1,20 +1,36 @@
 <script lang="ts">
-  import type { WorldObjectManifest } from '../content/universes/types'
-  import { planKailashFormations } from '../render/canticle/world-layer'
+  import type { EconomyAmount, WorldObjectManifest } from '../content/universes/types'
+  import {
+    planKailashAshBands,
+    planKailashDescent,
+    planKailashFormations,
+    planKailashFrontWeather,
+    planKailashValley,
+  } from '../render/canticle/world-layer'
 
   let {
     objects,
     owned,
     reducedMotion = false,
     quality = 'high',
+    numericLawState,
+    traces = 0,
+    releaseCount = 0,
   }: {
     objects: readonly WorldObjectManifest[]
     owned: Readonly<Record<string, number>>
     reducedMotion?: boolean
     quality?: 'low' | 'balanced' | 'high'
+    numericLawState?: Readonly<Record<string, EconomyAmount>>
+    traces?: number
+    releaseCount?: number
   } = $props()
 
   const formations = $derived(planKailashFormations(objects, owned, quality))
+  const descent = $derived(planKailashDescent(traces))
+  const valley = $derived(planKailashValley(owned))
+  const ashBands = $derived(planKailashAshBands(releaseCount))
+  const weather = $derived(planKailashFrontWeather(numericLawState, owned))
 </script>
 
 <div
@@ -22,6 +38,8 @@
   class:motion-paused={reducedMotion}
   class:low-quality={quality === 'low'}
   data-formation-count={formations.length}
+  data-descent-stations={descent.stations.length}
+  data-front={weather?.frontId ?? 'calm'}
   aria-hidden="true"
 >
   {#each formations as formation (formation.id)}
@@ -50,6 +68,28 @@
       </svg>
     </figure>
   {/each}
+  <div class="ash-core">
+    {#each ashBands as band (band.index)}<i class={band.layer} title={band.silhouette}></i>{/each}
+  </div>
+  <svg class="descent-trail" viewBox="0 0 100 100" preserveAspectRatio="none">
+    {#if descent.stations.length > 1}
+      <path d={`M${descent.stations.map(({ xPercent, yPercent }) => `${xPercent} ${yPercent}`).join('L')}`}></path>
+    {/if}
+  </svg>
+  {#each descent.stations as station, index (station.name)}
+    <i
+      class="descent-station {station.kind}"
+      class:fresh={station.stage === 'fresh'}
+      style={`--station-x:${station.xPercent}%;--station-y:${station.yPercent}%`}
+      title={`${station.name}: ${station.silhouette}`}
+    ><b>{station.kind === 'lamp' ? '✧' : station.kind === 'way-shelter' ? '⌂' : station.kind === 'spring' ? '≈' : station.kind === 'grove' ? '⌃' : station.kind === 'rope-line' ? '—' : '△'}</b><small>{index + 1}</small></i>
+  {/each}
+  {#each valley as feature (feature.id)}
+    <i class="valley-feature" data-source={feature.sourceId} data-threshold={feature.threshold} style={`--valley-x:${feature.xPercent}%;--valley-y:${feature.yPercent}%`} title={`${feature.name}: ${feature.silhouette}`}></i>
+  {/each}
+  {#if weather}
+    <div class="weather-front {weather.frontId} {weather.phase}" class:still={reducedMotion} title={reducedMotion ? weather.reducedMotionState : weather.silhouette}><i></i><span>{weather.frontId.replace('-', ' ')}</span></div>
+  {/if}
 </div>
 
 <style>
@@ -74,9 +114,28 @@
   .cairn .formation-mass { fill:color-mix(in srgb,#26343d 84%,var(--bg)); }
   .horizon .formation-detail { stroke:color-mix(in srgb,var(--kailash-copper) 48%,transparent); }
   .motion-paused .formation-art { animation:none; }
+  .descent-trail { position:absolute;inset:0;width:100%;height:100%;overflow:visible; }
+  .descent-trail path { fill:none;stroke:color-mix(in srgb,var(--kailash-snow) 38%,transparent);stroke-width:.22;stroke-dasharray:1.4 1.1;vector-effect:non-scaling-stroke; }
+  .descent-station { position:absolute;left:var(--station-x);top:var(--station-y);width:1.2rem;height:1.2rem;display:grid;place-items:center;transform:translate(-50%,-50%);color:#b8c9cf;border:1px solid color-mix(in srgb,#cbdde3 46%,transparent);border-radius:50%;background:#13202a;box-shadow:0 .2rem .45rem #03070b; }
+  .descent-station b { font:.65rem/1 system-ui,sans-serif; }
+  .descent-station small { position:absolute;left:100%;top:50%;transform:translate(.12rem,-50%);font:.4rem/1 system-ui,sans-serif;color:#9caeb5; }
+  .descent-station.lamp { color:#f1d08a;box-shadow:0 0 .55rem color-mix(in srgb,#e0a858 50%,transparent); }
+  .descent-station.fresh { border-width:2px;filter:drop-shadow(0 0 .3rem #b8dce7); }
+  .ash-core { position:absolute;left:47%;top:44%;width:7rem;display:grid;gap:2px;transform:rotate(-8deg);opacity:.62; }
+  .ash-core i { height:2px;background:#b9cbd2; }
+  .ash-core .ash { background:#615c5a; }.ash-core .soil { background:#79634d; }.ash-core .shoot { background:#77927a; }
+  .valley-feature { position:absolute;left:var(--valley-x);top:var(--valley-y);width:2.4rem;height:1rem;transform:translate(-50%,-50%);border-bottom:2px solid #7e9a93;border-radius:50%;opacity:.78; }
+  .valley-feature::before,.valley-feature::after { content:'';position:absolute;bottom:0;width:.45rem;height:.65rem;border:1px solid #9ab7b2;border-bottom:0;border-radius:50% 50% 0 0; }
+  .valley-feature::before { left:.35rem; }.valley-feature::after { right:.35rem; }
+  .weather-front { position:absolute;z-index:3;left:6%;right:6%;top:28%;height:3.4rem;border-top:1px solid color-mix(in srgb,#d7e8ee 55%,transparent);opacity:.74;animation:front-drift 8s ease-in-out infinite alternate; }
+  .weather-front i { position:absolute;inset:.25rem 0 auto;height:1.6rem;background:repeating-linear-gradient(165deg,transparent 0 1.2rem,color-mix(in srgb,#dcecf2 20%,transparent) 1.25rem 1.32rem); }
+  .weather-front span { position:absolute;right:2%;top:.25rem;padding:.15rem .3rem;color:#dce9ed;background:#101923;border:1px solid #8298a1;font:700 .45rem/1 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase; }
+  .weather-front.fire-season { border-color:#c57f50; }.weather-front.fire-season i { background:linear-gradient(180deg,color-mix(in srgb,#c57f50 24%,transparent),transparent); }
+  .weather-front.still { animation:none; }
   .low-quality .formation-companion,.low-quality .formation-crown { display:none; }
   :global(html[data-contrast='high']) .formation-mass { stroke:white;stroke-width:1.05; }
   :global(html[data-contrast='high']) .formation-detail,:global(html[data-contrast='high']) .formation-shelter { stroke:#dcebf1; }
   :global(html[data-contrast='high']) .formation-route { stroke:#9de5f2; }
   @keyframes formation-breathe { to { translate:0 -.22rem;opacity:.88; } }
+  @keyframes front-drift { to { transform:translateX(1.5%);opacity:.9; } }
 </style>

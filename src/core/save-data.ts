@@ -187,6 +187,7 @@ export interface SaveUniverseRunStateV13 {
   crits: number
   bestCrit: Amount
   numericLawState: Record<string, Amount>
+  lokaProgress: Record<string, number>
 }
 
 export interface SaveDataV13 extends Omit<SaveDataV12,
@@ -219,6 +220,7 @@ export interface SaveDataV13 extends Omit<SaveDataV12,
   bestCrit: Amount
   darkBetween: Amount
   numericLawState: Record<string, Amount>
+  lokaProgress: Record<string, number>
   universeRuns: Record<string, SaveUniverseRunStateV13>
 }
 
@@ -826,6 +828,20 @@ function sanitizeNumericLawState(value: unknown): Record<string, Amount> {
   return result
 }
 
+function sanitizeLokaProgress(value: unknown): Record<string, number> {
+  if (value === undefined) return {}
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TypeError('lokaProgress must be an object')
+  }
+  const result: Record<string, number> = {}
+  for (const [id, count] of Object.entries(value)) {
+    if (!/^u[567]-[a-z0-9-]+$/.test(id)) throw new TypeError(`Invalid loka progress entry ${id}`)
+    result[id] = integerValue(count, 0, 0, 1_000_000_000)
+    if (Object.keys(result).length > 32) throw new RangeError('Too many loka progress entries')
+  }
+  return result
+}
+
 function serializeNumericLawState(value: Readonly<Record<string, Amount>>): Record<string, SerializedAmount> {
   return Object.fromEntries(
     Object.entries(value).map(([id, amount]) => [id, serializeAmount(amount)]),
@@ -856,6 +872,7 @@ function convertUniverseRunV12(value: LegacyUniverseRunStateV12): SaveUniverseRu
     autoNovaThreshold: amountFromNumber(value.autoNovaThreshold),
     bestCrit: amountFromNumber(value.bestCrit),
     numericLawState: {},
+    lokaProgress: {},
   }
 }
 
@@ -876,6 +893,7 @@ export function convertSaveV12ToV13(value: SaveDataV12): SaveDataV13 {
     bestCrit: amountFromNumber(value.bestCrit),
     darkBetween: amountFromNumber(value.darkBetween),
     numericLawState: {},
+    lokaProgress: {},
     universeRuns: Object.fromEntries(
       Object.entries(value.universeRuns).map(([id, run]) => [id, convertUniverseRunV12(run)]),
     ),
@@ -947,6 +965,7 @@ function sanitizeUniverseRunV13(value: unknown, universeId: string): SaveUnivers
     autoNovaThreshold: maxAmount(ONE_AMOUNT, requiredAmount(source, 'autoNovaThreshold')),
     bestCrit: requiredAmount(source, 'bestCrit'),
     numericLawState: sanitizeNumericLawState(source.numericLawState),
+    lokaProgress: sanitizeLokaProgress(source.lokaProgress),
   }
 }
 
@@ -1035,6 +1054,7 @@ function sanitizeSaveV13(data: unknown): SaveDataV13 | null {
       bestCrit: requiredAmount(source, 'bestCrit'),
       darkBetween: requiredAmount(source, 'darkBetween'),
       numericLawState: sanitizeNumericLawState(source.numericLawState),
+      lokaProgress: sanitizeLokaProgress(source.lokaProgress),
       universeRuns: sanitizeUniverseRunsV13(source.universeRuns),
     }
   } catch {

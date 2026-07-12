@@ -4,6 +4,19 @@ const kindling = (name: string, flavor: string, silhouette: string) => ({ name, 
 const archive = (name: string, glyph: string, observation: string, implication: string, effect: string, silhouette: string) => ({ name, glyph, observation, implication, effect, silhouette })
 const story = (title: string, provenance: string, text: string) => ({ title, provenance, text })
 
+export const KAILASH_FRONT_SIGNALS = [
+  { id: 'u7-front-approaching', text: 'front approaching', shape: 'turned weather vane', pattern: 'single leaning pointer above the ridge' },
+  { id: 'u7-front-active', text: 'front on the ridge', shape: 'named weather band', pattern: 'labeled band with the favored acts listed' },
+  { id: 'u7-front-answered', text: 'front answered', shape: 'weather band with open notch', pattern: 'band broken by one bright composition mark' },
+  { id: 'u7-long-rest', text: 'long rest', shape: 'held ring with lamp below', pattern: 'still act ring above one slowly filling lamp' },
+] as const
+
+export const KAILASH_FRONT_LUMEN = {
+  firstFront: 'Weather is the mountain speaking first. We are not asked to stop it — only to arrange ourselves honestly before it arrives.',
+  firstAnswer: 'The cycle answered the ridge. Look below: the path down has one more mark than it did.',
+  firstLongRest: 'Nothing is earned by stopping, I used to think. The lamp at the lowest shelter disagrees, quietly, all night.',
+} as const
+
 /**
  * Kailash occupies the frozen u7/canticle save slot. Public content is
  * environment-first: sacred presences are never resources, instruments, or
@@ -116,7 +129,7 @@ export const KAILASH_SPEC: FutureUniverseSpec = {
   ],
   tempo: 72, meter: 'five-act visible cycle with player-authored rests',
   audioFamilies: ['low mountain wind', 'soft stone contact', 'meltwater thread', 'bounded copper warmth', 'final silence-and-return cadence'],
-  silenceState: 'Act labels, numbered sequence positions, mountain silhouettes, captions, and the open ring provide complete mechanical equivalence.',
+  silenceState: 'Act labels, numbered sequence positions, named front captions, the static weather band, reserve percentage, mountain silhouettes, and the open ring provide complete mechanical equivalence.',
   fatiguePolicy: 'No mantra, raga, temple ceremony, sacred bell, conch, or damaru simulation. Neutral wind, water, stone, and low bounded percussion remain below fatigue limits.',
   routeGlyph: '△', routeArrival: 'a moonlit mountain appears above an open valley while one silver path descends toward shelter', unlockText: 'complete Vishnulok’s Still Horizon passage',
   beaconName: 'Open Summit Beacon', beaconSilhouette: 'five mountain approaches stopping around an unoccupied still point, with one silver path descending through an incomplete copper ring', beaconReward: 6,
@@ -125,6 +138,9 @@ export const KAILASH_SPEC: FutureUniverseSpec = {
     { id: 'u7-shelter', text: 'shelter', shape: 'open roof', pattern: 'nested valley bands' },
     { id: 'u7-release', text: 'release', shape: 'downward triangle', pattern: 'separated ash marks' },
     { id: 'u7-rest', text: 'rest', shape: 'open circle', pattern: 'bounded empty interval' },
+    { id: 'u7-veil', text: 'veil', shape: 'offset cloud ledges', pattern: 'two broken horizontal lines' },
+    { id: 'u7-grace', text: 'grace', shape: 'open diamond', pattern: 'one lit mark beside the path down' },
+    ...KAILASH_FRONT_SIGNALS,
   ],
 }
 

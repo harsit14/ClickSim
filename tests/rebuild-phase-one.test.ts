@@ -65,11 +65,16 @@ test('the dev silhouette route and vector renderer compile without accessibility
   assert.match(harness, /All Emberlight Kindling silhouettes at 32 pixels/)
 })
 
-test('generic rotated primitive stacking is frozen to the three legacy chamber pieces', () => {
+test('generic rotated primitive stacking has no remaining shipping exemption', () => {
   const future = readFileSync(new URL('../src/render/future-presentation.ts', import.meta.url), 'utf8')
-  assert.match(future, /@deprecated Frozen compatibility bridge/)
-  assert.match(future, /new Set\(\['prismata', 'tempest', 'canticle'\]\)/)
+  assert.match(future, /@deprecated No shipping realm may use this frozen compatibility bridge/)
+  assert.match(future, /new Set<string>\(\)/)
   assert.match(future, /must register authored set-piece paths; generic primitive stacking is frozen/)
+  for (const realm of ['prismata', 'tempest', 'canticle']) {
+    const source = readFileSync(new URL(`../src/render/${realm}/presentation.ts`, import.meta.url), 'utf8')
+    assert.doesNotMatch(source, /createFuturePresentation/)
+    assert.match(source, /createAuthoredLokaPresentation/)
+  }
 })
 
 test('the Coal has a four-second breath, directional compression, cracks, and six accretion stages', () => {

@@ -599,6 +599,19 @@ function makeV2Supplement(
         { messageKey: `${spec.id}.announcement.law`, politeness: 'polite', dedupeKey: `${spec.id}-law`, minimumIntervalMs: 800 },
         { messageKey: `${spec.id}.announcement.omen`, politeness: 'assertive', dedupeKey: `${spec.id}-omen`, minimumIntervalMs: 1_000 },
         { messageKey: `${spec.id}.announcement.epoch`, politeness: 'polite', dedupeKey: `${spec.id}-epoch`, minimumIntervalMs: 3_000 },
+        ...(spec.id === 'prismata' ? [
+          { messageKey: 'prismata.announcement.commission', politeness: 'polite' as const, dedupeKey: 'u5-commission', minimumIntervalMs: 1_000 },
+          { messageKey: 'prismata.announcement.commission-answer', politeness: 'polite' as const, dedupeKey: 'u5-commission-answer', minimumIntervalMs: 1_000 },
+        ] : spec.id === 'tempest' ? [
+          { messageKey: 'tempest.announcement.strain', politeness: 'polite' as const, dedupeKey: 'u6-strain', minimumIntervalMs: 1_000 },
+          { messageKey: 'tempest.announcement.strain-restored', politeness: 'polite' as const, dedupeKey: 'u6-strain-restored', minimumIntervalMs: 1_000 },
+          { messageKey: 'tempest.announcement.confluence', politeness: 'polite' as const, dedupeKey: 'u6-confluence', minimumIntervalMs: 1_000 },
+        ] : spec.id === 'canticle' ? [
+          { messageKey: 'canticle.announcement.front-approach', politeness: 'polite' as const, dedupeKey: 'u7-front-approach', minimumIntervalMs: 1_000 },
+          { messageKey: 'canticle.announcement.front-active', politeness: 'polite' as const, dedupeKey: 'u7-front-active', minimumIntervalMs: 1_000 },
+          { messageKey: 'canticle.announcement.front-answered', politeness: 'polite' as const, dedupeKey: 'u7-front-answered', minimumIntervalMs: 1_000 },
+          { messageKey: 'canticle.announcement.long-rest', politeness: 'polite' as const, dedupeKey: 'u7-long-rest', minimumIntervalMs: 1_000 },
+        ] : []),
       ],
       nonColorSignals: spec.nonColorSignals.map((signal) => ({ stateId: signal.id, text: signal.text, shape: signal.shape, pattern: signal.pattern, highContrastTreatment: `Bold ${signal.shape} with text “${signal.text}”.` })),
       timing: { visualCue: `${spec.heartName} and law panel expose state with labeled shapes.`, audioCue: `${spec.audioFamilies[0]} marks input without carrying exclusive information.`, shapeCue: spec.nonColorSignals.map(({ shape }) => shape).join(', '), averagedModeAvailable: true, averagedRewardRatio: [0.85, 0.9] },

@@ -2,13 +2,18 @@
   import { onMount } from 'svelte'
   import {
     activeRatePerSec,
+    beginKailashLongRest,
+    endKailashLongRest,
     game,
     activateUniverseLaw,
+    activateVishnulokConfluence,
     configureBrahmalokDirection,
+    configureBrahmalokMargin,
     configureVerdanceGrafting,
     configureTempestPath,
     configureUniverseLaw,
     editCanticleSlot,
+    kailashLongRestUnlocked,
     severVerdanceGrafting,
   } from '../engine/game.svelte'
   import { universeById, universeV2ById } from '../content/universes'
@@ -21,8 +26,14 @@
     TEMPEST_PATHS,
     TEMPEST_RISKS,
     canticleStatus,
+    kailashFrontStatus,
+    kailashLongRestStatus,
     brahmalokStatus,
+    brahmalokCommissionStatus,
+    brahmalokMarginModeIndex,
     tempestStatus,
+    f4RateMultiplier,
+    vishnulokStrainStatus,
   } from '../content/universes/f4-runtime'
   import { save } from '../core/save'
   import { format } from '../core/format'
@@ -44,9 +55,15 @@
     ? verdanceGraftingStatus(verdanceKindlings.map(({ id }) => id), game.owned, game.numericLawState)
     : null)
   const brahmalok = $derived(game.activeUniverse === 'prismata' ? brahmalokStatus(game.numericLawState, game.owned) : null)
+  const brahmalokCommission = $derived(game.activeUniverse === 'prismata' && (game.owned['u5-kindling-07'] ?? 0) > 0 ? brahmalokCommissionStatus(game.numericLawState, game.owned, game.curiosities.length) : null)
+  const brahmalokMargin = $derived(game.activeUniverse === 'prismata' ? brahmalokMarginModeIndex(game.numericLawState) : null)
   const tempest = $derived(game.activeUniverse === 'tempest' ? tempestStatus(game.numericLawState) : null)
+  const vishnulokStrain = $derived(game.activeUniverse === 'tempest' && (game.owned['u6-kindling-08'] ?? 0) > 0 ? vishnulokStrainStatus(game.numericLawState) : null)
   const canticle = $derived(game.activeUniverse === 'canticle' ? canticleStatus(game.numericLawState, game.owned, now) : null)
+  const kailashFront = $derived(game.activeUniverse === 'canticle' && (game.owned['u7-kindling-09'] ?? 0) > 0 ? kailashFrontStatus(game.numericLawState, game.owned) : null)
+  const kailashRest = $derived(game.activeUniverse === 'canticle' ? kailashLongRestStatus(game.numericLawState) : null)
   const pack = $derived(universeById(game.activeUniverse))
+  const realmLawMultiplier = $derived(f4RateMultiplier(game.activeUniverse, game.numericLawState, game.owned, now))
   const rate = $derived(activeRatePerSec(now))
   const epochMatter = $derived(universeV2ById(game.activeUniverse)?.economy.localPrestige.rewardCurrency)
   const instrumentPrimers = {
@@ -90,8 +107,20 @@
     markInstrumentExperienced()
   }
 
+  function dischargeSecond() {
+    if (!activateVishnulokConfluence()) return
+    save()
+    markInstrumentExperienced()
+  }
+
   function routeBrahmalok(directionIndex: number) {
     if (!configureBrahmalokDirection(selectedBrahmalokKindling, directionIndex)) return
+    save()
+    markInstrumentExperienced()
+  }
+
+  function setBrahmalokMargin(index: number | null) {
+    if (!configureBrahmalokMargin(index)) return
     save()
     markInstrumentExperienced()
   }
@@ -118,6 +147,13 @@
 
   function editSlot(index: number) {
     if (!editCanticleSlot(index)) return
+    save()
+    markInstrumentExperienced()
+  }
+
+  function toggleLongRest() {
+    const changed = kailashRest?.resting ? endKailashLongRest() : beginKailashLongRest()
+    if (!changed) return
     save()
     markInstrumentExperienced()
   }
@@ -301,9 +337,9 @@
 {:else if brahmalok}
   <section class="law-panel brahmalok-mandala" class:instrument-compact={!instrumentExpanded} aria-label="Brahmalok creation mandala">
     {#if !instrumentExpanded}
-      {@render settledHeader(`${brahmalok.recipe.name} · ${brahmalok.activeBands}/4 directions · ${Math.round(brahmalok.balance * 100)}% balance · ×${brahmalok.multiplier.toFixed(2)}`, `${Math.round(brahmalok.balance * 100)}% balance`, brahmalok.balance * 100)}
+      {@render settledHeader(`${brahmalok.recipe.name} · ${brahmalok.activeBands}/4 directions · ${Math.round(brahmalok.balance * 100)}% balance · ×${realmLawMultiplier.toFixed(2)}`, brahmalokCommission?.phase === 'active' ? `${brahmalokCommission.commission.direction} Commission · ${brahmalokCommission.answered ? 'answer holding' : 'revision requested'}` : brahmalokMargin !== null ? `${BRAHMALOK_MODES[brahmalokMargin].name} in the margin` : `${Math.round(brahmalok.balance * 100)}% balance`, brahmalok.balance * 100)}
     {:else}
-      {@render integratedHeader('LOTUS OF BECOMING', 'Four Directions', `${brahmalok.activeBands}/4 DIRECTIONS · ${Math.round(brahmalok.balance * 100)}% BALANCE`, 'CONTINUOUS CREATION', brahmalok.multiplier)}
+      {@render integratedHeader('LOTUS OF BECOMING', 'Four Directions', `${brahmalok.activeBands}/4 DIRECTIONS · ${Math.round(brahmalok.balance * 100)}% BALANCE`, 'CONTINUOUS CREATION', realmLawMultiplier)}
       {@render primerStrip()}
 
       <div class="creation-stage" aria-label={`${brahmalok.activeBands} of 4 creation directions active; ${brahmalok.explanation}`}>
@@ -330,6 +366,14 @@
           </button>
         {/each}
       </div>
+      {#if game.curiosities.length >= 12}
+        <div class="margin-modes" role="group" aria-label="secondary margin mode at forty percent strength">
+          <button type="button" aria-pressed={brahmalokMargin === null} onclick={() => setBrahmalokMargin(null)}>Open margin</button>
+          {#each BRAHMALOK_MODES as mode, index}
+            <button type="button" disabled={brahmalok.recipeIndex === index} aria-pressed={brahmalokMargin === index} onclick={() => setBrahmalokMargin(index)} title={`${mode.name} at 40% strength`}>{mode.glyph} {mode.name}</button>
+          {/each}
+        </div>
+      {/if}
       <div class="creation-router">
         <label>
           <span>KINDLING TO UNFOLD</span>
@@ -348,14 +392,21 @@
         </div>
       </div>
       </div>
+      {#if brahmalokCommission}
+        <section class="law-prompt brahmalok-commission" data-phase={brahmalokCommission.phase} aria-live="polite" aria-atomic="true">
+          <span aria-hidden="true">{brahmalokCommission.commission.glyph}</span>
+          <div><small>{brahmalokCommission.phase === 'active' ? brahmalokCommission.answered ? 'ANSWER HELD IN REVISION' : `${brahmalokCommission.commission.direction.toUpperCase()} COMMISSION` : 'QUIET MARGINS'}</small><strong>{brahmalokCommission.commission.question}</strong><p>{brahmalokCommission.explanation}</p></div>
+          <b>{brahmalokCommission.phase === 'active' && brahmalokCommission.answered ? `${Math.floor(brahmalokCommission.heldSeconds)}/${60}s` : `${Math.ceil(brahmalokCommission.secondsRemaining)}s`}</b>
+        </section>
+      {/if}
     {/if}
   </section>
 {:else if tempest}
   <section class="law-panel vishnulok-circuit" class:instrument-compact={!instrumentExpanded} aria-label="Vishnulok Endless Circuit">
     {#if !instrumentExpanded}
-      {@render settledHeader(`${tempest.path.name} · ${tempest.length} shelters · ×${tempest.multiplier.toFixed(2)} · ${tempest.boostRemainingSec > 0 ? `returns in ${Math.ceil(tempest.boostRemainingSec)}s` : tempest.ready ? 'return ready' : `ready in ${Math.ceil(tempest.threshold - tempest.charge)}%`}`, `${Math.round(tempest.charge)}% of ${tempest.threshold}% threshold`, tempest.threshold > 0 ? (tempest.charge / tempest.threshold) * 100 : 0)}
+      {@render settledHeader(`${tempest.path.name} · ${tempest.length} shelters · ×${realmLawMultiplier.toFixed(2)} · ${tempest.confluenceActive ? 'CONFLUENCE' : tempest.boostRemainingSec > 0 || tempest.secondBoostRemainingSec > 0 ? `returns in ${Math.ceil(Math.max(tempest.boostRemainingSec, tempest.secondBoostRemainingSec))}s` : tempest.ready ? 'return ready' : `ready in ${Math.ceil(tempest.threshold - tempest.charge)}%`}`, vishnulokStrain?.phase === 'present' ? `${vishnulokStrain.strain.name} · ${vishnulokStrain.answered ? 'matching route' : 'waiting'}` : `${Math.round(tempest.charge)}% of ${tempest.threshold}% threshold`, tempest.threshold > 0 ? (tempest.charge / tempest.threshold) * 100 : 0)}
     {:else}
-      {@render integratedHeader('THE ENDLESS CIRCUIT', tempest.path.name, `${tempest.boostRemainingSec > 0 ? 'RETURNING' : tempest.ready ? 'CORRECTION READY' : 'GATHERING'} · ${Math.round(tempest.charge)}% CONTINUITY`, tempest.boostRemainingSec > 0 ? 'TEMPORARY RETURN' : 'GATHERING BASELINE', tempest.multiplier)}
+      {@render integratedHeader('THE ENDLESS CIRCUIT', tempest.path.name, `${tempest.boostRemainingSec > 0 || tempest.secondBoostRemainingSec > 0 ? 'RETURNING' : tempest.ready ? 'CORRECTION READY' : 'GATHERING'} · ${Math.round(tempest.charge)}% CONTINUITY`, tempest.boostRemainingSec > 0 || tempest.secondBoostRemainingSec > 0 ? 'TEMPORARY RETURN' : 'GATHERING BASELINE', realmLawMultiplier)}
       {@render primerStrip()}
 
       <div class="ocean-layout">
@@ -390,6 +441,12 @@
           <b>{tempest.boostRemainingSec > 0 ? `${Math.ceil(tempest.boostRemainingSec)}s` : '↶ COMPLETE RETURN'}</b>
           <small>{tempest.boostRemainingSec > 0 ? 'continuity rests during return' : tempest.ready ? 'close without enclosing' : `${Math.ceil(tempest.threshold - tempest.charge)}% continuity needed`}</small>
         </button>
+        {#if game.upgrades.includes('u6-auroral-return')}
+          <button type="button" class="second-return" disabled={!tempest.secondReady || tempest.secondBoostRemainingSec > 0} onclick={dischargeSecond}>
+            <b>{tempest.secondBoostRemainingSec > 0 ? `${Math.ceil(tempest.secondBoostRemainingSec)}s` : '↶ SECOND RETURN'}</b>
+            <small>{tempest.secondBoostRemainingSec > 0 ? 'second current returning' : tempest.secondReady ? 'stagger for confluence' : `${Math.ceil(tempest.threshold - tempest.secondCharge)}% second continuity needed`}</small>
+          </button>
+        {/if}
       </div>
       </div>
 
@@ -424,14 +481,21 @@
         </div>
       </div>
       </div>
+      {#if vishnulokStrain}
+        <section class="law-prompt vishnulok-strain" data-phase={vishnulokStrain.phase} aria-live="polite" aria-atomic="true">
+          <span aria-hidden="true">{vishnulokStrain.strain.glyph}</span>
+          <div><small>{vishnulokStrain.phase === 'present' ? vishnulokStrain.answered ? 'MATCHING CORRECTION READY' : 'OCEAN STRAIN' : 'LIVING WATER'}</small><strong>{vishnulokStrain.strain.name}</strong><p>{vishnulokStrain.explanation}</p></div>
+          <b>{vishnulokStrain.phase === 'present' ? `${vishnulokStrain.genericReturns}/2` : `${Math.ceil(vishnulokStrain.secondsUntilPresent)}s`}</b>
+        </section>
+      {/if}
     {/if}
   </section>
 {:else if canticle}
   <section class="law-panel kailash-stillpoint" class:instrument-compact={!instrumentExpanded} aria-label="Kailash Still Point cycle">
     {#if !instrumentExpanded}
-      {@render settledHeader(`${canticle.measure.name} · position ${canticle.slotIndex + 1}/16 · ${canticle.role} · ×${canticle.multiplier.toFixed(2)}`, `${canticle.distinctRoles} acts · ${canticle.restCount} rests`, (canticle.distinctRoles / 6) * 100)}
+      {@render settledHeader(`${canticle.measure.name} · position ${canticle.slotIndex + 1}/16 · ${canticle.role} · ×${realmLawMultiplier.toFixed(2)}`, kailashRest?.resting ? `LONG REST · ${Math.round((kailashRest?.reserveFraction ?? 0) * 100)}% reserve` : kailashFront && kailashFront.phase !== 'calm' ? `${kailashFront.front.name} · ${kailashFront.phase}` : `${canticle.distinctRoles} acts · ${canticle.restCount} rests`, (canticle.distinctRoles / 6) * 100)}
     {:else}
-      {@render integratedHeader('THE STILL POINT', canticle.measure.name, `POSITION ${canticle.slotIndex + 1}/16 · ${canticle.role.toUpperCase()}`, 'CONTINUOUS CYCLE', canticle.multiplier)}
+      {@render integratedHeader('THE STILL POINT', canticle.measure.name, `POSITION ${canticle.slotIndex + 1}/16 · ${canticle.role.toUpperCase()}`, 'CONTINUOUS CYCLE', realmLawMultiplier)}
       {@render primerStrip()}
 
       <div class="kailash-layout">
@@ -471,6 +535,19 @@
         </div>
       </div>
       </div>
+      {#if kailashFront}
+        <section class="law-prompt kailash-front" data-phase={kailashFront.phase} aria-live="polite" aria-atomic="true">
+          <span aria-hidden="true">{kailashFront.front.glyph}</span>
+          <div><small>{kailashFront.phase === 'calm' ? 'RIDGE WEATHER' : kailashFront.phase === 'approaching' ? 'FRONT APPROACHING' : kailashFront.answered ? 'FRONT ANSWERED' : 'FRONT ON THE RIDGE'}</small><strong>{kailashFront.front.name}</strong><p>{kailashFront.explanation}</p></div>
+          <b>{kailashFront.phaseSecondsRemaining > 0 ? `${Math.ceil(kailashFront.phaseSecondsRemaining)}s` : '—'}</b>
+        </section>
+      {/if}
+      {#if kailashRest && kailashLongRestUnlocked()}
+        <div class="long-rest-control" aria-live="polite">
+          <div><small>THE LONG REST</small><strong>{kailashRest.resting ? `${Math.round(kailashRest.reserveFraction * 100)}% grace reserve` : kailashRest.bonusSecondsRemaining > 0 ? `${Math.ceil(kailashRest.bonusSecondsRemaining)}s grace carried` : 'The lowest lamp is ready'}</strong><p>{kailashRest.explanation}</p></div>
+          <button type="button" onclick={toggleLongRest}>{kailashRest.resting ? 'Leave the Long Rest' : 'Enter the Long Rest'}</button>
+        </div>
+      {/if}
     {/if}
   </section>
 {/if}
@@ -491,6 +568,18 @@
   button:focus-visible { outline: 2px solid white; outline-offset: 2px; }
   button:disabled { cursor: default; opacity: 0.42; }
   .law-explanation { margin: 0; color: var(--dim); font: italic 0.6rem/1.3 Georgia, serif; text-align: center; }
+  .law-prompt,.long-rest-control { display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:.55rem;margin-top:.42rem;padding:.42rem .55rem;border:1px solid color-mix(in srgb,var(--gold) 20%,transparent);background:color-mix(in srgb,var(--bg) 74%,transparent); }
+  .law-prompt > span { width:1.6rem;height:1.6rem;display:grid;place-items:center;border:1px solid currentColor;border-radius:50%;font-size:.85rem; }
+  .law-prompt small,.long-rest-control small { display:block;color:var(--dim);font:750 .38rem/1 system-ui,sans-serif;letter-spacing:.14em; }
+  .law-prompt strong,.long-rest-control strong { display:block;margin-top:.12rem;font:650 .62rem/1.1 Georgia,serif; }
+  .law-prompt p,.long-rest-control p { margin:.14rem 0 0;color:var(--dim);font:.47rem/1.25 Georgia,serif; }
+  .law-prompt > b { font:.58rem/1 system-ui,sans-serif;font-variant-numeric:tabular-nums; }
+  .law-prompt[data-phase='active'] { border-style:dashed; }
+  .long-rest-control { grid-template-columns:minmax(0,1fr) auto;border-color:color-mix(in srgb,#9bcbd7 28%,transparent); }
+  .long-rest-control button { padding:.42rem .58rem;color:var(--gold);background:#14222c;border:1px solid #6e929d;border-radius:.3rem;font-size:.48rem; }
+  .margin-modes { grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:.2rem;margin-top:.25rem;padding-top:.25rem;border-top:1px dashed color-mix(in srgb,var(--gold) 18%,transparent); }
+  .margin-modes button { padding:.24rem .34rem;color:var(--dim);background:transparent;border:1px solid color-mix(in srgb,var(--gold) 16%,transparent);border-radius:.2rem;font-size:.4rem; }
+  .margin-modes button[aria-pressed='true'] { color:var(--gold);border-color:color-mix(in srgb,var(--gold) 52%,transparent);background:color-mix(in srgb,var(--gold) 8%,transparent); }
   .verdance-grafting { width: min(34rem, calc(100vw - 1rem)); padding: 0.48rem 0.58rem; border-color: color-mix(in srgb, #a9db79 28%, transparent); border-radius: 0.55rem 0.18rem 0.55rem 0.18rem; background: linear-gradient(110deg, color-mix(in srgb, #172514 88%, transparent), color-mix(in srgb, var(--panel) 92%, transparent)); }
   .verdance-grafting > header { display: flex; align-items: end; justify-content: space-between; gap: 0.75rem; padding-bottom: 0.34rem; border-bottom: 1px solid color-mix(in srgb, #b9e38d 15%, transparent); }
   .verdance-grafting > header div span { display: block; color: #a9d873; font: 740 0.39rem/1 system-ui, sans-serif; letter-spacing: 0.15em; }

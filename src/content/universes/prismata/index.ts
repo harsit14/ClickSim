@@ -4,6 +4,30 @@ const kindling = (name: string, flavor: string, silhouette: string) => ({ name, 
 const archive = (name: string, glyph: string, observation: string, implication: string, effect: string, silhouette: string) => ({ name, glyph, observation, implication, effect, silhouette })
 const story = (title: string, provenance: string, text: string) => ({ title, provenance, text })
 
+export const BRAHMALOK_FOLIO_COMMISSIONS = [
+  { id: 'seed-unfinished', direction: 'seed', glyph: '•', question: 'What waits when nothing is finished?', answer: 'hold Form at zero and Seed strongest', predicate: 'form-zero-seed-strong' },
+  { id: 'measure-exclusion', direction: 'measure', glyph: '⌁', question: 'What did your strongest direction exclude?', answer: 'bring the weakest active direction within 20% of the strongest', predicate: 'balance-twenty' },
+  { id: 'name-untitled', direction: 'name', glyph: '⌜', question: 'Which record has no title yet?', answer: 'hold Name strongest while at least three directions remain active', predicate: 'name-strong-three' },
+  { id: 'form-revisable', direction: 'form', glyph: '◇', question: 'Can a body remain revisable?', answer: 'change at least four Kindling routes during the window', predicate: 'routes-four' },
+  { id: 'seed-shared-ground', direction: 'seed', glyph: '•', question: 'Can a beginning leave room beside itself?', answer: 'hold Seed strongest with at least three directions active', predicate: 'seed-strong-three' },
+  { id: 'measure-four-witnesses', direction: 'measure', glyph: '⌁', question: 'Can every direction remain measurable?', answer: 'hold all four directions within 20% of the strongest', predicate: 'all-four-balanced' },
+  { id: 'name-many-voices', direction: 'name', glyph: '⌜', question: 'Can a name stay legible among other names?', answer: 'hold Name strongest while all four directions remain active', predicate: 'name-strong-four' },
+  { id: 'form-open-workshop', direction: 'form', glyph: '◇', question: 'What changes when Form listens first?', answer: 'hold Form strongest with at least three directions active', predicate: 'form-strong-three' },
+  { id: 'seed-before-form', direction: 'seed', glyph: '•', question: 'What remains possible before a body closes?', answer: 'hold Form at zero, Seed strongest, and change at least two routes', predicate: 'seed-open-changes-two' },
+  { id: 'measure-revised-rule', direction: 'measure', glyph: '⌁', question: 'Can a fair measure survive revision?', answer: 'balance all four directions and change at least four routes', predicate: 'balanced-changes-four' },
+  { id: 'name-memory-margin', direction: 'name', glyph: '⌜', question: 'Which title remembers its earlier draft?', answer: 'hold Name strongest in Manuscript Memory mode', predicate: 'name-memory' },
+  { id: 'form-reciprocal', direction: 'form', glyph: '◇', question: 'Can Form answer without becoming final?', answer: 'hold all four directions active and change at least four routes', predicate: 'form-four-changes-four' },
+  { id: 'seed-unclosed-folio', direction: 'seed', glyph: '•', question: 'Can the first mark keep the last margin open?', answer: 'hold Seed strongest, Form at zero, and change at least four routes', predicate: 'seed-open-changes-four' },
+  { id: 'measure-moving-center', direction: 'measure', glyph: '⌁', question: 'Where is the center after every court moves?', answer: 'balance all four directions and change at least five routes', predicate: 'balanced-changes-five' },
+  { id: 'name-revision-field', direction: 'name', glyph: '⌜', question: 'Can a title disclose the revisions beneath it?', answer: 'hold Name strongest with all four directions active and five route changes', predicate: 'name-four-changes-five' },
+  { id: 'form-open-convergence', direction: 'form', glyph: '◇', question: 'Can many forms converge without claiming the center?', answer: 'keep all four directions active and change at least six routes', predicate: 'all-four-changes-six' },
+] as const
+
+export const BRAHMALOK_COMMISSION_LUMEN = {
+  firstCommission: 'The direction is asking for an imbalance on purpose. Creation may need a draft that does not look optimal yet.',
+  firstAnswer: 'The page kept the revision instead of hiding it. A Folio Sketch has appeared behind the courts.',
+} as const
+
 /**
  * Brahmalok occupies the save-stable `prismata` / `u5` slot. Runtime IDs stay
  * frozen; every player-facing identity below belongs to the new realm.
@@ -138,7 +162,7 @@ export const BRAHMALOK_SPEC: FutureUniverseSpec = {
   tempo: 84,
   meter: 'four-part material cycle of seed, measure, name, and form; no devotional melody is imitated',
   audioFamilies: ['soft reed contact and one page breath', 'wood, clay, and ink interval', 'four material taps resolving around silence', 'paper edge and water-drop call', 'folio-close cadence with an open final interval'],
-  silenceState: 'Every direction remains readable through its name, glyph, pattern, position, quantity, and open-center geometry.',
+  silenceState: 'Every direction, Folio Commission, hold timer, margin mode, and answer remains readable through names, glyphs, patterns, positions, quantities, captions, and open-center geometry.',
   fatiguePolicy: 'Reed and page transients soften above four inputs per second; no chant, mantra, raga, or sacred instrument performance is simulated.',
   routeGlyph: '✤',
   routeArrival: 'a lotus of writing courts opens around an empty center, with no figure or object offered for possession',
@@ -151,6 +175,9 @@ export const BRAHMALOK_SPEC: FutureUniverseSpec = {
     { id: 'u5-mandala', text: 'fourfold mandala', shape: 'four courts around an open square', pattern: 'dot, ruled line, diagonal hatch, clay blocks' },
     { id: 'u5-memory', text: 'manuscript memory', shape: 'three offset folios', pattern: 'dotted earlier revisions' },
     { id: 'u5-proliferation', text: 'proliferation', shape: 'many unequal petals', pattern: 'numbered outward whorls' },
+    { id: 'u5-commission', text: 'Folio Commission active', shape: 'ruled margin beside one asking court', pattern: 'direction pattern plus a sixty-second hold line' },
+    { id: 'u5-commission-answered', text: 'Commission answer held', shape: 'open folio with one retained sketch', pattern: 'broken outline joined to a numbered shelf mark' },
+    { id: 'u5-margin-mode', text: 'margin mode active', shape: 'second narrow folio beside the primary page', pattern: 'secondary mode pattern at reduced line weight' },
   ],
 }
 

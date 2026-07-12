@@ -47,6 +47,7 @@
     atlasRouteReady,
     deepCollapseGain,
     performDeepCollapse,
+    skipLokaShelfSetPiece,
   } from './engine/game.svelte'
   import { clearBuffs } from './systems/buffs.svelte'
   import { combo } from './systems/combo.svelte'
@@ -587,11 +588,14 @@
       pack={activeV2Pack}
       owned={game.owned}
       numericLawState={game.numericLawState}
+      lokaProgress={game.lokaProgress}
+      releaseCount={game.supernovae}
       achievementIds={game.achievements}
       archiveItems={activePack.cabinet.items}
       unlockedArchiveIds={game.curiosities}
       litBeaconUniverseIds={game.beacons}
       onarchiveopen={toggleCuriosities}
+      onshelfskip={(key) => { if (skipLokaShelfSetPiece(key)) save() }}
       preferences={{
         reducedMotion: game.motionPreference === 'reduced',
         quality: effectiveQuality,

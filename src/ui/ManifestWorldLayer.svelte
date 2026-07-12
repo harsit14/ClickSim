@@ -30,8 +30,11 @@
   import VerdanceArchiveSilhouette from './VerdanceArchiveSilhouette.svelte'
   import VerdanceWorldLayer from './VerdanceWorldLayer.svelte'
   import ChamberLandmarkSilhouette from './ChamberLandmarkSilhouette.svelte'
+  import BrahmalokWorldLayer from './BrahmalokWorldLayer.svelte'
   import VishnulokTrafficLayer from './VishnulokTrafficLayer.svelte'
+  import VishnulokWorldLayer from './VishnulokWorldLayer.svelte'
   import KailashWorldLayer from './KailashWorldLayer.svelte'
+  import LokaShelfSetPieces from './LokaShelfSetPieces.svelte'
   import {
     brahmalokStatus,
     canticleStatus,
@@ -49,7 +52,10 @@
     activeOmenIds?: readonly string[]
     achievementIds?: readonly string[]
     numericLawState?: Readonly<Record<string, import('../content/universes/types').EconomyAmount>>
+    lokaProgress?: Readonly<Record<string, number>>
+    releaseCount?: number
     onarchiveopen?: () => void
+    onshelfskip?: (key: string) => void
   }
 
   const VERDANCE_LEAVES = [
@@ -74,7 +80,10 @@
     activeOmenIds = [],
     achievementIds = [],
     numericLawState,
+    lokaProgress = {},
+    releaseCount = 0,
     onarchiveopen = () => {},
+    onshelfskip = () => {},
   }: Props = $props()
   let viewport = $state<ManifestViewport>({ width: 1280, height: 720 })
   let topUiClearance = $state<HudClearanceRect | undefined>(undefined)
@@ -308,6 +317,18 @@
       />
     {/if}
 
+    {#if pack.id === 'prismata' && !virginWorld}
+      <BrahmalokWorldLayer
+        objects={pack.visual.objects}
+        {owned}
+        {numericLawState}
+        folios={lokaProgress['u5-folios'] ?? 0}
+        archiveCount={unlockedArchiveIds.length}
+        reducedMotion={preferences.reducedMotion}
+        quality={preferences.quality}
+      />
+    {/if}
+
     {#if pack.id === 'emberlight'}
       <EmberlightFlagshipLayer owned={owned} reducedMotion={preferences.reducedMotion} />
       <EmberlightRemnants owned={owned} />
@@ -333,15 +354,38 @@
         {owned}
         reducedMotion={preferences.reducedMotion}
         quality={preferences.quality}
+        {numericLawState}
+        traces={lokaProgress['u7-traces'] ?? 0}
+        {releaseCount}
       />
+      <p class="sr-only">The inhabited descent holds {lokaProgress['u7-traces'] ?? 0} traces{(lokaProgress['u7-traces'] ?? 0) > 18 ? `; and ${(lokaProgress['u7-traces'] ?? 0) - 18} more are kept along the way` : ''}.</p>
     {/if}
 
     {#if pack.id === 'tempest' && !virginWorld}
+      <VishnulokWorldLayer
+        objects={pack.visual.objects}
+        {owned}
+        {numericLawState}
+        wovenRoutes={lokaProgress['u6-routes'] ?? 0}
+        completedReturns={lokaProgress['u6-returns'] ?? 0}
+        reducedMotion={preferences.reducedMotion}
+        quality={preferences.quality}
+      />
       <VishnulokTrafficLayer
         returningSchoolOwned={vishnulokReturningSchoolOwned}
         shelterReefOwned={vishnulokShelterReefOwned}
         reducedMotion={preferences.reducedMotion}
         quality={preferences.quality}
+      />
+    {/if}
+
+    {#if pack.id === 'prismata' || pack.id === 'tempest' || pack.id === 'canticle'}
+      <LokaShelfSetPieces
+        universeId={pack.id}
+        archiveIds={unlockedArchiveIds}
+        progress={lokaProgress}
+        reducedMotion={preferences.reducedMotion}
+        onskip={onshelfskip}
       />
     {/if}
 

@@ -49,7 +49,7 @@
     },
     {
       label: 'Presentation QA',
-      ids: ['notification-storm'],
+      ids: ['notification-storm', 'prime-loka-depth'],
     },
   ] as const satisfies readonly { label: string; ids: readonly DevCheatId[] }[]
 

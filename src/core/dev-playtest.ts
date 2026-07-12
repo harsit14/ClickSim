@@ -31,6 +31,7 @@ export const DEV_CHEATS = [
   { id: 'unlock-multiverse', label: 'Unlock All Universes', description: 'Light all seven Beacons and unlock every Wayfinder law.' },
   { id: 'unlock-everything', label: 'Unlock Everything', description: 'Complete all current-world and shared progression while leaving endings replayable.' },
   { id: 'notification-storm', label: 'Fire 5 Notifications', description: 'Queue five presentation-only transients for overlap testing.' },
+  { id: 'prime-loka-depth', label: 'Prime Loka Depth', description: 'Populate the active loka traces and make its next authored prompt immediately visible.' },
 ] as const
 
 export type DevCheatId = (typeof DEV_CHEATS)[number]['id']
@@ -172,6 +173,34 @@ function unlockMultiverse(game: GameState): void {
   fundBetween(game)
 }
 
+function primeLokaDepth(game: GameState): void {
+  completeEconomy(game)
+  if (game.activeUniverse === 'prismata') {
+    game.lokaProgress['u5-folios'] = 18
+    game.numericLawState['u5-commission-phase'] = amountFromNumber(1)
+    game.numericLawState['u5-commission-index'] = amountFromNumber(3)
+    game.numericLawState['u5-commission-elapsed'] = amountFromNumber(0)
+    game.numericLawState['u5-commission-route-changes'] = amountFromNumber(3)
+    game.numericLawState['u5-commission-held-seconds'] = amountFromNumber(58)
+    game.numericLawState['u5-commission-edited'] = amountFromNumber(0)
+  } else if (game.activeUniverse === 'tempest') {
+    game.lokaProgress['u6-routes'] = 14
+    game.lokaProgress['u6-returns'] = 120
+    game.numericLawState['u6-strain-phase'] = amountFromNumber(1)
+    game.numericLawState['u6-strain-index'] = amountFromNumber(0)
+    game.numericLawState['u6-charge'] = amountFromNumber(100)
+    game.numericLawState['u6-charge-2'] = amountFromNumber(100)
+  } else if (game.activeUniverse === 'canticle') {
+    game.lokaProgress['u7-traces'] = 14
+    game.supernovae = Math.max(game.supernovae, 6)
+    game.numericLawState['u7-front-phase'] = amountFromNumber(2)
+    game.numericLawState['u7-front-index'] = amountFromNumber(0)
+    game.numericLawState['u7-front-elapsed'] = amountFromNumber(185)
+    game.numericLawState['u7-front-answered-seconds'] = amountFromNumber(124)
+    game.numericLawState['u7-front-edited'] = amountFromNumber(0)
+  }
+}
+
 /** Applies a deliberate development-only mutation to a live game state. */
 export function applyDevCheat(game: GameState, id: DevCheatId, now = Date.now()): string {
   if (!Number.isFinite(now) || now < 0) throw new RangeError('Dev cheat time must be finite and nonnegative.')
@@ -192,6 +221,7 @@ export function applyDevCheat(game: GameState, id: DevCheatId, now = Date.now())
   else if (id === 'question-ready') questionReady(game)
   else if (id === 'complete-world') completeWorld(game, now)
   else if (id === 'unlock-multiverse') unlockMultiverse(game)
+  else if (id === 'prime-loka-depth') primeLokaDepth(game)
   else if (id === 'unlock-everything') {
     showAllControls(game, now)
     completeEconomy(game)

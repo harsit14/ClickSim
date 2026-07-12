@@ -65,6 +65,15 @@ test('presentation QA exposes a five-notification storm without changing progres
   assert.match(panel, /pushAchievementToast\(/)
 })
 
+test('loka depth QA primes an authored prompt and permanent world traces', () => {
+  const state = scenario('tempest')
+  assert.match(applyDevCheat(state, 'prime-loka-depth', 1_000), /Prime Loka Depth/)
+  assert.equal(state.lokaProgress['u6-routes'], 14)
+  assert.equal(state.lokaProgress['u6-returns'], 120)
+  assert.ok(state.numericLawState['u6-strain-phase'])
+  assert.ok(universeById('tempest').generators.every(({ id }) => state.owned[id] === 125))
+})
+
 test('playtest console compiles accessibly and remains behind an explicit dev URL gate', () => {
   const componentUrl = new URL('../src/ui/DevPlaytestPanel.svelte', import.meta.url)
   const componentSource = readFileSync(componentUrl, 'utf8')

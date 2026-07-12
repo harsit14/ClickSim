@@ -1,10 +1,18 @@
 import { PRISMATA_V2_PACK } from '../../content/universes/prismata'
-import { createFuturePresentation } from '../future-presentation'
+import { createAuthoredLokaPresentation } from '../loka-authored-presentation'
 
-export const PRISMATA_PRESENTATION = createFuturePresentation(PRISMATA_V2_PACK, {
+export const PRISMATA_PRESENTATION = createAuthoredLokaPresentation(PRISMATA_V2_PACK, {
   palette: { primary: '#d7a34c', secondary: '#7ebed2', highlight: '#fff0c7', shadow: '#38243a', void: '#080810' },
-  objectPrimitives: ['arc', 'ribbon', 'polygon'],
-  heartPrimitives: ['arc', 'ellipse', 'polygon'],
-  pattern: 'lotus-fiber manuscript, four-direction construction marks, and an intentionally open margin',
-  heartPattern: 'nested lotus whorls around an empty manuscript square with seed, measure, name, and form marks',
+  primitives: ['branch', 'polygon', 'ribbon'],
+  heartPrimitives: ['arc', 'polygon', 'branch'],
+  generatorMotifs: [
+    'single seed bed with one open furrow', 'measured water channel beside seed beds', 'reed-name terrace with blank title stone',
+    'unclosed clay frame in the Form workshop', 'four low reciprocal garden paths', 'ruled hall with one revisable span',
+    'loom joining four material obligations', 'open manuscript court with side margin', 'terrace of distinct naming stones',
+    'workshop frames moved between courts', 'four-horizon colonnade', 'folio garden retaining earlier drafts',
+    'petal contour family around open sky', 'court-to-court water measure', 'many-form workshop with visible gaps',
+    'thousand-petal contour convergence', 'four court roads stopping before center', 'open lotus horizon with unclaimed square',
+  ],
+  heartPattern: 'four variable petal arcs and mode pattern around an empty manuscript square',
+  centralClearing: 'the Lotus of Becoming and its unclaimed center square remain unobstructed',
 })

@@ -9,7 +9,7 @@ import type {
 } from './presentation-contract'
 
 const THRESHOLDS = [1, 10, 25, 50, 100] as const
-const FROZEN_LEGACY_USERS = new Set(['prismata', 'tempest', 'canticle'])
+const FROZEN_LEGACY_USERS = new Set<string>()
 
 export interface FuturePresentationGrammar {
   readonly palette: UniversePresentation['palette']
@@ -67,7 +67,7 @@ function descriptor(object: WorldObjectManifest, grammar: FuturePresentationGram
   }
 }
 
-/** @deprecated Frozen compatibility bridge for the three existing F4 chamber pieces. */
+/** @deprecated No shipping realm may use this frozen compatibility bridge. */
 export function createFuturePresentation(
   pack: UniversePackV2,
   grammar: FuturePresentationGrammar,

@@ -13,6 +13,7 @@
   import { averagedRhythmReward } from '../accessibility/averaged-rhythm'
   import { resolveVisualQuality } from '../core/preferences'
   import { amountFromNumber, gteAmount } from '../core/numeric/amount'
+  import { kailashLongRestStatus } from '../content/universes/f4-runtime'
   import { consumeCrossingWrongClick } from '../experience/crossing-arrival.svelte'
   import {
     RHYTHM_COMPETENT_MULTIPLIER,
@@ -59,6 +60,7 @@
 
   function handleClick(x: number, y: number) {
     if (!world) return
+    if (game.activeUniverse === 'canticle' && kailashLongRestStatus(game.numericLawState).resting) return
     if (hasUi('music') && !isPlaying() && !silenced()) startMusic()
     const rhythm = clickReward()
     const result = clickEmber(rhythm.multiplier)
