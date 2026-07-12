@@ -46,16 +46,13 @@
       <div class="unfolding-lotus">
         {#each Array.from({ length: 4 }) as _, index}<i style={`--petal:${index}`}></i>{/each}
       </div>
-      <div class="unfolding-center"></div>
     {:else if vista.id === 'circuit-return'}
       <div class="return-calm"></div>
       <div class="return-circuit"><i></i><i></i><i></i></div>
       <div class="return-refuges"><i></i><i></i><i></i><i></i></div>
-      <div class="return-home"></div>
     {:else}
       <div class="summit-clearing"></div>
       <div class="summit-range"></div>
-      <div class="summit-river"></div>
       <div class="summit-ring"></div>
       <div class="summit-acts"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="summit-rest"></div>
@@ -114,7 +111,6 @@
   .unfolding-courts i:nth-child(1) { --court: 0; } .unfolding-courts i:nth-child(2) { --court: 1; } .unfolding-courts i:nth-child(3) { --court: 2; } .unfolding-courts i:nth-child(4) { --court: 3; }
   .unfolding-lotus { left: 50%; top: 56%; width: min(33vw, 27rem); aspect-ratio: 1; transform: translate(-50%, -50%); animation: lotus-breathe 5.6s ease-in-out infinite alternate; }
   .unfolding-lotus i { left: 50%; top: 50%; width: 24%; height: 47%; transform-origin: 0 0; transform: rotate(calc(var(--petal) * 90deg)) translate(-50%, -91%); border: 1px solid color-mix(in srgb, var(--gold) 36%, transparent); border-radius: 78% 18% 78% 18%; background: linear-gradient(180deg, color-mix(in srgb, var(--amber) 10%, transparent), transparent 74%); }
-  .unfolding-center { left: 50%; top: 56%; width: 7.2rem; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(45deg); border: 1px dashed color-mix(in srgb, #8ecbe0 38%, transparent); background: transparent; box-shadow: inset 0 0 2rem color-mix(in srgb, var(--bg) 42%, transparent); }
 
   /* Vishnulok — the completed correction comes home without enclosing the ocean. */
   .circuit-return .return-calm { inset:0;background:radial-gradient(ellipse at 50% 58%,color-mix(in srgb,var(--gold) 13%,transparent),transparent 48%);animation:return-calm 6s ease-in-out infinite alternate; }
@@ -122,12 +118,10 @@
   .return-circuit::after { content:'';position:absolute;right:-.25rem;top:47%;width:1rem;height:1rem;border-top:2px solid var(--gold);border-right:2px solid var(--gold);transform:rotate(45deg); }
   .return-circuit i { inset:calc(10% + var(--return-ring,0) * 9%);border-top:1px solid color-mix(in srgb,var(--gold) 22%,transparent);border-radius:50%; }.return-circuit i:nth-child(1){--return-ring:0}.return-circuit i:nth-child(2){--return-ring:1}.return-circuit i:nth-child(3){--return-ring:2}
   .return-refuges { inset:0; }.return-refuges i { top:52%;width:5rem;height:2.4rem;border:1px solid color-mix(in srgb,var(--gold) 24%,transparent);border-bottom:0;border-radius:55% 55% 0 0;background:color-mix(in srgb,var(--bg) 42%,transparent); }.return-refuges i:nth-child(1){left:17%}.return-refuges i:nth-child(2){left:34%;top:68%;transform:scale(.78)}.return-refuges i:nth-child(3){right:34%;top:68%;transform:scale(.78)}.return-refuges i:nth-child(4){right:17%}
-  .return-home { left:50%;top:56%;width:5rem;aspect-ratio:1.45;transform:translate(-50%,-50%);border:1px dashed color-mix(in srgb,var(--gold) 46%,transparent);border-radius:55% 55% 20% 20%;background:color-mix(in srgb,var(--bg) 76%,transparent);box-shadow:0 0 2rem color-mix(in srgb,var(--bg) 58%,transparent); }
 
-  /* Kailash — the late vista reveals a ring that refuses enclosure and a visible route down. */
+  /* Kailash — the late vista reveals a ring that refuses enclosure above the open summit. */
   .open-summit-ring .summit-clearing { inset:0;background:radial-gradient(ellipse at 50% 58%,color-mix(in srgb,var(--gold) 15%,transparent),transparent 46%);animation:summit-clear 6s ease-in-out infinite alternate; }
   .summit-range { left:50%;bottom:8%;width:min(70vw,62rem);height:66%;transform:translateX(-50%);clip-path:polygon(0 100%,18% 72%,31% 78%,50% 8%,69% 77%,82% 65%,100% 100%);background:linear-gradient(145deg,color-mix(in srgb,var(--gold) 14%,#28465b),#0a1624 55%,#04080e);filter:drop-shadow(0 0 1.6rem color-mix(in srgb,var(--gold) 8%,transparent)); }
-  .summit-river { left:52%;top:34%;width:3px;height:60%;background:linear-gradient(var(--gold),#79b4c5 55%,transparent);transform:rotate(6deg);box-shadow:0 0 1rem color-mix(in srgb,var(--gold) 38%,transparent); }
   .summit-ring { left:50%;top:51%;width:min(38vw,32rem);aspect-ratio:1;transform:translate(-50%,-50%);border:2px solid color-mix(in srgb,#c47d4f 48%,transparent);border-left-color:transparent;border-radius:50%;filter:drop-shadow(0 0 1.4rem color-mix(in srgb,#c47d4f 16%,transparent)); }
   .summit-acts { inset:0; }.summit-acts i { --act-angle:calc(var(--act) * 72deg - 90deg);left:calc(50% - .45rem);top:calc(51% - .45rem);width:.9rem;aspect-ratio:1;transform:rotate(var(--act-angle)) translateY(-9.5rem) rotate(calc(-1 * var(--act-angle)));border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);background:#07101b;box-shadow:0 0 .8rem color-mix(in srgb,var(--gold) 24%,transparent); }.summit-acts i:nth-child(1){--act:0}.summit-acts i:nth-child(2){--act:1}.summit-acts i:nth-child(3){--act:2}.summit-acts i:nth-child(4){--act:3}.summit-acts i:nth-child(5){--act:4}
   .summit-rest { left:50%;top:51%;width:4.8rem;aspect-ratio:1;transform:translate(-50%,-50%);border:1px dashed color-mix(in srgb,white 46%,transparent);border-radius:50%;background:color-mix(in srgb,var(--bg) 84%,transparent);box-shadow:0 0 2.8rem var(--bg); }

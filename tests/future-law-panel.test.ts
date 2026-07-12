@@ -42,6 +42,8 @@ test('the authored worlds reinforce lotus court, sustaining ocean, and mountain 
   assert.match(worldSource, /class="kailash-range range-near"/)
   assert.match(worldSource, /class="kailash-snow"/)
   assert.match(worldSource, /class="kailash-river-glints"/)
+  assert.doesNotMatch(worldSource, /class="kailash-river"/)
+  assert.match(worldSource, /\.brahmalok-lotus span \{[^}]*background: transparent;/)
   assert.match(worldSource, /\.kailash-shelters i::before/)
   assert.match(worldSource, /\.low-quality \.kailash-snow i:nth-child/)
   assert.doesNotMatch(worldSource, /class="prismata-bench"/)

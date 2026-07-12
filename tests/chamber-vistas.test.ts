@@ -83,5 +83,6 @@ test('the vista layer compiles and carries motion, quality, and accessible-state
   assert.match(source, /role="img"/)
   assert.match(source, /aria-label=\{vista\.label\}/)
   assert.match(source, /class:motion-paused=\{reducedMotion\}/)
+  assert.doesNotMatch(source, /unfolding-center|return-home|summit-river/)
   assert.deepEqual(compile(source, { filename: url.pathname, generate: 'client' }).warnings, [])
 })
