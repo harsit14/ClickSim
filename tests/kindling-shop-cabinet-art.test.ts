@@ -40,6 +40,20 @@ test('Kindling shop art stays compact and compiles without warnings', () => {
   assert.match(art, /kindlingShopMark/)
 })
 
+test('the Kindling shop carries distinct realm chrome without changing its controls', () => {
+  const shop = readFileSync(new URL('../src/ui/ShopPanel.svelte', import.meta.url), 'utf8')
+
+  assert.match(shop, /data-realm=\{pack\.id\}/)
+  assert.match(shop, /--shop-etch/)
+  assert.match(shop, /border-color: color-mix\(in srgb, var\(--amber\)/)
+  for (const realm of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']) {
+    assert.match(shop, new RegExp(`\\.shop\\[data-realm='${realm}'\\]`))
+  }
+  assert.match(shop, /aria-label="bulk purchase amount"/)
+  assert.match(shop, /aria-pressed=\{game\.buyAmount === a\}/)
+  assert.match(shop, /aria-label=\{collapsed \? 'open kindling shop' : 'hide kindling shop'\}/)
+})
+
 test('Cabinet is a universe-specific archive field instead of one shared card stack', () => {
   const cabinetPath = new URL('../src/ui/CuriosityCabinet.svelte', import.meta.url)
   const cabinet = readFileSync(cabinetPath, 'utf8')

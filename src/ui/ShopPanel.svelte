@@ -129,7 +129,7 @@
 </script>
 
 {#if visible && !suppressed}
-  <aside class="shop instrument-panel" class:collapsed aria-label="Kindling shop">
+  <aside class="shop instrument-panel" class:collapsed data-realm={pack.id} aria-label="Kindling shop">
     <button
       class="retract"
       class:collapsed
@@ -221,6 +221,7 @@
 
 <style>
   .shop {
+    --shop-etch: linear-gradient(90deg, transparent, var(--amber), transparent);
     position: fixed;
     top: 50%;
     right: 1.25rem;
@@ -230,13 +231,50 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 0.9rem 0.6rem;
-    background-color: var(--glass);
-    border-color: var(--glass-border);
+    background:
+      linear-gradient(145deg, color-mix(in srgb, var(--amber) 8%, transparent), transparent 34%),
+      color-mix(in srgb, var(--glass) 94%, var(--panel));
+    border-color: color-mix(in srgb, var(--amber) 24%, var(--glass-border));
     border-radius: 14px;
     backdrop-filter: blur(10px);
+    box-shadow:
+      inset 3px 0 color-mix(in srgb, var(--amber) 32%, transparent),
+      0 1.2rem 3rem rgba(0, 0, 0, 0.24);
     animation: shop-in 0.24s ease both;
     transition: transform 0.32s ease, opacity 0.2s ease, border-color 0.2s ease;
     z-index: 6;
+  }
+  .shop::before {
+    content: '';
+    position: absolute;
+    top: 0.32rem;
+    right: 0.7rem;
+    left: 0.7rem;
+    height: 3px;
+    background: var(--shop-etch);
+    opacity: 0.72;
+    pointer-events: none;
+  }
+  .shop[data-realm='emberlight'] {
+    --shop-etch: linear-gradient(90deg, transparent 2%, var(--amber) 28% 34%, transparent 35% 49%, var(--amber) 50% 56%, transparent 57% 71%, var(--amber) 72% 78%, transparent 98%);
+  }
+  .shop[data-realm='tidefall'] {
+    --shop-etch: repeating-linear-gradient(105deg, transparent 0 0.65rem, var(--amber) 0.68rem 0.78rem, transparent 0.81rem 1.45rem);
+  }
+  .shop[data-realm='verdance'] {
+    --shop-etch: radial-gradient(ellipse at center, var(--amber) 0 18%, transparent 20%) 0 0 / 1.35rem 0.36rem repeat-x;
+  }
+  .shop[data-realm='clockwork'] {
+    --shop-etch: repeating-linear-gradient(90deg, var(--amber) 0 0.28rem, transparent 0.28rem 0.52rem, var(--amber) 0.52rem 0.58rem, transparent 0.58rem 1.18rem);
+  }
+  .shop[data-realm='prismata'] {
+    --shop-etch: repeating-linear-gradient(135deg, transparent 0 0.42rem, var(--amber) 0.45rem 0.52rem, transparent 0.55rem 0.95rem);
+  }
+  .shop[data-realm='tempest'] {
+    --shop-etch: radial-gradient(circle at center, transparent 0 34%, var(--amber) 37% 48%, transparent 51%) 0 0 / 1.25rem 0.62rem repeat-x;
+  }
+  .shop[data-realm='canticle'] {
+    --shop-etch: linear-gradient(90deg, transparent 3%, var(--amber) 3% 17%, transparent 17% 22%, var(--amber) 22% 38%, transparent 38% 43%, var(--amber) 43% 60%, transparent 60% 65%, var(--amber) 65% 82%, transparent 82% 87%, var(--amber) 87% 97%, transparent 97%);
   }
   .shop.collapsed {
     transform: translateY(-50%) translateX(calc(100% + 0.9rem));
