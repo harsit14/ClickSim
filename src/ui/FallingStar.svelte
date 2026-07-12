@@ -43,6 +43,8 @@
   } from '../core/numeric/amount'
   import { worldRef } from '../render/world-ref'
 
+  let { reserveShop = false }: { reserveShop?: boolean } = $props()
+
   const EVENT_HALF_WIDTH = 3.3 * 16
   const EVENT_HALF_HEIGHT = 1.9 * 16
   // sky constellation perks: more frequent stars, longer blessings, star pairs
@@ -98,6 +100,16 @@
   let forcedEntry = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('entry') : null
   let attractionUniverse = $state(game.activeUniverse)
 
+  function availableRightEdge(viewportWidth = window.innerWidth): number {
+    if (!reserveShop) return viewportWidth
+    const shop = document.querySelector<HTMLElement>('[aria-label="Kindling shop"]')
+    if (!shop) return viewportWidth
+    const rect = shop.getBoundingClientRect()
+    return rect.left < viewportWidth
+      ? Math.max(0, rect.left - 24)
+      : viewportWidth
+  }
+
   $effect(() => {
     if (attractionUniverse === game.activeUniverse) return
     attractionUniverse = game.activeUniverse
@@ -152,6 +164,7 @@
       protectedRight,
       protectedTop: clearance.y + clearance.height,
       protectedHeartTop: heartCenter.y - heartClearance,
+      reservedRight: availableRightEdge(viewport.width),
       edgeRoll: forcedEdgeRoll,
       laneRoll: Math.random(),
       positionRoll: Math.random(),
@@ -224,6 +237,10 @@
       const point = positionOnOmenArc(star.route, routeProgress)
       star.x = point.x
       star.y = point.y
+      const rightEdge = availableRightEdge()
+      if (star.x + EVENT_HALF_WIDTH > rightEdge) {
+        star.x = rightEdge - EVENT_HALF_WIDTH
+      }
       const eventRect = {
         x: star.x - EVENT_HALF_WIDTH,
         y: star.y - EVENT_HALF_HEIGHT,
@@ -290,7 +307,7 @@
     const missed = star
     star = null
     cancelAnimationFrame(raf)
-    const groundX = Math.max(OMEN_MIN_HIT_SIZE_PX, Math.min(window.innerWidth - OMEN_MIN_HIT_SIZE_PX, missed.x))
+    const groundX = Math.max(OMEN_MIN_HIT_SIZE_PX, Math.min(availableRightEdge() - OMEN_MIN_HIT_SIZE_PX, missed.x))
     const groundY = window.innerHeight - 38
     worldRef()?.emitParticleRecipe('omen', groundX, groundY)
     const reward = applyReward(missed, OMEN_MISS_BANK_RATIO, true)

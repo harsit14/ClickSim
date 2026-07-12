@@ -25,5 +25,6 @@ test('the shorthand hint is one-time, dismissible, reduced-motion safe, and shar
   assert.match(hintSource, /ember:number-suffix-guide:v1/)
   assert.match(hintSource, /Dismiss number shorthand explanation/)
   assert.match(hintSource, /html\[data-motion='reduced'\]/)
-  assert.match(appSource, /<NumberSuffixHint amount=\{game\.light\} currencyName=\{activePack\.currency\} \/>/)
+  assert.match(appSource, /<NumberSuffixHint[\s\S]*amount=\{game\.light\}[\s\S]*suppressed=\{utilityPanelOpen \|\| storyModalActive \|\| resetPreviewOpen\}/)
+  assert.match(hintSource, /!suppressed && !dismissed/)
 })

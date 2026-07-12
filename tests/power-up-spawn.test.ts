@@ -85,3 +85,13 @@ test('entry-specific exit checks allow a full traversal before despawning', () =
   assert.equal(powerUpHasExited('left', 1390, 300, 1280, 720, 52.8, 30.4), true)
   assert.equal(powerUpHasExited('right', -110, 300, 1280, 720, 52.8, 30.4), true)
 })
+
+test('an expanded right rail removes side crossings and keeps the full event clear', () => {
+  const reservedRight = 960
+  for (const edgeRoll of [0.1, 0.55, 0.78, 0.92]) {
+    const plan = planPowerUpSpawn({ ...BASE, reservedRight, edgeRoll, laneRoll: 0.9 })
+    assert.ok(plan.edge === 'top' || plan.edge === 'bottom')
+    assert.ok(plan.x + BASE.eventHalfWidth + 24 <= reservedRight)
+    assert.ok(plan.endX + BASE.eventHalfWidth + 24 <= reservedRight)
+  }
+})

@@ -3,10 +3,10 @@
   import type { EconomyAmount } from '../content/universes/types'
   import { numberSuffixGuide } from '../core/number-suffix-guide'
 
-  let { amount, currencyName }: { amount: EconomyAmount; currencyName: string } = $props()
+  let { amount, currencyName, suppressed = false }: { amount: EconomyAmount; currencyName: string; suppressed?: boolean } = $props()
   let dismissed = $state(true)
   const guide = $derived(numberSuffixGuide(amount))
-  const visible = $derived(!dismissed && guide !== null)
+  const visible = $derived(!suppressed && !dismissed && guide !== null)
   const storageKey = 'ember:number-suffix-guide:v1'
 
   onMount(() => {

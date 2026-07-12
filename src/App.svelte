@@ -430,7 +430,11 @@
 
 <div class="game-shell" class:comparative-blind={comparativeBlind} inert={modalActive} aria-hidden={modalActive}>
   <EmberCanvas {averagedRhythm} {comparativeBlind} />
-  <NumberSuffixHint amount={game.light} currencyName={activePack.currency} />
+  <NumberSuffixHint
+    amount={game.light}
+    currencyName={activePack.currency}
+    suppressed={utilityPanelOpen || storyModalActive || resetPreviewOpen}
+  />
   {#if activeV2Pack}
     <ManifestWorldLayer
       pack={activeV2Pack}
@@ -492,7 +496,7 @@
   <UiChips />
   <ComboMeter />
   <LumenTicker />
-  <FallingStar />
+  <FallingStar reserveShop={hasUi('shop') && !utilityPanelOpen} />
   <Toasts clearOfShop={hasUi('shop') && !utilityPanelOpen} />
   <WelcomeBack amount={offlineGain} />
 

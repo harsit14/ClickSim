@@ -13,6 +13,8 @@ export interface PowerUpSpawnInput {
   readonly protectedTop: number
   /** Top of the Heart interaction circle, used to keep cross-screen arcs above it. */
   readonly protectedHeartTop: number
+  /** Right edge available to the event after persistent UI rails are reserved. */
+  readonly reservedRight?: number
   readonly edgeRoll: number
   readonly laneRoll: number
   readonly positionRoll: number
@@ -58,12 +60,22 @@ export function planPowerUpSpawn(input: PowerUpSpawnInput): PowerUpSpawnPlan {
   const gutter = 24
   const maximumArc = 20
   const maximumSideArc = 12
+  const reservedRight = Math.max(
+    halfWidth + gutter,
+    Math.min(width, input.reservedRight ?? width),
+  )
 
   let edge: PowerUpEntryEdge = edgeRoll < 0.44
     ? 'top'
     : edgeRoll < 0.7
       ? 'bottom'
       : edgeRoll < 0.85 ? 'left' : 'right'
+
+  // Horizontal crossings consume the entire screen width, so they are not a
+  // safe route while a persistent right-hand interaction rail is expanded.
+  if (reservedRight < width && (edge === 'left' || edge === 'right')) {
+    edge = edgeRoll < 0.85 ? 'top' : 'bottom'
+  }
 
   const sideMinY = Math.max(
     halfHeight + gutter,
@@ -83,13 +95,13 @@ export function planPowerUpSpawn(input: PowerUpSpawnInput): PowerUpSpawnPlan {
   ]
   const rightLane: readonly [number, number] = [
     input.protectedRight + halfWidth + gutter,
-    width - halfWidth - gutter - maximumArc,
+    reservedRight - halfWidth - gutter - maximumArc,
   ]
   const lanes = [leftLane, rightLane].filter(([start, end]) => end > start)
   const selectedLane = lanes[Math.min(lanes.length - 1, Math.floor(laneRoll * lanes.length))]
   const verticalX = selectedLane
     ? selectedLane[0] + positionRoll * (selectedLane[1] - selectedLane[0])
-    : width * (laneRoll < 0.5 ? 0.1 : 0.9)
+    : reservedRight * (laneRoll < 0.5 ? 0.1 : 0.9)
 
   const verticalSpeed = 28 + speedRoll * 10
   const verticalOnLeft = selectedLane ? selectedLane === leftLane : laneRoll < 0.5
