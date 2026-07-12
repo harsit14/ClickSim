@@ -1,6 +1,8 @@
 <script lang="ts">
   import { EMBERLIGHT_SET_PIECES } from '../render/emberlight/set-piece-registry'
   import SetPieceArt from './SetPieceArt.svelte'
+  import ChamberLandmarkSilhouette from './ChamberLandmarkSilhouette.svelte'
+  import { CHAMBER_ARCHIVE_MARKS } from '../render/chamber-archive-marks'
 
   const stages = EMBERLIGHT_SET_PIECES.flatMap((setPiece) => setPiece.stages.map((stage) => ({
     setPieceId: setPiece.id,
@@ -8,11 +10,26 @@
     stage,
   })))
   const requested = new URLSearchParams(window.location.search).get('silhouettes')
+  const chamberArchiveMode = requested === 'chamber-archives'
   let selectedId = $state(stages.some(({ stage }) => stage.objectId === requested) ? requested! : stages[0].stage.objectId)
   const selected = $derived(stages.find(({ stage }) => stage.objectId === selectedId) ?? stages[0])
   const sizes = [32, 64, 128] as const
 </script>
 
+{#if chamberArchiveMode}
+<main class="silhouette-harness">
+  <header><div><span>PHASE 3 · BUILD GATE</span><h1>Chamber landmark silhouettes</h1></div></header>
+  <section class="contact-sheet chamber-sheet" aria-label="All chamber Archive silhouettes at 32 pixels">
+    {#each CHAMBER_ARCHIVE_MARKS as mark (mark.id)}
+      <article>
+        <div><ChamberLandmarkSilhouette id={mark.id} universeId={mark.universeId} silhouette /></div>
+        <strong>{mark.label}</strong>
+        <small>{mark.universeId}</small>
+      </article>
+    {/each}
+  </section>
+</main>
+{:else}
 <main class="silhouette-harness">
   <header>
     <div><span>PHASE 1 · BUILD GATE</span><h1>Emberlight silhouette harness</h1></div>
@@ -54,6 +71,7 @@
     {/each}
   </section>
 </main>
+{/if}
 
 <style>
   :global(html), :global(body) { overflow: auto; background: #ecebe7; color: #151515; user-select: text; }
@@ -73,6 +91,7 @@
   figure > div { display: grid; place-items: center; }
   figcaption { font: 700 0.65rem/1 ui-monospace, monospace; }
   .contact-sheet { max-width: 70rem; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); gap: 0.45rem; }
+  .chamber-sheet { max-width:86rem;grid-template-columns:repeat(8,minmax(7.5rem,1fr)); }
   article { display: grid; grid-template-columns: 2.5rem 1fr; grid-template-rows: auto auto; gap: 0.12rem 0.55rem; align-items: center; min-height: 4rem; padding: 0.55rem; background: white; border: 1px solid #bbb; }
   article.selected { outline: 3px solid #151515; outline-offset: -3px; }
   article > div { grid-row: 1 / 3; width: 32px; height: 32px; }

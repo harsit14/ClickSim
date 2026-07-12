@@ -29,6 +29,7 @@
   import TidefallFlagshipLayer from './TidefallFlagshipLayer.svelte'
   import VerdanceArchiveSilhouette from './VerdanceArchiveSilhouette.svelte'
   import VerdanceWorldLayer from './VerdanceWorldLayer.svelte'
+  import ChamberLandmarkSilhouette from './ChamberLandmarkSilhouette.svelte'
   import {
     brahmalokStatus,
     canticleStatus,
@@ -362,9 +363,15 @@
             aria-label={`${landmark.accessibleDescription}. Open ${pack.archive.localName}.`}
             onclick={onarchiveopen}
           >
-            <span class="archive-sigil" class:botanical={pack.id === 'verdance'} aria-hidden="true">
+            <span
+              class="archive-sigil"
+              class:world-material={pack.id === 'verdance' || pack.id === 'prismata' || pack.id === 'tempest' || pack.id === 'canticle'}
+              aria-hidden="true"
+            >
               {#if pack.id === 'verdance'}
                 <VerdanceArchiveSilhouette index={archiveRecordIndexById.get(record.id) ?? 0} />
+              {:else if pack.id === 'prismata' || pack.id === 'tempest' || pack.id === 'canticle'}
+                <ChamberLandmarkSilhouette id={record.id} universeId={pack.id} />
               {:else}
                 <ArchiveRecordArt
                   id={record.id}
@@ -373,6 +380,9 @@
                 />
               {/if}
             </span>
+            {#if pack.id === 'verdance' || pack.id === 'prismata' || pack.id === 'tempest' || pack.id === 'canticle'}
+              <span class="landmark-name">{record.name}</span>
+            {/if}
             <span class="archive-hint" role="tooltip">
               <small>{pack.archive.localName}</small>
               <strong>{landmark.grouped ? landmark.groupLabel : record.name}</strong>
@@ -576,7 +586,28 @@
     place-items: center;
     border-radius: 50%;
   }
-  .archive-sigil.botanical { border-radius:0; }
+  .archive-sigil.world-material { border-radius:0; }
+  .landmark-name { position:absolute;left:50%;top:calc(100% + .2rem);width:8rem;transform:translateX(-50%);color:color-mix(in srgb,var(--gold) 76%,white);font:680 .54rem/1.15 system-ui,sans-serif;letter-spacing:.035em;text-align:center;text-shadow:0 1px .25rem var(--bg),0 0 .5rem var(--bg);white-space:normal;pointer-events:none; }
+  [data-side='left-edge'] .landmark-name { left:calc(100% + .15rem);top:50%;transform:translateY(-50%);text-align:left; }
+  [data-side='right'] .landmark-name { right:calc(100% + .15rem);left:auto;top:50%;transform:translateY(-50%);text-align:right; }
+  [data-slot='scatter-23'] .landmark-name { right:auto;left:50%;top:calc(100% + .2rem);bottom:auto;transform:translateX(-50%);text-align:center; }
+  [data-side='center'][data-slot$='02'] .landmark-name,
+  [data-side='center'][data-slot$='04'] .landmark-name,
+  [data-side='center'][data-slot$='06'] .landmark-name,
+  [data-side='center'][data-slot$='08'] .landmark-name,
+  [data-side='center'][data-slot$='10'] .landmark-name,
+  [data-side='center'][data-slot$='12'] .landmark-name,
+  [data-side='center'][data-slot$='14'] .landmark-name,
+  [data-side='center'][data-slot$='16'] .landmark-name,
+  [data-side='center'][data-slot$='18'] .landmark-name,
+  [data-side='center'][data-slot$='20'] .landmark-name,
+  [data-side='center'][data-slot$='22'] .landmark-name,
+  [data-side='center'][data-slot$='24'] .landmark-name { top:auto;bottom:calc(100% + .2rem); }
+  .verdance .archive-landmark,
+  .prismata .archive-landmark,
+  .tempest .archive-landmark,
+  .canticle .archive-landmark { width:4.1rem;height:4.1rem; }
+  :global(html[data-text-scale='large']) .landmark-name { max-width:8rem;font-size:.66rem; }
   .archive-hint {
     position: absolute;
     left: 50%;
