@@ -79,10 +79,10 @@ law('crest-timing', 'Crest Timing', 'Touch the instant before the wave knows it 
   { kind: 'clickShare', value: 0.01 },
 ])
 law('moon-pull', 'Moon Pull', 'No moon is visible. The sea obeys anyway.', 10_000, { totalEarned: 5_000 }, [
-  { kind: 'globalMult', value: 2 },
+  { kind: 'globalMult', value: 4 },
 ], '☾', 214)
 law('spring-tide', 'Spring Tide', 'Every small current votes for the same horizon.', 1e8, { totalEarned: 5e7 }, [
-  { kind: 'globalMult', value: 2 },
+  { kind: 'globalMult', value: 4 },
 ])
 law('reef-accord', 'Reef Accord', 'Every Tidepool leaves a little color on the reef.', 3e8, { gen: 'forge', count: 10 }, [
   { kind: 'synergy', gen: 'forge', per: 'hearth', value: 0.008 },
@@ -124,7 +124,7 @@ law('wave-remembers-pools', 'The Wave Remembers Pools', 'Every little shore surv
   { kind: 'synergy', gen: 'ember2', per: 'hearth', value: 0.01 },
 ], '∞', 168)
 law('trench-memory', 'Trench Memory', 'Pressure remembers every bright thing lowered into it.', 1e16, { gen: 'loom', count: 1 }, [
-  { kind: 'globalMult', value: 2.5 },
+  { kind: 'globalMult', value: 8 },
 ], '◉', 258)
 
 export const TIDEFALL_UPGRADES = upgrades

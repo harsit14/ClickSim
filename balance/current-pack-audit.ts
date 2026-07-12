@@ -54,6 +54,14 @@ export interface CurrentPackAuditResult {
   readonly longestPreEpochPurchaseGapMs: number
 }
 
+export interface MinimalOwnershipIdleAuditResult {
+  readonly source: 'current-engine-minimal-ownership-idle-v1'
+  readonly universeId: UniverseId
+  readonly horizonMs: number
+  readonly ownedGeneratorId: string
+  readonly finalEarned: SerializedEconomyAmount
+}
+
 function initialState(universeId: UniverseId): EcoState {
   return {
     activeUniverse: universeId,
@@ -254,6 +262,40 @@ export function runCurrentPackAudit(
     firstEpochAtMs,
     firstBeaconAtMs,
     longestPreEpochPurchaseGapMs,
+  }
+}
+
+/**
+ * Measures real-engine offline pacing after the player has bootstrapped the
+ * first Kindling. Purchases, clicks, upgrades, Archives, and active mechanic
+ * use stay disabled so balance work can prove the passive floor did not move.
+ */
+export function runMinimalOwnershipIdleAudit(
+  universeId: UniverseId,
+  horizonHours = 8,
+): MinimalOwnershipIdleAuditResult {
+  const pack = universeById(universeId)
+  const firstGenerator = pack.generators[0]
+  if (!firstGenerator) throw new RangeError(`${universeId} has no first Kindling`)
+  const state = initialState(universeId)
+  state.owned[firstGenerator.id] = 1
+  let finalEarned = ZERO_AMOUNT
+  const horizonMs = horizonHours * 3_600_000
+  const offlineProfile = SIMULATOR_PROFILES.find(({ id }) => id === 'zero-skill-idle-offline')
+  if (!offlineProfile) throw new RangeError('Missing zero-skill idle simulator profile')
+  for (let atMs = 0; atMs < horizonMs; atMs += AUDIT_STEP_SECONDS * 1_000) {
+    advanceActiveUniverseLaw(state, offlineProfile, AUDIT_STEP_SECONDS)
+    finalEarned = addAmounts(
+      finalEarned,
+      multiplyAmountByNumber(totalRate(state, atMs), AUDIT_STEP_SECONDS * 0.5),
+    )
+  }
+  return {
+    source: 'current-engine-minimal-ownership-idle-v1',
+    universeId,
+    horizonMs,
+    ownedGeneratorId: firstGenerator.id,
+    finalEarned: serializeAmount(finalEarned),
   }
 }
 

@@ -14,7 +14,7 @@ import {
 } from '../src/content/legacy-exchange'
 import { createDevScenario } from '../src/core/dev-scenarios'
 import { migrateAndSanitizeSave, stringifySaveDataV23 } from '../src/core/save-data'
-import { ZERO_AMOUNT, serializeAmount } from '../src/core/numeric/amount'
+import { ZERO_AMOUNT, amountToNumber, divideAmounts, serializeAmount } from '../src/core/numeric/amount'
 import { globalMult, type EcoState } from '../src/engine/compute'
 
 test('Succession Relays form one strict immediate-neighbour chain', () => {
@@ -58,11 +58,11 @@ test('relay and Vault utilities enter the production multiplier pipeline', () =>
 
   base.successionRelays = { 'relay-emberlight-tidefall': 5 }
   const relayed = globalMult(base, 10_000)
-  assert.ok(Math.abs(relayed.mantissa / baseline.mantissa - 1.6) < 1e-12)
+  assert.ok(Math.abs(amountToNumber(divideAmounts(relayed, baseline)) - 1.6) < 1e-12)
 
   base.lumenPurchases = ['utility-archive-resonator']
   const vaulted = globalMult(base, 10_000)
-  assert.ok(Math.abs(vaulted.mantissa / relayed.mantissa - 1.1) < 1e-12)
+  assert.ok(Math.abs(amountToNumber(divideAmounts(vaulted, relayed)) - 1.1) < 1e-12)
   assert.equal(lumenVaultProductionMultiplier(base.lumenPurchases), 1.1)
 })
 

@@ -71,11 +71,17 @@ const law = (
 
 law('u4-engaged-touch', 'Engaged Touch', 'Your hand advances one visible tooth and no hidden die is cast.', 60, { clicks: 10 }, [{ kind: 'clickMult', value: 2 }], '⚙')
 law('u4-positive-stop', 'Positive Stop', 'The Heart answers at the same measured depth every time.', 8_000, { clicks: 180 }, [{ kind: 'clickMult', value: 2 }, { kind: 'clickShare', value: 0.01 }], '⌑')
-law('u4-bearing-standard', 'Bearing Standard', 'A civic specification removes friction from every train.', 10_000, { totalEarned: 5_000 }, [{ kind: 'globalMult', value: 2 }], '◎')
+law('u4-bearing-standard', 'Bearing Standard', 'A civic specification removes friction from every train.', 10_000, { totalEarned: 5_000 }, [{ kind: 'globalMult', value: 6 }], '◎')
 law('u4-ratchet-memory', 'Ratchet Memory', 'Every Tooth teaches the Ratchet what must not be lost.', 25_000, { gen: 'u4-ratchet', count: 10 }, [{ kind: 'synergy', gen: 'u4-ratchet', per: 'u4-tooth', value: 0.02 }], '∞')
 law('u4-escapement-train', 'Escapement Train', 'Cogs deliver cadence while the Escapement decides when it becomes time.', 300_000, { gen: 'u4-escapement', count: 10 }, [{ kind: 'synergy', gen: 'u4-escapement', per: 'u4-cog', value: 0.01 }], '∞')
-law('u4-governed-flywheel', 'Governed Flywheel', 'Correction and momentum become one stable public service.', 2e9, { gen: 'u4-governor', count: 10 }, [{ kind: 'synergy', gen: 'u4-governor', per: 'u4-flywheel', value: 0.01 }], '∞')
-law('u4-civic-relay', 'Civic Relay', 'The Foundry gives every Difference Engine a destination.', 8e12, { gen: 'u4-relay-foundry', count: 10 }, [{ kind: 'synergy', gen: 'u4-relay-foundry', per: 'u4-difference-engine', value: 0.008 }], '∞')
+law('u4-governed-flywheel', 'Governed Flywheel', 'Correction and momentum become one stable public service.', 2e9, { gen: 'u4-governor', count: 10 }, [
+  { kind: 'synergy', gen: 'u4-governor', per: 'u4-flywheel', value: 0.01 },
+  { kind: 'globalMult', value: 2 },
+], '∞')
+law('u4-civic-relay', 'Civic Relay', 'The Foundry gives every Difference Engine a destination.', 8e12, { gen: 'u4-relay-foundry', count: 10 }, [
+  { kind: 'synergy', gen: 'u4-relay-foundry', per: 'u4-difference-engine', value: 0.008 },
+  { kind: 'globalMult', value: 2 },
+], '∞')
 law('u4-causal-calendar', 'Causal Calendar', 'The last date matters because the Causal Engine can still choose its route.', 1e20, { gen: 'u4-last-calendar', count: 1 }, [{ kind: 'globalMult', value: 2 }], '◫')
 
 export const CLOCKWORK_UPGRADES = upgrades
