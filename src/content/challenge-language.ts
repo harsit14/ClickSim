@@ -75,7 +75,7 @@ const LEXICONS: Readonly<Record<string, ChallengeLexicon>> = {
     silenceRhythm: 'returning tide', silencePlace: 'the still ocean',
   },
   canticle: {
-    unitSingular: 'refuge', unitPlural: 'refuges', actionVerb: 'release', earnVerb: 'carry',
+    unitSingular: 'waystation', unitPlural: 'waystations', actionVerb: 'release', earnVerb: 'carry',
     inputPlural: 'tendings', upgradePlural: 'paths', productionNoun: 'cadence', produceVerb: 'contribute',
     functionVerb: 'carry the cycle', relationshipPlural: 'mountain relations', manualCurrencyVerb: 'carried', silenceSound: 'mountain wind',
     silenceRhythm: 'five-act cycle', silencePlace: 'the open summit',

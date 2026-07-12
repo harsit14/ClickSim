@@ -214,7 +214,7 @@
     <section class="crossing-gate" aria-label="Wayfinder locked">
       <span>Wayfinder sealed</span>
       <strong>Complete {activeBlueprint.name} before leaving {activePack.shortName}.</strong>
-      <p>Each universe must build and activate its own crossing vessel. A Vessel completed in another world cannot carry this world’s laws.</p>
+      <p>Each realm must build and activate its own crossing vessel. A Vessel completed elsewhere cannot carry this realm’s laws.</p>
     </section>
   {/if}
 </section>

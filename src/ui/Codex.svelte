@@ -100,7 +100,7 @@
           {#each transcript.groups as group (group.universeId)}
             <section class="transcript-world" class:current={group.current} aria-label={`${group.universeName} Lumen transcript`}>
               <div class="world-heading">
-                <div><span>{group.current ? 'current universe' : 'visited universe'}</span><strong>{group.universeName}</strong></div>
+                <div><span>{group.current ? 'current realm' : 'visited realm'}</span><strong>{group.universeName}</strong></div>
                 <small>{group.entries.length} {group.entries.length === 1 ? 'line' : 'lines'}</small>
               </div>
               <ol>
@@ -128,8 +128,8 @@
 {answer.epilogue.join('\n\n')}</p>
       <div class="remembrance">
         <p class="rem-pitch">
-          Lumen can fold this active universe into memory and wake you at its first pixel, twice as bright.
-          Other universes, the Archive, the Between, settings, and the permanent record remain.
+          Lumen can fold this active realm into memory and wake you at its first pixel, twice as bright.
+          Other realms, the Archive, the Between, settings, and the permanent record remain.
         </p>
         <button class="rem-btn" onclick={onremember}>Review Remembrance</button>
       </div>

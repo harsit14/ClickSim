@@ -101,7 +101,7 @@
 
   {#if view === 'stats'}
     <dl>
-      <dt>universe</dt><dd>{pack.shortName}</dd>
+      <dt>realm</dt><dd>{pack.shortName}</dd>
       <dt>{pack.currency.toLowerCase()}</dt><dd>{pack.currencyGlyph} {format(game.light)}</dd>
       <dt>ever earned here</dt><dd>{pack.currencyGlyph} {format(game.totalEarned)}</dd>
       <dt>active {pack.currency.toLowerCase()} / second</dt><dd>{format(activeRate)}</dd>

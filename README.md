@@ -30,6 +30,14 @@ Each realm has its own economy, visual language, soundscape, active system, Arch
 
 The final three internal IDs are intentionally frozen for save compatibility. Public copy and current canon use Brahmalok, Vishnulok, and Kailash; persisted slots remain `prismata`, `tempest`, and `canticle`. Their stable content prefixes are `u5-`, `u6-`, and `u7-`.
 
+### Terminology contract
+
+- **Realm** is the public umbrella term for any of the seven playable destinations.
+- **Restored world** refers specifically to Emberlight, Tidefall, Verdance, or Clockwork.
+- **Loka** refers specifically to Brahmalok, Vishnulok, or Kailash.
+- **World** by itself is reserved for the local reset scope: currency, current-run earnings, Kindlings, ordinary upgrades, and buy mode.
+- **Universe ID** is an implementation and save-compatibility term. Identifiers such as `activeUniverse`, `universeId`, `prismata`, `tempest`, and `canticle` do not name player-facing destinations.
+
 ### Current world presentation
 
 - **Emberlight** is the flagship authored world: settlement, constellations, celestial machinery, and landmarks accumulate around a protected central Heart.

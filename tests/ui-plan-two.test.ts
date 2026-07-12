@@ -73,7 +73,7 @@ test('phase three routes Deep and Remembrance through one structured comparison 
   assert.doesNotMatch(deep, /performDeepCollapse/)
   assert.match(ceremony, /Consequence[\s\S]*Crossing[\s\S]*Result/)
   assert.match(ceremony, /class:reduced/)
-  assert.match(codex, /Other universes, the Archive, the Between, settings, and the permanent record remain/)
+  assert.match(codex, /Other realms, the Archive, the Between, settings, and the permanent record remain/)
   assert.match(codex, /Review Remembrance/)
   assert.match(resetCard, /model\.reward\.glyph === '×'/)
   assert.doesNotMatch(question, /onpointerdown=.*choose\(choice\.id\)/)

@@ -46,7 +46,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Reading the screen',
         paragraphs: [
-          'The large number at the top is spendable currency. The smaller rate is passive currency per second. Temporary blessings, rhythm streaks, prestige balances, and universe physics appear nearby only when relevant.',
+          'The large number at the top is spendable currency. The smaller rate is passive currency per second. Temporary blessings, rhythm streaks, prestige balances, and realm physics appear nearby only when relevant.',
           'The right rail is Kindling. The bottom-left dock opens permanent systems such as Stats, Options, the cabinet, Observatory, Deep, Story Archive, Vessel, and this guide.',
         ],
       },
@@ -87,7 +87,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     nav: 'Active play',
     eyebrow: 'hands on the universe',
     title: 'Clicks, criticals, rhythm, and blessings',
-    summary: 'Active play remains relevant through click scaling, critical hits, beat timing, and universe-specific wandering events.',
+    summary: 'Active play remains relevant through click scaling, critical hits, beat timing, and realm-specific wandering events.',
     keywords: ['click', 'critical', 'crit', 'rhythm', 'combo', 'beat', 'music', 'powerup', 'power-up', 'falling star', 'bubble', 'buff'],
     blocks: [
       {
@@ -101,7 +101,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Playing on the beat',
         paragraphs: [
           'Once music is unlocked, clicking close to an audible beat builds a streak. The ring around the central object is the visual beat guide. Missing the timing resets the streak but never removes permanent progress.',
-          'Streak thresholds gently improve clicks up to ×1.5 and charge Omen attraction instead of creating large production blessings. Music tempo changes between universes, so the rhythm should be learned again after a crossing.',
+          'Streak thresholds gently improve clicks up to ×1.5 and charge Omen attraction instead of creating large production blessings. Music tempo changes between realms, so the rhythm should be learned again after a crossing.',
         ],
         bullets: [
           '4 beats begins the basic ×1.1 combo multiplier.',
@@ -113,7 +113,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Wandering power-ups',
         paragraphs: [
-          'A clickable omen periodically crosses the world. Catching it grants an instant award, a timed production or click blessing, or a hybrid of both. Each universe owns a different event shape, sound, reward table, and rarity distribution.',
+          'A clickable omen periodically crosses the world. Catching it grants an instant award, a timed production or click blessing, or a hybrid of both. Each realm owns a different event shape, sound, reward table, and rarity distribution.',
           'Constellation perks and cabinet rewards can make events arrive sooner, last longer, or call a second omen. Ignoring an event never damages the save; active play is advantageous, not mandatory.',
         ],
       },
@@ -121,16 +121,16 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
   },
   {
     id: 'universes',
-    nav: 'Universes',
+    nav: 'Realms',
     eyebrow: 'different laws, different senses',
-    title: 'Universe identities and physics',
+    title: 'Realm identities and physics',
     summary: 'A crossing changes far more than color: economy names, living physics, music, clicks, events, collections, lore, and world rendering all belong to the destination.',
     keywords: ['universe', 'realm', 'emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash', 'prismata', 'tempest', 'canticle', 'physics', 'tide', 'cohort', 'creation', 'mandala', 'continuity', 'refuge', 'release', 'grace', 'rest', 'crossing', 'world'],
     blocks: [
       {
         heading: 'Emberlight',
         paragraphs: [
-          'The first universe is steady and warm. Its production has no cyclic physics modifier, its score is a 72 BPM hearth-like arrangement, and its active omens are falling stars. It is the clearest place to learn the base economy.',
+          'The first restored world is steady and warm. Its production has no cyclic physics modifier, its score is a 72 BPM hearth-like arrangement, and its active omens are falling stars. It is the clearest place to learn the base economy.',
         ],
       },
       {
@@ -141,7 +141,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         ],
       },
       {
-        heading: 'The five farther worlds',
+        heading: 'The farther realms',
         paragraphs: [
           'Verdance ages each Kindling through new, rooted, mature, and ancient growth; old cohorts produce more and contribute Memory Seeds during Pruning. Clockwork removes random economics and asks you to inspect deterministic transmission routes and scheduled Maintenance Signals.',
           'Brahmalok is the first loka beyond the restored worlds. Its Lotus of Becoming routes Kindlings through seed, measure, name, and form, then rewards focused germination, balanced mandalas, manuscript memory, or proliferation. Vishnulok gathers Continuity, then carries a declared correction through a Daily Return, Refuge Circuit, Measured Correction, or Ocean Balance route until it comes home.',
@@ -151,7 +151,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Progress is parked, not destroyed',
         paragraphs: [
-          'Each universe keeps its own run: currency, generators, upgrades, Stardust era, Deep progress, challenges, ending, cabinet, and local Echoes wait exactly where the Vessel left them. Multiverse currencies and Wayfinder laws sit above those parked worlds.',
+          'Each realm keeps its own run: currency, generators, upgrades, Stardust era, Deep progress, challenges, ending, cabinet, and local Echoes wait exactly where the Vessel left them. Between currencies and Wayfinder laws sit above those parked realms.',
         ],
       },
     ],
@@ -159,22 +159,22 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
   {
     id: 'cabinet',
     nav: 'Cabinets',
-    eyebrow: 'the universe examined',
+    eyebrow: 'the realm examined',
     title: 'Cabinets, archives, and special objects',
-    summary: 'Every universe has a twelve-object field archive divided into three four-part shelves, with local lore and mechanical rewards.',
+    summary: 'Every realm has a twelve-object field archive divided into three four-part shelves, with local lore and mechanical rewards.',
     keywords: ['cabinet', 'archive', 'curiosity', 'object', 'phenomenon', 'protostar', 'comet', 'leviathan', 'record', 'shelf'],
     blocks: [
       {
         heading: 'Cataloguing objects',
         paragraphs: [
-          'An unresolved signal appears when lifetime earnings reach roughly one quarter of its catalogue cost. Buying it records the object permanently in that universe and immediately adds +2% all production; completing its four-record shelf adds a larger combined reward.',
-          'Completing all four objects in a shelf activates the shelf reward. Shelf reward types differ by universe, so the same stable save slot can represent a different object and a different build priority after crossing.',
+          'An unresolved signal appears when lifetime earnings reach roughly one quarter of its catalogue cost. Buying it records the object permanently in that realm and immediately adds +2% all production; completing its four-record shelf adds a larger combined reward.',
+          'Completing all four objects in a shelf activates the shelf reward. Shelf reward types differ by realm, so the same stable save slot can represent a different object and a different build priority after crossing.',
         ],
       },
       {
         heading: 'Interactive records',
         bullets: [
-          'The nursery object can be fueled for a timed production multiplier. Its duration and strength belong to the universe.',
+          'The nursery object can be fueled for a timed production multiplier. Its duration and strength belong to the realm.',
           'The returning traveler completes a long orbit or migration and can be collected for stored production.',
           'The archival beacon contains a readable lore transmission.',
           'The horizon object changes its status after sufficiently vast lifetime earnings.',
@@ -213,7 +213,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
           'The Corona is the expensive capstone reached through developed Forge and Hand paths.',
         ],
         paragraphs: [
-          'The same permanent choices are interpreted by each universe rather than copied verbatim. Emberlight draws a stellar Constellation in the Observatory; Tidefall sounds a Current Chart in the Moonless Chart, with local node names, lore, layout, and Undertow ritual.',
+          'The same permanent choices are interpreted by each realm rather than copied verbatim. Emberlight draws a stellar Constellation in the Observatory; Tidefall sounds a Current Chart in the Moonless Chart, with local node names, lore, layout, and Undertow ritual.',
           'Once every node is owned, a repeatable Stardust market appears. Emberlight calls it the Eternal Observatory; Tidefall calls it the Returning Ocean. Both provide an endless production sink and increased Stardust yield until the next layer-two collapse.',
           'Permanent Heart vestments recovered with Lumen Shards also live in the Observatory, beside the sky map and the light they recolor.',
         ],
@@ -249,7 +249,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Finished markets are not dead ends',
         paragraphs: [
           'After every fixed Singularity upgrade is owned, the Recursive Works become available. Worldseed Compression repeatedly doubles production. The Recursive Abyss repeatedly improves Deep Collapse yield. These ranks survive Deep Collapses and reset only during Remembrance.',
-          'The Resonance Atlas lists every cross-generator synergy in the active universe, its source and target, price, ownership state, and live multiplier. Completing Small Vessels doubles the bonus portion of all resonances.',
+          'The Resonance Atlas lists every cross-generator synergy in the active realm, its source and target, price, ownership state, and live multiplier. Completing Small Vessels doubles the bonus portion of all resonances.',
           'Once a world has lit its Beacon, the Deep exposes its capped Lumen Distillery. Distillation converts that world’s local Singularities into shared Lumen Shards without changing the price curve or cap.',
         ],
       },
@@ -269,7 +269,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
           'Beginning a trial stores the current run and starts a clean temporary run under special laws. Trials award no Stardust. Meeting the displayed goal immediately grants the permanent reward and restores the stored run. Abandoning restores the run without the reward.',
           'The first six trials teach one restriction at a time. The Inner Horizon adds compound restrictions and unlocks progressively after earlier completions.',
         ],
-        note: 'Trial rewards are permanent within the current remembrance and apply in every universe run that shares that remembrance.',
+        note: 'Trial rewards are permanent within the current remembrance and apply in every realm run that shares that remembrance.',
       },
     ],
   },
@@ -278,21 +278,21 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     nav: 'The Vessel',
     eyebrow: 'prestige layer three',
     title: 'Local Vessels, Beacons, and the Dark Between',
-    summary: 'Each universe turns its own mastered laws into a crossing vessel before its Beacon can open the next route.',
+    summary: 'Each realm turns its own mastered laws into a crossing vessel before its Beacon can open the next route.',
     keywords: ['vessel', 'multiverse', 'crossing', 'beacon', 'dark between', 'wayfinder', 'route', 'parts'],
     blocks: [
       {
-        heading: 'Building each universe’s Vessel',
+        heading: 'Building each realm’s Vessel',
         paragraphs: [
           'The Vessel appears after sufficiently vast progress. Every destination owns a different five-part design tied to its local law: Tidefall seals a pressure ark, Verdance grows a Seed Ark from aged cohorts, Brahmalok binds a four-direction folio without closing its final margin, Vishnulok completes a correction without enclosing its refuge, and Kailash carries the five-act cycle down through an open ring.',
-          'Vessel completion is local to the active universe. Parts built in Emberlight remain recorded there, but they do not activate Tidefall’s Ark or any later crossing craft. Requirements, consumed materials, construction actions, and the visible schematic all change with the world.',
+          'Vessel completion is local to the active realm. Parts built in Emberlight remain recorded there, but they do not activate Tidefall’s Ark or any later crossing craft. Requirements, consumed materials, construction actions, and the visible schematic all change with the destination.',
         ],
       },
       {
         heading: 'Crossings and Beacons',
         paragraphs: [
-          'Only the active universe’s completed Vessel can open the Wayfinder. Crossing parks the current universe, restores the destination if previously visited, and seals the Wayfinder again until that destination builds and activates its own Vessel.',
-          'After the local Vessel is active, reaching the world’s Beacon requirement can light that universe across the multiverse and unlock the next route. Beacons multiply production globally and award Dark Between, which is spent on permanent Wayfinder laws.',
+          'Only the active realm’s completed Vessel can open the Wayfinder. Crossing parks the current realm, restores it if previously visited, and seals the Wayfinder again until that destination builds and activates its own Vessel.',
+          'After the local Vessel is active, reaching the realm’s Beacon requirement can light it across the Between and unlock the next route. Beacons multiply production globally and award Dark Between, which is spent on permanent Wayfinder laws.',
           'Succession Relays and the Relay Lens live in the Wayfinder. Each completed source world may strengthen only its immediate successor; moving the controls here does not change ranks, costs, or effects.',
         ],
       },
@@ -309,9 +309,9 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Lumen and the Story Archive',
         paragraphs: [
-          'Lumen’s ticker reacts to milestones but never blocks input. Every line in the current saved universe histories is retained in occurrence order. Open the Story Archive from the dock to revisit the latest line or read the complete journal for every visited universe.',
+          'Lumen’s ticker reacts to milestones but never blocks input. Every line in the saved realm histories is retained in occurrence order. Open the Story Archive from the dock to revisit the latest line or read the complete journal for every visited realm.',
           'Recovered Echoes are longer archive fragments from economic and generator milestones. They remain available in the Story Archive’s Echoes tab.',
-          'Echo collections belong to their universe. Completing the active universe’s archive can reveal an additional answer when The Question arrives.',
+          'Echo collections belong to their realm. Completing the active realm’s archive can reveal an additional answer when The Question arrives.',
         ],
       },
       {
@@ -351,7 +351,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Seeded Atlas routes and Convergences',
         paragraphs: [
           'The Atlas unlocks after three Beacons. Each route combines one restored world or loka with compatible, hand-authored environment, economy, and interaction laws, one narrative fragment, and an optional mastery constraint. The seed reproduces the same route and replay log exactly.',
-          'Beginning a route parks the source universe intact and creates a temporary route run. Completion archives the replay and personal time; abandonment restores the source without loss. Convergences are permanent route and story collections. They never expire and have no paid or seasonal reward track.',
+          'Beginning a route parks the source realm intact and creates a temporary route run. Completion archives the replay and personal time; abandonment restores the source without loss. Convergences are permanent route and story collections. They never expire and have no paid or seasonal reward track.',
         ],
       },
     ],
@@ -367,7 +367,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Achievements and world power',
         paragraphs: [
-          'Every achievement grants one point of the current universe’s achievement power: Radiance in Emberlight and Resonance in Tidefall. Each point adds one percent to global production. The Stats panel localizes the record to the current world and conceals hidden names until discovered.',
+          'Every achievement grants one point of the current realm’s achievement power: Radiance in Emberlight and Resonance in Tidefall. Each point adds one percent to global production. The Stats panel localizes the record to the current realm and conceals hidden names until discovered.',
           'Achievement categories cover earnings, generators, clicking, criticals, rhythm, prestige, trials, cabinets, time, endings, and unusual behavior. Hidden achievements reward experimentation; they are never required to make the economy function.',
         ],
       },
@@ -375,7 +375,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Stats and Vestments',
         paragraphs: [
           'Stats separates passive production, recent active clicking, generator contribution, critical chance, prestige history, market ranks, trials, multiverse progress, and time played. Use it to find which generator actually drives the current build.',
-          'Vestments are cosmetic accent palettes unlocked through Echoes, Deep Collapses, and trials. They grant no production. Each universe adapts a vestment into its own color family, so the change stays visible without making Tidefall look like Emberlight or vice versa.',
+          'Vestments are cosmetic accent palettes unlocked through Echoes, Deep Collapses, and trials. They grant no production. Each realm adapts a vestment into its own color family, so the change stays visible without making Tidefall look like Emberlight or vice versa.',
         ],
       },
     ],
@@ -425,7 +425,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
           'Use Stats to identify the generator contributing most of the rate, then buy its refinements and resonances.',
           'Supernova when the gain materially changes the next run; Deep Collapse when the Singularity reward buys a meaningful permanent system.',
           'Active players should combine a rhythm streak with a strong wandering-event blessing.',
-          'Idle players should prioritize production, offline, automation, and stable universe physics.',
+          'Idle players should prioritize production, offline, automation, and stable realm physics.',
           'No timed reward is mandatory, and absence never removes permanent progress.',
         ],
       },

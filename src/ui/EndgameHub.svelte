@@ -83,6 +83,10 @@
     if (setBeaconName(universeId, beaconDrafts[universeId] ?? '')) save()
   }
 
+  function realmName(universeId: string): string {
+    return UNIVERSES.find((realm) => realm.id === universeId)?.shortName ?? 'Unknown realm'
+  }
+
   function toggleWayfinder(id: string) {
     selectedWayfinder = selectedWayfinder.includes(id)
       ? selectedWayfinder.filter((entry) => entry !== id)
@@ -308,7 +312,7 @@
         <div class="saved-loadouts">
           {#each game.lawLoadouts as loadout (loadout.id)}
             <article class:active={game.activeLawLoadoutId === loadout.id}>
-              <div><span>{loadout.universeId}</span><h4>{loadout.name}</h4></div>
+              <div><span>{realmName(loadout.universeId)}</span><h4>{loadout.name}</h4></div>
               <code>{encodeLawLoadout(loadout)}</code>
               <button disabled={loadout.universeId !== game.activeUniverse} onclick={() => activate(loadout)}>
                 {game.activeLawLoadoutId === loadout.id ? 'Active' : 'Activate'}
@@ -333,7 +337,7 @@
             <span>route in progress</span>
             <h4>{activeRoute?.title}</h4>
             <code>{game.activeAtlasRoute.routeCode}</code>
-            <p>The source universe is parked intact. This temporary run alone is at stake.</p>
+            <p>The source realm is parked intact. This temporary run alone is at stake.</p>
             <div>
               <button class="primary" disabled={!atlasRouteReady()} onclick={finishRoute}>Archive completed route</button>
               <button onclick={abandonRoute}>Abandon and restore source run</button>
@@ -345,7 +349,7 @@
             <button onclick={() => (seed = (seed + 7919) % 2147483647)}>Next seeded route</button>
           </div>
           <article class="route-card">
-            <span>{route.universeId} · deterministic route</span>
+            <span>{realmName(route.universeId)} · deterministic route</span>
             <h4>{route.title}</h4>
             <code>{route.code}</code>
             <div class="route-laws">

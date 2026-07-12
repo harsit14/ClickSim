@@ -52,6 +52,16 @@ test('Clockwork Maintenance Trials use mechanism, Ticks, and named machine tiers
   assert.equal(final.rewardDesc, 'all mechanism linkages ×2, always')
 })
 
+test('Vishnulok and Kailash keep distinct public trial-unit language', () => {
+  const vishnulok = UNIVERSES.find(({ id }) => id === 'tempest')!
+  const kailash = UNIVERSES.find(({ id }) => id === 'canticle')!
+
+  assert.equal(localizeChallengeText('One Kindling remains.', vishnulok), 'One Refuge remains.')
+  assert.equal(localizeChallengeText('Two Kindlings remain.', vishnulok), 'Two Refuges remain.')
+  assert.equal(localizeChallengeText('One Kindling remains.', kailash), 'One Waystation remains.')
+  assert.equal(localizeChallengeText('Two Kindlings remain.', kailash), 'Two Waystations remain.')
+})
+
 test('trial display, guide, active banner, and completion toast share the resolved copy', () => {
   const deep = readFileSync(new URL('../src/ui/TheDeep.svelte', import.meta.url), 'utf8')
   const guide = readFileSync(new URL('../src/ui/GameGuide.svelte', import.meta.url), 'utf8')
