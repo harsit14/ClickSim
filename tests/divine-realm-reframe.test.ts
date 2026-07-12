@@ -46,13 +46,13 @@ test('the cultural contract prohibits turning sacred content into ordinary econo
     'not-currency', 'not-generator', 'not-upgrade', 'not-boss', 'not-loot',
     'not-joke-achievement', 'not-cabinet-collectible',
   ])
-  const canon = readFileSync(new URL('../TRIMURTI_REFRAME.md', import.meta.url), 'utf8')
+  const canon = readFileSync(new URL('../README.md', import.meta.url), 'utf8')
   assert.match(canon, /Hindu traditions are diverse/)
-  assert.match(canon, /never\n\s+currencies, loot, bosses/)
+  assert.match(canon, /Sacred beings and attributes are never currencies, generators, upgrades, enemies, bosses, loot/)
   assert.match(canon, /Saraswati, Lakshmi, and Parvati are not accessories/)
-  assert.match(canon, /cultural consultant/)
-  assert.match(canon, /No live UI adopts a loka name until/)
-  assert.match(canon, /external cultural review remains a release gate/i)
+  assert.match(canon, /qualified cultural consultant/)
+  assert.match(canon, /Public loka names may appear in live UI only after/)
+  assert.match(canon, /External cultural review remains a release gate/i)
 })
 
 test('the Unscheduled Interval is one contiguous, deterministic, accessible revelation', () => {

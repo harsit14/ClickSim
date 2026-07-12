@@ -31,6 +31,7 @@
   import VerdanceWorldLayer from './VerdanceWorldLayer.svelte'
   import ChamberLandmarkSilhouette from './ChamberLandmarkSilhouette.svelte'
   import VishnulokTrafficLayer from './VishnulokTrafficLayer.svelte'
+  import KailashWorldLayer from './KailashWorldLayer.svelte'
   import {
     brahmalokStatus,
     canticleStatus,
@@ -324,6 +325,15 @@
 
     {#if pack.id === 'clockwork' && !virginWorld}
       <ClockworkFlagshipLayer {owned} reducedMotion={preferences.reducedMotion} />
+    {/if}
+
+    {#if pack.id === 'canticle' && !virginWorld}
+      <KailashWorldLayer
+        objects={pack.visual.objects}
+        {owned}
+        reducedMotion={preferences.reducedMotion}
+        quality={preferences.quality}
+      />
     {/if}
 
     {#if pack.id === 'tempest' && !virginWorld}
@@ -793,6 +803,29 @@
     border-right: 1px solid color-mix(in srgb, var(--gold) 18%, transparent);
     border-radius: 0;
     transform: rotate(28deg);
+  }
+  .canticle .heart-frame {
+    inset: -22%;
+    border: 1px dashed color-mix(in srgb, #dce9ee 58%, transparent);
+    border-top-color: transparent;
+    border-radius: 54% 46% 34% 66%;
+    box-shadow: 0 0 0 1px color-mix(in srgb, #63a9bf 14%, transparent), 0 0 2.2rem color-mix(in srgb, #63a9bf 18%, transparent);
+  }
+  .canticle .heart-frame::before {
+    left: 12%; right: 12%; top: 8%; bottom: 42%;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, #dce9ee 64%, transparent);
+    border-radius: 0;
+    clip-path: polygon(0 100%, 20% 58%, 34% 72%, 58% 8%, 100% 100%);
+    background: linear-gradient(160deg, color-mix(in srgb, #63a9bf 12%, transparent), transparent 70%);
+  }
+  .canticle .heart-frame::after {
+    left: 50%; top: 52%; bottom: -36%; width: 1px;
+    border: 0;
+    border-radius: 0;
+    transform: translateX(-50%) rotate(5deg);
+    background: linear-gradient(180deg, color-mix(in srgb, #cdeaf0 72%, transparent), color-mix(in srgb, #63a9bf 18%, transparent), transparent);
+    box-shadow: .32rem .65rem 0 -.1rem color-mix(in srgb, #c47d4f 42%, transparent);
   }
 
   .motion-paused,

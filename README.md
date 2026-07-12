@@ -1,84 +1,124 @@
-# ✦ EMBER
+# EMBER — Current Game State
 
 > A story-driven incremental game about rebuilding a dead universe—and deciding what the next one should become.
 
 ![Emberlight rebuilt into a living sky of constellations, celestial machines, and Kindlings](docs/screenshots/emberlight.webp)
 
-The universe is dark. One ember remains.
+This README is the single canonical project document. It describes the game as it exists now; older design proposals, rebuild plans, audits, and phase reports have been retired. The implementation, manifests, and automated tests remain the final authority when this overview and code ever disagree.
 
-Begin with a single touch, gather light, and kindle the first structures in an empty sky. As the world grows, the game itself awakens around it: the shop, records, music, archives, prestige systems, and eventually the routes to other universes. Lumen, a quiet archivist with an incomplete account of the past, remembers more with every cycle.
+## Status at a glance
 
-EMBER is a desktop-first browser game for players who enjoy incremental progression, atmospheric world-building, unusual interfaces, and stories that unfold through play.
+EMBER is a desktop-first browser game built with Svelte 5, TypeScript, Vite, Canvas 2D, and the Web Audio API. The complete seven-realm route is playable in the development build, including its endings, the Garden synthesis, and continuing Atlas routes. Music and sound effects are synthesized at runtime.
 
-## What awaits
+The game is still being refined for formal public release. Browser saves are local; there is no account or cloud-sync service. External Hindu cultural consultation and South Asian art and iconography review remain release gates.
 
-- **Seven authored realms.** Emberlight, Tidefall, Verdance, Clockwork, Brahmalok, Vishnulok, and Kailash each have their own economy, visual language, soundscape, active system, Archive, trials, story, and ending ritual.
-- **A world that visibly grows.** Every Kindling purchase changes the playfield through new objects, settlements, routes, machines, currents, gardens, and celestial structures.
-- **More than bigger numbers.** Shape tides, age living cohorts, route a civic machine, unfold a creation mandala, carry a sustaining current, and arrange responsible release around a still point.
-- **Layered progression.** Local Epoch Turns, the Deep, Vessels, universe crossings, Succession Relays, the Chronicle, deterministic Atlas routes, and the Garden keep completed worlds meaningful.
-- **A complete narrative arc.** Recover Echoes, learn what ended the former universe, answer Lumen's question, and carry that answer into the worlds that follow.
-- **Player-respecting design.** No ads, gacha, energy timers, paid boosts, expiring rewards, or punishment for missing an event.
+The project has no ads, gacha, energy timers, paid boosts, expiring rewards, or punishment for missing a timed event. Missing an opportunity may change immediate yield, but never removes existing progress.
 
-## The worlds
+## The seven realms
 
-| Realm | What makes it different |
+Each realm has its own economy, visual language, soundscape, active system, Archive, trials, story, and ending ritual.
+
+| Realm | Core identity | Heart | First reset | Archive | Save-stable ID |
+|---|---|---|---|---|---|
+| **Emberlight** | Rebuild warmth, settlement, and a remembered sky | Last Ember | Supernova / Stardust | Astral Cabinet | `emberlight` |
+| **Tidefall** | Raise Glow through a moonless living ocean | Tideheart | Turning tide | Pelagic Archive | `tidefall` |
+| **Verdance** | Grow living cohorts that root, mature, remember, and renew | First Seed | Pruning / Memory Seeds | Impossible Herbarium | `verdance` |
+| **Clockwork** | Route deterministic power through a civic machine | Escapement Heart | Rewinding / Mainsprings | Patent Ledger | `clockwork` |
+| **Brahmalok** | Unfold possibility through seed, measure, name, and form | Lotus of Becoming | Epoch Recomposition | Archive of First Forms | `prismata` |
+| **Vishnulok** | Sustain continuity through refuge, correction, and return | The Endless Circuit | Renewal | Ocean of Continuance | `tempest` |
+| **Kailash** | Approach release with shelter, grace, stillness, and renewal visible | The Still Point | Release | Mountain Witness | `canticle` |
+
+The final three internal IDs are intentionally frozen for save compatibility. Public copy and current canon use Brahmalok, Vishnulok, and Kailash; persisted slots remain `prismata`, `tempest`, and `canticle`. Their stable content prefixes are `u5-`, `u6-`, and `u7-`.
+
+### Current world presentation
+
+- **Emberlight** is the flagship authored world: settlement, constellations, celestial machinery, and landmarks accumulate around a protected central Heart.
+- **Tidefall** inverts the composition into an ocean. Its mid-depth band contains sparse migrations and drifting forms tied to owned Kindlings while the trench keeps intentional negative space.
+- **Verdance** has a canopy, visible ground line, root network, botanical landmarks, and on-canvas cohort aging. New, rooted, mature, and ancient growth reads through height, rings, and density before numbers are read.
+- **Clockwork** is a deterministic machine floor whose routing and maintenance state remain visually legible.
+- **Brahmalok** unfolds as a four-direction creation mandala rather than a collection of interface badges.
+- **Vishnulok** carries visible shelter and Returning School traffic along its orbital circuits. Its running instrument settles to one summary strip plus threshold meter; configuration controls appear only when explicitly expanded.
+- **Kailash** keeps an austere mountain composition without becoming empty. Sparse snow, shelter lights, wind lines, authored mountain objects, and ownership-driven landforms occupy the ambient layer. The Still Point remains visible and clickable through the Open Summit aperture instead of turning into a black occluded disk.
+
+World objects use material silhouettes rather than rounded app-icon badges. New objects must have an authored identity, silhouette, interior structure, grounding, palette fit, and legible 32 px flat-black silhouette; a naked circle, square, line, or generic pill is not a finished world object. Existing accessible names and interaction hit areas are preserved.
+
+Ownership changes form at the thresholds **1 / 10 / 25 / 50 / 100**. These thresholds add structure, material, scale, or role; they do not simply stamp more identical objects onto the canvas. Density and salience are capped so the Heart, current decision, and major feedback retain hierarchy.
+
+## Progression and reset contracts
+
+The central input is the realm's **Heart**. Every realm has 18 producer tiers called **Kindlings**, ordinary upgrades, bounded active opportunities called **Omens**, and a 12-record Archive arranged in three shelves.
+
+Progress is intentionally scoped:
+
+| Scope | State contained here |
 |---|---|
-| **Emberlight** | Rebuild warmth, settlement, and a sky of remembered constellations. |
-| **Tidefall** | Raise light through a moonless ocean whose living tide changes production. |
-| **Verdance** | Grow cohorts that age, graft, remember, and renew instead of merely multiplying. |
-| **Clockwork** | Route deterministic power through a civic machine governed by maintenance schedules. |
-| **Brahmalok** | Unfold possibility through seed, measure, name, form, and a four-direction creation mandala. |
-| **Vishnulok** | Sustain continuity through refuge, correction, return, and a calm cosmic ocean. |
-| **Kailash** | Approach dissolution as responsible release, with shelter, grace, stillness, and renewal kept visible. |
+| **World** | Currency, current-run earnings, Kindlings, ordinary upgrades, and buy mode |
+| **Epoch** | Local Epoch Matter, doctrines or projects, and era earnings |
+| **Deep / history** | Singularities or Deep laws, trials, Archives, Echoes, story, and local records |
+| **Between** | Beacons, Dark Between, Wayfinder, per-realm Vessels, achievements, preferences, Chronicle, Garden, and Atlas |
 
-## In-game gallery
+The destructive boundaries are fixed:
 
-<table>
-  <tr>
-    <td width="50%">
-      <a href="docs/screenshots/tidefall.webp"><img src="docs/screenshots/tidefall.webp" alt="Tidefall's moonless ocean, Tideheart, Omens, and Kindling shop"></a><br>
-      <sub><b>Tidefall</b> — a living ocean with fair, catchable Omens and a changing tide.</sub>
-    </td>
-    <td width="50%">
-      <a href="docs/screenshots/clockwork.webp"><img src="docs/screenshots/clockwork.webp" alt="Clockwork's machine floor, maintenance schedule, routed mechanisms, and Kindling shop"></a><br>
-      <sub><b>Clockwork</b> — a deterministic city-machine with visible power routing.</sub>
-    </td>
-  </tr>
-</table>
+- **Epoch Turn** is the local first prestige. It replaces World state and preserves deeper scopes.
+- **Deep Collapse** is the local second prestige. It replaces World and Epoch state while retaining Deep progression and history.
+- **Crossing** parks the complete local realm state. It is navigation, not a reset.
+- **Beacon** consumes nothing. It is permanent proof that a realm is complete.
+- **Remembrance** resets only the active local run. Other parked realms remain intact.
+- **Garden** is the synthesis of all seven Beacons, not an eighth realm.
+- **Atlas** is a deterministic post-saga route system.
+- Only an explicit full save wipe clears all active state, parked realms, history, and Between progression.
 
-### The three lokas
+Any reset confirmation must state what changes, what remains, and the reward before the player commits.
 
-<table>
-  <tr>
-    <td width="33%">
-      <a href="docs/screenshots/brahmalok.webp"><img src="docs/screenshots/brahmalok.webp" alt="Brahmalok's Lotus of Becoming and four-direction creation mandala"></a><br>
-      <sub><b>Brahmalok</b> — creation without enclosing every possibility.</sub>
-    </td>
-    <td width="33%">
-      <a href="docs/screenshots/vishnulok.webp"><img src="docs/screenshots/vishnulok.webp" alt="Vishnulok's Endless Circuit above a calm cosmic ocean"></a><br>
-      <sub><b>Vishnulok</b> — preservation through responsive correction and return.</sub>
-    </td>
-    <td width="33%">
-      <a href="docs/screenshots/kailash.webp"><img src="docs/screenshots/kailash.webp" alt="Kailash's Still Point, mountain passage, open ring, and release sequence"></a><br>
-      <sub><b>Kailash</b> — release that keeps refuge and renewal in view.</sub>
-    </td>
-  </tr>
-</table>
+## Interface and feedback standards
 
-## Play locally
+The current interface protects these qualities:
 
-EMBER currently runs from source. Install a current version of [Node.js](https://nodejs.org/) and npm, then:
+- The Heart is immediately legible and remains the primary target.
+- The world visibly accumulates authored objects instead of becoming a dashboard.
+- Each realm has a distinct instrument and visual grammar.
+- The Field Guide, Options, save recovery, and accessibility controls remain reachable.
+- Reset flows use cautious comparison and confirmation language.
+- Persistent information does not cover purchase targets, panel headers, or controls.
 
-```bash
-git clone https://github.com/harsit14/ClickSim.git
-cd ClickSim
-npm install
-npm run dev
-```
+Screen composition follows a feedback hierarchy: one primary target, a small number of secondary objects, bounded temporary rewards, one subtitle, and at most one major panel. A density governor reduces ambient detail before it compromises controls or meaning.
 
-Open the local address printed by Vite, usually `http://localhost:5173`.
+Transient achievements, Echoes, and shorthand messages share one central reserved notification lane with queueing. They must not cover the HUD counter or an open panel's header and controls in any realm.
 
-The game autosaves in the browser and supports offline progress, exportable save codes, downloadable backups, import validation, and recovery checkpoints. It is best experienced on desktop with sound, but every mechanic remains playable while muted and with reduced motion.
+Text participates in layout flow. Micro-labels and sub-labels belong to grids or normal document flow rather than absolute coordinates, so large text can reflow without overlaps or clipping.
+
+## Accessibility
+
+Every required mechanic has keyboard and pointer access. Essential meaning is never conveyed by color, animation, or sound alone. The Options panel provides:
+
+- reduced motion, including static equivalents for ambient movement;
+- large text and reflow-safe panels;
+- high contrast and explicit non-color state labels;
+- mute-safe visual and timing equivalents;
+- beat-guide strength and averaged rhythm support;
+- render-quality controls that reduce ambient density before functional content.
+
+The supported visual QA sizes are **1440×900** and **1280×800** in default mode and in the combined large-text, high-contrast, reduced-motion mode. The game is currently desktop only.
+
+## Cultural guardrails for the three lokas
+
+Hindu traditions are diverse; these realms are original game fiction shaped by careful environmental themes, not representations of a single definitive tradition. Brahmalok, Vishnulok, and Kailash are environment-first. Sacred beings and attributes are never currencies, generators, upgrades, enemies, bosses, loot, joke achievements, cabinet collectibles, or controllable instruments.
+
+Saraswati, Lakshmi, and Parvati are not accessories to a progression system. Their names, presences, and associated traditions require restraint and contextual review. A qualified cultural consultant and South Asian iconographic reviewer must review this material before public release. External cultural review remains a release gate even when automated tests and internal QA pass.
+
+Public loka names may appear in live UI only after their environment, mechanics, copy, and save-compatible route are implemented together. Save identifiers are not renamed after release-facing adoption.
+
+## Saves and compatibility
+
+The current save schema is version **23**. Economy values use canonical base-10 strings in persisted data and normalized mantissa/exponent values at runtime; older numeric saves migrate through the compatibility path. Version 22 introduced Chronicle, Garden, and Atlas state. Version 23 made Vessel progression local to each realm.
+
+Compatibility rules:
+
+- Stable IDs are never reused or remapped by array position.
+- New realm content stays within its assigned stable namespace (`u3-` through `u7-` where applicable).
+- The `prismata`, `tempest`, and `canticle` save-slot IDs remain frozen.
+- Import validates structure and content before replacing the active save.
+- The game autosaves locally and supports export codes, downloadable backups, rolling recovery checkpoints, and offline progress.
 
 ## Controls
 
@@ -86,11 +126,11 @@ The game autosaves in the browser and supports offline progress, exportable save
 |---|---|
 | Click, <kbd>Space</kbd>, or <kbd>Enter</kbd> | Activate the Heart |
 | <kbd>1</kbd>–<kbd>9</kbd> | Buy a visible Kindling |
-| <kbd>B</kbd> | Cycle the bulk-purchase amount |
+| <kbd>B</kbd> | Cycle bulk purchase amount |
 | <kbd>G</kbd> | Open the Field Guide |
 | <kbd>I</kbd> | Open run records |
-| <kbd>O</kbd> | Open options |
-| <kbd>C</kbd> | Open the current world's Archive |
+| <kbd>O</kbd> | Open Options |
+| <kbd>C</kbd> | Open the current Archive |
 | <kbd>V</kbd> | Open the Vessel |
 | <kbd>S</kbd> | Open the local Epoch system |
 | <kbd>D</kbd> | Enter the Deep |
@@ -98,20 +138,38 @@ The game autosaves in the browser and supports offline progress, exportable save
 | <kbd>L</kbd> | Open the Legacy hub |
 | <kbd>Escape</kbd> | Close the active panel |
 
-Controls appear only after their systems awaken. The options menu includes reduced motion, large text, high contrast, beat-guide strength, render quality, audio controls, and alternative number formats.
+Controls appear as their systems awaken. In development, <kbd>F10</kbd> opens the Dev Playtest Panel.
 
-## Project status
+## Run locally
 
-The complete seven-realm route is playable in development, including its endings and continuing Atlas. EMBER is still being refined for a formal public release.
-
-Brahmalok, Vishnulok, and Kailash use environment-first art and original game fiction; deities are not currencies, opponents, collectibles, or upgrade buttons. External Hindu cultural consultation and South Asian art/iconography review remain required before release.
-
-## For developers
+Install a current Node.js release and npm, then:
 
 ```bash
-npm run verify   # TypeScript, tests, content proofing, production build, budgets, and offline audit
-npm run build    # Static production build in dist/
-npm run preview  # Preview the production build
+npm install
+npm run dev
 ```
 
-The game is built with Svelte 5, TypeScript, Canvas 2D, and the Web Audio API. Music and sound effects are synthesized at runtime; no prerecorded audio files are shipped.
+Open the local address printed by Vite, usually `http://localhost:5173`.
+
+Development states can be reached without modifying progression:
+
+```text
+http://localhost:5173/?scenario=kailash&playtest=1
+```
+
+Available scenario names are `opening`, `ember-camp`, `midgame`, `ember-cosmic`, `ember-postnova`, `endgame`, `question`, `crossing`, `tidefall`, `verdance`, `pruning`, `clockwork`, `prismata`, `tempest`, `canticle`, `garden`, and `markets`. The Dev Playtest Panel and `window.__ember` expose development-only navigation and state cheats.
+
+## Verification and release workflow
+
+```bash
+npm run verify   # TypeScript, tests, proofing, production build, budgets, offline audit
+npm run test     # Node test suite
+npm run build    # Static production build in dist/
+npm run budget   # Production asset budget
+npm run preview  # Preview the production build
+npm run sim      # Headless balance simulation
+```
+
+Every presentation change should be exercised in the running game, tested at both supported desktop viewports, and checked in the combined accessibility mode. Economy, balance, mechanics, and content meaning must not change during visual-only work. World-manifest changes go through their validators rather than bypassing them.
+
+Current endgame reference captures live in [`docs/screenshots/endgame/`](docs/screenshots/endgame/), with one settled capture for every realm. Detailed QA images may remain in `docs/qa/`, but this README is the only maintained Markdown description of the project.

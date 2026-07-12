@@ -180,15 +180,12 @@ test('Phase 8.3 consolidates meta purchases without changing any stored item', (
   assert.match(archive, /home="archive"/)
 })
 
-test('Phase 8.4 records every acceptance section and all twelve anti-ugliness laws', () => {
-  const audit = read('../docs/POLISH_AUDIT.md')
-  for (const section of ['14.1', '14.2', '14.3', '14.4', '14.5']) {
-    assert.match(audit, new RegExp(`### ${section.replace('.', '\\.')}`))
-  }
-  for (let law = 1; law <= 12; law += 1) {
-    assert.match(audit, new RegExp(`\\n${law}\\. \\*\\*`), `anti-ugliness law ${law} is missing`)
-  }
-  assert.match(audit, /Human comprehension count remains Phase 8\.5/)
-  assert.match(audit, /Goal Lens now pairs its next-session goal with an equally explicit good stopping point/)
-  assert.match(audit, /desktop shop-clear rule cannot push\s+mobile notifications off-screen/)
+test('the canonical README records the current presentation and reset contracts', () => {
+  const canon = read('../README.md')
+  assert.match(canon, /This README is the single canonical project document/)
+  assert.match(canon, /Ownership changes form at the thresholds \*\*1 \/ 10 \/ 25 \/ 50 \/ 100\*\*/)
+  assert.match(canon, /naked circle, square, line, or generic pill is not a finished world object/)
+  assert.match(canon, /Transient achievements, Echoes, and shorthand messages share one central reserved notification lane with queueing/)
+  assert.match(canon, /Only an explicit full save wipe clears all active state, parked realms, history, and Between progression/)
+  assert.match(canon, /External cultural review remains a release gate/i)
 })
