@@ -30,6 +30,7 @@
   import VerdanceArchiveSilhouette from './VerdanceArchiveSilhouette.svelte'
   import VerdanceWorldLayer from './VerdanceWorldLayer.svelte'
   import ChamberLandmarkSilhouette from './ChamberLandmarkSilhouette.svelte'
+  import VishnulokTrafficLayer from './VishnulokTrafficLayer.svelte'
   import {
     brahmalokStatus,
     canticleStatus,
@@ -86,6 +87,8 @@
   const beaconLit = $derived(litBeaconUniverseIds.includes(pack.id))
   const brahmalokWorldState = $derived(pack.id === 'prismata' ? brahmalokStatus(numericLawState, owned) : null)
   const vishnulokWorldState = $derived(pack.id === 'tempest' ? tempestStatus(numericLawState) : null)
+  const vishnulokReturningSchoolOwned = $derived(pack.id === 'tempest' ? owned['u6-kindling-05'] ?? 0 : 0)
+  const vishnulokShelterReefOwned = $derived(pack.id === 'tempest' ? owned['u6-kindling-04'] ?? 0 : 0)
   const kailashWorldState = $derived(pack.id === 'canticle' ? canticleStatus(numericLawState, owned, now) : null)
   const brahmalokDirectionMax = $derived(Math.max(1, ...(brahmalokWorldState?.bands ?? [0])))
 
@@ -320,6 +323,15 @@
 
     {#if pack.id === 'clockwork' && !virginWorld}
       <ClockworkFlagshipLayer {owned} reducedMotion={preferences.reducedMotion} />
+    {/if}
+
+    {#if pack.id === 'tempest' && !virginWorld}
+      <VishnulokTrafficLayer
+        returningSchoolOwned={vishnulokReturningSchoolOwned}
+        shelterReefOwned={vishnulokShelterReefOwned}
+        reducedMotion={preferences.reducedMotion}
+        quality={preferences.quality}
+      />
     {/if}
 
     {#if worldState}
