@@ -78,6 +78,7 @@
           {:else}
             <span class="glyph">{u.glyph}</span>
           {/if}
+          <span class="target-cue">{targetCue(u)}</span>
         </button>
       {/each}
       {#if overflow > 0}
@@ -119,15 +120,16 @@
   }
   .up {
     position: relative;
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 3.25rem;
+    min-height: 3.25rem;
     display: grid;
+    grid-template-rows: 1.45rem auto;
     place-items: center;
     background: color-mix(in srgb, var(--amber) 6%, hsla(var(--hue), 70%, 55%, 0.08));
     border: 1px solid hsla(var(--hue), 85%, 65%, 0.55);
     border-radius: 10px;
     cursor: pointer;
-    padding: 0;
+    padding: 0.3rem 0.2rem 0.25rem;
     box-shadow: inset 0 0 1rem color-mix(in srgb, var(--amber) 12%, transparent), 0 0 12px hsla(var(--hue), 90%, 60%, 0.18);
     transition: transform 0.08s, box-shadow 0.15s;
   }
@@ -163,6 +165,18 @@
     filter: drop-shadow(0 0 0.25rem hsla(var(--hue), 90%, 60%, 0.36));
     animation: artifact-glint 560ms ease-out both;
   }
+  .target-cue {
+    width: 100%;
+    overflow: hidden;
+    color: color-mix(in srgb, var(--text) 70%, var(--dim));
+    font-size: 0.54rem;
+    font-weight: 650;
+    line-height: 1.05;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .up.unaffordable .target-cue { color: color-mix(in srgb, var(--dim) 52%, var(--bg)); }
   @keyframes artifact-glint { from { opacity: 0.25; transform: scale(0.65); filter: brightness(2.2); } to { opacity: 1; transform: scale(1); } }
   .detail {
     display: flex;

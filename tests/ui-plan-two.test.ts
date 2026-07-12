@@ -81,3 +81,22 @@ test('phase three routes Deep and Remembrance through one structured comparison 
   assert.match(observatory, /header \{[\s\S]*position: sticky;/)
   assert.deepEqual(compile(ceremony, { filename: 'DeepCollapseCeremony.svelte', generate: 'client' }).warnings, [])
 })
+
+test('phase four makes unavailable purchases and goal progress readable without hover', () => {
+  const shop = read('../src/ui/ShopPanel.svelte')
+  const upgrades = read('../src/ui/UpgradeBar.svelte')
+  const lens = read('../src/ui/GoalLens.svelte')
+  const app = read('../src/App.svelte')
+
+  assert.match(shop, /No Kindling is affordable yet\./)
+  assert.match(shop, /Use the Heart to build toward/)
+  assert.match(shop, /role="status"/)
+  assert.match(upgrades, /class="target-cue">\{targetCue\(u\)\}/)
+  assert.match(lens, /visibleSlots = \$derived\(model\.slots\.filter/)
+  assert.match(lens, /class="pace" data-direction=\{rateDirection\}/)
+  assert.match(lens, /recommendation\.progress\.current.*recommendation\.progress\.target/s)
+  assert.match(app, /window\.setInterval\(sample, 15_000\)/)
+  for (const [name, source] of [['ShopPanel.svelte', shop], ['UpgradeBar.svelte', upgrades], ['GoalLens.svelte', lens]] as const) {
+    assert.deepEqual(compile(source, { filename: name, generate: 'client' }).warnings, [])
+  }
+})

@@ -41,6 +41,13 @@ export function secondsToAmountTarget(
   return Number.isFinite(seconds) && seconds >= 0 ? seconds : null
 }
 
+function goalProgress(current: EconomyAmount, target: EconomyAmount): GoalCandidate['progress'] {
+  const ratio = gteAmount(current, target)
+    ? 1
+    : Math.max(0, Math.min(1, amountToBoundedNumber(divideAmounts(current, target))))
+  return { current: format(current), target: format(target), ratio }
+}
+
 export function buildEmberGoalCandidates(
   state: GameState,
   novaReady: boolean,
@@ -75,6 +82,7 @@ export function buildEmberGoalCandidates(
         ? 'goal-lens.reason.affordable-kindling'
         : 'goal-lens.reason.reachable-kindling',
       reasonParameters: { rate: format(unitRate(state, generator)) },
+      progress: goalProgress(state.light, cost),
     }
   })
 
@@ -97,6 +105,7 @@ export function buildEmberGoalCandidates(
         detailKey: 'goal-lens.detail.discovery-rate',
       },
       reasonKey: 'goal-lens.reason.discovery',
+      progress: goalProgress(state.totalEarned, discoveryTarget),
     })
   }
 

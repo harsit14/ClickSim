@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte'
   import EmberCanvas from './ui/EmberCanvas.svelte'
   import Hud from './ui/Hud.svelte'
   import ShopPanel from './ui/ShopPanel.svelte'
@@ -68,7 +69,14 @@
   import { format } from './core/format'
   import { resolveEffectiveVisualQuality } from './core/preferences'
   import { renderHealth } from './core/render-health.svelte'
+  import { totalRate } from './engine/compute'
   import { buildEmberGoalCandidates, previewSupernovaRecovery } from './experience/ember-cohesion'
+  import {
+    fiveMinuteRateDirection,
+    recordRateSample,
+    type FiveMinuteRateDirection,
+    type RateSample,
+  } from './experience/rate-trend'
   import {
     beginCrossingArrival,
     cancelCrossingArrival,
@@ -116,6 +124,9 @@
   // systems the player has actually unlocked until Settings enables help.
   let goalLensEnabled = $state(false)
   let pinnedGoalId = $state<string | null>(null)
+  let goalRateSamples = $state<readonly RateSample[]>([])
+  let goalCurrentRate = $state<EconomyAmount>(ZERO_AMOUNT)
+  let goalRateDirection = $state<FiveMinuteRateDirection>('measuring')
   let averagedRhythm = $state(false)
   let promptState = $state<ContextualPromptState>({ enabled: false, dismissedIds: [] })
   let shopCollapsed = $state(false)
@@ -533,6 +544,28 @@
     return () => delete document.documentElement.dataset.attention
   })
 
+  $effect(() => {
+    const sample = () => untrack(() => {
+      const now = Date.now()
+      const current = totalRate(game, now)
+      goalRateSamples = recordRateSample(goalRateSamples, {
+        universeId: game.activeUniverse,
+        capturedAtMs: now,
+        rate: current,
+      })
+      goalCurrentRate = current
+      goalRateDirection = fiveMinuteRateDirection(
+        goalRateSamples,
+        game.activeUniverse,
+        now,
+        current,
+      )
+    })
+    sample()
+    const timer = window.setInterval(sample, 15_000)
+    return () => window.clearInterval(timer)
+  })
+
   const anyOf = (ids: string[]) => ids.some((id) => (game.owned[id] ?? 0) > 0)
   $effect(() => {
     const ids = activePack.generators.map(({ id }) => id)
@@ -594,6 +627,8 @@
           presentationMode={goalPresentation}
           resolveText={resolveActiveUiText}
           formatDuration={formatGoalDuration}
+          currentRate={format(goalCurrentRate)}
+          rateDirection={goalRateDirection}
           onpinchange={(goalId) => (pinnedGoalId = goalId)}
           ondisable={() => (goalLensEnabled = false)}
         />

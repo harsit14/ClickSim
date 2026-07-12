@@ -5,6 +5,7 @@
     type GoalLensPresentationMode,
   } from '../experience/goal-lens-ui'
   import type { GoalLensInput, GoalRecommendation } from '../experience/goals'
+  import type { FiveMinuteRateDirection } from '../experience/rate-trend'
   import type { DurationFormatter, UiTextResolver } from '../experience/ui-text'
 
   interface Props {
@@ -14,6 +15,8 @@
     presentationMode: GoalLensPresentationMode
     resolveText: UiTextResolver
     formatDuration: DurationFormatter
+    currentRate: string
+    rateDirection: FiveMinuteRateDirection
     onpinchange: (goalId: string | null) => void
     ondisable: () => void
   }
@@ -25,6 +28,8 @@
     presentationMode,
     resolveText,
     formatDuration,
+    currentRate,
+    rateDirection,
     onpinchange,
     ondisable,
   }: Props = $props()
@@ -35,6 +40,7 @@
   const chartId = $derived(`${id}-chart`)
   const primaryRecommendation = $derived(model.result.now ?? model.result.soon ?? model.result.pinned)
   const stoppingRecommendation = $derived(model.result.soon ?? model.result.now)
+  const visibleSlots = $derived(model.slots.filter(({ recommendation }) => recommendation !== null))
   const lensGlyph = $derived(
     universeId === 'tidefall' ? '≈'
       : universeId === 'verdance' ? '❧'
@@ -60,6 +66,10 @@
 
   function choosePin(goalId: string) {
     onpinchange(nextGoalPin(goals.pinnedGoalId ?? null, goalId))
+  }
+
+  function rateTrendKey(): string {
+    return `goal-lens.rate-trend.${rateDirection}`
   }
 </script>
 
@@ -108,7 +118,7 @@
     {#if disclosed}
       <div class="chart" id={chartId}>
         <header>
-          <span>{resolveText('goal-lens.chart-label')}</span>
+          <span>{resolveText('goal-lens.routes-label')}</span>
           <button
             type="button"
             class="off"
@@ -120,8 +130,13 @@
         {#if model.result.status === 'empty'}
           <p class="empty" role="status">{resolveText('goal-lens.no-recommendation')}</p>
         {:else}
+          <p class="pace" data-direction={rateDirection}>
+            <span>{resolveText('goal-lens.current-pace')}</span>
+            <strong>{currentRate}/s</strong>
+            <small>{resolveText(rateTrendKey())}</small>
+          </p>
           <div class="slots">
-            {#each model.slots as slot (slot.id)}
+            {#each visibleSlots as slot (slot.id)}
               <article class="slot" data-slot={slot.id}>
                 <h3>{resolveText(slot.labelKey)}</h3>
                 {#if slot.recommendation}
@@ -142,6 +157,18 @@
                       <span>{resolveText(recommendation.estimate.detailKey)}</span>
                     {/if}
                   </p>
+                  {#if recommendation.progress}
+                    <div class="progress" aria-label={resolveText('goal-lens.progress-label', {
+                      current: recommendation.progress.current,
+                      target: recommendation.progress.target,
+                    })}>
+                      <span aria-hidden="true" style:--progress={`${Math.round(recommendation.progress.ratio * 100)}%`}></span>
+                      <small>
+                        {recommendation.progress.current} / {recommendation.progress.target}
+                        · {Math.round(recommendation.progress.ratio * 100)}%
+                      </small>
+                    </div>
+                  {/if}
                   <button
                     type="button"
                     class="pin"
@@ -161,8 +188,6 @@
                         : 'goal-lens.pin',
                     )}
                   </button>
-                {:else}
-                  <p class="empty-slot">{resolveText('goal-lens.slot-empty')}</p>
                 {/if}
               </article>
             {/each}
@@ -353,6 +378,20 @@
   }
   h3, p { margin: 0; }
   .slots { display: grid; }
+  .pace {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: baseline;
+    gap: 0.25rem 0.55rem;
+    padding: 0.5rem 0;
+    color: var(--dim, #c4bdaf);
+    border-top: 1px solid color-mix(in srgb, var(--lens-accent) 13%, transparent);
+    font-size: 0.67rem;
+  }
+  .pace > span { font-weight: 680; text-transform: uppercase; letter-spacing: 0.08em; }
+  .pace strong { color: color-mix(in srgb, var(--lens-accent) 78%, white); font-variant-numeric: tabular-nums; }
+  .pace small { justify-self: end; color: var(--dim, #c4bdaf); }
+  .pace[data-direction='faster'] small { color: color-mix(in srgb, var(--lens-accent) 70%, white); }
   .slot {
     min-width: 0;
     display: grid;
@@ -373,7 +412,6 @@
   }
   .reason,
   .estimate span,
-  .empty-slot,
   .empty {
     color: var(--dim, #c4bdaf);
     font-size: 0.65rem;
@@ -389,6 +427,28 @@
     font-size: 0.65rem;
   }
   .estimate strong { font-weight: 650; }
+  .progress {
+    grid-column: 1 / 3;
+    display: grid;
+    gap: 0.2rem;
+    padding-left: 6.45rem;
+  }
+  .progress > span {
+    position: relative;
+    height: 0.25rem;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--lens-accent) 9%, transparent);
+    border-radius: 999px;
+  }
+  .progress > span::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--progress);
+    background: var(--lens-accent);
+    border-radius: inherit;
+  }
+  .progress small { color: var(--dim, #c4bdaf); font-size: 0.62rem; font-variant-numeric: tabular-nums; }
   button { font: inherit; }
   button:focus-visible { outline: 2px solid var(--lens-accent); outline-offset: -3px; }
   .off,
@@ -413,8 +473,7 @@
     color: #080b12;
     background: color-mix(in srgb, var(--lens-accent) 78%, white);
   }
-  .empty,
-  .empty-slot { padding: 0.55rem 0; }
+  .empty { padding: 0.55rem 0; }
   .rhythm-state {
     width: max-content;
     max-width: min(20rem, calc(100vw - 2rem));

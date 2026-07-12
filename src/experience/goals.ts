@@ -20,6 +20,12 @@ export interface GoalCandidate {
   readonly estimate: GoalTimeEstimate
   readonly reasonKey: string
   readonly reasonParameters?: Readonly<Record<string, string | number | boolean>>
+  /** Exact caller-formatted distance data for the glanceable progress readout. */
+  readonly progress?: {
+    readonly current: string
+    readonly target: string
+    readonly ratio: number
+  }
 }
 
 export interface GoalLensInput {
@@ -50,6 +56,7 @@ export interface GoalRecommendation {
   readonly candidateReasonKey: string | null
   readonly reasonParameters: Readonly<Record<string, string | number | boolean>>
   readonly estimate: GoalTimeEstimate | null
+  readonly progress: GoalCandidate['progress'] | null
 }
 
 export interface GoalLensResult {
@@ -124,6 +131,7 @@ function recommend(candidate: GoalCandidate, slot: GoalSlot): GoalRecommendation
     candidateReasonKey: candidate.reasonKey,
     reasonParameters: candidate.reasonParameters ?? {},
     estimate: candidate.estimate,
+    progress: candidate.progress ?? null,
   }
 }
 
@@ -144,6 +152,7 @@ function pinnedRecommendation(
       candidateReasonKey: null,
       reasonParameters: {},
       estimate: null,
+      progress: null,
     }
   }
 
@@ -162,6 +171,7 @@ function pinnedRecommendation(
     candidateReasonKey: candidate.reasonKey,
     reasonParameters: candidate.reasonParameters ?? {},
     estimate: candidate.estimate,
+    progress: candidate.progress ?? null,
   }
 }
 

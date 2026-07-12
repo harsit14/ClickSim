@@ -42,6 +42,14 @@
   const teased = $derived(
     generators.find((g) => ltAmount(game.totalEarned, amountFromNumber(shownAt(g))) && gteAmount(game.totalEarned, amountFromNumber(teasedAt(g)))),
   )
+  const zeroAffordable = $derived(shown.length > 0 && !shown.some((generator) => {
+    const planned = purchase(generator)
+    return !genPurchaseDisabled(game, generator) && gteAmount(game.light, planned.cost)
+  }))
+  const nextKindlingCost = $derived(shown
+    .filter((generator) => !genPurchaseDisabled(game, generator))
+    .map((generator) => purchase(generator).cost)
+    .sort((left, right) => ltAmount(left, right) ? -1 : ltAmount(right, left) ? 1 : 0)[0] ?? null)
 
   function purchase(g: GeneratorDef): { count: number; cost: EconomyAmount } {
     const owned = game.owned[g.id] ?? 0
@@ -151,6 +159,18 @@
         </div>
       {/if}
     </header>
+    {#if zeroAffordable}
+      <div class="shop-state" role="status">
+        <strong>No Kindling is affordable yet.</strong>
+        {#if game.challenge !== null && nextKindlingCost === null}
+          <span>This trial currently pauses or limits every purchase. Follow the trial rule shown above.</span>
+        {:else if nextKindlingCost}
+          <span>Use the Heart to build toward {pack.currencyGlyph} {format(nextKindlingCost)}.</span>
+        {:else}
+          <span>Use the Heart to earn more {pack.currency}.</span>
+        {/if}
+      </div>
+    {/if}
     <div class="rows">
       {#each shown as g (g.id)}
         {@const p = purchase(g)}
@@ -274,6 +294,19 @@
     display: flex;
     gap: 0.2rem;
   }
+  .shop-state {
+    display: grid;
+    gap: 0.2rem;
+    margin: 0 0 0.6rem;
+    padding: 0.62rem 0.68rem;
+    color: var(--dim);
+    background: color-mix(in srgb, var(--panel) 82%, transparent);
+    border: 1px solid color-mix(in srgb, var(--amber) 16%, transparent);
+    border-radius: 0.55rem;
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+  .shop-state strong { color: var(--text); font-size: 0.76rem; }
   .amt {
     min-width: 1.5rem;
     min-height: 1.5rem;
