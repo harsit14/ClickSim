@@ -209,7 +209,7 @@
     border-radius: 14px;
     backdrop-filter: blur(10px);
     z-index: 6;
-    animation: panel-in 0.5s ease both;
+    animation: panel-in 0.24s ease both;
     scrollbar-width: thin;
   }
   @keyframes panel-in {

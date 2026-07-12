@@ -385,7 +385,7 @@
 </section>
 
 <style>
-  .panel { position: fixed; top: 50%; left: 1.25rem; transform: translateY(-50%); width: min(25rem, calc(100vw - 2.5rem)); min-width: 0; max-height: 88vh; overflow-x: hidden; overflow-y: auto; padding: 0.9rem; color: var(--text); background: linear-gradient(155deg, color-mix(in srgb, var(--panel) 94%, #11131f), rgba(7,8,16,0.96)); border: 1px solid rgba(255,217,138,0.17); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,0.42); backdrop-filter: blur(14px); z-index: 6; animation: panel-in 0.36s ease both; scrollbar-width: thin; }
+  .panel { position: fixed; top: 50%; left: 1.25rem; transform: translateY(-50%); width: min(25rem, calc(100vw - 2.5rem)); min-width: 0; max-height: 88vh; overflow-x: hidden; overflow-y: auto; padding: 0.9rem; color: var(--text); background: linear-gradient(155deg, color-mix(in srgb, var(--panel) 94%, #11131f), rgba(7,8,16,0.96)); border: 1px solid rgba(255,217,138,0.17); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,0.42); backdrop-filter: blur(14px); z-index: 6; animation: panel-in 0.24s ease both; scrollbar-width: thin; }
   .panel.access-only { width: min(28rem, calc(100vw - 2.5rem)); }
   @keyframes panel-in { from { opacity: 0; transform: translateY(-50%) translateX(-12px); } to { opacity: 1; transform: translateY(-50%) translateX(0); } }
   header { position: sticky; top: -0.9rem; z-index: 2; display: flex; justify-content: space-between; align-items: center; min-width: 0; margin: -0.9rem -0.9rem 0.65rem; padding: 0.85rem 0.9rem 0.72rem; background: rgba(10,10,19,0.94); border-bottom: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(12px); }

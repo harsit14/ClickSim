@@ -234,7 +234,7 @@
     border-radius: 14px;
     backdrop-filter: blur(12px);
     z-index: 9;
-    animation: vessel-in 0.45s ease both;
+    animation: vessel-in 0.24s ease both;
     scrollbar-width: thin;
   }
   @keyframes vessel-in {

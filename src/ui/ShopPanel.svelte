@@ -214,7 +214,7 @@
     border-color: var(--glass-border);
     border-radius: 14px;
     backdrop-filter: blur(10px);
-    animation: shop-in 1.4s ease both;
+    animation: shop-in 0.24s ease both;
     transition: transform 0.32s ease, opacity 0.2s ease, border-color 0.2s ease;
     z-index: 6;
   }

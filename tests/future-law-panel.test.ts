@@ -76,7 +76,7 @@ test('late-universe score and instrument share one compact surface', () => {
   assert.match(panelSource, /@media \(max-width: 800px\)[\s\S]*\.brahmalok-mandala,[\s\S]*\.kailash-stillpoint \{ width: 100%/)
   assert.match(appSource, /@media \(max-width: 800px\)[\s\S]*\.top-stack\.future-law \{ width: calc\(100vw - 1rem\); \}/)
   assert.match(appSource, /activePack\.id !== 'prismata'[^}]*activePack\.id !== 'tempest'[^}]*activePack\.id !== 'canticle'[\s\S]*<Hud/)
-  assert.match(appSource, /\{#if !utilityPanelOpen\}[\s\S]*<UniverseLawPanel \/>[\s\S]*<UpgradeBar \/>/)
+  assert.match(appSource, /\{#if !utilityPanelOpen\}[\s\S]*<UniverseLawPanel \/>[\s\S]*<UpgradeBar dense=\{/)
   assert.match(panelSource, /FIRST ARRIVAL/)
   assert.match(panelSource, /Choose how the lotus unfolds/)
   assert.match(panelSource, /Choose a correction circuit/)

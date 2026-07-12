@@ -196,7 +196,7 @@
     border-radius: 16px;
     backdrop-filter: blur(14px);
     z-index: 9;
-    animation: codex-in 0.45s ease both;
+    animation: codex-in 0.24s ease both;
     scrollbar-width: thin;
   }
   @keyframes codex-in {

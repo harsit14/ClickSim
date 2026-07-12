@@ -104,7 +104,7 @@
     display: grid;
     justify-items: center;
     gap: 0.5rem;
-    animation: bar-in 1s ease both;
+    animation: bar-in 0.24s ease both;
     pointer-events: auto;
   }
   .bar {

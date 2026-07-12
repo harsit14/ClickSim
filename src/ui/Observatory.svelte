@@ -366,7 +366,7 @@
     border-radius: 16px;
     backdrop-filter: blur(14px);
     z-index: 9;
-    animation: obs-in 0.5s ease both;
+    animation: obs-in 0.24s ease both;
     scrollbar-width: thin;
   }
   @keyframes obs-in {

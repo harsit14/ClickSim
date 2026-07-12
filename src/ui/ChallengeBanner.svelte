@@ -52,7 +52,7 @@
     border: 1px solid rgba(255, 140, 90, 0.4);
     border-radius: 999px;
     box-shadow: 0 0 22px rgba(255, 120, 70, 0.18);
-    animation: banner-in 0.5s ease both;
+    animation: banner-in 0.24s ease both;
     pointer-events: auto;
   }
   @keyframes banner-in {

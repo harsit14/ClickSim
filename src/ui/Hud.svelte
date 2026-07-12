@@ -114,7 +114,7 @@
     position: relative;
     isolation: isolate;
     text-align: center;
-    animation: fade-in 1.6s ease both;
+    animation: fade-in 0.24s ease both;
     pointer-events: none;
   }
   .hud::before {
@@ -146,7 +146,7 @@
     font-weight: 500;
     color: var(--dim);
     font-variant-numeric: tabular-nums;
-    animation: fade-in-plain 1s ease both;
+    animation: fade-in-plain 0.24s ease both;
   }
   .rate.active {
     color: #b1f5ff;
@@ -158,7 +158,7 @@
     color: #c9c1f2;
     text-shadow: 0 0 12px rgba(170, 150, 255, 0.35);
     font-variant-numeric: tabular-nums;
-    animation: fade-in-plain 1s ease both;
+    animation: fade-in-plain 0.24s ease both;
   }
   .law-state {
     display: flex;

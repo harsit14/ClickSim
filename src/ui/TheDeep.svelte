@@ -288,7 +288,7 @@
     border-radius: 16px;
     backdrop-filter: blur(14px);
     z-index: 9;
-    animation: deep-in 0.5s ease both;
+    animation: deep-in 0.24s ease both;
     scrollbar-width: thin;
   }
   @keyframes deep-in {

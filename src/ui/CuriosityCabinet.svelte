@@ -372,7 +372,7 @@
     backdrop-filter: blur(16px);
     z-index: 12;
     scrollbar-width: thin;
-    animation: cabinet-in 0.5s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+    animation: cabinet-in 0.24s cubic-bezier(0.2, 0.8, 0.25, 1) both;
   }
   @keyframes cabinet-in {
     from { opacity: 0; transform: translateX(-18px); }

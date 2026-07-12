@@ -45,7 +45,7 @@
     color: var(--text);
     font: inherit;
     cursor: pointer;
-    animation: chip-in 1.6s ease both;
+    animation: chip-in 0.24s ease both;
     box-shadow: 0 0 22px rgba(255, 179, 92, 0.12);
     transition: box-shadow 0.2s, border-color 0.2s, transform 0.08s;
     z-index: 8;
