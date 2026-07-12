@@ -1,0 +1,20 @@
+export interface VerdanceArchiveSilhouette {
+  readonly name: string
+  readonly primaryPath: string
+  readonly accentPath: string
+}
+
+export const VERDANCE_ARCHIVE_SILHOUETTES: readonly VerdanceArchiveSilhouette[] = [
+  { name: 'folded resurrection fern', primaryPath: 'M20 36C15 30 12 24 14 17C16 10 22 7 28 8C23 11 20 15 19 20C23 17 27 16 31 17C27 20 23 23 21 28C25 26 29 26 33 28C28 30 24 32 20 36Z', accentPath: 'M20 35C18 27 18 19 27 10M19 27L13 22M20 22L28 17' },
+  { name: 'moon orchid', primaryPath: 'M20 20C11 18 8 12 11 7C16 8 19 12 20 17C21 12 24 8 29 7C32 12 29 18 20 20C27 21 31 25 29 31C24 31 21 27 20 22C19 27 16 31 11 31C9 25 13 21 20 20Z', accentPath: 'M20 18V36M16 36H24M20 20C16 17 14 13 13 10' },
+  { name: 'walking mangrove', primaryPath: 'M9 28C11 18 15 12 20 9C25 12 29 18 31 28C27 26 24 24 20 24C16 24 13 26 9 28ZM15 25L10 37L18 28L20 37L22 28L30 37L25 25Z', accentPath: 'M13 19C17 17 23 17 27 19M20 9V24' },
+  { name: 'glass lichen bridge', primaryPath: 'M6 29L10 16L17 9L22 15L29 11L35 22L31 33L22 31L16 36L10 31Z', accentPath: 'M10 28L17 21L22 27L30 20M17 10L17 21M29 12L30 20' },
+  { name: 'memory amber fruit', primaryPath: 'M20 5C24 10 31 15 31 23C31 31 26 36 20 36C14 36 9 31 9 23C9 15 16 10 20 5Z', accentPath: 'M13 25C17 21 23 21 27 25M14 29C18 26 22 26 26 29M20 8V19' },
+  { name: 'choir fungus fan', primaryPath: 'M6 24C8 13 14 8 20 8C27 8 33 13 35 24C28 22 25 22 20 24C15 22 12 22 6 24ZM17 23L16 36H24L23 23Z', accentPath: 'M10 21C13 16 16 13 20 10M20 23V10M30 21C27 16 24 13 20 10' },
+  { name: 'compass vine fork', primaryPath: 'M19 36C18 28 18 22 20 17C22 12 27 9 33 8C31 14 27 18 22 20C27 20 31 23 34 28C28 29 23 27 20 23C17 18 13 15 7 13C8 20 12 24 18 25L21 36Z', accentPath: 'M20 18L26 12M20 22L29 26M17 23L10 16' },
+  { name: 'lightning oak', primaryPath: 'M18 36L16 25L9 28L14 20L8 18L16 15L20 6L24 15L32 18L26 21L31 29L23 25L22 36Z', accentPath: 'M23 8L18 18L23 18L17 30M13 34H27' },
+  { name: 'star pollen head', primaryPath: 'M20 5L23 14L32 9L27 17L36 20L27 23L32 32L23 27L20 36L17 27L8 32L13 23L4 20L13 17L8 9L17 14Z', accentPath: 'M20 14V26M14 20H26' },
+  { name: 'ocean seed shell', primaryPath: 'M20 5C30 9 35 17 32 26C29 34 20 37 12 32C5 27 6 17 12 10C14 8 17 6 20 5ZM20 11C15 14 13 19 15 24C17 28 22 30 27 27C22 27 18 24 18 20C18 16 19 13 20 11Z', accentPath: 'M12 30C17 27 23 27 29 30' },
+  { name: 'root fossil', primaryPath: 'M18 5H23L22 18L31 13L34 17L24 23L32 31L28 35L21 27L15 36L11 33L17 23L6 20L8 15L18 18Z', accentPath: 'M20 7V31M12 18L20 23M29 17L20 23' },
+  { name: 'garden gate cutting', primaryPath: 'M8 35V20C8 12 13 7 20 7C27 7 32 12 32 20V35H27V21C27 16 24 12 20 12C16 12 13 16 13 21V35Z', accentPath: 'M13 24C17 20 23 20 27 24M20 12V35' },
+] as const

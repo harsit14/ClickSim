@@ -255,6 +255,12 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
       scenario.numericLawState = {
         'u3-kindling-01-cohort-quantity': amountFromNumber(70),
         'u3-kindling-01-cohort-age': amountFromNumber(8 * 60 * 60_000),
+        'u3-kindling-04-cohort-quantity': amountFromNumber(55),
+        'u3-kindling-04-cohort-age': amountFromNumber(5 * 60_000),
+        'u3-kindling-07-cohort-quantity': amountFromNumber(40),
+        'u3-kindling-07-cohort-age': amountFromNumber(60 * 60_000),
+        'u3-kindling-10-cohort-quantity': amountFromNumber(25),
+        'u3-kindling-10-cohort-age': amountFromNumber(8 * 60 * 60_000),
         'u3-kindling-09-cohort-quantity': amountFromNumber(30),
         'u3-kindling-09-cohort-age': amountFromNumber(0),
         'u3-graft-rootstock': amountFromNumber(0),

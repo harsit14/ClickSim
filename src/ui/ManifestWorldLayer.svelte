@@ -27,6 +27,8 @@
   import EmberlightRemnants from './EmberlightRemnants.svelte'
   import KindledSky from './KindledSky.svelte'
   import TidefallFlagshipLayer from './TidefallFlagshipLayer.svelte'
+  import VerdanceArchiveSilhouette from './VerdanceArchiveSilhouette.svelte'
+  import VerdanceWorldLayer from './VerdanceWorldLayer.svelte'
   import {
     brahmalokStatus,
     canticleStatus,
@@ -128,6 +130,7 @@
     preferences.reducedMotion ? 'reduced-motion' : preferences.quality === 'low' ? 'low-quality' : 'standard',
   )
   const archiveRecordById = $derived(new Map(pack.archive.records.map((record) => [record.id, record])))
+  const archiveRecordIndexById = $derived(new Map(pack.archive.records.map((record, index) => [record.id, index])))
   const archiveItemById = $derived(new Map(archiveItems.map((item) => [item.id, item])))
   const archiveLandmarkPlan = $derived(planArchiveLandmarks(
     pack,
@@ -287,6 +290,16 @@
       quality={preferences.quality}
     />
 
+    {#if pack.id === 'verdance' && !virginWorld}
+      <VerdanceWorldLayer
+        objects={pack.visual.objects}
+        {owned}
+        {numericLawState}
+        reducedMotion={preferences.reducedMotion}
+        quality={preferences.quality}
+      />
+    {/if}
+
     {#if pack.id === 'emberlight'}
       <EmberlightFlagshipLayer owned={owned} reducedMotion={preferences.reducedMotion} />
       <EmberlightRemnants owned={owned} />
@@ -349,12 +362,16 @@
             aria-label={`${landmark.accessibleDescription}. Open ${pack.archive.localName}.`}
             onclick={onarchiveopen}
           >
-            <span class="archive-sigil" aria-hidden="true">
-              <ArchiveRecordArt
-                id={record.id}
-                hue={item?.hue ?? (landmark.priority * 31) % 360}
-                universeId={pack.id}
-              />
+            <span class="archive-sigil" class:botanical={pack.id === 'verdance'} aria-hidden="true">
+              {#if pack.id === 'verdance'}
+                <VerdanceArchiveSilhouette index={archiveRecordIndexById.get(record.id) ?? 0} />
+              {:else}
+                <ArchiveRecordArt
+                  id={record.id}
+                  hue={item?.hue ?? (landmark.priority * 31) % 360}
+                  universeId={pack.id}
+                />
+              {/if}
             </span>
             <span class="archive-hint" role="tooltip">
               <small>{pack.archive.localName}</small>
@@ -559,6 +576,7 @@
     place-items: center;
     border-radius: 50%;
   }
+  .archive-sigil.botanical { border-radius:0; }
   .archive-hint {
     position: absolute;
     left: 50%;
