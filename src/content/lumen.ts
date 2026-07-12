@@ -20,14 +20,24 @@ export const LUMEN_LINES: LumenLine[] = [
   { id: 'awake', text: '...oh. You’re awake.', when: (g) => g.clicks >= 1 && g.remembrances === 0 },
   { id: 'again', text: 'Do that again.', when: (g) => g.clicks >= 8 },
   {
+    id: 'rem-counter',
+    text: 'Numbers again. You know what they can conceal now—and still you choose to count.',
+    when: (g) => has(g, 'counter') && g.remembrances >= 1,
+  },
+  {
     id: 'counter',
     text: 'Numbers. You want to know how much. That’s how it starts.',
-    when: (g) => has(g, 'counter'),
+    when: (g) => has(g, 'counter') && g.remembrances === 0,
+  },
+  {
+    id: 'rem-shop',
+    text: 'A marketplace again. We can build one without pretending price is value.',
+    when: (g) => has(g, 'shop') && g.remembrances >= 1,
   },
   {
     id: 'shop',
     text: 'A marketplace for light. The old universe had those too.',
-    when: (g) => has(g, 'shop'),
+    when: (g) => has(g, 'shop') && g.remembrances === 0,
   },
   { id: 'spark', text: 'It made another. I’d forgotten light could do that.', when: (g) => owns(g, 'spark') },
   {
@@ -36,7 +46,12 @@ export const LUMEN_LINES: LumenLine[] = [
     when: (g) => has(g, 'upgrades'),
   },
   { id: 'stats', text: 'A way to remember. I approve. I am one.', when: (g) => has(g, 'stats') },
-  { id: 'options', text: 'Choices. Careful with those.', when: (g) => has(g, 'options') },
+  {
+    id: 'rem-options',
+    text: 'Choices, again. You have learned that careful is a practice, not a warning.',
+    when: (g) => has(g, 'options') && g.remembrances >= 1,
+  },
+  { id: 'options', text: 'Choices. Careful with those.', when: (g) => has(g, 'options') && g.remembrances === 0 },
   {
     id: 'rem-music',
     text: 'The music again. It never plays the same twice. Neither, I notice, do you.',
@@ -52,7 +67,12 @@ export const LUMEN_LINES: LumenLine[] = [
     text: 'All ten echoes rest in the codex now. There is an answer you have never given. When the question comes — you will know it.',
     when: (g) => g.remembrances >= 1 && g.echoes.length >= 10 && g.ending === null && !g.pastEndings.includes('companion'),
   },
-  { id: 'bulk', text: 'A way to hunger. ...I said careful.', when: (g) => has(g, 'bulk') },
+  {
+    id: 'rem-bulk',
+    text: 'Hunger, again. This time you know it can be named before it chooses for you.',
+    when: (g) => has(g, 'bulk') && g.remembrances >= 1,
+  },
+  { id: 'bulk', text: 'A way to hunger. ...I said careful.', when: (g) => has(g, 'bulk') && g.remembrances === 0 },
   {
     id: 'first-curiosity',
     text: 'You are naming the dark. I did not expect a universe to feel larger once it had a catalogue.',
