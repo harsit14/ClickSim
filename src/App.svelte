@@ -109,6 +109,8 @@
   let pinnedGoalId = $state<string | null>(null)
   let averagedRhythm = $state(false)
   let promptState = $state<ContextualPromptState>({ enabled: false, dismissedIds: [] })
+  let shopCollapsed = $state(false)
+  let lumenActive = $state(false)
   let resumeMusicAfterNova = false
   const comparativeBlind = import.meta.env.DEV
     && new URLSearchParams(window.location.search).get('f2-blind') === '1'
@@ -425,6 +427,13 @@
     }
   })
 
+  $effect(() => {
+    const governed = (!shopCollapsed && hasUi('shop')) || lumenActive || utilityPanelOpen
+    if (governed) document.documentElement.dataset.attention = 'governed'
+    else delete document.documentElement.dataset.attention
+    return () => delete document.documentElement.dataset.attention
+  })
+
   const anyOf = (ids: string[]) => ids.some((id) => (game.owned[id] ?? 0) > 0)
   $effect(() => {
     const ids = activePack.generators.map(({ id }) => id)
@@ -460,7 +469,7 @@
         reducedMotion: game.motionPreference === 'reduced',
         quality: effectiveQuality,
         minimal: false,
-        panelOpen: utilityPanelOpen,
+        panelOpen: utilityPanelOpen || (!shopCollapsed && hasUi('shop')) || lumenActive,
       }}
     />
   {/if}
@@ -473,7 +482,7 @@
     <ChallengeBanner />
     {#if !utilityPanelOpen}
       <UniverseLawPanel />
-      <UpgradeBar />
+      <UpgradeBar dense={(!shopCollapsed && hasUi('shop')) || lumenActive} />
     {/if}
   </section>
   {#if activeV2Pack && !utilityPanelOpen && (goalLensEnabled || promptState.enabled)}
@@ -503,10 +512,10 @@
       {/if}
     </section>
   {/if}
-  <ShopPanel suppressed={utilityPanelOpen} />
+  <ShopPanel suppressed={utilityPanelOpen} bind:collapsed={shopCollapsed} />
   <UiChips />
   <ComboMeter />
-  <LumenTicker />
+  <LumenTicker onactivitychange={(active) => (lumenActive = active)} />
   <FallingStar reserveShop={hasUi('shop') && !utilityPanelOpen} />
   <Toasts clearOfShop={hasUi('shop') && !utilityPanelOpen} />
   <WelcomeBack amount={offlineGain} />

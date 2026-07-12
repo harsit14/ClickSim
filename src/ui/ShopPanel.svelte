@@ -29,8 +29,10 @@
 
   const AMOUNTS: BuyAmount[] = [1, 10, 100, 'max']
 
-  let { suppressed = false }: { suppressed?: boolean } = $props()
-  let collapsed = $state(false)
+  let {
+    suppressed = false,
+    collapsed = $bindable(false),
+  }: { suppressed?: boolean; collapsed?: boolean } = $props()
 
   const visible = $derived(hasUi('shop'))
   const pack = $derived(universeById(game.activeUniverse))

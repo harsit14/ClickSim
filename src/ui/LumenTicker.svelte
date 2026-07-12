@@ -12,6 +12,8 @@
   type LumenImportance = 'ambient' | 'reflective' | 'important'
   type LumenTemperature = 'ember' | 'afterglow' | 'deep'
 
+  let { onactivitychange = () => {} }: { onactivitychange?: (active: boolean) => void } = $props()
+
   interface HistoryLine {
     readonly id: string
     readonly text: string
@@ -59,6 +61,11 @@
     if (importance === 'important') document.documentElement.dataset.lumenImportance = importance
     else clearImportance()
     return clearImportance
+  })
+
+  $effect(() => {
+    onactivitychange(current !== null || historyOpen)
+    return () => onactivitychange(false)
   })
 
   $effect(() => {

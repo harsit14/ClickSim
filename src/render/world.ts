@@ -504,6 +504,10 @@ export class World {
     const ny = dy / len
     const startRadius = this.emberRadius(performance.now()) * 1.55 + 16
     const motion = this.motionScale()
+    // The DOM and canvas share one attention budget. When a persistent panel
+    // or story subtitle is active, the latest exact gain replaces the prior
+    // transient instead of stacking several equivalent readouts around Heart.
+    if (document.documentElement.dataset.attention === 'governed') this.floats.length = 0
     this.floats.push({
       x: c.x + nx * startRadius + (Math.random() - 0.5) * 14,
       y: c.y + ny * startRadius - 8,

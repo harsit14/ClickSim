@@ -9,9 +9,9 @@
   import SetPieceArt from './SetPieceArt.svelte'
   import { emberlightSetPieceStage } from '../render/emberlight/set-piece-registry'
 
-  const SHOWN = 9
+  let { dense = false }: { dense?: boolean } = $props()
   const available = $derived(hasUi('upgrades') ? availableUpgrades(game) : [])
-  const shown = $derived(available.slice(0, SHOWN))
+  const shown = $derived(available.slice(0, dense ? 6 : 9))
   const overflow = $derived(available.length - shown.length)
   let previewId = $state<string | null>(null)
   const preview = $derived(shown.find((u) => u.id === previewId) ?? null)
@@ -36,6 +36,15 @@
     const generatorEffect = upgrade.effects.find((effect) => effect.kind === 'genMult' || effect.kind === 'synergy')
     if (generatorEffect?.kind === 'genMult' || generatorEffect?.kind === 'synergy') return generatorEffect.gen
     return upgrade.unlock.gen ?? 'spark'
+  }
+
+  function targetCue(upgrade: UpgradeDef): string {
+    const kinds = new Set(upgrade.effects.map(({ kind }) => kind))
+    if ([...kinds].some((kind) => kind === 'clickMult' || kind === 'clickShare' || kind === 'critChance' || kind === 'critMult')) return 'Touch'
+    if (kinds.has('globalMult')) return 'Global'
+    if (kinds.has('synergy') || kinds.has('synergyMult')) return 'Resonance'
+    const generatorId = upgradeGeneratorId(upgrade)
+    return pack.generatorById.get(generatorId)?.name ?? 'Kindling'
   }
 </script>
 
@@ -69,6 +78,7 @@
           {:else}
             <span class="glyph">{u.glyph}</span>
           {/if}
+          <span class="target-cue">{targetCue(u)}</span>
         </button>
       {/each}
       {#if overflow > 0}
@@ -77,10 +87,12 @@
     </div>
     {#if preview}
       <div id="upgrade-preview" class="detail" style:--hue={preview.hue}>
-        <strong>{preview.name}</strong>
+        <div class="detail-head"><strong>{preview.name}</strong><span>{targetCue(preview)}</span></div>
         <em>{preview.flavor}</em>
-        <span class="fx">{preview.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())).join(' · ')}</span>
-        <span class="price">{pack.currencyGlyph} {format(preview.cost)}</span>
+        <span class="fx"><b>Changes</b> · {preview.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())).join(' · ')}</span>
+        <span class="price" class:ready={!ltAmount(game.light, amountFromNumber(preview.cost))}>
+          {ltAmount(game.light, amountFromNumber(preview.cost)) ? 'Needs' : 'Ready'} · {pack.currencyGlyph} {format(preview.cost)}
+        </span>
       </div>
     {/if}
   </div>
@@ -88,7 +100,7 @@
 
 <style>
   .upgrade-stack {
-    width: min(30rem, 96vw);
+    width: min(34rem, 96vw);
     display: grid;
     justify-items: center;
     gap: 0.5rem;
@@ -108,8 +120,8 @@
   }
   .up {
     position: relative;
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 3rem;
+    height: 3rem;
     display: grid;
     place-items: center;
     background: color-mix(in srgb, var(--amber) 6%, hsla(var(--hue), 70%, 55%, 0.08));
@@ -152,6 +164,18 @@
     filter: drop-shadow(0 0 0.25rem hsla(var(--hue), 90%, 60%, 0.36));
     animation: artifact-glint 560ms ease-out both;
   }
+  .target-cue {
+    position: absolute;
+    left: 0.15rem;
+    right: 0.15rem;
+    bottom: 0.2rem;
+    overflow: hidden;
+    color: color-mix(in srgb, var(--text) 72%, var(--dim));
+    font: 650 0.6875rem/1 system-ui, sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .glyph, .artifact-icon { transform: translateY(-0.34rem); }
   @keyframes artifact-glint { from { opacity: 0.25; transform: scale(0.65); filter: brightness(2.2); } to { opacity: 1; transform: scale(1); } }
   .detail {
     display: flex;
@@ -171,6 +195,8 @@
   .detail strong {
     color: var(--text);
   }
+  .detail-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .detail-head span { color: var(--amber); font-size: 0.6875rem; font-weight: 720; letter-spacing: 0.08em; text-transform: uppercase; }
   .detail em {
     color: var(--dim);
     font-family: Georgia, serif;
@@ -178,11 +204,13 @@
   .detail .fx {
     color: hsl(var(--hue), 80%, 70%);
   }
+  .detail .fx b { color: var(--dim); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.07em; }
   .detail .price {
     color: var(--gold);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
+  .detail .price.ready { color: color-mix(in srgb, var(--gold) 78%, white); }
   @keyframes detail-in {
     from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: translateY(0); }
