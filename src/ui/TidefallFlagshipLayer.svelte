@@ -6,15 +6,18 @@
     tidefallOwnershipThreshold,
   } from '../render/tidefall/set-piece-registry'
   import SetPieceArt from './SetPieceArt.svelte'
+  import { planTidefallMidDepth } from '../render/tidefall/mid-depth'
 
   let {
     owned,
     reducedMotion = false,
     leviathanActive = false,
+    quality = 'high',
   }: {
     owned: Readonly<Record<string, number>>
     reducedMotion?: boolean
     leviathanActive?: boolean
+    quality?: 'low' | 'balanced' | 'high'
   } = $props()
 
   const seats = [
@@ -54,6 +57,7 @@
       stage: lateCount > 0 ? late : early,
     }
   }).filter((family) => family.count > 0))
+  const midDepthMigrations = $derived(planTidefallMidDepth(owned, quality))
 
   onMount(() => {
     const timer = window.setInterval(() => (now = Date.now()), 250)
@@ -91,6 +95,24 @@
       {/each}
       {#each shoals as shoal}
         <span class="shoal" style={`--x:${shoal[0]}%;--y:${shoal[1]}%;--tilt:${shoal[2]}deg`}><i></i><i></i><i></i></span>
+      {/each}
+    </div>
+    <div class="mid-depth-migrations" data-migration-count={midDepthMigrations.length} data-motion={reducedMotion ? 'static' : 'drifting'}>
+      {#each midDepthMigrations as migration (migration.id)}
+        <span
+          class="migration {migration.kind} form-{migration.form}"
+          class:reverse={migration.direction === -1}
+          class:static={reducedMotion}
+          data-migration={migration.id}
+          data-form={migration.form}
+          style={`--migration-y:${migration.y}%;--migration-rest-x:${migration.restingX}%;--migration-duration:${migration.durationSec}s;--migration-delay:${migration.delaySec}s`}
+        >
+          <i class="migration-body"></i>
+          {#if migration.form >= 2}<i class="migration-companion companion-one"></i>{/if}
+          {#if migration.form >= 3}<i class="migration-companion companion-two"></i>{/if}
+          {#if migration.form >= 4}<b class="migration-wake"></b>{/if}
+          {#if migration.form >= 5}<b class="migration-crown"></b>{/if}
+        </span>
       {/each}
     </div>
   </div>
@@ -144,7 +166,8 @@
   }
   .inverted-ocean,
   .pelagic-families,
-  .suspended-life { position: absolute; inset: 0; }
+  .suspended-life,
+  .mid-depth-migrations { position: absolute; inset: 0; }
   .inverted-ocean {
     background:
       linear-gradient(180deg, rgba(143, 246, 231, 0.1), transparent 19%),
@@ -206,6 +229,20 @@
   }
   .shoal i:nth-child(2) { left: 1.45rem; top: 0.55rem; transform: scale(0.7); }
   .shoal i:nth-child(3) { left: 3.2rem; top: 0.12rem; transform: scale(0.48); }
+  .mid-depth-migrations { z-index:2;overflow:hidden; }
+  .migration { position:absolute;left:-8%;top:var(--migration-y);width:3.6rem;height:2.2rem;color:rgba(143,235,220,.48);animation:mid-depth-drift var(--migration-duration) linear var(--migration-delay) infinite;filter:drop-shadow(0 0 .3rem rgba(95,222,204,.12)); }
+  .migration.reverse { left:auto;right:-8%;animation-name:mid-depth-drift-reverse;transform:scaleX(-1); }
+  .migration.static { left:var(--migration-rest-x);right:auto;animation:none;transform:none; }
+  .migration-body,.migration-companion { position:absolute;display:block; }
+  .shoal .migration-body,.shoal .migration-companion { width:1.15rem;height:.42rem;background:currentColor;clip-path:polygon(0 50%,28% 0,78% 12%,100% 50%,78% 88%,28% 100%); }
+  .lantern .migration-body,.lantern .migration-companion { width:.9rem;height:1rem;border:1px solid currentColor;border-radius:58% 58% 32% 32%;background:radial-gradient(circle at 50% 42%,rgba(215,255,245,.24),transparent 48%); }
+  .lantern .migration-body::after,.lantern .migration-companion::after { content:'';position:absolute;left:18%;right:18%;top:100%;height:.72rem;border-left:1px solid currentColor;border-right:1px solid currentColor;border-radius:0 0 50% 50%; }
+  .ray .migration-body,.ray .migration-companion { width:1.5rem;height:.72rem;background:currentColor;clip-path:polygon(0 50%,36% 0,82% 22%,100% 50%,82% 78%,36% 100%);border-radius:50%; }
+  .driftleaf .migration-body,.driftleaf .migration-companion { width:1.28rem;height:.68rem;border:1px solid currentColor;border-radius:100% 0 100% 0;transform:rotate(14deg); }
+  .migration-companion { opacity:.68;transform:scale(.72); }
+  .companion-one { left:1.45rem;top:.7rem; }.companion-two { left:2.55rem;top:.08rem;opacity:.46; }
+  .migration-wake { position:absolute;left:-.7rem;top:.32rem;width:.75rem;height:1.3rem;border-left:1px solid currentColor;border-radius:50%;opacity:.38; }
+  .migration-crown { position:absolute;left:.24rem;top:-.38rem;width:.7rem;height:.3rem;border-top:1px solid currentColor;border-radius:50%;opacity:.5; }
   .pelagic-family {
     position: absolute; left: var(--x); top: calc(var(--y) + var(--tide-lift));
     width: var(--size); height: var(--size); margin: 0;
@@ -248,6 +285,8 @@
   .wake-marks { position: absolute; left: 14%; right: 5%; top: -1.1rem; display: flex; justify-content: space-around; }
   .wake-marks i { color: rgba(191, 248, 236, 0.36); font: 600 0.44rem/1 ui-monospace, monospace; font-style: normal; border-top: 1px solid currentColor; padding-top: 0.18rem; width: 2.3rem; text-align: center; }
   @keyframes bubble-rise { from { transform: translateY(1.5rem); opacity: 0; } 18% { opacity: 0.55; } to { transform: translateY(-6rem); opacity: 0; } }
+  @keyframes mid-depth-drift { from { transform:translateX(0); } to { transform:translateX(116vw); } }
+  @keyframes mid-depth-drift-reverse { from { transform:scaleX(-1) translateX(0); } to { transform:scaleX(-1) translateX(116vw); } }
   @keyframes leviathan-crossing { from { transform: translateX(0); } to { transform: translateX(330%); } }
   .motion-paused *,
   :global(html[data-motion='reduced']) .tidefall-flagship * { animation: none !important; transition: none !important; }

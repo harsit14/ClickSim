@@ -317,6 +317,7 @@
       <TidefallFlagshipLayer
         {owned}
         reducedMotion={preferences.reducedMotion}
+        quality={preferences.quality}
         leviathanActive={activeOmenIdSet.has('leviathan-passage') || leviathanPreview}
       />
     {/if}
