@@ -12,7 +12,7 @@
   type LumenImportance = 'ambient' | 'reflective' | 'important'
   type LumenTemperature = 'ember' | 'afterglow' | 'deep'
 
-  let { onactivitychange = () => {} }: { onactivitychange?: (active: boolean) => void } = $props()
+  let { onactivitychange = () => {}, resetToken = 0 }: { onactivitychange?: (active: boolean) => void; resetToken?: number } = $props()
 
   interface HistoryLine {
     readonly id: string
@@ -26,6 +26,7 @@
   let historyOpen = $state(false)
   let timer: ReturnType<typeof setTimeout> | undefined
   let wallNow = $state(Date.now())
+  let handledResetToken = $state(0)
 
   const words = $derived(current?.text.trim().split(/\s+/) ?? [])
   const temperature = $derived<LumenTemperature>(
@@ -61,6 +62,18 @@
     if (importance === 'important') document.documentElement.dataset.lumenImportance = importance
     else clearImportance()
     return clearImportance
+  })
+
+  $effect(() => {
+    if (resetToken === handledResetToken) return
+    handledResetToken = resetToken
+    clearTimeout(timer)
+    current = null
+    history = []
+    historyOpen = false
+    clearImportance()
+    delete document.documentElement.dataset.lumenHistory
+    onactivitychange(false)
   })
 
   $effect(() => {

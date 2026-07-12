@@ -53,6 +53,7 @@ export const liveFeedback: LiveFeedbackState = $state({
 let audioState: SemanticAudioRuntimeState = EMPTY_SEMANTIC_AUDIO_RUNTIME_STATE
 let announcementState: AnnouncementGateState = EMPTY_ANNOUNCEMENT_STATE
 let purchaseTimeline: PurchaseCeremonyTimelineState = INITIAL_PURCHASE_CEREMONY_TIMELINE
+const purchaseTimers = new Set<ReturnType<typeof setTimeout>>()
 
 function fallbackMessage(request: AudioSinkFallbackRequest): string {
   const action = request.event.kind === 'purchase' ? 'Purchase completed' : 'Action completed'
@@ -144,15 +145,19 @@ export function publishLivePurchase(
     })
     purchaseTimeline = scheduled.nextState
     const delayMs = Math.max(0, scheduled.ceremony.startsAtMs - performance.now())
-    window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
+      purchaseTimers.delete(timer)
       worldRef()?.emitPurchaseMote(event.source.id, `+${format(event.rateDelta)}/s`)
     }, delayMs)
+    purchaseTimers.add(timer)
   }
   return dispatch
 }
 
 /** Test/dev reset; it never changes progression state. */
 export function resetLiveFeedbackRuntime() {
+  for (const timer of purchaseTimers) clearTimeout(timer)
+  purchaseTimers.clear()
   audioState = EMPTY_SEMANTIC_AUDIO_RUNTIME_STATE
   announcementState = EMPTY_ANNOUNCEMENT_STATE
   purchaseTimeline = INITIAL_PURCHASE_CEREMONY_TIMELINE

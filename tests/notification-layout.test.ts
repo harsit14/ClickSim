@@ -25,7 +25,9 @@ test('desktop notifications reserve a lane clear of the Kindling shop and top me
   assert.match(toastStateSource, /promoteQueuedToasts/)
   assert.match(toastSource, /toastState\.queue\.length/)
   assert.match(achievementSource, /pushAchievementToast\(copy\.name/)
-  assert.match(appSource, /<Toasts clearOfShop={hasUi\('shop'\) && !utilityPanelOpen} \/>/)
+  assert.match(appSource, /<Toasts governed=\{transientGoverned\} clearOfShop=\{hasUi\('shop'\) && !utilityPanelOpen\} \/>/)
+  assert.match(toastSource, /class:governed/)
+  assert.match(toastSource, /visibleToasts = \$derived\(governed \? toastState\.list\.slice\(0, 1\)/)
 })
 
 test('Phase 4 narrow chrome has collision-free lanes at 380, 650, and 800px', () => {

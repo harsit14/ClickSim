@@ -26,3 +26,9 @@ export function chargeOmenAttraction(amount: number): boolean {
 export function resetOmenAttraction() {
   fallingStarState.omenAttraction = 0
 }
+
+export function resetFallingStars() {
+  fallingStarState.pendingSummons = 0
+  fallingStarState.omenAttraction = 0
+  lastSummonAt = 0
+}

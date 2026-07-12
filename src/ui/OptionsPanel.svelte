@@ -31,6 +31,7 @@
     onaveragedrhythmchange?: (enabled: boolean) => void
     ongoallenschange?: (enabled: boolean) => void
     onpromptschange?: (enabled: boolean) => void
+    onhardreset?: () => void
   }
 
   let {
@@ -42,6 +43,7 @@
     onaveragedrhythmchange,
     ongoallenschange,
     onpromptschange,
+    onhardreset,
   }: Props = $props()
   let closeButton: HTMLButtonElement
 
@@ -169,6 +171,7 @@
     if (!confirm('Let the ember go out? All light will be lost.')) return
     hardReset()
     wipe()
+    onhardreset?.()
     save()
     onclose()
   }

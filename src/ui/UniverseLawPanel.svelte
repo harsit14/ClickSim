@@ -29,6 +29,8 @@
   import { isZeroAmount } from '../core/numeric/amount'
   import BuffBar from './BuffBar.svelte'
 
+  let { onactivitychange = () => {} }: { onactivitychange?: (active: boolean) => void } = $props()
+
   let now = $state(Date.now())
   let selectedBrahmalokKindling = $state(0)
   let primerMounted = $state(false)
@@ -69,6 +71,12 @@
       ? instrumentPrimers[game.activeUniverse]
       : null,
   )
+
+  $effect(() => {
+    const active = Boolean(verdanceGraft || ((brahmalok || tempest || canticle) && instrumentExpanded))
+    onactivitychange(active)
+    return () => onactivitychange(false)
+  })
 
   function configure(index: number) {
     if (!configureUniverseLaw(index)) return

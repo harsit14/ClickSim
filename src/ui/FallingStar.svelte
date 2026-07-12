@@ -43,7 +43,7 @@
   } from '../core/numeric/amount'
   import { worldRef } from '../render/world-ref'
 
-  let { reserveShop = false }: { reserveShop?: boolean } = $props()
+  let { reserveShop = false, resetToken = 0 }: { reserveShop?: boolean; resetToken?: number } = $props()
 
   const EVENT_HALF_WIDTH = 3.3 * 16
   const EVENT_HALF_HEIGHT = 1.9 * 16
@@ -99,6 +99,7 @@
   let forcedPowerId = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('event') : null
   let forcedEntry = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('entry') : null
   let attractionUniverse = $state(game.activeUniverse)
+  let handledResetToken = $state(0)
 
   function availableRightEdge(viewportWidth = window.innerWidth): number {
     if (!reserveShop) return viewportWidth
@@ -114,6 +115,20 @@
     if (attractionUniverse === game.activeUniverse) return
     attractionUniverse = game.activeUniverse
     resetOmenAttraction()
+  })
+
+  $effect(() => {
+    if (resetToken === handledResetToken) return
+    handledResetToken = resetToken
+    clearTimeout(spawnTimer)
+    clearTimeout(bankedEmberTimer)
+    cancelAnimationFrame(raf)
+    star = null
+    bankedEmbers = null
+    queuedSummon = false
+    handledSummons = fallingStarState.pendingSummons
+    delete document.documentElement.dataset.omenArrival
+    spawnTimer = setTimeout(spawn, FIRST_DELAY())
   })
 
   function pickPower(fromRhythm = false): UniversePowerUp {

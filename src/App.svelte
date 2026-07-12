@@ -59,8 +59,9 @@
   import { acquireGamePause } from './core/pause.svelte'
   import { worldRef } from './render/world-ref'
   import { clearToasts } from './systems/toasts.svelte'
+  import { resetSessionFeedback } from './feedback/reset-session'
   import type { EconomyAmount } from './content/universes/types'
-  import { addAmounts, amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
+  import { ZERO_AMOUNT, addAmounts, amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
   import { format } from './core/format'
   import { resolveEffectiveVisualQuality } from './core/preferences'
   import { renderHealth } from './core/render-health.svelte'
@@ -104,6 +105,9 @@
   let clockworkRevelationActive = $state(false)
   let clockworkRevelationReplay = $state(false)
   let modalReturnFocus: HTMLElement | null = null
+  let universeInstrumentActive = $state(false)
+  let transientResetToken = $state(0)
+  let offlineGainDismissed = $state(false)
   // Guidance is opt-in. The opening should remain only the Heart and the
   // systems the player has actually unlocked until Settings enables help.
   let goalLensEnabled = $state(false)
@@ -157,6 +161,8 @@
     cutsceneActive || questionOpen || remembering || crossingPrelude || clockworkRevelationActive,
   )
   const modalActive = $derived(storyModalActive || guideOpen || resetPreviewOpen || curiositiesOpen || endgameOpen)
+  const transientGoverned = $derived(universeInstrumentActive || utilityPanelOpen || storyModalActive || resetPreviewOpen || lumenActive)
+  const visibleOfflineGain = $derived(offlineGainDismissed ? ZERO_AMOUNT : offlineGain)
   const goalCandidates = $derived(buildEmberGoalCandidates(game, novaReady, Date.now()))
   const goalLensInput = $derived({
     enabled: goalLensEnabled,
@@ -282,6 +288,15 @@
     const target = modalReturnFocus
     modalReturnFocus = null
     requestAnimationFrame(() => target?.focus({ preventScroll: true }))
+  }
+
+  function clearAllTransientUi() {
+    resetSessionFeedback()
+    offlineGainDismissed = true
+    lumenActive = false
+    universeInstrumentActive = false
+    transientResetToken += 1
+    worldRef()?.resetForUniverse()
   }
 
   function onGlobalKeydown(event: KeyboardEvent) {
@@ -440,7 +455,7 @@
   })
 
   $effect(() => {
-    const governed = (!shopCollapsed && hasUi('shop')) || lumenActive || utilityPanelOpen
+    const governed = (!shopCollapsed && hasUi('shop')) || transientGoverned
     if (governed) document.documentElement.dataset.attention = 'governed'
     else delete document.documentElement.dataset.attention
     return () => delete document.documentElement.dataset.attention
@@ -465,7 +480,7 @@
   <NumberSuffixHint
     amount={game.light}
     currencyName={activePack.currency}
-    suppressed={utilityPanelOpen || storyModalActive || resetPreviewOpen}
+    suppressed={utilityPanelOpen || storyModalActive || resetPreviewOpen || universeInstrumentActive}
   />
   {#if activeV2Pack}
     <ManifestWorldLayer
@@ -493,7 +508,7 @@
     {/if}
     <ChallengeBanner />
     {#if !utilityPanelOpen}
-      <UniverseLawPanel />
+      <UniverseLawPanel onactivitychange={(active) => (universeInstrumentActive = active)} />
       <UpgradeBar dense={(!shopCollapsed && hasUi('shop')) || lumenActive} />
     {/if}
   </section>
@@ -527,10 +542,10 @@
   <ShopPanel suppressed={utilityPanelOpen} bind:collapsed={shopCollapsed} />
   <UiChips />
   <ComboMeter />
-  <LumenTicker onactivitychange={(active) => (lumenActive = active)} />
-  <FallingStar reserveShop={hasUi('shop') && !utilityPanelOpen} />
-  <Toasts clearOfShop={hasUi('shop') && !utilityPanelOpen} />
-  <WelcomeBack amount={offlineGain} />
+  <LumenTicker resetToken={transientResetToken} onactivitychange={(active) => (lumenActive = active)} />
+  <FallingStar resetToken={transientResetToken} reserveShop={hasUi('shop') && !utilityPanelOpen} />
+  <Toasts governed={transientGoverned} clearOfShop={hasUi('shop') && !utilityPanelOpen} />
+  <WelcomeBack amount={visibleOfflineGain} />
 
   {#if !hasUi('options')}
     <button
@@ -584,10 +599,11 @@
       onaveragedrhythmchange={(enabled) => (averagedRhythm = enabled)}
       ongoallenschange={(enabled) => (goalLensEnabled = enabled)}
       onpromptschange={(enabled) => (promptState = { ...promptState, enabled })}
+      onhardreset={clearAllTransientUi}
     />
   {/if}
   {#if openingAccessOpen}
-    <OptionsPanel accessOnly onclose={() => (openingAccessOpen = false)} />
+    <OptionsPanel accessOnly onhardreset={clearAllTransientUi} onclose={() => (openingAccessOpen = false)} />
   {/if}
   {#if vesselOpen}
     <VesselPanel onclose={() => (vesselOpen = false)} oncross={beginCrossingPrelude} />

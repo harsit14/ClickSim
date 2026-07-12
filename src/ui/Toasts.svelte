@@ -1,7 +1,9 @@
 <script lang="ts">
   import { toastState } from '../systems/toasts.svelte'
 
-  let { clearOfShop = false }: { clearOfShop?: boolean } = $props()
+  let { clearOfShop = false, governed = false }: { clearOfShop?: boolean; governed?: boolean } = $props()
+  const visibleToasts = $derived(governed ? toastState.list.slice(0, 1) : toastState.list)
+  const queuedCount = $derived(toastState.queue.length + Math.max(0, toastState.list.length - visibleToasts.length))
 </script>
 
 {#if toastState.achievements[0]}
@@ -21,16 +23,16 @@
 {/if}
 
 {#if toastState.list.length > 0}
-  <div class="toasts" class:shop-clear={clearOfShop} role="status" aria-live="polite" aria-atomic="true">
-    {#each toastState.list as t (t.key)}
+  <div class="toasts" class:shop-clear={clearOfShop} class:governed role="status" aria-live="polite" aria-atomic="true">
+    {#each visibleToasts as t (t.key)}
       <div class="toast instrument-panel">
         {#if t.tag}<span class="tag">{t.tag}</span>{/if}
         <strong>{t.title}</strong>
         <p>{t.body}</p>
       </div>
     {/each}
-    {#if toastState.queue.length > 0}
-      <small class="queued-count">+{toastState.queue.length} queued</small>
+    {#if queuedCount > 0}
+      <small class="queued-count">+{queuedCount} queued</small>
     {/if}
   </div>
 {/if}
@@ -81,6 +83,11 @@
   .toasts.shop-clear {
     top: 3.6rem;
     right: 18rem;
+  }
+  .toasts.governed {
+    top: auto;
+    right: 18rem;
+    bottom: 4.5rem;
   }
   .toast {
     padding: 0.65rem 0.85rem;
