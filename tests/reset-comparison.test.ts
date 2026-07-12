@@ -5,6 +5,7 @@ import {
   type ProgressionBoundary,
   type RecoveryEstimateInputs,
 } from '../src/experience/reset-comparison'
+import { resolveUniverseUiText } from '../src/experience/ember-ui-text'
 
 function ids(items: readonly { id: string }[]): string[] {
   return items.map(({ id }) => id)
@@ -52,6 +53,20 @@ test('Deep Collapse clears World and Epoch scopes but not Deep/history or Betwee
   assert.ok(ids(result.retained).includes('dark-between'))
   assert.equal(result.recovery.status, 'unavailable')
   assert.equal(result.recovery.reason, 'missing-estimate')
+})
+
+test('Deep Collapse and Remembrance comparison copy is plain language, never a raw key', () => {
+  for (const boundary of ['deep-collapse', 'remembrance'] as const) {
+    const comparison = compareProgressionBoundary({ boundary })
+    for (const universeId of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']) {
+      for (const key of [
+        comparison.actionLabelKey,
+        comparison.resultKey,
+        ...comparison.lost.map(({ labelKey }) => labelKey),
+        ...comparison.retained.map(({ labelKey }) => labelKey),
+      ]) assert.notEqual(resolveUniverseUiText(universeId, key), key, `${universeId}/${boundary}/${key}`)
+    }
+  }
 })
 
 test('v12 Remembrance affects only the active universe and preserves memory records', () => {

@@ -34,6 +34,7 @@
   import DevPlaytestPanel from './ui/DevPlaytestPanel.svelte'
   import NumberSuffixHint from './ui/NumberSuffixHint.svelte'
   import ClockworkRevelation from './ui/ClockworkRevelation.svelte'
+  import DeepCollapseCeremony from './ui/DeepCollapseCeremony.svelte'
   import {
     game,
     hasUi,
@@ -43,6 +44,8 @@
     vesselHasReadyPart,
     vesselRevealed,
     atlasRouteReady,
+    deepCollapseGain,
+    performDeepCollapse,
   } from './engine/game.svelte'
   import { clearBuffs } from './systems/buffs.svelte'
   import { combo } from './systems/combo.svelte'
@@ -104,6 +107,7 @@
   let resetComparison = $state<ResetComparison | null>(null)
   let clockworkRevelationActive = $state(false)
   let clockworkRevelationReplay = $state(false)
+  let deepCollapseActive = $state(false)
   let modalReturnFocus: HTMLElement | null = null
   let universeInstrumentActive = $state(false)
   let transientResetToken = $state(0)
@@ -123,6 +127,9 @@
     && new URLSearchParams(window.location.search).get('playtest') === '1'
   const supernovaTimeScale = import.meta.env.DEV
     ? Math.max(0.02, Math.min(1, Number(new URLSearchParams(window.location.search).get('supernova-speed')) || 1))
+    : 1
+  const deepCollapseTimeScale = import.meta.env.DEV
+    ? Math.max(0.02, Math.min(1, Number(new URLSearchParams(window.location.search).get('deep-speed')) || 1))
     : 1
 
   const novaReady = $derived(!isZeroAmount(supernovaGain()))
@@ -158,7 +165,7 @@
     openingAccessOpen || statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen || guideOpen || endgameOpen,
   )
   const storyModalActive = $derived(
-    cutsceneActive || questionOpen || remembering || crossingPrelude || clockworkRevelationActive,
+    cutsceneActive || deepCollapseActive || questionOpen || remembering || crossingPrelude || clockworkRevelationActive,
   )
   const modalActive = $derived(storyModalActive || guideOpen || resetPreviewOpen || curiositiesOpen || endgameOpen)
   const transientGoverned = $derived(universeInstrumentActive || utilityPanelOpen || storyModalActive || resetPreviewOpen || lumenActive)
@@ -290,12 +297,16 @@
     requestAnimationFrame(() => target?.focus({ preventScroll: true }))
   }
 
-  function clearAllTransientUi() {
+  function quietSessionFeedback() {
     resetSessionFeedback()
-    offlineGainDismissed = true
     lumenActive = false
     universeInstrumentActive = false
     transientResetToken += 1
+  }
+
+  function clearAllTransientUi() {
+    quietSessionFeedback()
+    offlineGainDismissed = true
     worldRef()?.resetForUniverse()
   }
 
@@ -349,15 +360,65 @@
     resetPreviewOpen = true
   }
 
+  function beginDeepCollapse() {
+    closeAll()
+    const gain = deepCollapseGain()
+    resetComparison = compareProgressionBoundary({
+      boundary: 'deep-collapse',
+      reward: {
+        glyph: '◉',
+        localName: 'Singularities',
+        canonicalName: 'Deep currency',
+        current: format(game.singularities),
+        gain: format(gain),
+        after: format(addAmounts(game.singularities, gain)),
+      },
+    })
+    resetPreviewOpen = true
+  }
+
+  function remembranceStrength(count: number): string {
+    return count < 31 ? (2 ** count).toLocaleString() : `2^${count}`
+  }
+
+  function beginRemembranceReview() {
+    closeAll()
+    resetComparison = compareProgressionBoundary({
+      boundary: 'remembrance',
+      reward: {
+        glyph: '×',
+        localName: 'Remembrance strength',
+        canonicalName: 'All production',
+        current: remembranceStrength(game.remembrances),
+        gain: '2',
+        after: remembranceStrength(game.remembrances + 1),
+      },
+    })
+    resetPreviewOpen = true
+  }
+
   function handleResetDecision(decision: ResetCardDecision) {
     resetPreviewOpen = false
     resetComparison = null
     if (decision.action === 'cancel') {
-      requestAnimationFrame(() => document.querySelector<HTMLCanvasElement>('[data-focus-region="heart"]')?.focus({ preventScroll: true }))
+      const selector = decision.boundary === 'deep-collapse'
+        ? '[aria-label="The Deep"]'
+        : decision.boundary === 'remembrance'
+          ? '[aria-label="Story Archive"]'
+          : '[data-focus-region="heart"]'
+      requestAnimationFrame(() => document.querySelector<HTMLElement>(selector)?.focus({ preventScroll: true }))
       return
     }
-    resumeMusicAfterNova = isPlaying()
-    cutsceneActive = true
+    if (decision.boundary === 'deep-collapse') {
+      quietSessionFeedback()
+      deepCollapseActive = true
+    } else if (decision.boundary === 'remembrance') {
+      quietSessionFeedback()
+      remembering = true
+    } else {
+      resumeMusicAfterNova = isPlaying()
+      cutsceneActive = true
+    }
   }
 
   function handlePromptAction(promptId: string) {
@@ -378,6 +439,17 @@
     cutsceneActive = false
     if (resumeMusicAfterNova && hasUi('music')) startMusic()
     resumeMusicAfterNova = false
+  }
+
+  function resetForDeepCollapse(): EconomyAmount {
+    const gain = performDeepCollapse()
+    save()
+    return gain
+  }
+
+  function afterDeepCollapse() {
+    deepCollapseActive = false
+    requestAnimationFrame(() => document.querySelector<HTMLElement>('[data-focus-region="heart"]')?.focus({ preventScroll: true }))
   }
 
   function beginCrossingPrelude(universeId: string) {
@@ -614,12 +686,12 @@
   {#if codexOpen}
     <Codex
       onclose={() => (codexOpen = false)}
-      onremember={() => { closeAll(); remembering = true }}
+      onremember={beginRemembranceReview}
       onreplayclockwork={replayClockworkRevelation}
     />
   {/if}
   {#if deepOpen}
-    <TheDeep onclose={() => (deepOpen = false)} />
+    <TheDeep onrequestcollapse={beginDeepCollapse} onclose={() => (deepOpen = false)} />
   {/if}
   <QuestionChip onopen={() => { closeAll(); questionOpen = true }} />
 </div>
@@ -631,7 +703,7 @@
 {/if}
 {#if resetPreviewOpen && resetComparison}
   <ResetComparisonCard
-    id="supernova-reset-preview"
+    id={`${resetComparison.boundary}-reset-preview`}
     universeId={activePack.id}
     comparison={resetComparison}
     confirmFocusReturn={confirmResetFocus}
@@ -646,6 +718,9 @@
 {/if}
 {#if cutsceneActive}
   <SupernovaCutscene doReset={resetForSupernova} onfinished={afterSupernova} timeScale={supernovaTimeScale} />
+{/if}
+{#if deepCollapseActive}
+  <DeepCollapseCeremony doReset={resetForDeepCollapse} onfinished={afterDeepCollapse} timeScale={deepCollapseTimeScale} />
 {/if}
 {#if questionOpen}
   <TheQuestion onclose={() => (questionOpen = false)} />

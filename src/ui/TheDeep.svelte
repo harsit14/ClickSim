@@ -7,18 +7,14 @@
   import {
     game,
     deepCollapseGain,
-    performDeepCollapse,
     buyDeepUpgrade,
     buyDeepWork,
     deepMarketComplete,
     startChallenge,
   } from '../engine/game.svelte'
-  import { clearBuffs } from '../systems/buffs.svelte'
-  import { combo } from '../systems/combo.svelte'
-  import { pushToast } from '../systems/toasts.svelte'
   import { save } from '../core/save'
   import { stopMusic } from '../audio/music'
-  import { playBuy, playSupernova } from '../audio/sfx'
+  import { playBuy } from '../audio/sfx'
   import { universeById } from '../content/universes'
   import { format } from '../core/format'
   import {
@@ -46,8 +42,7 @@
     serializeAmount,
   } from '../core/numeric/amount'
 
-  let { onclose }: { onclose: () => void } = $props()
-  let armed = $state(false)
+  let { onclose, onrequestcollapse }: { onclose: () => void; onrequestcollapse: () => void } = $props()
   let closeButton: HTMLButtonElement
 
   onMount(() => closeButton.focus())
@@ -64,18 +59,6 @@
   ])
   const localize = (text: string) => localizeChallengeText(text, pack)
   const warningText = () => localize(identity.warningText).replace('stardust', `✧${format(game.stardustTotal)} stardust`)
-
-  function collapse() {
-    armed = false
-    const gained = performDeepCollapse()
-    if (isZeroAmount(gained)) return
-    clearBuffs()
-    combo.streak = 0
-    combo.lastRewardAt = 0
-    playSupernova()
-    save()
-    pushToast(identity.toastTitle, `◉ ${format(gained)} — ${identity.toastBody}.`, 'collapse')
-  }
 
   function setAutoNovaThreshold(event: Event) {
     const input = event.currentTarget as HTMLInputElement
@@ -143,15 +126,10 @@
         {identity.gatherText}
         <em>◉1 per ✧{SINGULARITY_COST} gathered this era — ✧{format(game.stardustTotal)} so far</em>
       </p>
-    {:else if !armed}
-      <p class="fold-text">{identity.readyText}</p>
-      <button class="fold-btn" onclick={() => (armed = true)}>{identity.collapseName} &nbsp;·&nbsp; gain ◉{format(gain)}</button>
     {:else}
-      <p class="fold-text warn">{warningText()}</p>
-      <div class="confirm">
-        <button class="fold-btn go" onclick={collapse}>{identity.goText}</button>
-        <button class="fold-btn stay" onclick={() => (armed = false)}>Not yet</button>
-      </div>
+      <p class="fold-text">{identity.readyText}</p>
+      <button class="fold-btn" aria-describedby="deep-collapse-warning" onclick={onrequestcollapse}>Review {identity.collapseName} &nbsp;·&nbsp; gain ◉{format(gain)}</button>
+      <p id="deep-collapse-warning" class="fold-text warn">{warningText()}</p>
     {/if}
   </div>
 
@@ -389,11 +367,6 @@
     color: var(--dim);
   }
   .fold-text.warn { color: #ffd7a8; }
-  .confirm {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-  }
   .fold-btn {
     padding: 0.45rem 1.3rem;
     font: inherit;
@@ -407,12 +380,6 @@
     transition: transform 0.08s;
   }
   .fold-btn:hover { transform: scale(1.04); }
-  .fold-btn.stay {
-    background: none;
-    color: var(--dim);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: none;
-  }
 
   .shop, .trials {
     display: grid;
@@ -587,7 +554,6 @@
   .tidefall .fold-btn,
   .tidefall .buy,
   .tidefall .recursive-work button { color: #03161b; background: linear-gradient(180deg, #d1fff7, #58ded8); box-shadow: 0 0 22px rgba(88, 222, 216, 0.17); }
-  .tidefall .fold-btn.stay { color: var(--dim); background: none; box-shadow: none; }
   .tidefall .item,
   .tidefall .trial { position: relative; overflow: hidden; background: linear-gradient(120deg, rgba(40, 126, 139, 0.045), rgba(25, 20, 59, 0.05)); border-color: rgba(113, 191, 200, 0.11); }
   .tidefall .item::before,

@@ -37,6 +37,13 @@
   const model = $derived(buildResetComparisonCardModel(comparison))
   const titleId = $derived(`${id}-title`)
   const descriptionId = $derived(`${id}-description`)
+  const eyebrowKey = $derived(
+    model.boundary === 'deep-collapse'
+      ? 'reset-comparison.eyebrow.deep-collapse'
+      : model.boundary === 'remembrance'
+        ? 'reset-comparison.eyebrow.remembrance'
+        : 'reset-comparison.eyebrow',
+  )
   const turnGlyph = $derived(
     universeId === 'tidefall' ? '≈'
       : universeId === 'verdance' ? '❧'
@@ -96,9 +103,11 @@
   }
 
   function groupStartsOpen(section: ResetComparisonSection, group: ResetComparisonScopeGroup): boolean {
-    return comparison.boundary === 'epoch-turn'
+    return comparison.boundary === 'deep-collapse'
+      || comparison.boundary === 'remembrance'
+      || (comparison.boundary === 'epoch-turn'
       && section.id === 'retained'
-      && group.scope === 'epoch'
+      && group.scope === 'epoch')
   }
 </script>
 
@@ -122,14 +131,14 @@
         <strong>{turnGlyph}</strong>
       </div>
       <div class="turn-copy">
-        <span class="eyebrow">{resolveText('reset-comparison.eyebrow')}</span>
+        <span class="eyebrow">{resolveText(eyebrowKey)}</span>
         <h2 id={titleId}>{resolveText(model.actionLabelKey)}</h2>
         <p id={descriptionId}>{resolveText(model.resultKey)}</p>
       </div>
       {#if model.reward}
         <dl class="reward-preview" aria-label={`${model.reward.localName} reward preview`}>
           <div><dt>now</dt><dd>{model.reward.glyph}{model.reward.current}</dd></div>
-          <div class="reward-gain"><dt>this turn</dt><dd>+{model.reward.glyph}{model.reward.gain}</dd></div>
+          <div class="reward-gain"><dt>this boundary</dt><dd>{model.reward.glyph === '×' ? '' : '+'}{model.reward.glyph}{model.reward.gain}</dd></div>
           <div><dt>after</dt><dd>{model.reward.glyph}{model.reward.after}</dd></div>
           <span>{model.reward.localName} · {model.reward.canonicalName}</span>
         </dl>

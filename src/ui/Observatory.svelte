@@ -46,6 +46,7 @@
   let armed = $state(false)
   let now = $state(Date.now())
   let closeButton: HTMLButtonElement
+  let observatoryPanel: HTMLElement
 
   onMount(() => {
     closeButton.focus()
@@ -144,9 +145,14 @@
       ...n.perks.map((perk) => localizePerk(perk.desc)),
     ]
   }
+
+  function armEpochTurn() {
+    armed = true
+    requestAnimationFrame(() => observatoryPanel.scrollTo({ top: 0, behavior: game.motionPreference === 'reduced' ? 'auto' : 'smooth' }))
+  }
 </script>
 
-<section class="observatory instrument-panel" class:tidefall class:verdance={pack.id === 'verdance'} class:clockwork={pack.id === 'clockwork'} class:prismata={pack.id === 'prismata'} class:tempest={pack.id === 'tempest'} class:canticle={pack.id === 'canticle'}>
+<section bind:this={observatoryPanel} class="observatory instrument-panel" class:tidefall class:verdance={pack.id === 'verdance'} class:clockwork={pack.id === 'clockwork'} class:prismata={pack.id === 'prismata'} class:tempest={pack.id === 'tempest'} class:canticle={pack.id === 'canticle'}>
   <header>
     <div class="title-block">
       <span>{identity.overline}</span>
@@ -194,7 +200,7 @@
       </p>
     {:else if !armed}
       <p class="nova-text">{identity.readyText}</p>
-      <button class="nova-btn" onclick={() => (armed = true)}>{identity.collapseName} &nbsp;·&nbsp; gain {epochMatterGlyph}{format(gain)}</button>
+      <button class="nova-btn" onclick={armEpochTurn}>{identity.collapseName} &nbsp;·&nbsp; gain {epochMatterGlyph}{format(gain)}</button>
     {:else}
       <p class="nova-text warn">{worldText(identity.warningText)}</p>
       <div class="confirm">
@@ -374,10 +380,16 @@
     to { opacity: 1; transform: translateY(0); }
   }
   header {
+    position: sticky;
+    top: -1.1rem;
+    z-index: 4;
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-bottom: 0.8rem;
+    padding: 1rem 0 0.72rem;
+    background: color-mix(in srgb, var(--panel) 96%, #090812);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold) 12%, transparent);
   }
   .title-block { flex: 1; min-width: 0; }
   .title-block > span {

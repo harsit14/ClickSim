@@ -15,5 +15,6 @@ test('hard-reset feedback cleanup names every prior-run channel atomically', () 
     'combo.lastRewardAt = 0',
   ]) assert.match(resetSource, new RegExp(call.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
 
-  assert.match(appSource, /function clearAllTransientUi\(\)[\s\S]*resetSessionFeedback\(\)[\s\S]*offlineGainDismissed = true[\s\S]*transientResetToken \+= 1/)
+  assert.match(appSource, /function quietSessionFeedback\(\)[\s\S]*resetSessionFeedback\(\)[\s\S]*transientResetToken \+= 1/)
+  assert.match(appSource, /function clearAllTransientUi\(\)[\s\S]*quietSessionFeedback\(\)[\s\S]*offlineGainDismissed = true/)
 })

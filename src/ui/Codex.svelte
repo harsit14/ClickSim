@@ -18,7 +18,6 @@
   let closeButton: HTMLButtonElement
   let activeTab = $state<'journal' | 'echoes'>('journal')
   let openId = $state<string | null>(null)
-  let rememberArmed = $state(false)
 
   const echoes = $derived(universeById(game.activeUniverse).echoes)
   const reading = $derived(echoes.find((e) => e.id === openId) ?? null)
@@ -41,7 +40,6 @@
   function selectTab(tab: 'journal' | 'echoes') {
     activeTab = tab
     openId = null
-    rememberArmed = false
   }
 </script>
 
@@ -129,22 +127,11 @@
 
 {answer.epilogue.join('\n\n')}</p>
       <div class="remembrance">
-        {#if !rememberArmed}
-          <p class="rem-pitch">
-            Lumen can fold all of this into memory — every sun, every trial, every grain of stardust —
-            and wake you at the first pixel, twice as bright. The echoes stay. The record stays.
-            The question may be answered again.
-          </p>
-          <button class="rem-btn" onclick={() => (rememberArmed = true)}>Remember it all again</button>
-        {:else}
-          <p class="rem-pitch warn">
-            Everything returns to the dark — light, kindlings, stardust, the Deep. Only memory survives.
-          </p>
-          <div class="rem-confirm">
-            <button class="rem-btn go" onclick={() => { rememberArmed = false; onremember() }}>Close the archive</button>
-            <button class="rem-btn stay" onclick={() => (rememberArmed = false)}>Not yet</button>
-          </div>
-        {/if}
+        <p class="rem-pitch">
+          Lumen can fold this active universe into memory and wake you at its first pixel, twice as bright.
+          Other universes, the Archive, the Between, settings, and the permanent record remain.
+        </p>
+        <button class="rem-btn" onclick={onremember}>Review Remembrance</button>
       </div>
     </div>
   {:else if reading}
@@ -452,8 +439,6 @@
     line-height: 1.55;
     color: rgba(200, 195, 230, 0.8);
   }
-  .rem-pitch.warn { color: #ffcf9e; }
-  .rem-confirm { display: flex; gap: 0.5rem; }
   .rem-btn {
     padding: 0.4rem 1.1rem;
     font: inherit;
@@ -467,9 +452,4 @@
     transition: transform 0.08s;
   }
   .rem-btn:hover { transform: scale(1.04); }
-  .rem-btn.stay {
-    background: none;
-    color: var(--dim);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-  }
 </style>

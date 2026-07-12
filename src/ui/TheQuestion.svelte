@@ -150,7 +150,6 @@
             class:locked
             disabled={locked}
             data-story-focus={index === 0 ? '' : undefined}
-            onpointerdown={(event) => event.pointerType === 'mouse' && choose(choice.id)}
             onclick={() => choose(choice.id)}
           >
             <span class="choice-glyph" aria-hidden="true">{locked ? '◇' : choice.glyph}</span>
