@@ -93,6 +93,9 @@ test('the Kindled Sky names every unlocked achievement and routes only within ca
     route.to[0] - route.from[0],
     route.to[1] - route.from[1],
   ) <= 14))
+  const layer = readFileSync(new URL('../src/ui/KindledSky.svelte', import.meta.url), 'utf8')
+  assert.match(layer, /class:new=\{star\.id === newestId\}/)
+  assert.doesNotMatch(layer, /ignition-route|travel-line|x1="96"/)
 })
 
 test('six Remnants use the shared structural thresholds and have two Lumen lines each', () => {

@@ -14,7 +14,6 @@
   let previousIds = new Set<string>()
   let newestId = $state<string | null>(null)
   const plan = $derived(planKindledSky(achievementIds))
-  const newest = $derived(plan.stars.find(({ id }) => id === newestId) ?? null)
 
   onMount(() => {
     previousIds = new Set(achievementIds)
@@ -43,9 +42,6 @@
       {#each plan.routes as route, index (`${route.category}-${index}`)}
         <line x1={route.from[0]} y1={route.from[1]} x2={route.to[0]} y2={route.to[1]}></line>
       {/each}
-      {#if newest}
-        <line class="ignition-route" x1="96" y1="96" x2={newest.x} y2={newest.y} pathLength="1"></line>
-      {/if}
     </svg>
     {#each plan.stars as star (star.id)}
       <button
@@ -73,7 +69,6 @@
   }
   .category-routes { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .category-routes line { stroke: rgba(255, 218, 150, 0.095); stroke-width: 0.34; }
-  .category-routes .ignition-route { stroke: rgba(255, 226, 170, 0.72); stroke-width: 0.8; stroke-dasharray: 1; animation: travel-line 720ms ease-out both; }
   .achievement-star {
     position: absolute; left: var(--x); top: var(--y); width: 0.78rem; height: 0.78rem;
     padding: 0; transform: translate(-50%, -50%); pointer-events: auto;
@@ -92,7 +87,6 @@
   .kindled-sky > p { position: absolute; left: 0; top: 100%; display: flex; gap: 0.55rem; margin: 0; color: rgba(239, 230, 216, 0.42); font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; }
   .kindled-sky > p strong { color: rgba(255, 218, 150, 0.62); }
   @keyframes achievement-kindle { 0% { transform: scale(0); } 55% { transform: scale(3); background: white; } 100% { transform: scale(1); } }
-  @keyframes travel-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
   .motion-paused,
   .motion-paused * { animation-play-state: paused !important; }
   @media (prefers-reduced-motion: reduce) { .kindled-sky * { animation: none !important; transition: none !important; } }
