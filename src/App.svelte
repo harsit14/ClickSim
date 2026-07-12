@@ -667,7 +667,8 @@
       onclick={toggleOpeningAccess}
       aria-label="Access and recovery"
       aria-keyshortcuts="F1"
-    >access · F1</button>
+      title="Access and recovery settings · F1"
+    ><span aria-hidden="true">⚙</span> access &amp; recovery <kbd>F1</kbd></button>
   {/if}
 
   <nav class="dock" aria-label="Game sections">
@@ -838,24 +839,42 @@
     position: fixed;
     top: 0.75rem;
     left: 0.75rem;
-    min-width: 4.8rem;
-    min-height: 1.5rem;
-    padding: 0.28rem 0.55rem;
-    color: color-mix(in srgb, var(--dim) 86%, white);
-    background: color-mix(in srgb, var(--panel) 82%, transparent);
-    border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent);
+    min-width: 9.5rem;
+    min-height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.38rem;
+    padding: 0.46rem 0.72rem;
+    color: color-mix(in srgb, var(--gold) 72%, white);
+    background:
+      linear-gradient(110deg, color-mix(in srgb, var(--gold) 8%, transparent), transparent 58%),
+      color-mix(in srgb, var(--panel) 92%, transparent);
+    border: 1px solid color-mix(in srgb, var(--gold) 42%, transparent);
     border-radius: 999px;
-    font: 650 0.6875rem/1 system-ui, sans-serif;
-    letter-spacing: 0.04em;
+    box-shadow: 0 0 1.1rem color-mix(in srgb, var(--gold) 12%, transparent), inset 0 1px rgba(255, 255, 255, 0.05);
+    font: 680 0.8125rem/1.1 system-ui, sans-serif;
+    letter-spacing: 0.025em;
     cursor: pointer;
     z-index: 7;
+  }
+  .access-hatch > span { color: var(--gold); font-size: 0.9rem; }
+  .access-hatch kbd {
+    padding: 0.12rem 0.28rem;
+    color: inherit;
+    background: color-mix(in srgb, var(--bg) 68%, transparent);
+    border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+    border-radius: 0.28rem;
+    font: 700 0.66rem/1 system-ui, sans-serif;
   }
   .access-hatch:hover,
   .access-hatch:focus-visible,
   .access-hatch.open {
-    color: var(--gold);
-    border-color: color-mix(in srgb, var(--gold) 48%, transparent);
-    outline: 2px solid transparent;
+    color: white;
+    border-color: color-mix(in srgb, var(--gold) 74%, white);
+    box-shadow: 0 0 1.45rem color-mix(in srgb, var(--gold) 24%, transparent), inset 0 1px rgba(255, 255, 255, 0.09);
+    outline: 2px solid color-mix(in srgb, var(--gold) 44%, transparent);
+    outline-offset: 2px;
   }
   .dock-btn {
     position: relative;
