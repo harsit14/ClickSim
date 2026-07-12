@@ -167,7 +167,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Cataloguing objects',
         paragraphs: [
-          'An unresolved signal appears when lifetime earnings reach roughly one quarter of its catalogue cost. Buying it records the object permanently in that universe and adds a small per-object production resonance.',
+          'An unresolved signal appears when lifetime earnings reach roughly one quarter of its catalogue cost. Buying it records the object permanently in that universe and immediately adds +2% all production; completing its four-record shelf adds a larger combined reward.',
           'Completing all four objects in a shelf activates the shelf reward. Shelf reward types differ by universe, so the same stable save slot can represent a different object and a different build priority after crossing.',
         ],
       },

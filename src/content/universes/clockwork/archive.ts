@@ -3,6 +3,7 @@ import type {
   CuriosityDef,
   CuriosityShelfDef,
 } from '../../curiosities'
+import { CABINET_RESONANCE_PER_ITEM } from '../../curiosities'
 
 export const CLOCKWORK_PATENT_ITEMS: CuriosityDef[] = [
   {
@@ -128,7 +129,7 @@ export const CLOCKWORK_PATENT_LEDGER: CuriosityCabinetDef = {
   items: CLOCKWORK_PATENT_ITEMS,
   itemById: new Map(CLOCKWORK_PATENT_ITEMS.map((item) => [item.id, item])),
   shelves: CLOCKWORK_PATENT_SHELVES,
-  resonancePerItem: 0.008,
+  resonancePerItem: CABINET_RESONANCE_PER_ITEM,
   fuelHours: 2,
   fuelProductionMult: 1.05,
   returnCycleSec: 60 * 60,

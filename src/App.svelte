@@ -48,9 +48,7 @@
   import { combo } from './systems/combo.svelte'
   import { save } from './core/save'
   import {
-    clearCeremonyStemWithdrawal,
     isPlaying,
-    setCeremonyStemBeat,
     setMusicMode,
     setStems,
     startMusic,
@@ -307,7 +305,6 @@
     resetPreviewOpen = false
     resetComparison = null
     if (decision.action === 'cancel') {
-      clearCeremonyStemWithdrawal()
       requestAnimationFrame(() => document.querySelector<HTMLCanvasElement>('[data-focus-region="heart"]')?.focus({ preventScroll: true }))
       return
     }
@@ -331,7 +328,6 @@
 
   function afterSupernova() {
     cutsceneActive = false
-    clearCeremonyStemWithdrawal()
     if (resumeMusicAfterNova && hasUi('music')) startMusic()
     resumeMusicAfterNova = false
   }
@@ -570,8 +566,6 @@
     resolveText={resolveActiveUiText}
     formatDuration={formatGoalDuration}
     ondecision={handleResetDecision}
-    onholdbeat={setCeremonyStemBeat}
-    onholdcancel={clearCeremonyStemWithdrawal}
   />
 {/if}
 {#if guideOpen}

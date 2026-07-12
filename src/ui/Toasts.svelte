@@ -79,8 +79,8 @@
     pointer-events: none;
   }
   .toasts.shop-clear {
-    top: 20.5rem;
-    right: 19rem;
+    top: 3.6rem;
+    right: 18rem;
   }
   .toast {
     padding: 0.65rem 0.85rem;
@@ -128,7 +128,7 @@
     .achievement-banner { top: 8.2rem; left: 50%; width: min(17rem, calc(100vw - 1.2rem)); transform: translateX(-50%); animation: none; }
     .toasts,
     .toasts.shop-clear {
-      top: 11.5rem;
+      top: 14.5rem;
       bottom: auto;
       right: 0.6rem;
       width: 13rem;

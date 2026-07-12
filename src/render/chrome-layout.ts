@@ -8,6 +8,7 @@ export type ChromeLaneId =
   | 'achievement'
   | 'dock'
   | 'notifications'
+  | 'active-effects'
   | 'guidance'
   | 'lumen'
   | 'lumen-history'
@@ -46,7 +47,8 @@ export function planNarrowChrome(viewport: ChromeViewport, lumenHistoryOpen = fa
   } else {
     const toastWidth = Math.min(208, width - 64)
     lanes.push(
-      lane('notifications', width - toastWidth - 10, 184, toastWidth, 148),
+      lane('active-effects', width - toastWidth - 10, 184, toastWidth, 40),
+      lane('notifications', width - toastWidth - 10, 232, toastWidth, 100),
       lane('guidance', sideRail, narrowest ? 340 : 344, width - sideRail - 8, Math.min(96, height * 0.11)),
     )
   }

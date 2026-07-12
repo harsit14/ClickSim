@@ -1,4 +1,5 @@
 import type { CuriosityCabinetDef, CuriosityDef, CuriosityShelfDef } from '../../curiosities'
+import { CABINET_RESONANCE_PER_ITEM } from '../../curiosities'
 import type { EchoDef } from '../../echoes'
 import type { GeneratorDef } from '../../generators'
 import type { LumenLine } from '../../lumen'
@@ -165,7 +166,7 @@ export const VERDANCE_CABINET: CuriosityCabinetDef = {
   items: VERDANCE_CURIOSITIES,
   itemById: new Map(VERDANCE_CURIOSITIES.map((item) => [item.id, item])),
   shelves,
-  resonancePerItem: 0.01,
+  resonancePerItem: CABINET_RESONANCE_PER_ITEM,
   fuelHours: 4,
   fuelProductionMult: 1.08,
   returnCycleSec: 2 * 60 * 60,

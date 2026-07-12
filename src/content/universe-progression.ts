@@ -620,9 +620,9 @@ const CANTICLE_PROGRESSION = futureProgression({
   epochCopy: {
     firstText: 'When shelter is open and the whole cycle can return, carry its surviving relations forward as Traces and release the present forms.',
     needsText: 'The mountain needs more {currency} before this ending can leave a responsible Trace.',
-    readyText: 'The path downward is visible. Inspect what remains, then hold only if you consent to Release.',
+    readyText: 'The path downward is visible. Inspect what remains, then confirm Release when you are ready.',
     warningText: 'Cadence, present forms, and ordinary refinements return. Traces, the chosen cycle, Mountain Witness, and deeper laws remain.',
-    goText: 'Hold to release',
+    goText: 'Release this cycle',
   },
   deepTitle: 'The Open Ring',
   deepVerb: 'Leave the interval',

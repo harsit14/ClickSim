@@ -61,6 +61,10 @@ test('the Phase 2 flagship layer compiles cleanly and carries the depth grammar'
   assert.match(source, /radial-gradient\(circle at 43% 38%/)
   assert.match(source, /class="coronal-loop loop-a"/)
   assert.match(source, /@keyframes draw-figure/)
+  assert.match(source, /width: calc\(1\.8rem \* var\(--scale\)\)/)
+  assert.match(source, /width: calc\(3\.15rem \* var\(--scale\)\)/)
+  assert.match(source, /data-stage="steady-answer"/)
+  assert.doesNotMatch(source, /secondBlink|answering-blink|window\.addEventListener\('pointerdown'/)
   for (const family of [
     'ember-exhale',
     'kept-fire',

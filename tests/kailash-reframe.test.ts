@@ -79,12 +79,9 @@ test('Kailash supplies twelve distinct Cabinet marks and no Canticle world scaff
   assert.doesNotMatch(panel, /RESONANCE SCORE|orbital-measure|nodal-figure/)
 })
 
-test('Kailash Release is consent-gated and cancels cleanly on input release', () => {
+test('Kailash Release uses the same inspect-then-click confirmation as every universe', () => {
   const card = readFileSync(new URL('../src/ui/ResetComparisonCard.svelte', import.meta.url), 'utf8')
-  assert.match(card, /isKailashRelease/)
-  assert.match(card, /universeId === 'canticle'/)
-  assert.match(card, /release at any time to cancel/i)
-  assert.match(card, /onpointerup=\{releaseHold\}/)
-  assert.match(card, /onpointercancel=\{releaseHold\}/)
-  assert.match(card, /onholdcancel/)
+  assert.match(card, /onclick=\{\(\) => decide\('confirm'\)\}/)
+  assert.match(card, /onclick=\{\(\) => decide\('cancel'\)\}/)
+  assert.doesNotMatch(card, /isKailashRelease|releaseHold|onholdcancel/)
 })

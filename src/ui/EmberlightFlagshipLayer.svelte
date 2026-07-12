@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
   import {
     buildEmberlightFlagshipScene,
     emberlightOwnershipThreshold,
@@ -20,47 +19,33 @@
   const hearthStage = emberlightSetPieceStage('ember-kindling-hearth')!
   const kilnStage = emberlightSetPieceStage('ember-kindling-kiln')!
   const forgeStage = emberlightSetPieceStage('ember-kindling-forge')!
-  let secondBlink = $state(0)
 
   const lifecycleLandmarks = $derived([
     (owned.wisp ?? 0) > 0
-      ? { family: 'ember-exhale', name: 'The Auroral River', count: owned.wisp ?? 0, objectId: 'ember-kindling-wisp', x: 9, y: 68, size: 3.6, depth: 'ground' }
+      ? { family: 'ember-exhale', name: 'The Auroral River', count: owned.wisp ?? 0, objectId: 'ember-kindling-wisp', x: 9, y: 68, size: 2.7, depth: 'ground' }
       : null,
     (owned.beacon ?? 0) > 0 || (owned.forge ?? 0) > 0
-      ? { family: 'industry-signal', name: 'The Listening Crown', count: Math.max(owned.forge ?? 0, owned.beacon ?? 0), objectId: (owned.beacon ?? 0) > 0 ? 'ember-kindling-beacon' : 'ember-kindling-forge', x: 41, y: 71, size: 4.8, depth: 'ground' }
+      ? { family: 'industry-signal', name: 'The Listening Crown', count: Math.max(owned.forge ?? 0, owned.beacon ?? 0), objectId: (owned.beacon ?? 0) > 0 ? 'ember-kindling-beacon' : 'ember-kindling-forge', x: 41, y: 71, size: 3.6, depth: 'ground' }
       : null,
     (owned.starseed ?? 0) > 0 || (owned.titan ?? 0) > 0
-      ? { family: 'horizon-seed', name: 'The Seeded Range', count: Math.max(owned.titan ?? 0, owned.starseed ?? 0), objectId: (owned.starseed ?? 0) > 0 ? 'ember-kindling-starseed' : 'ember-kindling-titan', x: 76, y: 67, size: 4.5, depth: 'horizon' }
+      ? { family: 'horizon-seed', name: 'The Seeded Range', count: Math.max(owned.titan ?? 0, owned.starseed ?? 0), objectId: (owned.starseed ?? 0) > 0 ? 'ember-kindling-starseed' : 'ember-kindling-titan', x: 76, y: 67, size: 3.4, depth: 'horizon' }
       : null,
     (owned.sun ?? 0) < 1 && (owned.protostar ?? 0) > 0
-      ? { family: 'stellar-birth', name: 'The Rising Nursery', count: owned.protostar ?? 0, objectId: 'ember-kindling-protostar', x: 61, y: 43, size: 4.6, depth: 'horizon' }
+      ? { family: 'stellar-birth', name: 'The Rising Nursery', count: owned.protostar ?? 0, objectId: 'ember-kindling-protostar', x: 61, y: 43, size: 3.45, depth: 'horizon' }
       : null,
     (owned.constellation ?? 0) < 1 && (owned.binary ?? 0) > 0
-      ? { family: 'stellar-relations', name: 'The Paired Clock', count: owned.binary ?? 0, objectId: 'ember-kindling-binary', x: 70, y: 39, size: 4.3, depth: 'deep' }
+      ? { family: 'stellar-relations', name: 'The Paired Clock', count: owned.binary ?? 0, objectId: 'ember-kindling-binary', x: 70, y: 39, size: 3.2, depth: 'deep' }
       : null,
     (owned.galaxy ?? 0) > 0 || (owned.nebula ?? 0) > 0
-      ? { family: 'deep-sky', name: 'The Nursery Spiral', count: Math.max(owned.nebula ?? 0, owned.galaxy ?? 0), objectId: (owned.galaxy ?? 0) > 0 ? 'ember-kindling-galaxy' : 'ember-kindling-nebula', x: 72, y: 25, size: 5.8, depth: 'deep' }
+      ? { family: 'deep-sky', name: 'The Nursery Spiral', count: Math.max(owned.nebula ?? 0, owned.galaxy ?? 0), objectId: (owned.galaxy ?? 0) > 0 ? 'ember-kindling-galaxy' : 'ember-kindling-nebula', x: 72, y: 25, size: 4.25, depth: 'deep' }
       : null,
     (owned.web ?? 0) > 0 || (owned.supercluster ?? 0) > 0
-      ? { family: 'cosmic-topology', name: 'The Web', count: Math.max(owned.supercluster ?? 0, owned.web ?? 0), objectId: (owned.web ?? 0) > 0 ? 'ember-kindling-web' : 'ember-kindling-supercluster', x: 32, y: 15, size: 5.3, depth: 'deep' }
+      ? { family: 'cosmic-topology', name: 'The Web', count: Math.max(owned.supercluster ?? 0, owned.web ?? 0), objectId: (owned.web ?? 0) > 0 ? 'ember-kindling-web' : 'ember-kindling-supercluster', x: 32, y: 15, size: 3.9, depth: 'deep' }
       : null,
     (owned.loom ?? 0) > 0
-      ? { family: 'answer', name: 'The Deep Loom', count: owned.loom ?? 0, objectId: 'ember-kindling-loom', x: 6, y: 57, size: 6.4, depth: 'horizon' }
+      ? { family: 'answer', name: 'The Deep Loom', count: owned.loom ?? 0, objectId: 'ember-kindling-loom', x: 6, y: 57, size: 4.6, depth: 'horizon' }
       : null,
   ].filter((landmark) => landmark !== null))
-
-  onMount(() => {
-    const blink = () => (secondBlink += 1)
-    const keyBlink = (event: KeyboardEvent) => {
-      if (event.key === ' ' || event.key === 'Enter') blink()
-    }
-    window.addEventListener('pointerdown', blink, { capture: true })
-    window.addEventListener('keydown', keyBlink, { capture: true })
-    return () => {
-      window.removeEventListener('pointerdown', blink, { capture: true })
-      window.removeEventListener('keydown', keyBlink, { capture: true })
-    }
-  })
 
   function settlementStage(index: number, total: number) {
     if ((owned.forge ?? 0) > 0 && index === total - 1) return forgeStage
@@ -108,9 +93,7 @@
   </div>
 
   {#if (owned.ember2 ?? 0) > 0}
-    {#key secondBlink}
-      <div class="second-ember" data-stage="answering-blink" aria-hidden="true"><i></i></div>
-    {/key}
+    <div class="second-ember" data-stage="steady-answer" aria-hidden="true"><i></i></div>
   {/if}
 
   {#if scene.constellationFigures.length > 0}
@@ -203,7 +186,7 @@
   .landmark-name { position: absolute; left: 50%; top: calc(100% + 0.22rem); transform: translateX(-50%); padding: 0.16rem 0.42rem; color: rgba(239, 230, 216, 0.5); background: radial-gradient(ellipse, rgba(5, 4, 11, 0.68), transparent 76%); font-size: 0.5rem; font-weight: 600; letter-spacing: 0.11em; text-transform: uppercase; white-space: nowrap; }
   .lifecycle-landmark[data-lifecycle-family='industry-signal']::after { content: ''; position: absolute; left: 50%; top: 22%; width: 14rem; height: 1px; transform-origin: left center; background: linear-gradient(90deg, rgba(255, 225, 166, 0.58), transparent); animation: beacon-sweep 12s linear infinite; }
   .second-ember { position: absolute; right: 25%; top: 7%; z-index: 4; width: 1.4rem; aspect-ratio: 1; display: grid; place-items: center; }
-  .second-ember i { width: 0.22rem; aspect-ratio: 1; border-radius: 50%; background: #fff6e8; box-shadow: 0 0 0.7rem #ffb454; animation: answering-blink 90ms steps(1, end) both; }
+  .second-ember i { width: 0.2rem; aspect-ratio: 1; border-radius: 50%; background: #d99a55; box-shadow: 0 0 0.5rem color-mix(in srgb,#ffb454 48%,transparent); opacity:.58; }
   .drawn-sky { position: absolute; inset: 0; z-index: 1; opacity: 0.72; }
   .drawn-sky.atlas::before {
     content: '';
@@ -256,7 +239,7 @@
   .sun-seat {
     position: absolute;
     left: var(--x); top: var(--y);
-    width: calc(2.35rem * var(--scale)); aspect-ratio: 1;
+    width: calc(1.8rem * var(--scale)); aspect-ratio: 1;
     transform: translate(-50%, -50%) rotate(var(--tilt));
     filter: drop-shadow(0 0 0.75rem color-mix(in srgb, #ffad43 46%, transparent));
   }
@@ -302,7 +285,7 @@
   }
   .settlement-seat {
     position: absolute; left: var(--x); top: var(--y); z-index: 2;
-    width: calc(4.2rem * var(--scale)); height: calc(4.2rem * var(--scale)); margin: 0;
+    width: calc(3.15rem * var(--scale)); height: calc(3.15rem * var(--scale)); margin: 0;
     transform: translate(-50%, -100%) rotate(var(--tilt));
     filter: drop-shadow(0 0 0.6rem color-mix(in srgb, #ff9b48 22%, transparent));
   }
@@ -320,13 +303,12 @@
   @keyframes kindle-joint { from { transform: scale(0); } to { transform: scale(1); } }
   @keyframes corona-sway { to { transform: rotate(8deg) scale(1.08, 0.92); } }
   @keyframes beacon-sweep { to { transform: rotate(-26deg); } }
-  @keyframes answering-blink { 0%, 48% { transform: scale(1); } 49%, 100% { transform: scale(2.7); background: white; } }
   @keyframes binary-waltz { to { transform: rotate(360deg); } }
 
   :global(html[data-visual-quality='low']) .constellation-figure:nth-child(n + 7) { display: none; }
   @media (max-width: 760px) {
-    .settlement-seat { width: calc(3rem * var(--scale)); height: calc(3rem * var(--scale)); }
-    .sun-seat { width: calc(1.7rem * var(--scale)); }
+    .settlement-seat { width: calc(2.4rem * var(--scale)); height: calc(2.4rem * var(--scale)); }
+    .sun-seat { width: calc(1.35rem * var(--scale)); }
     .constellation-figure { opacity: 0.7; }
   }
   @media (prefers-reduced-motion: reduce) {

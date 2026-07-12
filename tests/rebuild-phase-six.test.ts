@@ -45,7 +45,7 @@ test('each chamber Epoch decision uses native ceremony prose instead of shared s
     'Open the canopy',
     'Recompose the folio',
     'Complete the return',
-    'Hold to release',
+    'Release this cycle',
   ])
 })
 

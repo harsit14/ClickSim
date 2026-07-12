@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  CABINET_RESONANCE_PER_ITEM,
   CURIOSITIES,
   CURIOSITY_SHELVES,
   EMBERLIGHT_CABINET,
@@ -11,6 +12,7 @@ import {
   curiosityShelfProgress,
   curiosityStarRateBonus,
 } from '../src/content/curiosities'
+import { UNIVERSES } from '../src/content/universes'
 
 // Stable legacy ids deliberately preserve old saves while visible identities evolve.
 const localSky = ['moth', 'chimes', 'hearthkeeper', 'glass-garden']
@@ -18,8 +20,15 @@ const signalSky = ['second-cursor', 'snail', 'aurora', 'door']
 const deepSky = ['star-jar', 'metronome-heart', 'letter', 'orrery']
 
 test('curiosity resonance counts only unique known finds', () => {
-  assert.equal(curiosityProductionMult(['moth', 'moth', 'unknown']), 1.01)
-  assert.equal(curiosityProductionMult(['moth', 'chimes', 'hearthkeeper']), 1.03)
+  assert.equal(curiosityProductionMult(['moth', 'moth', 'unknown']), 1.02)
+  assert.equal(curiosityProductionMult(['moth', 'chimes', 'hearthkeeper']), 1.06)
+})
+
+test('every universe Cabinet grants the same meaningful independent resonance', () => {
+  assert.equal(CABINET_RESONANCE_PER_ITEM, 0.02)
+  for (const universe of UNIVERSES) {
+    assert.equal(universe.cabinet.resonancePerItem, CABINET_RESONANCE_PER_ITEM, universe.id)
+  }
 })
 
 test('Tidefall owns a distinct cabinet and reward profile without breaking slot saves', () => {
@@ -37,12 +46,12 @@ test('Tidefall owns a distinct cabinet and reward profile without breaking slot 
   const pelagic = TIDEFALL_CABINET.shelves[1].ids
   const abyss = TIDEFALL_CABINET.shelves[2].ids
   assert.equal(curiosityStarRateBonus(surface, TIDEFALL_CABINET), 0.15)
-  assert.ok(Math.abs(curiosityProductionMult([...surface, ...pelagic], TIDEFALL_CABINET) - 1.064 * 1.18) < 1e-12)
+  assert.ok(Math.abs(curiosityProductionMult([...surface, ...pelagic], TIDEFALL_CABINET) - 1.16 * 1.18) < 1e-12)
   assert.equal(curiosityClickMult(abyss, TIDEFALL_CABINET), 1.35)
 })
 
 test('the Local Sky capstone joins item resonance', () => {
-  assert.ok(Math.abs(curiosityProductionMult(localSky) - 1.04 * 1.1) < 1e-12)
+  assert.ok(Math.abs(curiosityProductionMult(localSky) - 1.08 * 1.1) < 1e-12)
   assert.equal(completedCuriosityShelves(localSky), 1)
 })
 

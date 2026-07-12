@@ -54,7 +54,6 @@ let nextBar = 0
 let timer: ReturnType<typeof setInterval> | undefined
 let volume = 0.6
 let stems: StemFlags = { mallets: false, bass: false, strings: false, choir: false }
-let ceremonyStemBeat = 0
 let musicMode: MusicMode = 'emberlight'
 
 export function beatDurationSec(): number {
@@ -82,22 +81,8 @@ export function setStems(f: StemFlags) {
   stems = f
 }
 
-/** Three-beat consent hold: choir, strings, then bass withdraw without mutating progression. */
-export function setCeremonyStemBeat(beat: number) {
-  ceremonyStemBeat = Number.isFinite(beat) ? Math.max(0, Math.min(3, Math.floor(beat))) : 0
-}
-
-export function clearCeremonyStemWithdrawal() {
-  ceremonyStemBeat = 0
-}
-
 export function effectiveStemFlags(): StemFlags {
-  return {
-    mallets: stems.mallets,
-    bass: stems.bass && ceremonyStemBeat < 3,
-    strings: stems.strings && ceremonyStemBeat < 2,
-    choir: stems.choir && ceremonyStemBeat < 1,
-  }
+  return { ...stems }
 }
 
 export function isPlaying() {

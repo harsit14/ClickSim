@@ -1,4 +1,5 @@
 import { amountFromNumber, gteAmount } from '../../core/numeric/amount'
+import { CABINET_RESONANCE_PER_ITEM } from '../curiosities'
 import type { CuriosityCabinetDef, CuriosityDef, CuriosityShelfDef } from '../curiosities'
 import type { EchoDef } from '../echoes'
 import type { GeneratorDef } from '../generators'
@@ -383,7 +384,7 @@ function makeCabinet(spec: FutureUniverseSpec): { cabinet: CuriosityCabinetDef; 
       items,
       itemById: new Map(items.map((item) => [item.id, item])),
       shelves,
-      resonancePerItem: 0.008,
+      resonancePerItem: CABINET_RESONANCE_PER_ITEM,
       fuelHours: 3,
       fuelProductionMult: 1.08,
       returnCycleSec: 75 * 60,

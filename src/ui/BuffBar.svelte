@@ -38,6 +38,7 @@
     flex-wrap: wrap;
     pointer-events: none;
   }
+  .buffs:not(.integrated) { position:fixed;z-index:9;right:1.25rem;top:.75rem;width:min(16rem,calc(100vw - 2rem));justify-content:flex-end; }
   .pill {
     padding: 0.25rem 0.75rem;
     font-size: 0.8rem;
@@ -64,4 +65,6 @@
     from { opacity: 0; transform: scale(0.8); }
     to { opacity: 1; transform: scale(1); }
   }
+  @media (max-width:800px) { .buffs:not(.integrated) { top:11.5rem;right:.6rem;width:min(13rem,calc(100vw - 4rem));justify-content:flex-end; } }
+  :global(html[data-lumen-history='open']) .buffs:not(.integrated) { display:none; }
 </style>

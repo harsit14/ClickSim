@@ -48,6 +48,8 @@ test('Cabinet is a universe-specific archive field instead of one shared card st
   assert.match(cabinet, /data-universe=\{pack\.id\}/)
   assert.match(cabinet, /class="archive-field"/)
   assert.match(cabinet, /class="archive-index"/)
+  assert.match(cabinet, /Individual resonance: \+\$\{individualResonancePercent\}% all production/)
+  assert.match(cabinet, /\+\$\{individualResonancePercent\}% all production/)
   assert.match(cabinet, /class="inspection-backdrop"/)
   assert.match(cabinet, /role="dialog"/)
   assert.match(cabinet, /aria-modal="true"/)

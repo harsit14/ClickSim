@@ -127,6 +127,7 @@
   const resonancePercent = $derived(
     Math.round(ownedCount * cabinet.resonancePerItem * 100),
   )
+  const individualResonancePercent = $derived(Math.round(cabinet.resonancePerItem * 100))
   const cabinetLine = $derived.by(() => {
     if (ownedCount === cabinet.items.length) return cabinet.lines.complete
     if (completedShelves >= 2) return cabinet.lines.cosmology
@@ -159,7 +160,7 @@
     if (shelf && shelfDone(shelf)) {
       pushToast(`${shelf.rewardName} awakened`, shelf.reward, 'cabinet complete')
     } else {
-      pushToast(`${curiosity.name} ${language.past}`, curiosity.flavor, cabinet.title)
+      pushToast(`${curiosity.name} ${language.past}`, `${curiosity.flavor} Individual resonance: +${individualResonancePercent}% all production.`, cabinet.title)
     }
   }
 
@@ -284,7 +285,7 @@
                   <strong>{owned ? c.name : near ? language.nearName : language.emptyName}</strong>
                   <em>{owned ? c.flavor : near ? language.nearFlavor : language.emptyFlavor}</em>
                   {#if owned}<p class="record">{c.record}</p>{/if}
-                  <span class="effect">{owned ? c.desc : near ? `${language.revealVerb} for ${pack.currencyGlyph} ${format(c.cost)}` : `${language.thresholdNoun} trace appears near ${pack.currencyGlyph} ${format(c.cost * 0.25)}`}</span>
+                  <span class="effect">{owned ? `${c.desc} · +${individualResonancePercent}% all production` : near ? `${language.revealVerb} for ${pack.currencyGlyph} ${format(c.cost)}` : `${language.thresholdNoun} trace appears near ${pack.currencyGlyph} ${format(c.cost * 0.25)}`}</span>
                 </div>
 
                 {#if owned}

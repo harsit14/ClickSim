@@ -17,13 +17,11 @@ export interface EmberlightSupernovaPhase {
   readonly audio: SupernovaAudioAction
 }
 
-export const EMBERLIGHT_SUPERNOVA_HOLD_BEAT_MS = Math.round(60_000 / 72)
-export const EMBERLIGHT_SUPERNOVA_HOLD_MS = EMBERLIGHT_SUPERNOVA_HOLD_BEAT_MS * 3
 const [INFALL_SETTLEMENT, INFALL_SUNS, INFALL_CONSTELLATIONS, INFALL_INSTRUMENTS] = INFALL_RHYME_BEATS
 
 /**
- * One authoritative 32-second ceremony timeline. The negative-time held choice
- * is described separately by HOLD_MS because release must cancel before T0.
+ * One authoritative 32-second ceremony timeline. The separate comparison card
+ * provides the explicit confirmation before this timeline begins.
  */
 export const EMBERLIGHT_SUPERNOVA_SENSORY_SPEC = {
   localName: 'Supernova',
@@ -33,14 +31,6 @@ export const EMBERLIGHT_SUPERNOVA_SENSORY_SPEC = {
   fullScreenFlashAllowed: false,
   inputFeedbackDelayed: false,
   totalDurationMs: 32_000,
-  heldChoice: {
-    beats: 3,
-    beatMs: EMBERLIGHT_SUPERNOVA_HOLD_BEAT_MS,
-    durationMs: EMBERLIGHT_SUPERNOVA_HOLD_MS,
-    releaseCancels: true,
-    dimPerBeat: 0.1,
-    stemOrder: ['ember-stem-choir', 'ember-stem-strings', 'ember-stem-bass'],
-  },
   phases: [
     {
       id: 'listen-choir', startMs: 0, durationMs: 1_500,

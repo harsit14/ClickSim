@@ -3,25 +3,18 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { compile } from 'svelte/compiler'
 import {
-  EMBERLIGHT_SUPERNOVA_HOLD_BEAT_MS,
-  EMBERLIGHT_SUPERNOVA_HOLD_MS,
   EMBERLIGHT_SUPERNOVA_SENSORY_SPEC,
   emberlightSupernovaPhaseAt,
 } from '../src/render/emberlight/supernova'
 import {
-  clearCeremonyStemWithdrawal,
   effectiveStemFlags,
-  setCeremonyStemBeat,
   setStems,
 } from '../src/audio/music'
 
 test('the Supernova owns a contiguous thirty-two-second authored timeline', () => {
   const spec = EMBERLIGHT_SUPERNOVA_SENSORY_SPEC
   assert.equal(spec.totalDurationMs, 32_000)
-  assert.equal(spec.heldChoice.beats, 3)
-  assert.equal(spec.heldChoice.releaseCancels, true)
-  assert.equal(spec.heldChoice.dimPerBeat, 0.1)
-  assert.equal(EMBERLIGHT_SUPERNOVA_HOLD_MS, EMBERLIGHT_SUPERNOVA_HOLD_BEAT_MS * 3)
+  assert.equal(spec.confirmationRequired, true)
   for (let index = 1; index < spec.phases.length; index += 1) {
     const previous = spec.phases[index - 1]
     assert.equal(spec.phases[index].startMs, previous.startMs + previous.durationMs)
@@ -34,28 +27,16 @@ test('the Supernova owns a contiguous thirty-two-second authored timeline', () =
   assert.equal(emberlightSupernovaPhaseAt(22_000).id, 'rebuild')
 })
 
-test('the consent hold withdraws choir, strings, and bass without mutating base stems', () => {
+test('the reset preview does not mutate the playing stem mix before confirmation', () => {
   setStems({ mallets: true, bass: true, strings: true, choir: true })
-  setCeremonyStemBeat(1)
-  assert.deepEqual(effectiveStemFlags(), { mallets: true, bass: true, strings: true, choir: false })
-  setCeremonyStemBeat(2)
-  assert.deepEqual(effectiveStemFlags(), { mallets: true, bass: true, strings: false, choir: false })
-  setCeremonyStemBeat(3)
-  assert.deepEqual(effectiveStemFlags(), { mallets: true, bass: false, strings: false, choir: false })
-  clearCeremonyStemWithdrawal()
   assert.deepEqual(effectiveStemFlags(), { mallets: true, bass: true, strings: true, choir: true })
 })
 
-test('the reset confirmation requires a cancellable pointer-or-keyboard hold', () => {
+test('the reset comparison is the safety step and every universe confirms with one click', () => {
   const source = readFileSync(new URL('../src/ui/ResetComparisonCard.svelte', import.meta.url), 'utf8')
-  assert.match(source, /comparison\.boundary === 'epoch-turn'/)
-  assert.match(source, /onpointerdown=\{beginHold\}/)
-  assert.match(source, /onpointerup=\{releaseHold\}/)
-  assert.match(source, /onpointercancel=\{releaseHold\}/)
-  assert.match(source, /Press and hold for three beats\. Release to cancel\./)
-  assert.match(source, /onholdbeat\(holdBeat\)/)
-  assert.match(source, /import\.meta\.env\.DEV[\s\S]*supernova-preview/)
-  assert.match(source, /onclick=\{confirmClick\}/)
+  assert.match(source, /onclick=\{\(\) => decide\('confirm'\)\}/)
+  assert.match(source, /model\.requiresExplicitConfirmation/)
+  assert.doesNotMatch(source, /holdProgress|beginHold|onpointerdown|Hold \$\{holdBeat\}/)
 })
 
 test('the cutscene consumes and rebuilds world and UI without a full-screen white flash', () => {

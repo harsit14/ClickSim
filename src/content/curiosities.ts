@@ -240,7 +240,9 @@ export const CURIOSITY_SHELVES: CuriosityShelfDef[] = [
   },
 ]
 
-export const CURIOSITY_RESONANCE_PER_ITEM = 0.01
+/** Every individual Archive record provides a meaningful permanent benefit. */
+export const CABINET_RESONANCE_PER_ITEM = 0.02
+export const CURIOSITY_RESONANCE_PER_ITEM = CABINET_RESONANCE_PER_ITEM
 
 const uniqueKnownCuriosities = (held: readonly string[], cabinet: CuriosityCabinetDef) =>
   new Set(held.filter((id) => cabinet.itemById.has(id)))
@@ -344,7 +346,7 @@ export const TIDEFALL_CABINET: CuriosityCabinetDef = {
   items: TIDEFALL_CURIOSITIES,
   itemById: new Map(TIDEFALL_CURIOSITIES.map((item) => [item.id, item])),
   shelves: TIDEFALL_CURIOSITY_SHELVES,
-  resonancePerItem: 0.008,
+  resonancePerItem: CABINET_RESONANCE_PER_ITEM,
   fuelHours: 3,
   fuelProductionMult: 1.08,
   returnCycleSec: 60 * 60,
