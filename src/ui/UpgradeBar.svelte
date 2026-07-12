@@ -78,7 +78,6 @@
           {:else}
             <span class="glyph">{u.glyph}</span>
           {/if}
-          <span class="target-cue">{targetCue(u)}</span>
         </button>
       {/each}
       {#if overflow > 0}
@@ -120,8 +119,8 @@
   }
   .up {
     position: relative;
-    width: 3rem;
-    height: 3rem;
+    width: 2.4rem;
+    height: 2.4rem;
     display: grid;
     place-items: center;
     background: color-mix(in srgb, var(--amber) 6%, hsla(var(--hue), 70%, 55%, 0.08));
@@ -164,18 +163,6 @@
     filter: drop-shadow(0 0 0.25rem hsla(var(--hue), 90%, 60%, 0.36));
     animation: artifact-glint 560ms ease-out both;
   }
-  .target-cue {
-    position: absolute;
-    left: 0.15rem;
-    right: 0.15rem;
-    bottom: 0.2rem;
-    overflow: hidden;
-    color: color-mix(in srgb, var(--text) 72%, var(--dim));
-    font: 650 0.6875rem/1 system-ui, sans-serif;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .glyph, .artifact-icon { transform: translateY(-0.34rem); }
   @keyframes artifact-glint { from { opacity: 0.25; transform: scale(0.65); filter: brightness(2.2); } to { opacity: 1; transform: scale(1); } }
   .detail {
     display: flex;
