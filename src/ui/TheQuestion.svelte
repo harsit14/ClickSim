@@ -282,11 +282,11 @@
     top: 2.1rem;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 0.59rem;
+    font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: rgba(151, 145, 174, 0.72);
+    color: color-mix(in srgb, var(--dim) 88%, white);
     white-space: nowrap;
   }
   .sequence-track {

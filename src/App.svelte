@@ -84,6 +84,7 @@
   let { offlineGain }: { offlineGain: EconomyAmount } = $props()
 
   let statsOpen = $state(false)
+  let openingAccessOpen = $state(false)
   let optionsOpen = $state(false)
   let curiositiesOpen = $state(false)
   let vesselOpen = $state(false)
@@ -145,7 +146,7 @@
     || Object.values(game.universeRuns).some((run) => run.seen.length > 0 || run.echoes.length > 0 || run.ending !== null),
   )
   const utilityPanelOpen = $derived(
-    statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen || guideOpen || endgameOpen,
+    openingAccessOpen || statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen || guideOpen || endgameOpen,
   )
   const storyModalActive = $derived(
     cutsceneActive || questionOpen || remembering || crossingPrelude || clockworkRevelationActive,
@@ -215,7 +216,7 @@
   })
 
   function closeAll() {
-    statsOpen = optionsOpen = curiositiesOpen = vesselOpen = observatoryOpen = codexOpen = deepOpen = guideOpen = endgameOpen = false
+    openingAccessOpen = statsOpen = optionsOpen = curiositiesOpen = vesselOpen = observatoryOpen = codexOpen = deepOpen = guideOpen = endgameOpen = false
   }
   function toggleStats() {
     const next = !statsOpen
@@ -226,6 +227,11 @@
     const next = !optionsOpen
     closeAll()
     optionsOpen = next
+  }
+  function toggleOpeningAccess() {
+    const next = !openingAccessOpen
+    closeAll()
+    openingAccessOpen = next
   }
   function toggleCuriosities() {
     const next = !curiositiesOpen
@@ -275,7 +281,9 @@
 
     const key = event.key.toLowerCase()
     let handled = true
-    if ((key === '?' || key === 'g') && hasUi('counter')) toggleGuide()
+    if (event.key === 'F1') hasUi('options') ? toggleOptions() : toggleOpeningAccess()
+    else if ((key === '?' || key === 'g') && hasUi('counter')) toggleGuide()
+    else if ((key === '?' || key === 'g' || key === 'o') && !hasUi('options')) toggleOpeningAccess()
     else if (key === 'i' && hasUi('stats')) toggleStats()
     else if (key === 'o' && hasUi('options')) toggleOptions()
     else if (key === 'c' && curiositiesVisible) toggleCuriosities()
@@ -488,6 +496,16 @@
   <Toasts clearOfShop={hasUi('shop') && !utilityPanelOpen} />
   <WelcomeBack amount={offlineGain} />
 
+  {#if !hasUi('options')}
+    <button
+      class="access-hatch"
+      class:open={openingAccessOpen}
+      onclick={toggleOpeningAccess}
+      aria-label="Access and recovery"
+      aria-keyshortcuts="F1"
+    >access · F1</button>
+  {/if}
+
   <nav class="dock" aria-label="Game sections">
     {#if hasUi('counter')}
       <button class="dock-btn guide-button" class:open={guideOpen} onclick={toggleGuide} title="The Field Guide · G" data-hint="Field Guide · G" aria-label="The Field Guide" aria-keyshortcuts="G">?</button>
@@ -531,6 +549,9 @@
       ongoallenschange={(enabled) => (goalLensEnabled = enabled)}
       onpromptschange={(enabled) => (promptState = { ...promptState, enabled })}
     />
+  {/if}
+  {#if openingAccessOpen}
+    <OptionsPanel accessOnly onclose={() => (openingAccessOpen = false)} />
   {/if}
   {#if curiositiesOpen}
     <CuriosityCabinet onclose={() => (curiositiesOpen = false)} />
@@ -633,6 +654,29 @@
     display: flex;
     gap: 0.4rem;
     z-index: 7;
+  }
+  .access-hatch {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    min-width: 4.8rem;
+    min-height: 1.5rem;
+    padding: 0.28rem 0.55rem;
+    color: color-mix(in srgb, var(--dim) 86%, white);
+    background: color-mix(in srgb, var(--panel) 82%, transparent);
+    border: 1px solid color-mix(in srgb, var(--gold) 18%, transparent);
+    border-radius: 999px;
+    font: 650 0.6875rem/1 system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    z-index: 7;
+  }
+  .access-hatch:hover,
+  .access-hatch:focus-visible,
+  .access-hatch.open {
+    color: var(--gold);
+    border-color: color-mix(in srgb, var(--gold) 48%, transparent);
+    outline: 2px solid transparent;
   }
   .dock-btn {
     position: relative;

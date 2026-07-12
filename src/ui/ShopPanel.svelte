@@ -273,6 +273,8 @@
     gap: 0.2rem;
   }
   .amt {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
     padding: 0.15rem 0.42rem;
     font-size: 0.68rem;
     font-weight: 600;

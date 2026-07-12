@@ -24,6 +24,7 @@
 
   interface Props {
     onclose: () => void
+    accessOnly?: boolean
     averagedRhythm?: boolean
     goalLensEnabled?: boolean
     promptsEnabled?: boolean
@@ -34,6 +35,7 @@
 
   let {
     onclose,
+    accessOnly = false,
     averagedRhythm = false,
     goalLensEnabled = false,
     promptsEnabled = false,
@@ -187,11 +189,11 @@
   }
 </script>
 
-<section class="panel instrument-panel" aria-labelledby="options-title">
+<section class="panel instrument-panel" class:access-only={accessOnly} aria-labelledby="options-title">
   <header>
     <div>
-      <span>settings · accessibility · recovery</span>
-      <h2 id="options-title">A Way to Choose</h2>
+      <span>{accessOnly ? 'always available · outside the fiction' : 'settings · accessibility · recovery'}</span>
+      <h2 id="options-title">{accessOnly ? 'Access & Recovery' : 'A Way to Choose'}</h2>
     </div>
     <button bind:this={closeButton} class="close" aria-label="close settings" onclick={onclose}>✕</button>
   </header>
@@ -243,6 +245,7 @@
       <small>Brightens secondary text and control boundaries.</small>
     </button>
 
+    {#if !accessOnly}
     <button
       class="toggle-card"
       class:active={averagedRhythm}
@@ -272,8 +275,16 @@
       <span><i></i><strong>Contextual prompts</strong></span>
       <small>Opt in to dismissible first-use explanations. These never appear automatically.</small>
     </button>
+    {/if}
   </section>
 
+  {#if accessOnly}
+    <section class="settings-section first-light">
+      <div class="section-title"><span>03</span><div><h3>First light</h3><p>The opening remains yours to discover.</p></div></div>
+      <p>Activate the Heart with a pointer, <kbd>Space</kbd>, or <kbd>Enter</kbd>. New in-world interface pieces appear only when the universe can support them.</p>
+      <p><kbd>F1</kbd> reopens this access menu. <kbd>Esc</kbd> closes it. No accessibility choice changes rewards or reveals a locked system.</p>
+    </section>
+  {:else}
   <section class="settings-section">
     <div class="section-title"><span>03</span><div><h3>Performance</h3><p>Auto currently resolves to <strong>{effectiveQuality}</strong>.</p></div></div>
     <div class="quality-grid" role="group" aria-label="visual quality">
@@ -310,9 +321,10 @@
       {/each}
     </div>
   </section>
+  {/if}
 
   <section class="settings-section save-section">
-    <div class="section-title"><span>05</span><div><h3>Save safety</h3><p>Autosaves include three rolling checkpoints and one daily backup.</p></div></div>
+    <div class="section-title"><span>{accessOnly ? '04' : '05'}</span><div><h3>Save safety</h3><p>Autosaves include three rolling checkpoints and one daily backup.</p></div></div>
     <div class="action-row">
       <button class="action" onclick={doExport}>Copy export</button>
       <button class="action" onclick={doDownload}>Download file</button>
@@ -341,6 +353,7 @@
     </details>
   </section>
 
+  {#if !accessOnly}
   <section class="settings-section playtest-section">
     <div class="section-title"><span>06</span><div><h3>Playtest report</h3><p>{renderHealth.fps > 0 ? `${renderHealth.fps.toFixed(0)} FPS · ${renderHealth.profile}${renderHealth.degraded ? ' · auto-protected' : ''}` : 'Measuring render performance…'}</p></div></div>
     <p class="privacy-note">Copies a compact diagnostic snapshot of settings, rendering, and progression totals. It never includes the save code.</p>
@@ -349,11 +362,13 @@
       <textarea aria-label="playtest diagnostic report" readonly rows="5" value={diagnosticCode} onclick={(e) => (e.target as HTMLTextAreaElement).select()}></textarea>
     {/if}
   </section>
+  {/if}
 
   {#if message}
     <p class="message" role="status" aria-live="polite">{message}</p>
   {/if}
 
+  {#if !accessOnly}
   <details class="credits">
     <summary>Credits, version, and feedback</summary>
     <strong>EMBER · {GAME_VERSION}</strong>
@@ -366,10 +381,12 @@
     <p>This removes the primary save and every automatic recovery checkpoint.</p>
     <button class="danger" onclick={doReset}>Let the ember go out</button>
   </details>
+  {/if}
 </section>
 
 <style>
   .panel { position: fixed; top: 50%; left: 1.25rem; transform: translateY(-50%); width: min(25rem, calc(100vw - 2.5rem)); min-width: 0; max-height: 88vh; overflow-x: hidden; overflow-y: auto; padding: 0.9rem; color: var(--text); background: linear-gradient(155deg, color-mix(in srgb, var(--panel) 94%, #11131f), rgba(7,8,16,0.96)); border: 1px solid rgba(255,217,138,0.17); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,0.42); backdrop-filter: blur(14px); z-index: 6; animation: panel-in 0.36s ease both; scrollbar-width: thin; }
+  .panel.access-only { width: min(28rem, calc(100vw - 2.5rem)); }
   @keyframes panel-in { from { opacity: 0; transform: translateY(-50%) translateX(-12px); } to { opacity: 1; transform: translateY(-50%) translateX(0); } }
   header { position: sticky; top: -0.9rem; z-index: 2; display: flex; justify-content: space-between; align-items: center; min-width: 0; margin: -0.9rem -0.9rem 0.65rem; padding: 0.85rem 0.9rem 0.72rem; background: rgba(10,10,19,0.94); border-bottom: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(12px); }
   header > div { min-width: 0; }
@@ -427,6 +444,8 @@
   .backup-list button { padding: 0; font: inherit; font-size: 0.55rem; font-weight: 700; color: var(--gold); background: none; border: 0; cursor: pointer; }
   .message { margin: 0.55rem 0; padding: 0.48rem 0.55rem; font: italic 0.65rem/1.45 Georgia,serif; color: var(--gold); background: rgba(255,179,92,0.045); border-left: 2px solid var(--amber); }
   .privacy-note { margin: -0.15rem 0 0.55rem; font: 0.56rem/1.45 Georgia,serif; color: var(--dim); }
+  .first-light > p { margin: 0.42rem 0; color: var(--dim); font: 0.6875rem/1.5 system-ui, sans-serif; }
+  kbd { padding: 0.08rem 0.28rem; color: var(--gold); background: color-mix(in srgb, var(--panel) 82%, black); border: 1px solid color-mix(in srgb, var(--gold) 24%, transparent); border-radius: 0.25rem; font: 650 0.6875rem/1.2 ui-monospace, monospace; }
   .credits, .danger-zone { margin-top: 0.55rem; padding: 0.58rem 0.65rem; border: 1px solid rgba(255,255,255,0.065); border-radius: 9px; background: rgba(0,0,0,0.16); }
   .credits > strong { display: block; margin-top: 0.55rem; font: 0.72rem Georgia,serif; color: var(--gold); }
   .credits p, .danger-zone p { margin-top: 0.28rem; font-size: 0.54rem; line-height: 1.4; color: var(--dim); }

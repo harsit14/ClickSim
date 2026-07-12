@@ -157,11 +157,11 @@
   }
   .route-name > i { height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.08), hsla(var(--cross-hue), 80%, 70%, 0.52), rgba(255,255,255,0.08)); }
   .phase-rail { position: absolute; left: 50%; top: 15%; width: min(42rem, 88vw); display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.28rem; margin: 0; padding: 0; transform: translateX(-50%); list-style: none; }
-  .phase-rail li { min-width: 0; padding-top: 0.35rem; border-top: 1px solid rgba(255,255,255,.09); color: rgba(185, 201, 219, 0.28); }
-  .phase-rail li.complete { border-color: hsla(var(--cross-hue), 78%, 72%, 0.42); color: rgba(190, 226, 235, 0.48); }
-  .phase-rail li.active { border-color: hsla(var(--cross-hue), 88%, 76%, 0.92); color: rgba(225, 245, 250, 0.86); }
-  .phase-rail span { display: block; font: 720 0.45rem/1 ui-monospace, monospace; }
-  .phase-rail small { display: block; overflow: hidden; margin-top: 0.17rem; font: 630 0.42rem/1.25 var(--font-interface, ui-sans-serif, system-ui); letter-spacing: 0.04em; text-overflow: ellipsis; white-space: nowrap; }
+  .phase-rail li { min-width: 0; padding-top: 0.35rem; border-top: 1px dashed rgba(225,235,245,.48); color: rgba(225,235,245,.72); }
+  .phase-rail li.complete { border-style: double; border-color: hsla(var(--cross-hue),78%,82%,.82); color: rgba(225,242,246,.88); }
+  .phase-rail li.active { border-style: solid; border-width: 2px; border-color: hsla(var(--cross-hue),88%,86%,1); color: rgb(238,251,255); }
+  .phase-rail span { display: block; font: 720 0.6875rem/1 ui-monospace, monospace; }
+  .phase-rail small { display: block; margin-top: 0.22rem; font: 630 0.6875rem/1.25 var(--font-interface, ui-sans-serif, system-ui); letter-spacing: 0.02em; white-space: normal; }
   .crossing-stage { position: absolute; left: 50%; top: 43%; width: min(34rem, 86vw); height: 13rem; transform: translate(-50%, -50%); }
   .source-law,
   .destination-law { position: absolute; top: 50%; width: 7rem; aspect-ratio: 1; display: grid; place-items: center; transform: translateY(-50%); border: 1px solid rgba(255,255,255,.08); clip-path: polygon(50% 0, 88% 18%, 100% 56%, 76% 91%, 35% 100%, 5% 72%, 4% 31%); }

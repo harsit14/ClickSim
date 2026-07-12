@@ -595,6 +595,76 @@
   .cycle-presets button > span { color:#c88452;font-size:.76rem; }.cycle-presets button div { min-width:0;display:grid;gap:.06rem; }.cycle-presets b { color:color-mix(in srgb,var(--gold) 72%,white);font-size:.46rem; }.cycle-presets small { overflow:hidden;font-size:.36rem;text-overflow:ellipsis;white-space:nowrap; }.cycle-presets button[aria-pressed='true'] { color:white;border-color:var(--gold);box-shadow:inset 0 -2px #c88452; }
   .act-legend { display:flex;flex-wrap:wrap;justify-content:center;gap:.2rem .42rem;padding-top:.25rem;border-top:1px solid color-mix(in srgb,var(--gold) 10%,transparent); }.act-legend span { color:var(--dim);font:620 .38rem/1 system-ui,sans-serif; }.act-legend i { margin-right:.16rem;color:var(--gold);font-style:normal; }
 
+  /* Desktop instruments carry essential state, not decorative microcopy. */
+  @media (min-width: 801px) {
+    .integrated-heading {
+      grid-template-columns: minmax(12rem, 1.3fr) minmax(6rem, .7fr) minmax(8rem, .9fr) auto 1.5rem 1.5rem;
+    }
+    .run-score { gap: 0.35rem; }
+    .run-score > div { white-space: normal; }
+    .law-explanation,
+    .verdance-grafting > header div span,
+    .verdance-grafting > header > b,
+    .graft-route label > span,
+    .graft-route label small,
+    .verdance-grafting > p,
+    .run-score > div,
+    .effect-slot > span,
+    .instrument-title span,
+    .instrument-reading small,
+    .instrument-reading em,
+    .instrument-primer > div span,
+    .instrument-primer li,
+    .instrument-primer p,
+    .mandala-reading span,
+    .mandala-reading small,
+    .creation-modes b,
+    .creation-modes small,
+    .creation-router label > span,
+    .direction-routes button,
+    .continuity-column,
+    .continuity-column b,
+    .refuge-center span,
+    .return-line span,
+    .continuity-threshold span,
+    .return-stack > small,
+    .return-stack > span,
+    .return-stack button b,
+    .return-stack button small,
+    .circuit-cards button b,
+    .circuit-cards button small,
+    .reach-scale > span,
+    .burden-scale > span,
+    .circuit-route button,
+    .still-center > span,
+    .still-center small,
+    .cycle-sequence button span,
+    .cycle-sequence button small,
+    .cycle-presets b,
+    .cycle-presets small,
+    .act-legend span {
+      font-size: 0.6875rem;
+      line-height: 1.25;
+    }
+    .verdance-grafting > header div strong,
+    .instrument-title strong,
+    .instrument-primer > div strong { font-size: 0.75rem; }
+    .graft-route select,
+    .creation-router select,
+    .sever,
+    .instrument-primer > button,
+    .creation-directions strong,
+    .creation-directions b,
+    .mandala-reading b { font-size: 0.6875rem; }
+    .law-panel button,
+    .law-panel select { min-height: 1.5rem; }
+    .primer-toggle,
+    .instrument-toggle { width: 1.5rem; height: 1.5rem; }
+    .instrument-primer li i { width: 1.1rem; height: 1.1rem; }
+    .creation-modes small,
+    .cycle-presets small { overflow: visible; text-overflow: clip; white-space: normal; }
+  }
+
   @media (max-width: 800px) {
     .brahmalok-mandala,
     .vishnulok-circuit,
