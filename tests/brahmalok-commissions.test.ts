@@ -5,6 +5,7 @@ import type { EconomyAmount } from '../src/content/universes/types'
 import { PRISMATA_V2_PACK } from '../src/content/universes/prismata'
 import {
   BRAHMALOK_COMMISSION_HOLD_SECONDS,
+  BRAHMALOK_COMMISSION_ACTIVE_SECONDS,
   BRAHMALOK_COMMISSION_WAIT_SECONDS,
   BRAHMALOK_LAW_FACTOR_CEILING,
   advanceF4LawState,
@@ -12,6 +13,7 @@ import {
   brahmalokMarginModeIndex,
   combineBrahmalokLawFactors,
   f4RateMultiplier,
+  openBankedBrahmalokCommission,
   retainedF4LawConfiguration,
   routePrismataKindling,
   selectBrahmalokMarginMode,
@@ -74,6 +76,17 @@ test('route-change Commissions count only actual deliberate reroutes', () => {
   routePrismataKindling(state, 0, 3)
   routePrismataKindling(state, 0, 0)
   assert.equal(brahmalokCommissionStatus(state, OWNED).answered, true)
+})
+
+test('unanswered Commissions bank for deliberate later review', () => {
+  const state: NumericLawState = {}
+  advanceF4LawState('prismata', state, OWNED, BRAHMALOK_COMMISSION_WAIT_SECONDS)
+  advanceF4LawState('prismata', state, OWNED, BRAHMALOK_COMMISSION_ACTIVE_SECONDS)
+  assert.equal(brahmalokCommissionStatus(state, OWNED).phase, 'waiting')
+  assert.equal(brahmalokCommissionStatus(state, OWNED).bankedCount, 1)
+  assert.equal(openBankedBrahmalokCommission(state), true)
+  assert.equal(brahmalokCommissionStatus(state, OWNED).phase, 'active')
+  assert.equal(brahmalokCommissionStatus(state, OWNED).bankedCount, 0)
 })
 
 test('the Fifth Reading is retained and shares one bounded realm combiner', () => {

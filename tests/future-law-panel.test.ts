@@ -114,3 +114,11 @@ test('Vishnulok microcopy participates in layout flow at every text scale', () =
   assert.doesNotMatch(panelSource, /\.circuit-microgrid \{[^}]*position:absolute/)
   assert.match(panelSource, /data-text-scale='large'[\s\S]*\.circuit-controls \{ grid-template-columns: 1fr;/)
 })
+
+test('timed Loka prompts expose capped saved opportunities and explicit recall actions', () => {
+  assert.match(panelSource, /\{brahmalokCommission\.bankedCount\}\/\{3\} saved/)
+  assert.match(panelSource, /reviewBankedBrahmalokCommission/)
+  assert.match(panelSource, /\{vishnulokStrain\.bankedCount\}\/\{3\} saved/)
+  assert.match(panelSource, /\{kailashFront\.bankedCount\}\/\{3\} saved/)
+  assert.match(panelSource, /reviewBankedKailashFront/)
+})

@@ -25,6 +25,37 @@ function writeNumber(state: NumericLawState, key: string, value: number): void {
   state[key] = amountFromNumber(Math.max(0, Number.isFinite(value) ? value : 0))
 }
 
+export const TIMED_PROMPT_BANK_CAP = 3
+
+function promptBankValues(
+  state: Readonly<NumericLawState> | undefined,
+  prefix: string,
+): number[] {
+  const values: number[] = []
+  for (let slot = 1; slot <= TIMED_PROMPT_BANK_CAP; slot += 1) {
+    const encoded = Math.floor(readNumber(state, `${prefix}-bank-${slot}`, 0, 1_000))
+    if (encoded > 0) values.push(encoded - 1)
+  }
+  return values
+}
+
+function bankPrompt(state: NumericLawState, prefix: string, index: number): boolean {
+  const values = promptBankValues(state, prefix)
+  if (values.length >= TIMED_PROMPT_BANK_CAP) return false
+  writeNumber(state, `${prefix}-bank-${values.length + 1}`, Math.max(0, Math.floor(index)) + 1)
+  return true
+}
+
+function takeBankedPrompt(state: NumericLawState, prefix: string): number | null {
+  const values = promptBankValues(state, prefix)
+  if (values.length === 0) return null
+  for (let slot = 1; slot <= TIMED_PROMPT_BANK_CAP; slot += 1) {
+    const shifted = values[slot]
+    writeNumber(state, `${prefix}-bank-${slot}`, shifted === undefined ? 0 : shifted + 1)
+  }
+  return values[0]
+}
+
 function totalOwned(owned: Readonly<Record<string, number>>, prefix: string): number {
   let total = 0
   for (let index = 1; index <= 18; index++) {
@@ -178,6 +209,7 @@ export interface BrahmalokCommissionStatus {
   readonly answered: boolean
   readonly heldSeconds: number
   readonly buffSecondsRemaining: number
+  readonly bankedCount: number
   readonly explanation: string
 }
 
@@ -240,13 +272,30 @@ export function brahmalokCommissionStatus(
   const answered = phase === 'active' && edited && predicateSatisfied
   const heldSeconds = readNumber(state, 'u5-commission-held-seconds', 0, BRAHMALOK_COMMISSION_HOLD_SECONDS)
   const buffSecondsRemaining = readNumber(state, 'u5-commission-buff-seconds', 0, BRAHMALOK_COMMISSION_BUFF_SECONDS)
+  const bankedCount = promptBankValues(state, 'u5-commission').length
   const duration = phase === 'active' ? BRAHMALOK_COMMISSION_ACTIVE_SECONDS : BRAHMALOK_COMMISSION_WAIT_SECONDS
   const explanation = phase === 'waiting'
-    ? `The folio margins are quiet. Another direction may ask in ${Math.ceil(duration - elapsed)}s.`
+    ? `The folio margins are quiet. Another direction may ask in ${Math.ceil(duration - elapsed)}s.${bankedCount > 0 ? ` ${bankedCount} saved Commission${bankedCount === 1 ? '' : 's'} may be reopened now.` : ''}`
     : answered
       ? `${commission.question} Hold this deliberate answer for ${Math.ceil(BRAHMALOK_COMMISSION_HOLD_SECONDS - heldSeconds)}s: ${commission.answer}.`
       : `${commission.question} ${commission.direction[0].toUpperCase()}${commission.direction.slice(1)} asks you to ${commission.answer}. The margin closes without penalty in ${Math.ceil(duration - elapsed)}s.`
-  return { commission, phase, secondsRemaining: Math.max(0, duration - elapsed), edited, routeChanges, predicateSatisfied, answered, heldSeconds, buffSecondsRemaining, explanation }
+  return { commission, phase, secondsRemaining: Math.max(0, duration - elapsed), edited, routeChanges, predicateSatisfied, answered, heldSeconds, buffSecondsRemaining, bankedCount, explanation }
+}
+
+export function openBankedBrahmalokCommission(
+  state: NumericLawState,
+  archiveCount = 0,
+): boolean {
+  if (readNumber(state, 'u5-commission-phase', 0, 1) >= 1) return false
+  const index = takeBankedPrompt(state, 'u5-commission')
+  if (index === null) return false
+  writeNumber(state, 'u5-commission-index', index % availableBrahmalokCommissionCount(archiveCount))
+  writeNumber(state, 'u5-commission-phase', 1)
+  writeNumber(state, 'u5-commission-elapsed', 0)
+  writeNumber(state, 'u5-commission-edited', 0)
+  writeNumber(state, 'u5-commission-route-changes', 0)
+  writeNumber(state, 'u5-commission-held-seconds', 0)
+  return true
 }
 
 export function advanceBrahmalokCommissions(
@@ -264,6 +313,14 @@ export function advanceBrahmalokCommissions(
   if (!promptsEnabled) return { foliosEarned, announcements }
   const fullCycle = BRAHMALOK_COMMISSION_WAIT_SECONDS + BRAHMALOK_COMMISSION_ACTIVE_SECONDS
   if (elapsedSeconds > fullCycle * 2) {
+    const available = availableBrahmalokCommissionCount(archiveCount)
+    let index = Math.floor(readNumber(state, 'u5-commission-index', 0, BRAHMALOK_COMMISSIONS.length - 1)) % available
+    const windows = Math.min(TIMED_PROMPT_BANK_CAP, Math.floor(elapsedSeconds / fullCycle))
+    for (let window = 0; window < windows; window += 1) {
+      bankPrompt(state, 'u5-commission', index)
+      index = (index + 1) % available
+    }
+    writeNumber(state, 'u5-commission-index', index)
     writeNumber(state, 'u5-commission-phase', 0)
     writeNumber(state, 'u5-commission-elapsed', 0)
     writeNumber(state, 'u5-commission-edited', 0)
@@ -304,7 +361,9 @@ export function advanceBrahmalokCommissions(
       writeNumber(state, 'u5-commission-held-seconds', 0)
       announcements.push({ key: `${status.commission.id}-open`, text: `${status.commission.direction[0].toUpperCase()}${status.commission.direction.slice(1)} opens a Folio Commission: ${status.commission.question}`, politeness: 'polite' })
     } else {
-      announcements.push({ key: `${status.commission.id}-blank`, text: 'The Commission closes without an answer. The margin stays blank.', politeness: 'polite' })
+      const currentIndex = Math.floor(readNumber(state, 'u5-commission-index', 0, BRAHMALOK_COMMISSIONS.length - 1))
+      const banked = bankPrompt(state, 'u5-commission', currentIndex)
+      announcements.push({ key: `${status.commission.id}-blank`, text: banked ? 'The Commission closes without an answer and waits in the margin bank.' : 'The Commission closes without an answer. Three saved margins are already waiting.', politeness: 'polite' })
       finishBrahmalokCommission(state, archiveCount)
     }
   }
@@ -502,6 +561,7 @@ export interface VishnulokStrainStatus {
   readonly predicateSatisfied: boolean
   readonly answered: boolean
   readonly genericReturns: number
+  readonly bankedCount: number
   readonly explanation: string
 }
 
@@ -526,12 +586,13 @@ export function vishnulokStrainStatus(state: Readonly<NumericLawState> | undefin
   const predicateSatisfied = vishnulokStrainPredicate(strain.id, tempestStatus(state))
   const answered = phase === 'present' && edited && predicateSatisfied
   const genericReturns = Math.floor(readNumber(state, 'u6-strain-generic-returns', 0, 2))
+  const bankedCount = promptBankValues(state, 'u6-strain').length
   const explanation = phase === 'waiting'
     ? `The ocean is settled. Another imbalance may become legible in ${Math.ceil(VISHNULOK_STRAIN_WAIT_SECONDS - elapsed)}s.`
     : answered
       ? `${strain.name} has a deliberate matching route: ${strain.preference}. Complete the return to restore it.`
-      : `${strain.name} waits without damage or expiry. It prefers ${strain.preference}; any two ordinary returns will also soothe it.`
-  return { strain, phase, secondsUntilPresent: Math.max(0, VISHNULOK_STRAIN_WAIT_SECONDS - elapsed), edited, predicateSatisfied, answered, genericReturns, explanation }
+      : `${strain.name} waits without damage or expiry. It prefers ${strain.preference}; any two ordinary returns will also soothe it.${bankedCount > 0 ? ` ${bankedCount} further Strain${bankedCount === 1 ? '' : 's'} are held in the Living Chart.` : ''}`
+  return { strain, phase, secondsUntilPresent: Math.max(0, VISHNULOK_STRAIN_WAIT_SECONDS - elapsed), edited, predicateSatisfied, answered, genericReturns, bankedCount, explanation }
 }
 
 function recordVishnulokReturn(state: NumericLawState, status: TempestStatus): void {
@@ -566,32 +627,51 @@ export function advanceVishnulokStrains(
   if (!promptsEnabled) return { routesEarned, returnsCompleted, announcements }
   const status = vishnulokStrainStatus(state)
   if (status.phase === 'present') {
+    const bankElapsed = readNumber(state, 'u6-strain-bank-elapsed', 0, VISHNULOK_STRAIN_WAIT_SECONDS)
+    const totalBankElapsed = bankElapsed + elapsedSeconds
+    const opportunities = Math.min(
+      TIMED_PROMPT_BANK_CAP - status.bankedCount,
+      Math.floor(totalBankElapsed / VISHNULOK_STRAIN_WAIT_SECONDS),
+    )
+    const currentIndex = Math.floor(readNumber(state, 'u6-strain-index', 0, VISHNULOK_STRAINS.length - 1))
+    for (let opportunity = 0; opportunity < opportunities; opportunity += 1) {
+      const offset = promptBankValues(state, 'u6-strain').length + 1
+      bankPrompt(state, 'u6-strain', (currentIndex + offset) % VISHNULOK_STRAINS.length)
+    }
+    writeNumber(state, 'u6-strain-bank-elapsed', totalBankElapsed % VISHNULOK_STRAIN_WAIT_SECONDS)
     if (readNumber(state, 'u6-strain-resolved', 0, 1) >= 1) {
       announcements.push({ key: `${status.strain.id}-restored`, text: routesEarned > 0 ? `${status.strain.name} is restored. The living chart keeps one woven route.` : `${status.strain.name} settles after two patient returns.`, politeness: 'polite' })
-      writeNumber(state, 'u6-strain-phase', 0)
+      const nextRegularIndex = (currentIndex + 1) % VISHNULOK_STRAINS.length
+      const nextBankedIndex = takeBankedPrompt(state, 'u6-strain')
+      writeNumber(state, 'u6-strain-phase', nextBankedIndex === null ? 0 : 1)
       writeNumber(state, 'u6-strain-elapsed', 0)
       writeNumber(state, 'u6-strain-resolved', 0)
       writeNumber(state, 'u6-strain-edited', 0)
       writeNumber(state, 'u6-strain-generic-returns', 0)
-      writeNumber(state, 'u6-strain-index', (Math.floor(readNumber(state, 'u6-strain-index', 0, VISHNULOK_STRAINS.length - 1)) + 1) % VISHNULOK_STRAINS.length)
+      writeNumber(state, 'u6-strain-index', nextBankedIndex ?? nextRegularIndex)
     }
     return { routesEarned, returnsCompleted, announcements }
   }
 
-  if (elapsedSeconds > VISHNULOK_STRAIN_WAIT_SECONDS * 2) {
+  const waitingElapsed = VISHNULOK_STRAIN_WAIT_SECONDS - status.secondsUntilPresent
+  const totalWaitingElapsed = waitingElapsed + elapsedSeconds
+  if (totalWaitingElapsed >= VISHNULOK_STRAIN_WAIT_SECONDS) {
+    const opportunities = Math.min(
+      TIMED_PROMPT_BANK_CAP + 1,
+      Math.floor(totalWaitingElapsed / VISHNULOK_STRAIN_WAIT_SECONDS),
+    )
+    const currentIndex = Math.floor(readNumber(state, 'u6-strain-index', 0, VISHNULOK_STRAINS.length - 1))
+    for (let opportunity = 1; opportunity < opportunities; opportunity += 1) {
+      bankPrompt(state, 'u6-strain', (currentIndex + opportunity) % VISHNULOK_STRAINS.length)
+    }
     writeNumber(state, 'u6-strain-phase', 1)
     writeNumber(state, 'u6-strain-elapsed', 0)
-    return { routesEarned, returnsCompleted, announcements }
-  }
-  const nextElapsed = status.secondsUntilPresent <= elapsedSeconds
-    ? VISHNULOK_STRAIN_WAIT_SECONDS
-    : VISHNULOK_STRAIN_WAIT_SECONDS - status.secondsUntilPresent + elapsedSeconds
-  if (nextElapsed >= VISHNULOK_STRAIN_WAIT_SECONDS) {
-    writeNumber(state, 'u6-strain-phase', 1)
-    writeNumber(state, 'u6-strain-elapsed', 0)
-    announcements.push({ key: `${status.strain.id}-present`, text: `${status.strain.name} becomes legible in the middle water. It waits for ${status.strain.preference}.`, politeness: 'polite' })
+    writeNumber(state, 'u6-strain-bank-elapsed', totalWaitingElapsed % VISHNULOK_STRAIN_WAIT_SECONDS)
+    if (elapsedSeconds <= VISHNULOK_STRAIN_WAIT_SECONDS * 2) {
+      announcements.push({ key: `${status.strain.id}-present`, text: `${status.strain.name} becomes legible in the middle water. It waits for ${status.strain.preference}.`, politeness: 'polite' })
+    }
   } else {
-    writeNumber(state, 'u6-strain-elapsed', nextElapsed)
+    writeNumber(state, 'u6-strain-elapsed', totalWaitingElapsed)
   }
   return { routesEarned, returnsCompleted, announcements }
 }
@@ -819,6 +899,7 @@ export interface KailashFrontStatus {
   readonly answered: boolean
   readonly answeredSeconds: number
   readonly carrySecondsRemaining: number
+  readonly bankedCount: number
   readonly explanation: string
 }
 
@@ -885,14 +966,28 @@ export function kailashFrontStatus(
   const answered = phase === 'active' && predicateSatisfied && edited
   const answeredSeconds = readNumber(state, 'u7-front-answered-seconds', 0, KAILASH_FRONT_ACTIVE_SECONDS)
   const carrySecondsRemaining = readNumber(state, 'u7-front-carry-seconds', 0, KAILASH_FRONT_CARRY_SECONDS)
+  const bankedCount = promptBankValues(state, 'u7-front').length
   const explanation = phase === 'calm'
-    ? `The ridge is quiet. ${front.name} will approach in ${Math.ceil(kailashPhaseDuration(KAILASH_PHASE_CALM) - elapsed)}s.`
+    ? `The ridge is quiet. ${front.name} will approach in ${Math.ceil(kailashPhaseDuration(KAILASH_PHASE_CALM) - elapsed)}s.${bankedCount > 0 ? ` ${bankedCount} earlier front${bankedCount === 1 ? '' : 's'} may be recalled.` : ''}`
     : phase === 'approaching'
       ? `${front.name} approaches: ${front.answer}. It arrives in ${Math.ceil(kailashPhaseDuration(KAILASH_PHASE_APPROACHING) - elapsed)}s.`
       : answered
         ? `${front.name} is answered: the cycle holds its shape for ${Math.ceil(kailashPhaseDuration(KAILASH_PHASE_ACTIVE) - elapsed)}s more.`
         : `${front.name} crosses the ridge for ${Math.ceil(kailashPhaseDuration(KAILASH_PHASE_ACTIVE) - elapsed)}s: ${front.answer}.`
-  return { front, phase, phaseSecondsRemaining: Math.max(0, kailashPhaseDuration(phaseIndex) - elapsed), predicateSatisfied, edited, answered, answeredSeconds, carrySecondsRemaining, explanation }
+  return { front, phase, phaseSecondsRemaining: Math.max(0, kailashPhaseDuration(phaseIndex) - elapsed), predicateSatisfied, edited, answered, answeredSeconds, carrySecondsRemaining, bankedCount, explanation }
+}
+
+export function recallBankedKailashFront(state: NumericLawState): boolean {
+  if (readNumber(state, 'u7-long-rest', 0, 1) >= 1) return false
+  if (readNumber(state, 'u7-front-phase', KAILASH_PHASE_CALM, KAILASH_PHASE_ACTIVE) !== KAILASH_PHASE_CALM) return false
+  const index = takeBankedPrompt(state, 'u7-front')
+  if (index === null) return false
+  writeNumber(state, 'u7-front-index', index % KAILASH_FRONTS.length)
+  writeNumber(state, 'u7-front-phase', KAILASH_PHASE_APPROACHING)
+  writeNumber(state, 'u7-front-elapsed', 0)
+  writeNumber(state, 'u7-front-answered-seconds', 0)
+  writeNumber(state, 'u7-front-edited', 0)
+  return true
 }
 
 export function advanceKailashFronts(
@@ -911,7 +1006,12 @@ export function advanceKailashFronts(
   const fullCycle = KAILASH_FRONT_CALM_SECONDS + KAILASH_FRONT_APPROACH_SECONDS + KAILASH_FRONT_ACTIVE_SECONDS
   let remaining = elapsedSeconds
   if (remaining > fullCycle * 2) {
-    writeNumber(state, 'u7-front-index', (Math.floor(readNumber(state, 'u7-front-index', 0, KAILASH_FRONTS.length - 1)) + 1) % KAILASH_FRONTS.length)
+    const startIndex = Math.floor(readNumber(state, 'u7-front-index', 0, KAILASH_FRONTS.length - 1))
+    const windows = Math.min(TIMED_PROMPT_BANK_CAP, Math.floor(remaining / fullCycle))
+    for (let window = 0; window < windows; window += 1) {
+      bankPrompt(state, 'u7-front', (startIndex + window) % KAILASH_FRONTS.length)
+    }
+    writeNumber(state, 'u7-front-index', (startIndex + windows) % KAILASH_FRONTS.length)
     writeNumber(state, 'u7-front-phase', KAILASH_PHASE_CALM)
     writeNumber(state, 'u7-front-elapsed', 0)
     writeNumber(state, 'u7-front-answered-seconds', 0)
@@ -958,7 +1058,8 @@ export function advanceKailashFronts(
         writeNumber(state, 'u7-front-carry-seconds', KAILASH_FRONT_CARRY_SECONDS)
         announcements.push({ key: `${front.id}-answered`, text: 'The front clears. The descent gains a new trace.', politeness: 'polite' })
       } else {
-        announcements.push({ key: `${front.id}-cleared`, text: 'The front clears without an answer. Another will come.', politeness: 'polite' })
+        const banked = bankPrompt(state, 'u7-front', index)
+        announcements.push({ key: `${front.id}-cleared`, text: banked ? 'The front clears without an answer and remains available in the ridge bank.' : 'The front clears without an answer. Three earlier fronts already wait.', politeness: 'polite' })
       }
       writeNumber(state, 'u7-front-phase', KAILASH_PHASE_CALM)
       writeNumber(state, 'u7-front-answered-seconds', 0)

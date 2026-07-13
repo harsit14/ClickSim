@@ -23,6 +23,8 @@ import {
   enterKailashLongRest as enterKailashLongRestState,
   exitKailashLongRest as exitKailashLongRestState,
   kailashLongRestStatus,
+  openBankedBrahmalokCommission,
+  recallBankedKailashFront,
   retainedF4LawConfiguration,
   routeBrahmalokKindling,
   selectCanticleMeasure,
@@ -1179,6 +1181,13 @@ export function configureBrahmalokMargin(index: number | null): boolean {
     : false
 }
 
+export function reviewBankedBrahmalokCommission(): boolean {
+  return game.challenge === null
+    && game.activeUniverse === 'prismata'
+    ? openBankedBrahmalokCommission(game.numericLawState, game.curiosities.length)
+    : false
+}
+
 /** Freely binds one Verdance rootstock cohort to one younger scion. */
 export function configureVerdanceGrafting(rootstockIndex: number, scionIndex: number): boolean {
   return game.challenge === null && game.activeUniverse === 'verdance'
@@ -1228,6 +1237,13 @@ export function beginKailashLongRest(): boolean {
 export function endKailashLongRest(): boolean {
   return game.activeUniverse === 'canticle'
     ? exitKailashLongRestState(game.numericLawState)
+    : false
+}
+
+export function reviewBankedKailashFront(): boolean {
+  return game.challenge === null
+    && game.activeUniverse === 'canticle'
+    ? recallBankedKailashFront(game.numericLawState)
     : false
 }
 

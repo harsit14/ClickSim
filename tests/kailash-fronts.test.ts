@@ -19,6 +19,7 @@ import {
   kailashFrontMultiplier,
   kailashFrontStatus,
   kailashLongRestStatus,
+  recallBankedKailashFront,
   selectCanticleMeasure,
 } from '../src/content/universes/f4-runtime'
 import {
@@ -73,6 +74,15 @@ test('answering Passing Snow earns one persistent trace event', () => {
   assert.ok(events.announcements.some(({ text }) => /new trace/.test(text)))
 })
 
+test('unanswered fronts bank and can be recalled from a calm ridge', () => {
+  const state: NumericLawState = {}
+  advanceKailashFronts(state, NO_KINDLINGS, KAILASH_FRONT_CALM_SECONDS + KAILASH_FRONT_APPROACH_SECONDS + KAILASH_FRONT_ACTIVE_SECONDS)
+  assert.equal(kailashFrontStatus(state, NO_KINDLINGS).bankedCount, 1)
+  assert.equal(recallBankedKailashFront(state), true)
+  assert.equal(kailashFrontStatus(state, NO_KINDLINGS).phase, 'approaching')
+  assert.equal(kailashFrontStatus(state, NO_KINDLINGS).bankedCount, 0)
+})
+
 test('Kailash uses one combiner for the existing cycle and all new factors', () => {
   assert.equal(combineKailashLawFactors(4, 1.5, 1.2, 1.4), KAILASH_LAW_FACTOR_CEILING)
   assert.equal(combineKailashLawFactors(1, 1, 1, 1), 1)
@@ -94,12 +104,13 @@ test('the Long Rest banks a capped reserve, holds fronts, and decays after exit'
   assert.equal(kailashLongRestStatus(state).bonusSecondsRemaining, 0)
 })
 
-test('offline Kailash settling never replays a prompt backlog', () => {
+test('offline Kailash settling banks at most three fronts without replaying announcements', () => {
   const state: NumericLawState = {}
   const events = advanceKailashFronts(state, NO_KINDLINGS, 8 * 60 * 60)
   assert.equal(events.announcements.length, 0)
   assert.equal(events.tracesEarned, 0)
   assert.equal(kailashFrontStatus(state, NO_KINDLINGS).phase, 'calm')
+  assert.equal(kailashFrontStatus(state, NO_KINDLINGS).bankedCount, 3)
 })
 
 test('the inhabited descent preserves summit clearance and reports overflow', () => {

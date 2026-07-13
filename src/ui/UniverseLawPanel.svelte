@@ -14,6 +14,8 @@
     configureUniverseLaw,
     editCanticleSlot,
     kailashLongRestUnlocked,
+    reviewBankedBrahmalokCommission,
+    reviewBankedKailashFront,
     severVerdanceGrafting,
   } from '../engine/game.svelte'
   import { universeById, universeV2ById } from '../content/universes'
@@ -125,6 +127,12 @@
     markInstrumentExperienced()
   }
 
+  function reviewBrahmalokCommission() {
+    if (!reviewBankedBrahmalokCommission()) return
+    save()
+    markInstrumentExperienced()
+  }
+
   function configureStorm(length: number, riskIndex: number) {
     if (configureTempestPath(length, riskIndex)) save()
   }
@@ -154,6 +162,12 @@
   function toggleLongRest() {
     const changed = kailashRest?.resting ? endKailashLongRest() : beginKailashLongRest()
     if (!changed) return
+    save()
+    markInstrumentExperienced()
+  }
+
+  function reviewKailashFront() {
+    if (!reviewBankedKailashFront()) return
     save()
     markInstrumentExperienced()
   }
@@ -396,7 +410,13 @@
         <section class="law-prompt brahmalok-commission" data-phase={brahmalokCommission.phase} aria-live="polite" aria-atomic="true">
           <span aria-hidden="true">{brahmalokCommission.commission.glyph}</span>
           <div><small>{brahmalokCommission.phase === 'active' ? brahmalokCommission.answered ? 'ANSWER HELD IN REVISION' : `${brahmalokCommission.commission.direction.toUpperCase()} COMMISSION` : 'QUIET MARGINS'}</small><strong>{brahmalokCommission.commission.question}</strong><p>{brahmalokCommission.explanation}</p></div>
-          <b>{brahmalokCommission.phase === 'active' && brahmalokCommission.answered ? `${Math.floor(brahmalokCommission.heldSeconds)}/${60}s` : `${Math.ceil(brahmalokCommission.secondsRemaining)}s`}</b>
+          <div class="prompt-meta">
+            <b>{brahmalokCommission.phase === 'active' && brahmalokCommission.answered ? `${Math.floor(brahmalokCommission.heldSeconds)}/${60}s` : `${Math.ceil(brahmalokCommission.secondsRemaining)}s`}</b>
+            <small>{brahmalokCommission.bankedCount}/{3} saved</small>
+            {#if brahmalokCommission.phase === 'waiting' && brahmalokCommission.bankedCount > 0}
+              <button type="button" onclick={reviewBrahmalokCommission}>Review saved</button>
+            {/if}
+          </div>
         </section>
       {/if}
     {/if}
@@ -485,7 +505,10 @@
         <section class="law-prompt vishnulok-strain" data-phase={vishnulokStrain.phase} aria-live="polite" aria-atomic="true">
           <span aria-hidden="true">{vishnulokStrain.strain.glyph}</span>
           <div><small>{vishnulokStrain.phase === 'present' ? vishnulokStrain.answered ? 'MATCHING CORRECTION READY' : 'OCEAN STRAIN' : 'LIVING WATER'}</small><strong>{vishnulokStrain.strain.name}</strong><p>{vishnulokStrain.explanation}</p></div>
-          <b>{vishnulokStrain.phase === 'present' ? `${vishnulokStrain.genericReturns}/2` : `${Math.ceil(vishnulokStrain.secondsUntilPresent)}s`}</b>
+          <div class="prompt-meta">
+            <b>{vishnulokStrain.phase === 'present' ? `${vishnulokStrain.genericReturns}/2` : `${Math.ceil(vishnulokStrain.secondsUntilPresent)}s`}</b>
+            <small>{vishnulokStrain.bankedCount}/{3} saved</small>
+          </div>
         </section>
       {/if}
     {/if}
@@ -539,7 +562,13 @@
         <section class="law-prompt kailash-front" data-phase={kailashFront.phase} aria-live="polite" aria-atomic="true">
           <span aria-hidden="true">{kailashFront.front.glyph}</span>
           <div><small>{kailashFront.phase === 'calm' ? 'RIDGE WEATHER' : kailashFront.phase === 'approaching' ? 'FRONT APPROACHING' : kailashFront.answered ? 'FRONT ANSWERED' : 'FRONT ON THE RIDGE'}</small><strong>{kailashFront.front.name}</strong><p>{kailashFront.explanation}</p></div>
-          <b>{kailashFront.phaseSecondsRemaining > 0 ? `${Math.ceil(kailashFront.phaseSecondsRemaining)}s` : '—'}</b>
+          <div class="prompt-meta">
+            <b>{kailashFront.phaseSecondsRemaining > 0 ? `${Math.ceil(kailashFront.phaseSecondsRemaining)}s` : '—'}</b>
+            <small>{kailashFront.bankedCount}/{3} saved</small>
+            {#if kailashFront.phase === 'calm' && kailashFront.bankedCount > 0 && !kailashRest?.resting}
+              <button type="button" onclick={reviewKailashFront}>Recall front</button>
+            {/if}
+          </div>
         </section>
       {/if}
       {#if kailashRest && kailashLongRestUnlocked()}
@@ -573,7 +602,10 @@
   .law-prompt small,.long-rest-control small { display:block;color:var(--dim);font:750 .38rem/1 system-ui,sans-serif;letter-spacing:.14em; }
   .law-prompt strong,.long-rest-control strong { display:block;margin-top:.12rem;font:650 .62rem/1.1 Georgia,serif; }
   .law-prompt p,.long-rest-control p { margin:.14rem 0 0;color:var(--dim);font:.47rem/1.25 Georgia,serif; }
-  .law-prompt > b { font:.58rem/1 system-ui,sans-serif;font-variant-numeric:tabular-nums; }
+  .prompt-meta { display:grid;justify-items:end;gap:.2rem;min-width:4.2rem;text-align:right; }
+  .prompt-meta > b { font:.58rem/1 system-ui,sans-serif;font-variant-numeric:tabular-nums; }
+  .prompt-meta > small { letter-spacing:.04em;white-space:nowrap; }
+  .prompt-meta > button { padding:.25rem .34rem;color:var(--gold);background:color-mix(in srgb,var(--gold) 7%,transparent);border:1px solid color-mix(in srgb,var(--gold) 28%,transparent);border-radius:.25rem;font-size:.4rem;white-space:nowrap; }
   .law-prompt[data-phase='active'] { border-style:dashed; }
   .long-rest-control { grid-template-columns:minmax(0,1fr) auto;border-color:color-mix(in srgb,#9bcbd7 28%,transparent); }
   .long-rest-control button { padding:.42rem .58rem;color:var(--gold);background:#14222c;border:1px solid #6e929d;border-radius:.3rem;font-size:.48rem; }

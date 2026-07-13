@@ -7,12 +7,15 @@ import { migrateAndSanitizeSave, stringifySaveDataV23 } from '../src/core/save-d
 const LAW_KEYS = [
   'u5-commission-index', 'u5-commission-phase', 'u5-commission-elapsed', 'u5-commission-edited',
   'u5-commission-route-changes', 'u5-commission-held-seconds', 'u5-commission-buff-seconds', 'u5-margin-mode',
+  'u5-commission-bank-1', 'u5-commission-bank-2', 'u5-commission-bank-3',
   'u6-strain-index', 'u6-strain-phase', 'u6-strain-elapsed', 'u6-strain-edited',
   'u6-strain-generic-returns', 'u6-strain-resolved', 'u6-strain-bonus-seconds', 'u6-route-pending',
   'u6-return-pending', 'u6-charge-2', 'u6-boost-seconds-2', 'u6-last-discharge-2',
+  'u6-strain-bank-1', 'u6-strain-bank-2', 'u6-strain-bank-3', 'u6-strain-bank-elapsed',
   'u7-front-index', 'u7-front-phase', 'u7-front-elapsed', 'u7-front-answered-seconds',
   'u7-front-edited', 'u7-front-carry-seconds', 'u7-long-rest', 'u7-grace-reserve',
   'u7-grace-bonus-strength', 'u7-grace-bonus-seconds',
+  'u7-front-bank-1', 'u7-front-bank-2', 'u7-front-bank-3',
 ] as const
 
 test('old v23 saves load every new loka counter at zero without migration warnings', () => {

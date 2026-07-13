@@ -52,6 +52,20 @@ test('a matching Strain answer requires a deliberate post-announcement edit', ()
   assert.equal(vishnulokStrainStatus(state).phase, 'waiting')
 })
 
+test('an unresolved Strain banks the next three readings without expiring', () => {
+  const state: NumericLawState = {}
+  advanceF4LawState('tempest', state, OWNED, VISHNULOK_STRAIN_WAIT_SECONDS)
+  advanceF4LawState('tempest', state, OWNED, VISHNULOK_STRAIN_WAIT_SECONDS * 3)
+  assert.equal(vishnulokStrainStatus(state).phase, 'present')
+  assert.equal(vishnulokStrainStatus(state).bankedCount, 3)
+
+  configureTempestRoute(state, 6, 0)
+  assert.equal(dischargeTempest(state), true)
+  advanceF4LawState('tempest', state, OWNED, 1)
+  assert.equal(vishnulokStrainStatus(state).phase, 'present')
+  assert.equal(vishnulokStrainStatus(state).bankedCount, 2)
+})
+
 test('two ordinary returns soothe a Strain without awarding a Woven Route', () => {
   const state: NumericLawState = {}
   advanceF4LawState('tempest', state, OWNED, VISHNULOK_STRAIN_WAIT_SECONDS)
