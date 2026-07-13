@@ -647,7 +647,7 @@
   {/if}
   <ShopPanel suppressed={utilityPanelOpen} bind:collapsed={shopCollapsed} />
   <UiChips />
-  <ComboMeter />
+  <ComboMeter {averagedRhythm} />
   <LumenTicker resetToken={transientResetToken} onactivitychange={(active) => (lumenActive = active)} />
   <FallingStar resetToken={transientResetToken} reserveShop={hasUi('shop') && !utilityPanelOpen} />
   <aside class="notification-lane" aria-label="Notifications">

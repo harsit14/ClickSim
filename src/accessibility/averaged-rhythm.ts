@@ -1,6 +1,8 @@
 export const MIN_AVERAGED_COMPETENT_RATIO = 0.85
 export const MAX_AVERAGED_COMPETENT_RATIO = 0.90
 export const DEFAULT_AVERAGED_COMPETENT_RATIO = 0.875
+/** Competent performed rhythm fills one Omen cycle by its 64-click checkpoint. */
+export const AVERAGED_OMEN_ATTRACTION_PER_CLICK = 100 / 64
 
 export interface RhythmPresentationContext {
   readonly audio: 'audible' | 'muted'
@@ -24,6 +26,7 @@ export interface AveragedRhythmResult {
   readonly competentRatio: number | null
   readonly competentGapRatio: number | null
   readonly belowExceptional: boolean
+  readonly omenAttractionCharge: number | null
   readonly presentation: RhythmPresentationContext
 }
 
@@ -49,6 +52,7 @@ export function averagedRhythmReward(input: AveragedRhythmInput): AveragedRhythm
       competentRatio: null,
       competentGapRatio: null,
       belowExceptional: false,
+      omenAttractionCharge: null,
       presentation: input.presentation,
     }
   }
@@ -61,6 +65,7 @@ export function averagedRhythmReward(input: AveragedRhythmInput): AveragedRhythm
     competentRatio: ratio,
     competentGapRatio: 1 - ratio,
     belowExceptional: rewardMultiplier < input.exceptionalMultiplier,
+    omenAttractionCharge: AVERAGED_OMEN_ATTRACTION_PER_CLICK,
     presentation: input.presentation,
   }
 }

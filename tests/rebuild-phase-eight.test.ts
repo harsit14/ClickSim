@@ -76,7 +76,8 @@ test('long streak milestones fill Omen attraction instead of multiplying raw out
   const combo = read('../src/systems/combo.svelte.ts')
   const stars = read('../src/systems/falling-stars.svelte.ts')
   const eventUi = read('../src/ui/FallingStar.svelte')
-  assert.match(combo, /chargeOmenAttraction\(checkpoint\.charge\)/)
+  assert.match(combo, /chargeRhythmOmenAttraction\(checkpoint\.charge\)/)
+  assert.match(combo, /chargeOmenAttraction\(charge\)/)
   assert.match(stars, /omenAttraction: 0/)
   assert.match(stars, /advanceOmenAttraction/)
   assert.match(eventUi, /resetOmenAttraction\(\)/)
@@ -92,10 +93,12 @@ test('averaged accessibility keeps its ratio policy against the rebalanced activ
   assert.equal(result.competentRatio, DEFAULT_AVERAGED_COMPETENT_RATIO)
   assert.equal(result.rewardMultiplier, RHYTHM_COMPETENT_MULTIPLIER * DEFAULT_AVERAGED_COMPETENT_RATIO)
   assert.equal(result.belowExceptional, true)
+  assert.ok((result.omenAttractionCharge ?? 0) > 0)
 
   const canvas = read('../src/ui/EmberCanvas.svelte')
   assert.match(canvas, /competentMultiplier: RHYTHM_COMPETENT_MULTIPLIER/)
   assert.match(canvas, /exceptionalMultiplier: RHYTHM_EXCEPTIONAL_MULTIPLIER/)
+  assert.match(canvas, /chargeRhythmOmenAttraction\(result\.omenAttractionCharge\)/)
   assert.match(canvas, /return \{ multiplier: result\.rewardMultiplier \?\? 1, onBeat: false \}/)
 })
 

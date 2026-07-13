@@ -26,12 +26,9 @@ export function comboMult(): number {
   return rhythmMultiplierForStreak(combo.streak)
 }
 
-function rhythmReward() {
-  const checkpoint = rhythmAttractionCheckpoint(combo.streak)
-  if (!checkpoint || checkpoint.rewardAt <= combo.lastRewardAt) return
-  combo.lastRewardAt = checkpoint.rewardAt
+export function chargeRhythmOmenAttraction(charge: number): boolean {
   const universe = universeById(game.activeUniverse)
-  if (universe.twist.randomnessAllowed && chargeOmenAttraction(checkpoint.charge)) {
+  if (universe.twist.randomnessAllowed && chargeOmenAttraction(charge)) {
     const events = universe.events
     pushToast(
       game.activeUniverse === 'tidefall'
@@ -42,7 +39,16 @@ function rhythmReward() {
       `Your rhythm has drawn a ${events.noun} into reach.`,
       'beat streak',
     )
+    return true
   }
+  return false
+}
+
+function rhythmReward() {
+  const checkpoint = rhythmAttractionCheckpoint(combo.streak)
+  if (!checkpoint || checkpoint.rewardAt <= combo.lastRewardAt) return
+  combo.lastRewardAt = checkpoint.rewardAt
+  chargeRhythmOmenAttraction(checkpoint.charge)
 }
 
 /** true while The Silence trial holds the music (and the combo) hostage */

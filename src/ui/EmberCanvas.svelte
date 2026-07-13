@@ -8,7 +8,7 @@
   import { format } from '../core/format'
   import { playClick, playBuy, playRhythmAccent } from '../audio/sfx'
   import { beatDurationSec, currentBeatIndex, startMusic, isPlaying } from '../audio/music'
-  import { combo, registerClick, silenced } from '../systems/combo.svelte'
+  import { chargeRhythmOmenAttraction, combo, registerClick, silenced } from '../systems/combo.svelte'
   import { gamePaused } from '../core/pause.svelte'
   import { averagedRhythmReward } from '../accessibility/averaged-rhythm'
   import { resolveVisualQuality } from '../core/preferences'
@@ -55,6 +55,9 @@
         }),
       },
     })
+    if (result.omenAttractionCharge !== null) {
+      chargeRhythmOmenAttraction(result.omenAttractionCharge)
+    }
     return { multiplier: result.rewardMultiplier ?? 1, onBeat: false }
   }
 

@@ -3,6 +3,8 @@
   import { fallingStarState } from '../systems/falling-stars.svelte'
   import { OMEN_ATTRACTION_CAP } from '../systems/omen-attraction'
 
+  let { averagedRhythm = false }: { averagedRhythm?: boolean } = $props()
+
   const mult = $derived(comboMult())
   const next = $derived(
     combo.streak < 4
@@ -19,9 +21,20 @@
   )
 </script>
 
-{#if combo.streak >= 4}
-  <div class="combo" class:hot={combo.streak >= 32} class:blazing={combo.streak >= 64}>
-    ♪ ×{mult} <em>{combo.streak} on beat{#if next} · next {next}{/if} · omen {Math.round(fallingStarState.omenAttraction / OMEN_ATTRACTION_CAP * 100)}%</em>
+{#if combo.streak >= 4 || (averagedRhythm && fallingStarState.omenAttraction > 0)}
+  <div
+    class="combo"
+    class:averaged={averagedRhythm}
+    class:hot={!averagedRhythm && combo.streak >= 32}
+    class:blazing={!averagedRhythm && combo.streak >= 64}
+    role="status"
+    aria-live="polite"
+  >
+    {#if averagedRhythm}
+      ≋ averaged rhythm <em>omen attraction {Math.round(fallingStarState.omenAttraction / OMEN_ATTRACTION_CAP * 100)}%</em>
+    {:else}
+      ♪ ×{mult} <em>{combo.streak} on beat{#if next} · next {next}{/if} · omen {Math.round(fallingStarState.omenAttraction / OMEN_ATTRACTION_CAP * 100)}%</em>
+    {/if}
   </div>
 {/if}
 
@@ -44,6 +57,7 @@
     color: #fff1d0;
     text-shadow: 0 0 22px rgba(255, 210, 130, 0.9);
   }
+  .combo.averaged { color: color-mix(in srgb, var(--gold) 82%, white); }
   .combo.blazing {
     color: #ffffff;
     text-shadow:
@@ -61,4 +75,5 @@
     from { opacity: 0; transform: translateX(-50%) scale(0.85); }
     to { opacity: 1; transform: translateX(-50%) scale(1); }
   }
+  :global(html[data-motion='reduced']) .combo { animation: none; }
 </style>

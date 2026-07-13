@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  AVERAGED_OMEN_ATTRACTION_PER_CLICK,
   averagedRhythmReward,
   DEFAULT_AVERAGED_COMPETENT_RATIO,
   MAX_AVERAGED_COMPETENT_RATIO,
   MIN_AVERAGED_COMPETENT_RATIO,
   type RhythmPresentationContext,
 } from '../src/accessibility/averaged-rhythm'
+import { advanceOmenAttraction, OMEN_ATTRACTION_CAP } from '../src/systems/omen-attraction'
 
 const presentation: RhythmPresentationContext = {
   audio: 'audible',
@@ -26,7 +28,17 @@ test('averaged rhythm sits 10–15% below competent play and below exceptional p
   assert.ok((result.competentGapRatio ?? 1) <= 0.15)
   assert.equal(result.rewardMultiplier, 1.6 * DEFAULT_AVERAGED_COMPETENT_RATIO)
   assert.equal(result.belowExceptional, true)
+  assert.equal(result.omenAttractionCharge, AVERAGED_OMEN_ATTRACTION_PER_CLICK)
   assert.ok((result.rewardMultiplier ?? Number.POSITIVE_INFINITY) < 2.2)
+})
+
+test('averaged rhythm fills one Omen-attraction cycle in sixty-four eligible clicks', () => {
+  let attraction = 0
+  for (let click = 0; click < 64; click += 1) {
+    const next = advanceOmenAttraction(attraction, AVERAGED_OMEN_ATTRACTION_PER_CLICK)
+    attraction = next.charge
+  }
+  assert.equal(attraction, OMEN_ATTRACTION_CAP)
 })
 
 test('caller targets are clamped to the approved accessibility balance range', () => {
@@ -77,6 +89,7 @@ test('invalid balance profiles fail closed instead of inventing an accessible re
       competentRatio: null,
       competentGapRatio: null,
       belowExceptional: false,
+      omenAttractionCharge: null,
       presentation,
     })
   }
