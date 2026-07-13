@@ -447,14 +447,14 @@ export function load(): EconomyAmount {
     advanceVerdanceCohortLawState(game.numericLawState, game.owned, generatorIds, counted * 500)
     return multiplyAmountByNumber(midpointRate, offlinePlan.equivalentActiveSeconds)
   }
-  if (game.activeUniverse === 'prismata' || game.activeUniverse === 'tempest') {
+  if (game.activeUniverse === 'brahmalok' || game.activeUniverse === 'vishnulok') {
     const context = { upgrades: game.upgrades, archiveCount: game.curiosities.length, promptsPaused: game.challenge !== null }
     applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5, context))
     const midpointRate = ratePerSec()
     applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5, context))
     return multiplyAmountByNumber(midpointRate, offlinePlan.equivalentActiveSeconds)
   }
-  if (game.activeUniverse === 'canticle') {
+  if (game.activeUniverse === 'kailash') {
     applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted, {
       upgrades: game.upgrades,
       archiveCount: game.curiosities.length,

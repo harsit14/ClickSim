@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import type { EconomyAmount } from '../../src/content/universes/types'
-import { selectCanticleMeasure } from '../../src/content/universes/f4-runtime'
+import { selectKailashCycle } from '../../src/content/universes/f4-runtime'
 import {
   KAILASH_FRONT_ACTIVE_SECONDS,
   KAILASH_FRONT_APPROACH_SECONDS,
@@ -70,7 +70,7 @@ test('answering Passing Snow with an edited, rest-heavy cycle earns a Descent Tr
   // Passing Snow predicate (rest >= 3, grace >= 2) once the player commits it.
   advanceKailashFronts(state, NO_KINDLINGS, KAILASH_FRONT_CALM_SECONDS)
   assert.equal(kailashFrontStatus(state, NO_KINDLINGS).front.id, 'passing-snow')
-  selectCanticleMeasure(state, 3)
+  selectKailashCycle(state, 3)
   markKailashCycleEdited(state)
   advanceKailashFronts(state, NO_KINDLINGS, KAILASH_FRONT_APPROACH_SECONDS)
 
@@ -144,10 +144,10 @@ test('the descent renders below the summit clearance and reports overflow instea
 
 test('valley features stage with ownership and ash bands stay bounded', () => {
   assert.equal(planKailashValley({}).length, 0)
-  const valley = planKailashValley({ 'u7-kindling-05': 60, 'u7-kindling-11': 3 })
+  const valley = planKailashValley({ 'kailash-kindling-05': 60, 'kailash-kindling-11': 3 })
   assert.equal(valley.length, 2)
-  assert.equal(valley.find(({ sourceId }) => sourceId === 'u7-kindling-05')?.threshold, 50)
-  assert.equal(valley.find(({ sourceId }) => sourceId === 'u7-kindling-11')?.threshold, 1)
+  assert.equal(valley.find(({ sourceId }) => sourceId === 'kailash-kindling-05')?.threshold, 50)
+  assert.equal(valley.find(({ sourceId }) => sourceId === 'kailash-kindling-11')?.threshold, 1)
 
   assert.equal(planKailashAshBands(3).length, 3)
   assert.equal(planKailashAshBands(40).length, 8)

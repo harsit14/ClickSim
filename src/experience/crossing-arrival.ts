@@ -91,20 +91,20 @@ const HABIT_BREAKS: Readonly<Record<UniverseId, readonly CrossingHabitBreak[]>> 
     { id: 'cross-habit-clockwork-2', atMs: 270_000, text: 'A linkage is a dependency made visible. Follow the arrow before improving the machine.' },
     { id: 'cross-habit-clockwork-3', atMs: 540_000, text: 'Route first. The city considers unexplained efficiency a defect.' },
   ],
-  prismata: [
-    { id: 'cross-habit-prismata-1', atMs: 75_000, text: 'This is a passage, not another ruin waiting for us. Approach the making already underway.' },
-    { id: 'cross-habit-prismata-2', atMs: 270_000, text: 'Seed, measure, name, and form answer one another. Follow the whole mandala, not only its strongest direction.' },
-    { id: 'cross-habit-prismata-3', atMs: 540_000, text: 'Leave the center open. Brahmalok calls a creation complete only while revision remains possible.' },
+  brahmalok: [
+    { id: 'cross-habit-brahmalok-1', atMs: 75_000, text: 'This is a passage, not another ruin waiting for us. Approach the making already underway.' },
+    { id: 'cross-habit-brahmalok-2', atMs: 270_000, text: 'Seed, measure, name, and form answer one another. Follow the whole mandala, not only its strongest direction.' },
+    { id: 'cross-habit-brahmalok-3', atMs: 540_000, text: 'Leave the center open. Brahmalok calls a creation complete only while revision remains possible.' },
   ],
-  tempest: [
-    { id: 'cross-habit-tempest-1', atMs: 75_000, text: 'This ocean does not need conquering or repair. Choose which strained relation the circuit may help sustain.' },
-    { id: 'cross-habit-tempest-2', atMs: 270_000, text: 'A longer circuit carries a wider obligation because every refuge changes what returns.' },
-    { id: 'cross-habit-tempest-3', atMs: 540_000, text: 'Let the correction come home. Vishnulok does not call outward power complete while its aftermath remains elsewhere.' },
+  vishnulok: [
+    { id: 'cross-habit-vishnulok-1', atMs: 75_000, text: 'This ocean does not need conquering or repair. Choose which strained relation the circuit may help sustain.' },
+    { id: 'cross-habit-vishnulok-2', atMs: 270_000, text: 'A longer circuit carries a wider obligation because every refuge changes what returns.' },
+    { id: 'cross-habit-vishnulok-3', atMs: 540_000, text: 'Let the correction come home. Vishnulok does not call outward power complete while its aftermath remains elsewhere.' },
   ],
-  canticle: [
-    { id: 'cross-habit-canticle-1', atMs: 75_000, text: 'This mountain is not a prize or machine. Read which paths open refuge and which return downward.' },
-    { id: 'cross-habit-canticle-2', atMs: 270_000, text: 'Sequence changes responsibility. Shelter before release means something different from shelter afterward.' },
-    { id: 'cross-habit-canticle-3', atMs: 540_000, text: 'Leave room to stop. Kailash does not confuse unstoppable momentum with completion.' },
+  kailash: [
+    { id: 'cross-habit-kailash-1', atMs: 75_000, text: 'This mountain is not a prize or machine. Read which paths open refuge and which return downward.' },
+    { id: 'cross-habit-kailash-2', atMs: 270_000, text: 'Sequence changes responsibility. Shelter before release means something different from shelter afterward.' },
+    { id: 'cross-habit-kailash-3', atMs: 540_000, text: 'Leave room to stop. Kailash does not confuse unstoppable momentum with completion.' },
   ],
 }
 

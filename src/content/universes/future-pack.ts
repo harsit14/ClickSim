@@ -79,8 +79,8 @@ export interface FutureStorySeed {
 }
 
 export interface FutureUniverseSpec {
-  readonly id: Extract<UniverseId, 'prismata' | 'tempest' | 'canticle'>
-  readonly prefix: 'u5' | 'u6' | 'u7'
+  readonly id: Extract<UniverseId, 'brahmalok' | 'vishnulok' | 'kailash'>
+  readonly prefix: 'brahmalok' | 'vishnulok' | 'kailash'
   readonly name: string
   readonly shortName: string
   readonly epithet: string
@@ -187,9 +187,9 @@ function makeGenerator(spec: FutureUniverseSpec, seed: FutureKindlingSeed, index
 function makeUpgrades(spec: FutureUniverseSpec, generators: readonly GeneratorDef[]): UpgradeDef[] {
   const upgrades: UpgradeDef[] = []
   const refinements = [
-    { at: 10, scale: 15, glyph: 'I', adjective: spec.id === 'prismata' ? 'Rooted' : spec.id === 'tempest' ? 'Sustained' : 'Sheltered' },
-    { at: 25, scale: 75, glyph: 'II', adjective: spec.id === 'prismata' ? 'Revised' : spec.id === 'tempest' ? 'Restored' : 'Carried' },
-    { at: 50, scale: 750, glyph: 'III', adjective: spec.id === 'prismata' ? 'Unfolded' : spec.id === 'tempest' ? 'Returned' : 'Released' },
+    { at: 10, scale: 15, glyph: 'I', adjective: spec.id === 'brahmalok' ? 'Rooted' : spec.id === 'vishnulok' ? 'Sustained' : 'Sheltered' },
+    { at: 25, scale: 75, glyph: 'II', adjective: spec.id === 'brahmalok' ? 'Revised' : spec.id === 'vishnulok' ? 'Restored' : 'Carried' },
+    { at: 50, scale: 750, glyph: 'III', adjective: spec.id === 'brahmalok' ? 'Unfolded' : spec.id === 'vishnulok' ? 'Returned' : 'Released' },
   ] as const
   for (const generator of generators) {
     for (const refinement of refinements) {
@@ -599,18 +599,18 @@ function makeV2Supplement(
         { messageKey: `${spec.id}.announcement.law`, politeness: 'polite', dedupeKey: `${spec.id}-law`, minimumIntervalMs: 800 },
         { messageKey: `${spec.id}.announcement.omen`, politeness: 'assertive', dedupeKey: `${spec.id}-omen`, minimumIntervalMs: 1_000 },
         { messageKey: `${spec.id}.announcement.epoch`, politeness: 'polite', dedupeKey: `${spec.id}-epoch`, minimumIntervalMs: 3_000 },
-        ...(spec.id === 'prismata' ? [
-          { messageKey: 'prismata.announcement.commission', politeness: 'polite' as const, dedupeKey: 'u5-commission', minimumIntervalMs: 1_000 },
-          { messageKey: 'prismata.announcement.commission-answer', politeness: 'polite' as const, dedupeKey: 'u5-commission-answer', minimumIntervalMs: 1_000 },
-        ] : spec.id === 'tempest' ? [
-          { messageKey: 'tempest.announcement.strain', politeness: 'polite' as const, dedupeKey: 'u6-strain', minimumIntervalMs: 1_000 },
-          { messageKey: 'tempest.announcement.strain-restored', politeness: 'polite' as const, dedupeKey: 'u6-strain-restored', minimumIntervalMs: 1_000 },
-          { messageKey: 'tempest.announcement.confluence', politeness: 'polite' as const, dedupeKey: 'u6-confluence', minimumIntervalMs: 1_000 },
-        ] : spec.id === 'canticle' ? [
-          { messageKey: 'canticle.announcement.front-approach', politeness: 'polite' as const, dedupeKey: 'u7-front-approach', minimumIntervalMs: 1_000 },
-          { messageKey: 'canticle.announcement.front-active', politeness: 'polite' as const, dedupeKey: 'u7-front-active', minimumIntervalMs: 1_000 },
-          { messageKey: 'canticle.announcement.front-answered', politeness: 'polite' as const, dedupeKey: 'u7-front-answered', minimumIntervalMs: 1_000 },
-          { messageKey: 'canticle.announcement.long-rest', politeness: 'polite' as const, dedupeKey: 'u7-long-rest', minimumIntervalMs: 1_000 },
+        ...(spec.id === 'brahmalok' ? [
+          { messageKey: 'brahmalok.announcement.commission', politeness: 'polite' as const, dedupeKey: 'brahmalok-commission', minimumIntervalMs: 1_000 },
+          { messageKey: 'brahmalok.announcement.commission-answer', politeness: 'polite' as const, dedupeKey: 'brahmalok-commission-answer', minimumIntervalMs: 1_000 },
+        ] : spec.id === 'vishnulok' ? [
+          { messageKey: 'vishnulok.announcement.strain', politeness: 'polite' as const, dedupeKey: 'vishnulok-strain', minimumIntervalMs: 1_000 },
+          { messageKey: 'vishnulok.announcement.strain-restored', politeness: 'polite' as const, dedupeKey: 'vishnulok-strain-restored', minimumIntervalMs: 1_000 },
+          { messageKey: 'vishnulok.announcement.confluence', politeness: 'polite' as const, dedupeKey: 'vishnulok-confluence', minimumIntervalMs: 1_000 },
+        ] : spec.id === 'kailash' ? [
+          { messageKey: 'kailash.announcement.front-approach', politeness: 'polite' as const, dedupeKey: 'kailash-front-approach', minimumIntervalMs: 1_000 },
+          { messageKey: 'kailash.announcement.front-active', politeness: 'polite' as const, dedupeKey: 'kailash-front-active', minimumIntervalMs: 1_000 },
+          { messageKey: 'kailash.announcement.front-answered', politeness: 'polite' as const, dedupeKey: 'kailash-front-answered', minimumIntervalMs: 1_000 },
+          { messageKey: 'kailash.announcement.long-rest', politeness: 'polite' as const, dedupeKey: 'kailash-long-rest', minimumIntervalMs: 1_000 },
         ] : []),
       ],
       nonColorSignals: spec.nonColorSignals.map((signal) => ({ stateId: signal.id, text: signal.text, shape: signal.shape, pattern: signal.pattern, highContrastTreatment: `Bold ${signal.shape} with text “${signal.text}”.` })),
@@ -663,9 +663,9 @@ export function createFutureUniversePack(spec: FutureUniverseSpec): {
     palette: { theme: spec.id, accentHue: spec.palette.accentHue, vars: { '--bg': spec.palette.bg, '--amber': spec.palette.accent, '--gold': spec.palette.gold, '--panel': spec.palette.panel } },
     audio: { music: spec.id, click: spec.id, event: spec.id },
     events: {
-      noun: spec.id === 'prismata' ? 'Creative Opening' : spec.id === 'tempest' ? 'Sustaining Opening' : 'Passing Snow',
+      noun: spec.id === 'brahmalok' ? 'Creative Opening' : spec.id === 'vishnulok' ? 'Sustaining Opening' : 'Passing Snow',
       motion: 'bubble',
-      powerUps: spec.omens.map((omen, index) => ({ id: `${spec.prefix}-power-${index + 1}`, label: omen.name, glyph: spec.id === 'prismata' ? '✤' : spec.id === 'tempest' ? '≈' : '△', hue: (spec.palette.accentHue + index * 29) % 360, weight: 25, prodMult: 2 + index * 0.5, durationSec: 24 + index * 6, toast: omen.description })),
+      powerUps: spec.omens.map((omen, index) => ({ id: `${spec.prefix}-power-${index + 1}`, label: omen.name, glyph: spec.id === 'brahmalok' ? '✤' : spec.id === 'vishnulok' ? '≈' : '△', hue: (spec.palette.accentHue + index * 29) % 360, weight: 25, prodMult: 2 + index * 0.5, durationSec: 24 + index * 6, toast: omen.description })),
     },
     cabinet,
     twist: { id: `${spec.prefix}-world-law`, name: spec.physics.spectrum ? 'The Lotus of Becoming' : spec.physics.charge ? 'The Endless Circuit' : 'The Still Point', randomnessAllowed: spec.physics.randomAllowed, description: spec.physics.spectrum ? 'Route Kindlings through seed, measure, name, and form; the selected creation relationship changes production.' : spec.physics.charge ? 'Gather continuity, declare a correction circuit, and complete its return through visible refuges.' : 'Arrange emergence, shelter, release, veil, grace, and deliberate rests into a responsible cycle.' },

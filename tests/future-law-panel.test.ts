@@ -46,13 +46,13 @@ test('the authored worlds reinforce lotus court, sustaining ocean, and mountain 
   assert.match(worldSource, /\.brahmalok-lotus span \{[^}]*background: transparent;/)
   assert.match(worldSource, /\.kailash-shelters i::before/)
   assert.match(worldSource, /\.low-quality \.kailash-snow i:nth-child/)
-  assert.doesNotMatch(worldSource, /class="prismata-bench"/)
+  assert.doesNotMatch(worldSource, /class="brahmalok-bench"/)
 })
 
 test('loka law state is legible in the world without opening its instrument', () => {
   assert.match(worldSource, /brahmalokStatus\(numericLawState, owned\)/)
-  assert.match(worldSource, /tempestStatus\(numericLawState\)/)
-  assert.match(worldSource, /canticleStatus\(numericLawState, owned, now\)/)
+  assert.match(worldSource, /vishnulokCircuitStatus\(numericLawState\)/)
+  assert.match(worldSource, /kailashStatus\(numericLawState, owned, now\)/)
   assert.match(worldSource, /data-brahmalok-directions=/)
   assert.match(worldSource, /class:active=\{index < Math\.ceil\(\(vishnulokWorldState\?\.length/)
   assert.match(worldSource, /class="vishnulok-continuity"/)
@@ -75,7 +75,7 @@ test('late-universe score and instrument share one compact surface', () => {
   assert.match(panelSource, /\.mountain-cycle \{[^}]*height:7\.2rem/)
   assert.match(panelSource, /@media \(max-width: 800px\)[\s\S]*\.brahmalok-mandala,[\s\S]*\.kailash-stillpoint \{ width: 100%/)
   assert.match(appSource, /@media \(max-width: 800px\)[\s\S]*\.top-stack\.future-law \{ width: calc\(100vw - 1rem\); \}/)
-  assert.match(appSource, /activePack\.id !== 'prismata'[^}]*activePack\.id !== 'tempest'[^}]*activePack\.id !== 'canticle'[\s\S]*<Hud/)
+  assert.match(appSource, /activePack\.id !== 'brahmalok'[^}]*activePack\.id !== 'vishnulok'[^}]*activePack\.id !== 'kailash'[\s\S]*<Hud/)
   assert.match(appSource, /\{#if !utilityPanelOpen\}[\s\S]*<UniverseLawPanel onactivitychange=\{\(active\) => \(universeInstrumentActive = active\)\} \/>[\s\S]*<UpgradeBar dense=\{/)
   assert.match(panelSource, /FIRST ARRIVAL/)
   assert.match(panelSource, /Choose how the lotus unfolds/)
@@ -97,13 +97,13 @@ test('late-universe score and instrument share one compact surface', () => {
 
 test('loka instruments separate settled status from explicit configuration', () => {
   assert.match(panelSource, /snippet settledHeader/)
-  assert.match(panelSource, /Refuge Circuit|tempest\.path\.name/)
+  assert.match(panelSource, /Refuge Circuit|vishnulok\.circuit\.name/)
   assert.match(panelSource, /shelters · ×/)
-  assert.match(panelSource, /returns in \$\{Math\.ceil\(Math\.max\(tempest\.boostRemainingSec, tempest\.secondBoostRemainingSec\)\)\}s/)
+  assert.match(panelSource, /returns in \$\{Math\.ceil\(Math\.max\(vishnulok\.returnRemainingSec, vishnulok\.secondReturnRemainingSec\)\)\}s/)
   assert.match(panelSource, /aria-label="Configure universe instrument"/)
   assert.match(panelSource, /class="settled-meter"/)
-  assert.match(panelSource, /returnInProgress[\s\S]*boostRemainingSec > 0/)
-  assert.match(panelSource, /brahmalok\.recipe\.name[\s\S]*canticle\.measure\.name/)
+  assert.match(panelSource, /returnInProgress[\s\S]*returnRemainingSec > 0/)
+  assert.match(panelSource, /brahmalok\.mode\.name[\s\S]*kailash\.cycle\.name/)
 })
 
 test('Vishnulok microcopy participates in layout flow at every text scale', () => {

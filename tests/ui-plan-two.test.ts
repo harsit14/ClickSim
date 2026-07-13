@@ -16,7 +16,7 @@ test('phase one exposes plain labels, contextual trial actions, and readable cer
   for (const label of ['Guide', 'Records', 'Options', 'Cabinet', 'Vessel', 'Epoch reset', 'Deep reset', 'Story', 'Legacy']) {
     assert.match(app, new RegExp(`>${label}<`))
   }
-  assert.match(app, /activePack\.id === 'prismata' \? '✤' : epochMatterGlyph/)
+  assert.match(app, /activePack\.id === 'brahmalok' \? '✤' : epochMatterGlyph/)
   assert.match(banner, /<strong>Rule:<\/strong>/)
   assert.match(banner, /<b>Goal:<\/b>/)
   assert.match(banner, /aria-label=\{`Abandon \$\{copy\?\.name/)
@@ -91,7 +91,8 @@ test('phase four makes unavailable purchases and goal progress readable without 
   assert.match(shop, /No Kindling is affordable yet\./)
   assert.match(shop, /Use the Heart to build toward/)
   assert.match(shop, /role="status"/)
-  assert.match(upgrades, /class="target-cue">\{targetCue\(u\)\}/)
+  assert.match(upgrades, /class="target-cue">\{upgradeCue\(u\)\}/)
+  assert.doesNotMatch(upgrades, /return 'Touch'|return 'Global'/)
   assert.match(lens, /visibleSlots = \$derived\(model\.slots\.filter/)
   assert.match(lens, /class="pace" data-direction=\{rateDirection\}/)
   assert.match(lens, /recommendation\.progress\.current.*recommendation\.progress\.target/s)

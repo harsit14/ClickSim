@@ -11,7 +11,7 @@ import { planClockworkRewinding } from '../src/content/universes/clockwork/rewin
 test('Maintenance Signals expose exact deterministic forecast and active boundaries', () => {
   const maintenance = CLOCKWORK_MAINTENANCE_SIGNALS[0]
   assert.deepEqual(clockworkMaintenanceSignalStateAt(maintenance, 0), {
-    signalId: 'u4-maintenance-window',
+    signalId: 'clockwork-maintenance-window',
     status: 'forecast',
     cycleIndex: 0,
     startsAtMs: 60_000,

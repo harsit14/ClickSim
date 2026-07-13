@@ -42,7 +42,7 @@ interface KindlingManifestSpec {
 
 const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
   {
-    sourceId: 'spark', objectId: 'tide-kindling-droplet', name: 'Droplet',
+    sourceId: 'tidefall-droplet', objectId: 'tide-kindling-droplet', name: 'Droplet',
     phenomenon: 'A buoyant bead of Glow held by surface tension in weightless water.',
     purpose: 'Shows the first passive production as discrete luminous water.',
     zone: 'near', salience: 'supporting', material: ['luminous water', 'nacre glint'],
@@ -52,7 +52,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'one teardrop with a grouped-count notch', minimumHeartDistance: 1.1,
   },
   {
-    sourceId: 'wisp', objectId: 'tide-kindling-ripple', name: 'Ripple',
+    sourceId: 'tidefall-ripple', objectId: 'tide-kindling-ripple', name: 'Ripple',
     phenomenon: 'A pressure circle traveling through cosmic seawater without a surface.',
     purpose: 'Makes early rate growth visible as widening pressure transmission.',
     zone: 'near', salience: 'supporting', material: ['pressure membrane', 'bioluminescent edge'],
@@ -62,7 +62,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'two concentric arcs', minimumHeartDistance: 1.2,
   },
   {
-    sourceId: 'hearth', objectId: 'tide-kindling-tidepool', name: 'Tidepool',
+    sourceId: 'tidefall-tidepool', objectId: 'tide-kindling-tidepool', name: 'Tidepool',
     phenomenon: 'A shallow self-contained sea preserving the shape of an absent moon.',
     purpose: 'Anchors early civilization and the memory theme beside the Heart.',
     zone: 'near', salience: 'supporting', material: ['salt glass', 'shallow luminous water', 'shell'],
@@ -72,7 +72,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'one basin and waterline', minimumHeartDistance: 1.25,
   },
   {
-    sourceId: 'kiln', objectId: 'tide-kindling-current', name: 'Current',
+    sourceId: 'tidefall-current', objectId: 'tide-kindling-current', name: 'Current',
     phenomenon: 'Glow choosing a continuous direction through the world-water.',
     purpose: 'Connects small surface Kindlings into a readable production route.',
     zone: 'near', salience: 'supporting', material: ['stream ribbon', 'suspended silt'],
@@ -82,7 +82,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'single tapered ribbon', minimumHeartDistance: 1.35,
   },
   {
-    sourceId: 'forge', objectId: 'tide-kindling-reef-light', name: 'Reef Light',
+    sourceId: 'tidefall-reef-light', objectId: 'tide-kindling-reef-light', name: 'Reef Light',
     phenomenon: 'A branching reef city built from small bioluminescent organisms.',
     purpose: 'Makes the first organized Tidefall civilization visible.',
     zone: 'near', salience: 'supporting', material: ['coral lattice', 'bioluminescent tissue', 'shell'],
@@ -92,7 +92,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'three-pronged reef lantern', minimumHeartDistance: 1.4,
   },
   {
-    sourceId: 'beacon', objectId: 'tide-kindling-moonwake', name: 'Moonwake',
+    sourceId: 'tidefall-moonwake', objectId: 'tide-kindling-moonwake', name: 'Moonwake',
     phenomenon: 'A silver path left by a moon that is absent from every sky.',
     purpose: 'Shows that Tidefall follows remembered gravity rather than a visible body.',
     zone: 'near', salience: 'interactive', material: ['silver pressure film', 'moonless water'],
@@ -102,7 +102,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'one crescent-ended path', minimumHeartDistance: 1.5,
   },
   {
-    sourceId: 'titan', objectId: 'tide-kindling-kelp-cathedral', name: 'Kelp Cathedral',
+    sourceId: 'tidefall-kelp-cathedral', objectId: 'tide-kindling-kelp-cathedral', name: 'Kelp Cathedral',
     phenomenon: 'A forest of tensioned kelp fibers forming inhabited vaulted chambers.',
     purpose: 'Frames reef civilization without blocking the Tideheart.',
     zone: 'far', salience: 'supporting', material: ['kelp fiber', 'pressure bell membrane', 'shell stone'],
@@ -112,7 +112,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'three kelp arches', minimumHeartDistance: 1.6,
   },
   {
-    sourceId: 'starseed', objectId: 'tide-kindling-pearl-seed', name: 'Pearl Seed',
+    sourceId: 'tidefall-pearl-seed', objectId: 'tide-kindling-pearl-seed', name: 'Pearl Seed',
     phenomenon: 'A living irritation wrapped in nacre until it can seed a world.',
     purpose: 'Makes stored potential and patient growth legible in the pelagic field.',
     zone: 'far', salience: 'supporting', material: ['nacre', 'living membrane', 'salt crystal'],
@@ -122,7 +122,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'ringed pearl', minimumHeartDistance: 1.65,
   },
   {
-    sourceId: 'protostar', objectId: 'tide-kindling-bioluminance', name: 'Bioluminance',
+    sourceId: 'tidefall-bioluminance', objectId: 'tide-kindling-bioluminance', name: 'Bioluminance',
     phenomenon: 'Living light passed between organisms across otherwise black water.',
     purpose: 'Shows production as an ecosystem signal rather than generic particles.',
     zone: 'far', salience: 'supporting', material: ['bioluminescent tissue', 'translucent membrane'],
@@ -132,7 +132,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'paired luminous ovals', minimumHeartDistance: 1.7,
   },
   {
-    sourceId: 'sun', objectId: 'tide-kindling-drowned-beacon', name: 'Drowned Beacon',
+    sourceId: 'tidefall-drowned-beacon', objectId: 'tide-kindling-drowned-beacon', name: 'Drowned Beacon',
     phenomenon: 'A pressure-sealed lighthouse calling from beneath cosmic water.',
     purpose: 'Provides a visible navigational source for later shoals and currents.',
     zone: 'far', salience: 'interactive', material: ['salted brass', 'pressure glass', 'focused Glow'],
@@ -142,7 +142,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'tower and wedge beam', minimumHeartDistance: 1.75,
   },
   {
-    sourceId: 'binary', objectId: 'tide-kindling-twin-tides', name: 'Twin Tides',
+    sourceId: 'tidefall-twin-tides', objectId: 'tide-kindling-twin-tides', name: 'Twin Tides',
     phenomenon: 'Two opposed water masses exchanging height without a moon.',
     purpose: 'Shows paired production and the tension between memory and control.',
     zone: 'far', salience: 'supporting', material: ['paired pressure volumes', 'salt foam'],
@@ -152,7 +152,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'yin-yang tide crescents', minimumHeartDistance: 1.8,
   },
   {
-    sourceId: 'constellation', objectId: 'tide-kindling-shoal-constellation', name: 'Shoal Constellation',
+    sourceId: 'tidefall-shoal-constellation', objectId: 'tide-kindling-shoal-constellation', name: 'Shoal Constellation',
     phenomenon: 'Bioluminescent creatures schooling into navigational star patterns.',
     purpose: 'Turns producer density into an authored social formation.',
     zone: 'far', salience: 'supporting', material: ['living lights', 'translucent fins', 'current traces'],
@@ -162,7 +162,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'diamond shoal cluster', minimumHeartDistance: 1.85,
   },
   {
-    sourceId: 'nebula', objectId: 'tide-kindling-abyssal-garden', name: 'Abyssal Garden',
+    sourceId: 'tidefall-abyssal-garden', objectId: 'tide-kindling-abyssal-garden', name: 'Abyssal Garden',
     phenomenon: 'Pressure-fed flowers opening upward from a trench where light should fail.',
     purpose: 'Reveals that the abyss can generate life and Omens rather than only consume.',
     zone: 'horizon', salience: 'supporting', material: ['vent mineral', 'translucent petals', 'bioluminescent spores'],
@@ -172,7 +172,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'three-petal vent flower', minimumHeartDistance: 1.9,
   },
   {
-    sourceId: 'galaxy', objectId: 'tide-kindling-living-sea', name: 'The Living Sea',
+    sourceId: 'tidefall-living-sea', objectId: 'tide-kindling-living-sea', name: 'The Living Sea',
     phenomenon: 'An ocean-scale organism whose currents carry distinct names and memories.',
     purpose: 'Merges repeated life into one readable ecosystem landmark.',
     zone: 'horizon', salience: 'milestone', material: ['living water', 'reef tissue', 'memory silt'],
@@ -182,7 +182,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'three-layer ocean cross-section', minimumHeartDistance: 2,
   },
   {
-    sourceId: 'supercluster', objectId: 'tide-kindling-ocean-of-moons', name: 'Ocean of Moons',
+    sourceId: 'tidefall-ocean-of-moons', objectId: 'tide-kindling-ocean-of-moons', name: 'Ocean of Moons',
     phenomenon: 'A million remembered lunar pulls embodied as silver pressure lenses.',
     purpose: 'Makes late-game multiplicity visible without scattering literal moons.',
     zone: 'horizon', salience: 'supporting', material: ['silver pressure lens', 'salt-glass halo'],
@@ -192,7 +192,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'three nested silver crescents', minimumHeartDistance: 2.05,
   },
   {
-    sourceId: 'web', objectId: 'tide-kindling-world-current', name: 'World Current',
+    sourceId: 'tidefall-world-current', objectId: 'tide-kindling-world-current', name: 'World Current',
     phenomenon: 'The route all water takes between local beginnings and the horizon.',
     purpose: 'Connects the complete Tidefall composition into one directional system.',
     zone: 'horizon', salience: 'milestone', material: ['planetary current ribbon', 'suspended archive silt'],
@@ -202,7 +202,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'one world-spanning S-curve', minimumHeartDistance: 2.1,
   },
   {
-    sourceId: 'loom', objectId: 'tide-kindling-deep-trench', name: 'The Deep Trench',
+    sourceId: 'tidefall-deep-trench', objectId: 'tide-kindling-deep-trench', name: 'The Deep Trench',
     phenomenon: 'A descending pressure aperture whose floor dreams upward.',
     purpose: 'Provides the unresolved Hadal threat and Deep transition at the horizon.',
     zone: 'horizon', salience: 'milestone', material: ['black water', 'pressure contour', 'vent glow'],
@@ -212,7 +212,7 @@ const KINDLING_SPECS: EighteenTuple<KindlingManifestSpec> = [
     lowQualitySilhouette: 'dark wedge with three depth lines', minimumHeartDistance: 2.2,
   },
   {
-    sourceId: 'ember2', objectId: 'tide-kindling-second-wave', name: 'The Second Wave',
+    sourceId: 'tidefall-second-wave', objectId: 'tide-kindling-second-wave', name: 'The Second Wave',
     phenomenon: 'A shoreless wave rising by collective memory rather than wind or moon.',
     purpose: 'Serves as Tidefall’s final Kindling and explicit Beacon prerequisite.',
     zone: 'horizon', salience: 'milestone', material: ['world water', 'nacre foam', 'memory light'],
@@ -525,7 +525,7 @@ export const TIDEFALL_BEACON: BeaconDef = {
   localName: 'The Shoreless Lighthouse',
   requirement: {
     sourceKind: 'generator',
-    sourceId: 'ember2',
+    sourceId: 'tidefall-second-wave',
     target: 1,
     description: 'Kindle The Second Wave once; the final Kindling is not consumed.',
   },

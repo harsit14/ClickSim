@@ -30,7 +30,7 @@ import { CLOCKWORK_VISUAL } from './visual'
 
 const CLOCKWORK_DOCTRINES: FourTuple<UniversePackV2['economy']['doctrines'][number]> = [
   {
-    id: 'u4-doctrine-power-train',
+    id: 'clockwork-doctrine-power-train',
     name: 'Power Train',
     description: 'Concentrates transmitted power through one dominant inspected engine.',
     favoredMotivations: ['optimizer', 'performer'],
@@ -38,7 +38,7 @@ const CLOCKWORK_DOCTRINES: FourTuple<UniversePackV2['economy']['doctrines'][numb
     visualSignature: 'one heavy solid shaft joining the Escapement Heart to a large terminal flywheel',
   },
   {
-    id: 'u4-doctrine-distributed-works',
+    id: 'clockwork-doctrine-distributed-works',
     name: 'Distributed Works',
     description: 'Builds a broad redundant network with stable idle and offline operation.',
     favoredMotivations: ['optimizer', 'restorer'],
@@ -46,7 +46,7 @@ const CLOCKWORK_DOCTRINES: FourTuple<UniversePackV2['economy']['doctrines'][numb
     visualSignature: 'three parallel civic trains joined by open clutch frames and public load marks',
   },
   {
-    id: 'u4-doctrine-precision-train',
+    id: 'clockwork-doctrine-precision-train',
     name: 'Precision Train',
     description: 'Favors exact cycle inspection, cadence routes, and timing windows.',
     favoredMotivations: ['performer', 'archivist'],
@@ -54,7 +54,7 @@ const CLOCKWORK_DOCTRINES: FourTuple<UniversePackV2['economy']['doctrines'][numb
     visualSignature: 'a ruby escapement crossing a notched four-beat chapter ring',
   },
   {
-    id: 'u4-doctrine-forecast-engine',
+    id: 'clockwork-doctrine-forecast-engine',
     name: 'Forecast Engine',
     description: 'Favors scheduled automation, saved loadouts, and future-state planning.',
     favoredMotivations: ['wayfinder', 'optimizer'],
@@ -99,15 +99,15 @@ export const CLOCKWORK: UniversePack = {
     noun: 'Maintenance Signal',
     motion: 'meteor',
     powerUps: [
-      { id: 'u4-maintenance-window', label: 'Maintenance Window', glyph: '⚒', hue: 42, weight: 25, prodMult: 2, durationSec: 45, toast: 'The scheduled service frame opens for the selected train.' },
-      { id: 'u4-noon-alignment', label: 'Noon Alignment', glyph: '⌖', hue: 52, weight: 25, prodMult: 4, durationSec: 30, toast: 'The prepared route reaches its declared meridian.' },
-      { id: 'u4-leap-tick', label: 'Leap Tick', glyph: '+1', hue: 198, weight: 25, rateSeconds: 1, minAward: 1, toast: 'One displayed production cycle may be inserted or banked.' },
-      { id: 'u4-recall-notice', label: 'Recall Notice', glyph: '↺', hue: 214, weight: 25, rateSeconds: 10, minAward: 10, toast: 'The machine recalls its displayed best recent ten seconds.' },
+      { id: 'clockwork-maintenance-window', label: 'Maintenance Window', glyph: '⚒', hue: 42, weight: 25, prodMult: 2, durationSec: 45, toast: 'The scheduled service frame opens for the selected train.' },
+      { id: 'clockwork-noon-alignment', label: 'Noon Alignment', glyph: '⌖', hue: 52, weight: 25, prodMult: 4, durationSec: 30, toast: 'The prepared route reaches its declared meridian.' },
+      { id: 'clockwork-leap-tick', label: 'Leap Tick', glyph: '+1', hue: 198, weight: 25, rateSeconds: 1, minAward: 1, toast: 'One displayed production cycle may be inserted or banked.' },
+      { id: 'clockwork-recall-notice', label: 'Recall Notice', glyph: '↺', hue: 214, weight: 25, rateSeconds: 10, minAward: 10, toast: 'The machine recalls its displayed best recent ten seconds.' },
     ],
   },
   cabinet: CLOCKWORK_PATENT_LEDGER,
   twist: {
-    id: 'u4-deterministic-routing',
+    id: 'clockwork-deterministic-routing',
     name: 'The Visible Train',
     randomnessAllowed: false,
     description: 'No random criticals or random Omens. Production follows inspected routes and scheduled Maintenance Signals.',
@@ -119,7 +119,7 @@ export const CLOCKWORK: UniversePack = {
     unlockText: 'light Verdance’s Beacon',
   },
   beacon: {
-    generatorId: 'u4-great-regulator',
+    generatorId: 'clockwork-great-regulator',
     count: 1,
     reward: 3,
     description: 'The Great Regulator transmits one continuing interval into the Dark Between.',
@@ -138,7 +138,7 @@ export const CLOCKWORK_V2_PACK: UniversePackV2 = {
   },
   economy: {
     currency: {
-      id: 'u4-ticks',
+      id: 'clockwork-ticks',
       canonicalName: 'World Currency',
       localName: 'Ticks',
       singular: 'Tick',
@@ -151,11 +151,11 @@ export const CLOCKWORK_V2_PACK: UniversePackV2 = {
     upgrades: [...CLOCKWORK_UPGRADES] as readonly UpgradeDefV2[],
     doctrines: CLOCKWORK_DOCTRINES,
     localPrestige: {
-      id: 'u4-rewinding',
+      id: 'clockwork-rewinding',
       canonicalName: 'Epoch Turn',
       localName: 'Rewinding',
       rewardCurrency: {
-        id: 'u4-mainsprings',
+        id: 'clockwork-mainsprings',
         canonicalName: 'Epoch Matter',
         localName: 'Mainsprings',
         singular: 'Mainspring',
@@ -164,10 +164,10 @@ export const CLOCKWORK_V2_PACK: UniversePackV2 = {
         material: 'perfected timing locked into a sealed tension spring',
         scope: 'epoch',
       },
-      gainFormulaId: 'u4-rewinding-gain',
+      gainFormulaId: 'clockwork-rewinding-gain',
       loses: ['world-currency', 'run-earnings', 'kindlings', 'ordinary-upgrades', 'buy-mode'],
       retains: ['epoch-matter', 'epoch-doctrines', 'epoch-works', 'era-earnings', 'deep-currency', 'deep-laws', 'deep-works', 'trials', 'archive', 'story', 'beacons', 'between-currency', 'wayfinder'],
-      ceremonyFeedbackId: 'u4-rewinding-feedback',
+      ceremonyFeedbackId: 'clockwork-rewinding-feedback',
     },
   },
   heart: CLOCKWORK_HEART,

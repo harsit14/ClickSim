@@ -67,7 +67,7 @@
 
   function handleClick(x: number, y: number) {
     if (!world) return
-    if (game.activeUniverse === 'canticle' && kailashLongRestStatus(game.numericLawState).resting) return
+    if (game.activeUniverse === 'kailash' && kailashLongRestStatus(game.numericLawState).resting) return
     if (hasUi('music') && !isPlaying() && !silenced()) startMusic()
     const rhythm = clickReward()
     const result = clickEmber(rhythm.multiplier)

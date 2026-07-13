@@ -57,11 +57,11 @@
   [data-universe-art='verdance'] .frame { stroke-dasharray: 1.2 1.5; }
   [data-universe-art='clockwork'] path { stroke-linecap: square; }
   [data-universe-art='clockwork'] .accent { stroke-dasharray: 1.4 1; }
-  [data-universe-art='prismata'] .body { stroke-width: 1.55; }
-  [data-universe-art='prismata'] .frame { stroke-dasharray: 1 1.6; }
-  [data-universe-art='prismata'] .accent { stroke: color-mix(in srgb, currentColor 62%, #ffd98d); }
-  [data-universe-art='tempest'] .frame { stroke-dasharray: 1.4 1.8; }
-  [data-universe-art='tempest'] .accent { stroke: color-mix(in srgb, currentColor 60%, #f1d584); }
-  [data-universe-art='canticle'] .frame { stroke-dasharray: 4 1.3; }
-  [data-universe-art='canticle'] .accent { stroke: color-mix(in srgb, currentColor 58%, #c47d4f); }
+  [data-universe-art='brahmalok'] .body { stroke-width: 1.55; }
+  [data-universe-art='brahmalok'] .frame { stroke-dasharray: 1 1.6; }
+  [data-universe-art='brahmalok'] .accent { stroke: color-mix(in srgb, currentColor 62%, #ffd98d); }
+  [data-universe-art='vishnulok'] .frame { stroke-dasharray: 1.4 1.8; }
+  [data-universe-art='vishnulok'] .accent { stroke: color-mix(in srgb, currentColor 60%, #f1d584); }
+  [data-universe-art='kailash'] .frame { stroke-dasharray: 4 1.3; }
+  [data-universe-art='kailash'] .accent { stroke: color-mix(in srgb, currentColor 58%, #c47d4f); }
 </style>

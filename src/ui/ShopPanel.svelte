@@ -265,13 +265,13 @@
   .shop[data-realm='clockwork'] {
     --shop-etch: repeating-linear-gradient(90deg, var(--amber) 0 0.28rem, transparent 0.28rem 0.52rem, var(--amber) 0.52rem 0.58rem, transparent 0.58rem 1.18rem);
   }
-  .shop[data-realm='prismata'] {
+  .shop[data-realm='brahmalok'] {
     --shop-etch: repeating-linear-gradient(135deg, transparent 0 0.42rem, var(--amber) 0.45rem 0.52rem, transparent 0.55rem 0.95rem);
   }
-  .shop[data-realm='tempest'] {
+  .shop[data-realm='vishnulok'] {
     --shop-etch: radial-gradient(circle at center, transparent 0 34%, var(--amber) 37% 48%, transparent 51%) 0 0 / 1.25rem 0.62rem repeat-x;
   }
-  .shop[data-realm='canticle'] {
+  .shop[data-realm='kailash'] {
     --shop-etch: linear-gradient(90deg, transparent 3%, var(--amber) 3% 17%, transparent 17% 22%, var(--amber) 22% 38%, transparent 38% 43%, var(--amber) 43% 60%, transparent 60% 65%, var(--amber) 65% 82%, transparent 82% 87%, var(--amber) 87% 97%, transparent 97%);
   }
   .shop.collapsed {

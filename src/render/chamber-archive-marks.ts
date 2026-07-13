@@ -1,6 +1,6 @@
 import type { UniverseId } from '../content/universes/types'
 
-export type ChamberArchiveUniverse = Extract<UniverseId, 'verdance' | 'prismata' | 'tempest' | 'canticle'>
+export type ChamberArchiveUniverse = Extract<UniverseId, 'verdance' | 'brahmalok' | 'vishnulok' | 'kailash'>
 
 export interface ChamberArchiveMark {
   readonly id: string
@@ -14,9 +14,9 @@ export interface ChamberArchiveMark {
 
 const FRAMES: Readonly<Record<ChamberArchiveUniverse, string>> = {
   verdance: 'M20 4C29 4 35 10 35 19C35 29 29 36 20 36C11 36 5 29 5 20C5 11 11 4 20 4Z',
-  prismata: 'M20 4C29 8 35 14 35 22C35 30 29 35 20 36C11 35 5 30 5 22C5 14 11 8 20 4ZM20 7V34',
-  tempest: 'M6 8C13 4 27 4 34 8V30C27 36 13 36 6 30ZM9 12H31M9 28H31',
-  canticle: 'M20 4A16 16 0 1 1 20 36A16 16 0 1 1 20 4ZM20 8V32M8 20H32',
+  brahmalok: 'M20 4C29 8 35 14 35 22C35 30 29 35 20 36C11 35 5 30 5 22C5 14 11 8 20 4ZM20 7V34',
+  vishnulok: 'M6 8C13 4 27 4 34 8V30C27 36 13 36 6 30ZM9 12H31M9 28H31',
+  kailash: 'M20 4A16 16 0 1 1 20 36A16 16 0 1 1 20 4ZM20 8V32M8 20H32',
 }
 
 function marks(
@@ -25,7 +25,7 @@ function marks(
   entries: readonly (readonly [label: string, diagramPath: string, accentPath: string])[],
 ): readonly ChamberArchiveMark[] {
   return entries.map(([label, diagramPath, accentPath], index) => ({
-    id: `${universeId === 'verdance' ? 'u3' : universeId === 'prismata' ? 'u5' : universeId === 'tempest' ? 'u6' : 'u7'}-archive-${String(index + 1).padStart(2, '0')}`,
+    id: `${universeId === 'verdance' ? 'verdance' : universeId === 'brahmalok' ? 'brahmalok' : universeId === 'vishnulok' ? 'vishnulok' : 'kailash'}-archive-${String(index + 1).padStart(2, '0')}`,
     universeId,
     family: families[Math.floor(index / 4)],
     label,
@@ -50,7 +50,7 @@ export const VERDANCE_ARCHIVE_MARKS = marks('verdance', ['survival', 'communicat
   ['garden gate cutting', 'M10 32V17C10 8 30 8 30 17V32M14 32V18C14 13 26 13 26 18V32M20 31V20', 'M20 21C15 18 13 22 16 25M20 24C25 20 28 24 24 27'],
 ])
 
-export const PRISMATA_ARCHIVE_MARKS = marks('prismata', ['first-thought', 'given-form', 'open-future'], [
+export const BRAHMALOK_ARCHIVE_MARKS = marks('brahmalok', ['first-thought', 'given-form', 'open-future'], [
   ['unwritten palm leaf', 'M9 12H31V29H9ZM12 16H28M12 20H28M12 24H24', 'M29 9V32'],
   ['seed without species', 'M20 10C27 15 28 23 20 30C12 23 13 15 20 10ZM20 13V31', 'M12 30C15 27 17 29 20 31C23 28 26 28 29 31'],
   ['compass of four questions', 'M20 8V32M8 20H32M12 12L28 28M28 12L12 28', 'M20 17A3 3 0 1 1 20 23A3 3 0 1 1 20 17'],
@@ -65,7 +65,7 @@ export const PRISMATA_ARCHIVE_MARKS = marks('prismata', ['first-thought', 'given
   ['the unclosed folio', 'M9 11H19V30H9ZM21 11H31V30H21ZM12 15H17M23 15H28M12 19H17M23 19H28', 'M17 25H23V31'],
 ])
 
-export const TEMPEST_ARCHIVE_MARKS = marks('tempest', ['refuge', 'correction', 'return'], [
+export const VISHNULOK_ARCHIVE_MARKS = marks('vishnulok', ['refuge', 'correction', 'return'], [
   ['saltless pearl', 'M20 11A9 9 0 1 1 20 29A9 9 0 1 1 20 11M12 20C16 16 24 24 28 19', 'M10 31C16 27 25 34 31 29'],
   ['returning tide map', 'M8 17C14 10 24 11 31 17M31 17L27 13M31 17L27 20M32 25C25 31 15 30 9 24M9 24L13 21M9 24L13 28', 'M11 20H29'],
   ['refuge threshold', 'M9 31V19C9 10 31 10 31 19V31M14 31V20C14 15 26 15 26 20V31', 'M7 33H33'],
@@ -80,7 +80,7 @@ export const TEMPEST_ARCHIVE_MARKS = marks('tempest', ['refuge', 'correction', '
   ['the map that comes home', 'M8 20C8 9 20 9 20 20C20 31 32 31 32 20C32 9 20 9 20 20C20 31 8 31 8 20', 'M10 34H30'],
 ])
 
-export const CANTICLE_ARCHIVE_MARKS = marks('canticle', ['change', 'refuge', 'return'], [
+export const KAILASH_ARCHIVE_MARKS = marks('kailash', ['change', 'refuge', 'return'], [
   ['meltwater ledger', 'M8 29L15 19L20 24L27 9L33 29M24 15C23 20 25 25 21 31', 'M10 33H30'],
   ['refuge map', 'M9 29V20C9 15 14 12 20 12C26 12 31 15 31 20V29M13 29V21C13 18 27 18 27 21V29', 'M7 32H33'],
   ['ash season chart', 'M9 10H31V30H9ZM14 10V30M20 10V30M26 10V30M9 22H31', 'M11 27C15 24 18 29 22 25C25 22 28 24 30 22'],
@@ -97,9 +97,9 @@ export const CANTICLE_ARCHIVE_MARKS = marks('canticle', ['change', 'refuge', 're
 
 export const CHAMBER_ARCHIVE_MARKS: readonly ChamberArchiveMark[] = [
   ...VERDANCE_ARCHIVE_MARKS,
-  ...PRISMATA_ARCHIVE_MARKS,
-  ...TEMPEST_ARCHIVE_MARKS,
-  ...CANTICLE_ARCHIVE_MARKS,
+  ...BRAHMALOK_ARCHIVE_MARKS,
+  ...VISHNULOK_ARCHIVE_MARKS,
+  ...KAILASH_ARCHIVE_MARKS,
 ]
 
 export const CHAMBER_ARCHIVE_MARK_BY_ID = new Map(CHAMBER_ARCHIVE_MARKS.map((mark) => [mark.id, mark]))

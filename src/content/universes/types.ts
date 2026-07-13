@@ -9,9 +9,9 @@ export type UniverseId =
   | 'tidefall'
   | 'verdance'
   | 'clockwork'
-  | 'prismata'
-  | 'tempest'
-  | 'canticle'
+  | 'brahmalok'
+  | 'vishnulok'
+  | 'kailash'
 
 export type StableContentId = string
 export type SerializedEconomyAmount = '0' | `${number}e${number}`

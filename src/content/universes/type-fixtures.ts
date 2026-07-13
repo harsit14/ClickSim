@@ -66,8 +66,8 @@ export type ClockworkTypeFixture = AssertPack<UniverseFixture<
   'Patent Ledger'
 >>
 
-export type PrismataTypeFixture = AssertPack<UniverseFixture<
-  'prismata',
+export type BrahmalokTypeFixture = AssertPack<UniverseFixture<
+  'brahmalok',
   'Possibility',
   'Lotus of Becoming',
   'Recomposition',
@@ -75,8 +75,8 @@ export type PrismataTypeFixture = AssertPack<UniverseFixture<
   'Archive of First Forms'
 >>
 
-export type TempestTypeFixture = AssertPack<UniverseFixture<
-  'tempest',
+export type VishnulokTypeFixture = AssertPack<UniverseFixture<
+  'vishnulok',
   'Continuity',
   'The Endless Circuit',
   'Renewal',
@@ -84,9 +84,9 @@ export type TempestTypeFixture = AssertPack<UniverseFixture<
   'Ocean of Continuance'
 >>
 
-export type CanticleTypeFixture = AssertPack<UniverseFixture<
-  'canticle',
-  'Cadence',
+export type KailashTypeFixture = AssertPack<UniverseFixture<
+  'kailash',
+  'Stillness',
   'The Still Point',
   'Release',
   'Traces',
@@ -98,9 +98,9 @@ export type SevenUniverseTypeFixtures = readonly [
   TidefallTypeFixture,
   VerdanceTypeFixture,
   ClockworkTypeFixture,
-  PrismataTypeFixture,
-  TempestTypeFixture,
-  CanticleTypeFixture,
+  BrahmalokTypeFixture,
+  VishnulokTypeFixture,
+  KailashTypeFixture,
 ]
 
 type FixtureIds = SevenUniverseTypeFixtures[number]['id']

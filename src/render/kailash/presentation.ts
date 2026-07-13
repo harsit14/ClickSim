@@ -1,7 +1,7 @@
-import { CANTICLE_V2_PACK } from '../../content/universes/canticle'
+import { KAILASH_V2_PACK } from '../../content/universes/kailash'
 import { createAuthoredLokaPresentation } from '../loka-authored-presentation'
 
-export const CANTICLE_PRESENTATION = createAuthoredLokaPresentation(CANTICLE_V2_PACK, {
+export const KAILASH_PRESENTATION = createAuthoredLokaPresentation(KAILASH_V2_PACK, {
   palette: { primary: '#63a9bf', secondary: '#c47d4f', highlight: '#e8edf2', shadow: '#1b3143', void: '#070b12' },
   primitives: ['polygon', 'branch', 'ribbon'],
   heartPrimitives: ['polygon', 'arc', 'ribbon'],

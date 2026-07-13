@@ -5,7 +5,7 @@
     planBrahmalokFolioShelf,
     planBrahmalokHeartResponse,
     planBrahmalokPetalWhorls,
-  } from '../render/prismata/world-layer'
+  } from '../render/brahmalok/world-layer'
 
   let {
     objects,

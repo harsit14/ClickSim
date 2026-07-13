@@ -18,7 +18,7 @@ test('Verdance ships one complete legacy and V2 content pack', () => {
 })
 
 test('Verdance IDs remain in the reserved U3 namespace outside legacy bridge fields', () => {
-  assert.equal(VERDANCE_V2_PACK.economy.generators.every(({ id }) => id.startsWith('u3-')), true)
-  assert.equal(VERDANCE_V2_PACK.archive.records.every(({ id }) => id.startsWith('u3-')), true)
-  assert.equal(VERDANCE_V2_PACK.story.echoes.every(({ id }) => id.startsWith('u3-')), true)
+  assert.equal(VERDANCE_V2_PACK.economy.generators.every(({ id }) => id.startsWith('verdance-')), true)
+  assert.equal(VERDANCE_V2_PACK.archive.records.every(({ id }) => id.startsWith('verdance-')), true)
+  assert.equal(VERDANCE_V2_PACK.story.echoes.every(({ id }) => id.startsWith('verdance-')), true)
 })

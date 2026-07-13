@@ -29,18 +29,18 @@ export const GARDEN_NODES: readonly GardenNode[] = [
   { universeId: 'tidefall', name: 'Pool of Returns', offering: 'grief that can move without vanishing', question: 'What can be released without being erased?' },
   { universeId: 'verdance', name: 'Canopy of Consent', offering: 'growth that leaves room for endings', question: 'What must change so another life can begin?' },
   { universeId: 'clockwork', name: 'Open Escapement', offering: 'prediction with one deliberate uncertainty', question: 'Can a forecast advise without ruling?' },
-  { universeId: 'prismata', name: 'Open Lotus', offering: 'possibility with no single ordained form', question: 'Can creation leave room for what it did not imagine?' },
-  { universeId: 'tempest', name: 'Returning Harbor', offering: 'continuity that changes in order to care', question: 'What must preservation allow to return differently?' },
-  { universeId: 'canticle', name: 'Open Summit', offering: 'release with shelter still below', question: 'Can an ending clear a path without abandoning the living?' },
+  { universeId: 'brahmalok', name: 'Open Lotus', offering: 'possibility with no single ordained form', question: 'Can creation leave room for what it did not imagine?' },
+  { universeId: 'vishnulok', name: 'Returning Harbor', offering: 'continuity that changes in order to care', question: 'What must preservation allow to return differently?' },
+  { universeId: 'kailash', name: 'Open Summit', offering: 'release with shelter still below', question: 'Can an ending clear a path without abandoning the living?' },
 ]
 
 export const GARDEN_LINKS: readonly GardenLink[] = [
-  { id: 'shared-sky', from: 'emberlight', to: 'prismata', name: 'The First Margin', result: 'first warmth opens possibility without authoring every form' },
+  { id: 'shared-sky', from: 'emberlight', to: 'brahmalok', name: 'The First Margin', result: 'first warmth opens possibility without authoring every form' },
   { id: 'rain-treaty', from: 'tidefall', to: 'verdance', name: 'The Rain Treaty', result: 'returning water ages a forest without forcing its season' },
-  { id: 'weather-clock', from: 'clockwork', to: 'tempest', name: 'The Unscheduled Current', result: 'a forecast yields when responsive refuge requires another course' },
-  { id: 'choir-storms', from: 'tempest', to: 'canticle', name: 'The Returning Ascent', result: 'completed return approaches release with every shelter still open' },
-  { id: 'garden-map', from: 'verdance', to: 'canticle', name: 'The Renewal Path', result: 'living change becomes a route through responsible release and return' },
-  { id: 'open-future', from: 'clockwork', to: 'prismata', name: 'The Open Future', result: 'cause and creation remain legible without becoming destiny' },
+  { id: 'weather-clock', from: 'clockwork', to: 'vishnulok', name: 'The Unscheduled Current', result: 'a forecast yields when responsive refuge requires another course' },
+  { id: 'choir-storms', from: 'vishnulok', to: 'kailash', name: 'The Returning Ascent', result: 'completed return approaches release with every shelter still open' },
+  { id: 'garden-map', from: 'verdance', to: 'kailash', name: 'The Renewal Path', result: 'living change becomes a route through responsible release and return' },
+  { id: 'open-future', from: 'clockwork', to: 'brahmalok', name: 'The Open Future', result: 'cause and creation remain legible without becoming destiny' },
   { id: 'first-water', from: 'emberlight', to: 'tidefall', name: 'First Water', result: 'the first warmth learns that tending is not possession' },
 ]
 

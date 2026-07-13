@@ -38,13 +38,8 @@
     return upgrade.unlock.gen ?? 'spark'
   }
 
-  function targetCue(upgrade: UpgradeDef): string {
-    const kinds = new Set(upgrade.effects.map(({ kind }) => kind))
-    if ([...kinds].some((kind) => kind === 'clickMult' || kind === 'clickShare' || kind === 'critChance' || kind === 'critMult')) return 'Touch'
-    if (kinds.has('globalMult')) return 'Global'
-    if (kinds.has('synergy') || kinds.has('synergyMult')) return 'Resonance'
-    const generatorId = upgradeGeneratorId(upgrade)
-    return pack.generatorById.get(generatorId)?.name ?? 'Kindling'
+  function upgradeCue(upgrade: UpgradeDef): string {
+    return upgrade.name
   }
 </script>
 
@@ -80,7 +75,7 @@
           {:else}
             <span class="glyph">{u.glyph}</span>
           {/if}
-          <span class="target-cue">{targetCue(u)}</span>
+          <span class="target-cue">{upgradeCue(u)}</span>
         </button>
       {/each}
       {#if overflow > 0}
@@ -89,7 +84,7 @@
     </div>
     {#if preview}
       <div id="upgrade-preview" class="detail" style:--hue={preview.hue}>
-        <div class="detail-head"><strong>{preview.name}</strong><span>{targetCue(preview)}</span></div>
+        <div class="detail-head"><strong>{preview.name}</strong></div>
         <em>{preview.flavor}</em>
         <span class="fx"><b>Changes</b> · {preview.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())).join(' · ')}</span>
         <span class="price" class:ready={!ltAmount(game.light, amountFromNumber(preview.cost))}>
@@ -220,7 +215,6 @@
     color: var(--text);
   }
   .detail-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
-  .detail-head span { color: var(--amber); font-size: 0.6875rem; font-weight: 720; letter-spacing: 0.08em; text-transform: uppercase; }
   .detail em {
     color: var(--dim);
     font-family: Georgia, serif;

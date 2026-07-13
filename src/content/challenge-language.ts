@@ -62,21 +62,21 @@ const LEXICONS: Readonly<Record<string, ChallengeLexicon>> = {
     functionVerb: 'operate', relationshipPlural: 'linkages', manualCurrencyVerb: 'transmitted', silenceSound: 'bells',
     silenceRhythm: 'cadence', silencePlace: 'the unpowered city',
   },
-  prismata: {
+  brahmalok: {
     unitSingular: 'form', unitPlural: 'forms', actionVerb: 'unfold', earnVerb: 'unfold',
     inputPlural: 'marks', upgradePlural: 'revisions', productionNoun: 'possibility', produceVerb: 'contribute',
     functionVerb: 'answer a creation direction', relationshipPlural: 'mandala relations', manualCurrencyVerb: 'unfolded', silenceSound: 'page-breath',
     silenceRhythm: 'fourfold cycle', silencePlace: 'the unwritten margin',
   },
-  tempest: {
+  vishnulok: {
     unitSingular: 'refuge', unitPlural: 'refuges', actionVerb: 'sustain', earnVerb: 'return',
     inputPlural: 'tendings', upgradePlural: 'corrections', productionNoun: 'continuity', produceVerb: 'contribute',
     functionVerb: 'carry the circuit', relationshipPlural: 'current relations', manualCurrencyVerb: 'sustained', silenceSound: 'water-bed',
     silenceRhythm: 'returning tide', silencePlace: 'the still ocean',
   },
-  canticle: {
+  kailash: {
     unitSingular: 'waystation', unitPlural: 'waystations', actionVerb: 'release', earnVerb: 'carry',
-    inputPlural: 'tendings', upgradePlural: 'paths', productionNoun: 'cadence', produceVerb: 'contribute',
+    inputPlural: 'tendings', upgradePlural: 'paths', productionNoun: 'stillness', produceVerb: 'contribute',
     functionVerb: 'carry the cycle', relationshipPlural: 'mountain relations', manualCurrencyVerb: 'carried', silenceSound: 'mountain wind',
     silenceRhythm: 'five-act cycle', silencePlace: 'the open summit',
   },

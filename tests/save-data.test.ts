@@ -149,7 +149,7 @@ test('sanitizes parked universe runs against their own content packs', () => {
       tidefall: {
         light: 900,
         totalEarned: 1_000,
-        owned: { spark: 4, exploit: 99 },
+        owned: { 'tidefall-droplet': 4, exploit: 99 },
         upgrades: ['undertow-touch', 'ember-touch'],
         seen: ['tide-arrival', 'awake'],
         echoes: ['tide-moon-ledger', 'first-fire'],
@@ -162,7 +162,7 @@ test('sanitizes parked universe runs against their own content packs', () => {
   })
 
   assert.ok(clean)
-  assert.deepEqual(clean.universeRuns.tidefall.owned, { spark: 4 })
+  assert.deepEqual(clean.universeRuns.tidefall.owned, { 'tidefall-droplet': 4 })
   assert.deepEqual(clean.universeRuns.tidefall.upgrades, ['undertow-touch'])
   assert.deepEqual(clean.universeRuns.tidefall.seen, ['tide-arrival'])
   assert.deepEqual(clean.universeRuns.tidefall.echoes, ['tide-moon-ledger'])
@@ -219,36 +219,36 @@ test('crossing and Tidefall scenarios expose the multiverse layer safely', () =>
   assert.deepEqual(tidefall.beacons, ['emberlight'])
   assert.equal(tidefall.vesselPartsByUniverse.emberlight.length, 5)
   assert.equal(tidefall.vesselPartsByUniverse.tidefall, undefined)
-  assert.equal(tidefall.owned.spark, 60)
+  assert.equal(tidefall.owned['tidefall-droplet'], 60)
   assert.deepEqual(tidefall.echoes, ['tide-moon-ledger'])
 })
 
 test('F3 and F4 scenarios preserve every universe-local content namespace', () => {
   const verdance = createDevScenario('verdance', 10_000)
   const clockwork = createDevScenario('clockwork', 10_000)
-  const prismata = createDevScenario('prismata', 10_000)
-  const tempest = createDevScenario('tempest', 10_000)
-  const canticle = createDevScenario('canticle', 10_000)
-  assert.ok(verdance && clockwork && prismata && tempest && canticle)
+  const brahmalok = createDevScenario('brahmalok', 10_000)
+  const vishnulok = createDevScenario('vishnulok', 10_000)
+  const kailash = createDevScenario('kailash', 10_000)
+  assert.ok(verdance && clockwork && brahmalok && vishnulok && kailash)
   assert.equal(verdance.activeUniverse, 'verdance')
   assert.equal(clockwork.activeUniverse, 'clockwork')
-  assert.ok(Object.keys(verdance.owned).every((id) => id.startsWith('u3-')))
+  assert.ok(Object.keys(verdance.owned).every((id) => id.startsWith('verdance-')))
   assert.deepEqual(
-    Object.keys(verdance.numericLawState).filter((id) => id.startsWith('u3-graft-')).sort(),
-    ['u3-graft-active', 'u3-graft-rootstock', 'u3-graft-scion'],
+    Object.keys(verdance.numericLawState).filter((id) => id.startsWith('verdance-graft-')).sort(),
+    ['verdance-graft-active', 'verdance-graft-rootstock', 'verdance-graft-scion'],
   )
-  assert.ok(Object.keys(clockwork.owned).every((id) => id.startsWith('u4-')))
+  assert.ok(Object.keys(clockwork.owned).every((id) => id.startsWith('clockwork-')))
   assert.ok(verdance.curiosities.length >= 3)
   assert.ok(clockwork.curiosities.length >= 3)
-  assert.equal(prismata.activeUniverse, 'prismata')
-  assert.equal(tempest.activeUniverse, 'tempest')
-  assert.equal(canticle.activeUniverse, 'canticle')
-  assert.ok(Object.keys(prismata.owned).every((id) => id.startsWith('u5-')))
-  assert.ok(Object.keys(tempest.owned).every((id) => id.startsWith('u6-')))
-  assert.ok(Object.keys(canticle.owned).every((id) => id.startsWith('u7-')))
-  assert.deepEqual(prismata.beacons, ['emberlight', 'tidefall', 'verdance', 'clockwork'])
-  assert.deepEqual(tempest.beacons, ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata'])
-  assert.deepEqual(canticle.beacons, ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest'])
+  assert.equal(brahmalok.activeUniverse, 'brahmalok')
+  assert.equal(vishnulok.activeUniverse, 'vishnulok')
+  assert.equal(kailash.activeUniverse, 'kailash')
+  assert.ok(Object.keys(brahmalok.owned).every((id) => id.startsWith('brahmalok-')))
+  assert.ok(Object.keys(vishnulok.owned).every((id) => id.startsWith('vishnulok-')))
+  assert.ok(Object.keys(kailash.owned).every((id) => id.startsWith('kailash-')))
+  assert.deepEqual(brahmalok.beacons, ['emberlight', 'tidefall', 'verdance', 'clockwork'])
+  assert.deepEqual(vishnulok.beacons, ['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok'])
+  assert.deepEqual(kailash.beacons, ['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok'])
 })
 
 test('markets scenario exposes both completed repeatable economies', () => {

@@ -6,9 +6,6 @@ export type DivineRealmMechanicFoundation = 'routing' | 'path' | 'sequence'
 
 export interface DivineRealmPlan {
   readonly id: DivineRealmId
-  /** Existing save slot retained until the replacement is complete. */
-  readonly saveSlotUniverseId: Extract<UniverseId, 'prismata' | 'tempest' | 'canticle'>
-  readonly stablePrefix: 'u5' | 'u6' | 'u7'
   readonly publicName: string
   readonly traditionalReference: string
   readonly role: DivineRealmRole
@@ -30,7 +27,7 @@ export const RESTORED_UNIVERSE_ROUTE = [
 
 export const DIVINE_REALMS = [
   {
-    id: 'brahmalok', saveSlotUniverseId: 'prismata', stablePrefix: 'u5',
+    id: 'brahmalok',
     publicName: 'Brahmalok', traditionalReference: 'Brahmaloka / Satyaloka',
     role: 'creation', playerVerb: 'unfold', mechanicFoundation: 'routing',
     centralInterface: 'The Lotus of Becoming', sacredPresences: ['Brahma', 'Saraswati'],
@@ -39,7 +36,7 @@ export const DIVINE_REALMS = [
     completionRite: 'The four horizons become one creation while every direction remains legible.',
   },
   {
-    id: 'vishnulok', saveSlotUniverseId: 'tempest', stablePrefix: 'u6',
+    id: 'vishnulok',
     publicName: 'Vishnulok', traditionalReference: 'Vaikuntha',
     role: 'preservation', playerVerb: 'sustain', mechanicFoundation: 'path',
     centralInterface: 'The Endless Circuit', sacredPresences: ['Vishnu', 'Lakshmi', 'Ananta'],
@@ -48,7 +45,7 @@ export const DIVINE_REALMS = [
     completionRite: 'The correction circuit closes, the chakra returns, and the cosmic ocean becomes still without becoming lifeless.',
   },
   {
-    id: 'kailash', saveSlotUniverseId: 'canticle', stablePrefix: 'u7',
+    id: 'kailash',
     publicName: 'Kailash', traditionalReference: 'Kailasa',
     role: 'dissolution', playerVerb: 'release', mechanicFoundation: 'sequence',
     centralInterface: 'The Still Point', sacredPresences: ['Shiva', 'Parvati', 'Ganga', 'Nandi'],
@@ -62,14 +59,9 @@ export const DIVINE_REALM_BY_ID: ReadonlyMap<DivineRealmId, DivineRealmPlan> = n
   DIVINE_REALMS.map((realm) => [realm.id, realm]),
 )
 
-export const DIVINE_REALM_BY_SAVE_SLOT: ReadonlyMap<DivineRealmPlan['saveSlotUniverseId'], DivineRealmPlan> = new Map(
-  DIVINE_REALMS.map((realm) => [realm.saveSlotUniverseId, realm]),
-)
-
-/** Existing runtime order. Save-slot IDs stay stable as each public loka replacement ships. */
-export const SAVE_STABLE_STORY_ROUTE = [
+export const STORY_ROUTE = [
   ...RESTORED_UNIVERSE_ROUTE,
-  ...DIVINE_REALMS.map(({ saveSlotUniverseId }) => saveSlotUniverseId),
+  ...DIVINE_REALMS.map(({ id }) => id),
 ] as const satisfies readonly UniverseId[]
 
 export const SACRED_CONTENT_GUARDRAILS = [
@@ -77,6 +69,6 @@ export const SACRED_CONTENT_GUARDRAILS = [
   'not-joke-achievement', 'not-cabinet-collectible',
 ] as const
 
-export function divineRealmForSaveSlot(universeId: string): DivineRealmPlan | null {
-  return DIVINE_REALM_BY_SAVE_SLOT.get(universeId as DivineRealmPlan['saveSlotUniverseId']) ?? null
+export function divineRealmById(universeId: string): DivineRealmPlan | null {
+  return DIVINE_REALM_BY_ID.get(universeId as DivineRealmId) ?? null
 }

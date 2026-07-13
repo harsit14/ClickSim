@@ -48,31 +48,31 @@ export const LUMEN_COMPLICITY_LINES: readonly LumenComplicityLine[] = [
   },
   {
     id: 'act7-lumen-inevitable',
-    universeIds: ['tempest'],
+    universeIds: ['vishnulok'],
     act: 'VII',
     text: 'I called preservation neutral after I had already chosen what counted as order, which losses could be corrected, and whose refuge remained outside my route.',
     when: (game) => game.ending !== null && game.supernovae >= 1,
   },
   {
     id: 'act7-lumen-storm-beacon',
-    universeIds: ['tempest'],
+    universeIds: ['vishnulok'],
     act: 'VII',
     text: 'Vishnulok continues without us. I kept the traces by which we found it because I believed preservation could be made into a system. I left other refuges unentered. Belief is not permission.',
-    when: (game) => saw(game, 'act7-lumen-inevitable') && game.beacons.includes('tempest'),
+    when: (game) => saw(game, 'act7-lumen-inevitable') && game.beacons.includes('vishnulok'),
   },
   {
     id: 'act7-lumen-curation-rest',
-    universeIds: ['canticle'],
+    universeIds: ['kailash'],
     act: 'VII',
     text: 'At the Still Point, I called my record of an ending complete because I had chosen what the record would carry through it. I kept the summit and ignored the path down.',
     when: (game) => game.ending !== null && game.supernovae >= 1,
   },
   {
     id: 'act7-lumen-seven',
-    universeIds: ['canticle'],
+    universeIds: ['kailash'],
     act: 'VII',
     text: 'Four restored worlds and three lokas. I discovered the loka traces in strata older than my archive, then chose the order in which I showed them to you and called that sequence inevitable. The Garden must include that curatorial debt without pretending I authored the places the traces revealed.',
-    when: (game) => saw(game, 'act7-lumen-curation-rest') && game.beacons.includes('canticle'),
+    when: (game) => saw(game, 'act7-lumen-curation-rest') && game.beacons.includes('kailash'),
   },
 ]
 

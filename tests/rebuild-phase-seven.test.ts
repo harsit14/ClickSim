@@ -236,13 +236,13 @@ test('the complicity arc orders itself within each parked universe run', () => {
     owned: { ember2: 1 },
     ending: 'warden',
     supernovae: 1,
-    beacons: ['tempest', 'canticle'],
+    beacons: ['vishnulok', 'kailash'],
     ...overrides,
   }) as never
   const ember = lumenComplicityLinesFor('emberlight')
-  const tempest = lumenComplicityLinesFor('tempest')
-  const canticle = lumenComplicityLinesFor('canticle')
-  assert.deepEqual([ember.length, tempest.length, canticle.length], [4, 2, 2])
+  const vishnulok = lumenComplicityLinesFor('vishnulok')
+  const kailash = lumenComplicityLinesFor('kailash')
+  assert.deepEqual([ember.length, vishnulok.length, kailash.length], [4, 2, 2])
   assert.deepEqual(lumenComplicityLinesFor('clockwork'), [])
 
   assert.equal(ember[0].when(state()), true)
@@ -252,13 +252,13 @@ test('the complicity arc orders itself within each parked universe run', () => {
   assert.equal(ember[3].when(state({ seen: [ember[2].id], ending: null })), false)
   assert.equal(ember[3].when(state({ seen: [ember[2].id] })), true)
 
-  assert.equal(tempest[0].when(state({ ending: null })), false)
-  assert.equal(tempest[0].when(state()), true)
-  assert.equal(tempest[1].when(state({ seen: [] })), false)
-  assert.equal(tempest[1].when(state({ seen: [tempest[0].id] })), true)
-  assert.equal(canticle[0].when(state()), true)
-  assert.equal(canticle[1].when(state({ seen: [] })), false)
-  assert.equal(canticle[1].when(state({ seen: [canticle[0].id] })), true)
+  assert.equal(vishnulok[0].when(state({ ending: null })), false)
+  assert.equal(vishnulok[0].when(state()), true)
+  assert.equal(vishnulok[1].when(state({ seen: [] })), false)
+  assert.equal(vishnulok[1].when(state({ seen: [vishnulok[0].id] })), true)
+  assert.equal(kailash[0].when(state()), true)
+  assert.equal(kailash[1].when(state({ seen: [] })), false)
+  assert.equal(kailash[1].when(state({ seen: [kailash[0].id] })), true)
 })
 
 test('complicity lines take story priority without replacing ten-line universe arcs', () => {

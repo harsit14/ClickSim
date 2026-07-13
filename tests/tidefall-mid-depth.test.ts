@@ -8,7 +8,12 @@ test('Tidefall migration forms change at shared ownership thresholds', () => {
 })
 
 test('Tidefall middle-band life is owned, sparse, and leaves the trench empty', () => {
-  const owned = { wisp: 100, forge: 50, titan: 25, constellation: 10 }
+  const owned = {
+    'tidefall-ripple': 100,
+    'tidefall-reef-light': 50,
+    'tidefall-kelp-cathedral': 25,
+    'tidefall-shoal-constellation': 10,
+  }
   const high = planTidefallMidDepth(owned, 'high')
   const low = planTidefallMidDepth(owned, 'low')
   assert.equal(high.length, 4)

@@ -11,9 +11,9 @@
   import { format } from '../core/format'
   import { isZeroAmount } from '../core/numeric/amount'
   import {
-    canticleStatus,
+    kailashStatus,
     brahmalokStatus,
-    tempestStatus,
+    vishnulokCircuitStatus,
   } from '../content/universes/f4-runtime'
 
   let now = $state(Date.now())
@@ -25,9 +25,9 @@
   const clickRate = $derived(recentClickRatePerSec())
   const tidefall = $derived(pack.id === 'tidefall')
   const verdance = $derived(pack.id === 'verdance')
-  const brahmalok = $derived(pack.id === 'prismata' ? brahmalokStatus(game.numericLawState, game.owned) : null)
-  const tempest = $derived(pack.id === 'tempest' ? tempestStatus(game.numericLawState) : null)
-  const canticle = $derived(pack.id === 'canticle' ? canticleStatus(game.numericLawState, game.owned, now) : null)
+  const brahmalok = $derived(pack.id === 'brahmalok' ? brahmalokStatus(game.numericLawState, game.owned) : null)
+  const vishnulok = $derived(pack.id === 'vishnulok' ? vishnulokCircuitStatus(game.numericLawState) : null)
+  const kailash = $derived(pack.id === 'kailash' ? kailashStatus(game.numericLawState, game.owned, now) : null)
   const tide = $derived(universeRateMult(game, now))
   const tideNext = $derived(universeRateMult(game, now + 500))
   const tideLabel = $derived(
@@ -35,10 +35,10 @@
   )
   const tidePosition = $derived(Math.max(0, Math.min(100, ((tide - 0.6) / 0.8) * 100)))
   const growthStages: readonly VerdanceCohortStageId[] = [
-    'u3-cohort-new',
-    'u3-cohort-rooted',
-    'u3-cohort-mature',
-    'u3-cohort-ancient',
+    'verdance-cohort-new',
+    'verdance-cohort-rooted',
+    'verdance-cohort-mature',
+    'verdance-cohort-ancient',
   ]
   const growth = $derived(verdanceCohortRuntimeSummary(
     pack.generators.map(({ id }) => id),
@@ -83,22 +83,22 @@
         <strong>×{growth.multiplier.toFixed(2)}</strong>
       </div>
     {:else if brahmalok}
-      <div class="law-state prismata" aria-label={`${brahmalok.recipe.name}; ${brahmalok.activeBands} of 4 creation directions active; production ×${brahmalok.multiplier.toFixed(2)}`}>
-        <span>{brahmalok.recipe.glyph} {brahmalok.recipe.name}</span>
-        <i aria-hidden="true">{brahmalok.activeBands}/4 directions</i>
+      <div class="law-state brahmalok" aria-label={`${brahmalok.mode.name}; ${brahmalok.activeDirections} of 4 creation directions active; production ×${brahmalok.multiplier.toFixed(2)}`}>
+        <span>{brahmalok.mode.glyph} {brahmalok.mode.name}</span>
+        <i aria-hidden="true">{brahmalok.activeDirections}/4 directions</i>
         <strong>×{brahmalok.multiplier.toFixed(2)}</strong>
       </div>
-    {:else if tempest}
-      <div class="law-state tempest" aria-label={`${tempest.path.name}; ${Math.round(tempest.charge)} percent continuity; production ×${tempest.multiplier.toFixed(2)}`}>
-        <span>{tempest.path.glyph} {tempest.boostRemainingSec > 0 ? 'returning' : tempest.ready ? 'correction ready' : 'continuity gathering'}</span>
-        <i aria-hidden="true">{Math.round(tempest.charge)}%</i>
-        <strong>×{tempest.multiplier.toFixed(2)}</strong>
+    {:else if vishnulok}
+      <div class="law-state vishnulok" aria-label={`${vishnulok.circuit.name}; ${Math.round(vishnulok.continuity)} percent continuity; production ×${vishnulok.multiplier.toFixed(2)}`}>
+        <span>{vishnulok.circuit.glyph} {vishnulok.returnRemainingSec > 0 ? 'returning' : vishnulok.ready ? 'correction ready' : 'continuity gathering'}</span>
+        <i aria-hidden="true">{Math.round(vishnulok.continuity)}%</i>
+        <strong>×{vishnulok.multiplier.toFixed(2)}</strong>
       </div>
-    {:else if canticle}
-      <div class="law-state canticle" aria-label={`${canticle.measure.name}; position ${canticle.slotIndex + 1}, ${canticle.role}; production ×${canticle.multiplier.toFixed(2)}`}>
-        <span>{canticle.measure.glyph} {canticle.role}</span>
-        <i aria-hidden="true">position {canticle.slotIndex + 1}/{canticle.slots.length}</i>
-        <strong>×{canticle.multiplier.toFixed(2)}</strong>
+    {:else if kailash}
+      <div class="law-state kailash" aria-label={`${kailash.measure.name}; position ${kailash.slotIndex + 1}, ${kailash.role}; production ×${kailash.multiplier.toFixed(2)}`}>
+        <span>{kailash.measure.glyph} {kailash.role}</span>
+        <i aria-hidden="true">position {kailash.slotIndex + 1}/{kailash.slots.length}</i>
+        <strong>×{kailash.multiplier.toFixed(2)}</strong>
       </div>
     {/if}
     {#if !isZeroAmount(game.stardustTotal) || !isZeroAmount(game.singTotal)}

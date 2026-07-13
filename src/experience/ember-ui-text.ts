@@ -202,7 +202,7 @@ const CLOCKWORK_COPY: Readonly<Record<string, string>> = {
   'reset.recovery.epoch-projection': 'Projection assumes the earned Mainsprings and current permanent bonuses.',
 }
 
-const PRISMATA_COPY: Readonly<Record<string, string>> = {
+const BRAHMALOK_COPY: Readonly<Record<string, string>> = {
   'reset-comparison.eyebrow': 'Before the Recomposition',
   'goal-lens.title': 'Margin Guide',
   'goal-lens.turn-off-label': 'Turn off the Margin Guide',
@@ -225,7 +225,7 @@ const PRISMATA_COPY: Readonly<Record<string, string>> = {
   'reset.recovery.epoch-projection': 'Projection assumes the earned Folios and current permanent bonuses.',
 }
 
-const TEMPEST_COPY: Readonly<Record<string, string>> = {
+const VISHNULOK_COPY: Readonly<Record<string, string>> = {
   'reset-comparison.eyebrow': 'Before the Renewal',
   'goal-lens.title': 'Continuance Sounding',
   'goal-lens.turn-off-label': 'Turn off the Continuance Sounding',
@@ -248,7 +248,7 @@ const TEMPEST_COPY: Readonly<Record<string, string>> = {
   'reset.recovery.epoch-projection': 'Projection assumes the earned Returns and current permanent bonuses.',
 }
 
-const CANTICLE_COPY: Readonly<Record<string, string>> = {
+const KAILASH_COPY: Readonly<Record<string, string>> = {
   'reset-comparison.eyebrow': 'Before Release',
   'goal-lens.title': 'Ascent Guide',
   'goal-lens.turn-off-label': 'Turn off the Ascent Guide',
@@ -264,8 +264,8 @@ const CANTICLE_COPY: Readonly<Record<string, string>> = {
   'prompt.supernova.title': 'Inspect Release before consenting',
   'reset.action.cancel': 'Keep this cycle',
   'reset.action.epoch-turn': 'Release',
-  'reset.result.epoch-matter-and-starting-kindlings': 'Cadence, Kindlings, ordinary upgrades, and buy mode return; Traces and permanent systems remain.',
-  'reset.category.world-currency': 'Cadence (World currency)',
+  'reset.result.epoch-matter-and-starting-kindlings': 'Stillness, Kindlings, ordinary upgrades, and buy mode return; Traces and permanent systems remain.',
+  'reset.category.world-currency': 'Stillness (World currency)',
   'reset.category.epoch-matter': 'Traces (Epoch Matter)',
   'reset.category.local-archive': 'Mountain Witness (Field Archive)',
   'reset.recovery.epoch-projection': 'Projection assumes the earned Traces and current permanent bonuses.',
@@ -275,9 +275,9 @@ const COPY_BY_UNIVERSE: Readonly<Record<string, Readonly<Record<string, string>>
   tidefall: TIDEFALL_COPY,
   verdance: VERDANCE_COPY,
   clockwork: CLOCKWORK_COPY,
-  prismata: PRISMATA_COPY,
-  tempest: TEMPEST_COPY,
-  canticle: CANTICLE_COPY,
+  brahmalok: BRAHMALOK_COPY,
+  vishnulok: VISHNULOK_COPY,
+  kailash: KAILASH_COPY,
 }
 
 function humanizeKey(key: string): string {

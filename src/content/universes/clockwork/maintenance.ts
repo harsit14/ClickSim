@@ -1,10 +1,10 @@
 import type { Effect } from '../../upgrades'
 
 export type ClockworkMaintenanceSignalId =
-  | 'u4-maintenance-window'
-  | 'u4-noon-alignment'
-  | 'u4-leap-tick'
-  | 'u4-recall-notice'
+  | 'clockwork-maintenance-window'
+  | 'clockwork-noon-alignment'
+  | 'clockwork-leap-tick'
+  | 'clockwork-recall-notice'
 
 export interface ClockworkMaintenanceSignalSpec {
   readonly id: ClockworkMaintenanceSignalId
@@ -29,7 +29,7 @@ export const CLOCKWORK_MAINTENANCE_SIGNALS: readonly [
   ClockworkMaintenanceSignalSpec,
 ] = [
   {
-    id: 'u4-maintenance-window',
+    id: 'clockwork-maintenance-window',
     name: 'Maintenance Window',
     periodMs: 5 * 60_000,
     offsetMs: 60_000,
@@ -44,7 +44,7 @@ export const CLOCKWORK_MAINTENANCE_SIGNALS: readonly [
     nonColorShape: 'open wrench frame with four countdown teeth',
   },
   {
-    id: 'u4-noon-alignment',
+    id: 'clockwork-noon-alignment',
     name: 'Noon Alignment',
     periodMs: 12 * 60_000,
     offsetMs: 3 * 60_000,
@@ -59,7 +59,7 @@ export const CLOCKWORK_MAINTENANCE_SIGNALS: readonly [
     nonColorShape: 'crosshair over three meshed orbital rings',
   },
   {
-    id: 'u4-leap-tick',
+    id: 'clockwork-leap-tick',
     name: 'Leap Tick',
     periodMs: 20 * 60_000,
     offsetMs: 7 * 60_000,
@@ -74,7 +74,7 @@ export const CLOCKWORK_MAINTENANCE_SIGNALS: readonly [
     nonColorShape: 'one raised index tooth beside a boxed plus sign',
   },
   {
-    id: 'u4-recall-notice',
+    id: 'clockwork-recall-notice',
     name: 'Recall Notice',
     periodMs: 30 * 60_000,
     offsetMs: 11 * 60_000,

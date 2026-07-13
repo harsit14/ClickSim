@@ -37,9 +37,9 @@ test('Phase 9.7 carries the three lokas through Lumen, the Question, and the Gar
 
 test('save-stable Atlas codes now decode to public loka canon without code drift', () => {
   const fixtures = [
-    [5021, 'prismata', 'A1-3vh.4.1.7.8.3.1-o68kc', 'BRAHMALOK: THE OPEN MARGIN'],
-    [7129, 'tempest', 'A1-5i1.5.2.7.a.4.z-usa7j', 'VISHNULOK: THE RETURNING HARBOR'],
-    [12011, 'canticle', 'A1-99n.6.3.6.9.5.2-kgtcw', 'KAILASH: THE PATH DOWNWARD'],
+    [5021, 'brahmalok', 'A1-3vh.4.1.7.8.3.1-o68kc', 'BRAHMALOK: THE OPEN MARGIN'],
+    [7129, 'vishnulok', 'A1-5i1.5.2.7.a.4.z-usa7j', 'VISHNULOK: THE RETURNING HARBOR'],
+    [12011, 'kailash', 'A1-99n.6.3.6.9.5.2-kgtcw', 'KAILASH: THE PATH DOWNWARD'],
   ] as const
 
   for (const [seed, universeId, code, title] of fixtures) {
@@ -63,9 +63,9 @@ test('save-stable Atlas codes now decode to public loka canon without code drift
 test('relays, achievements, guide, and Clockwork revelation expose the completed cycle', () => {
   assert.deepEqual(SUCCESSION_RELAYS.slice(-3).map(({ sourceUniverseId, targetUniverseId }) =>
     `${sourceUniverseId}->${targetUniverseId}`), [
-    'clockwork->prismata',
-    'prismata->tempest',
-    'tempest->canticle',
+    'clockwork->brahmalok',
+    'brahmalok->vishnulok',
+    'vishnulok->kailash',
   ])
   assert.match(SUCCESSION_RELAYS.slice(-3).map(({ description }) => description).join(' '), /Brahmalok.*Vishnulok.*Kailash/s)
   assert.ok(ACHIEVEMENTS.some(({ id }) => id === 'loka-cycle'))
@@ -76,6 +76,6 @@ test('relays, achievements, guide, and Clockwork revelation expose the completed
   assert.match(guide, /deities are never generators, currencies, opponents, or upgrade buttons/i)
 
   const revelation = read('../src/ui/ClockworkRevelation.svelte')
-  assert.doesNotMatch(revelation, />PRISMATA<|>TEMPEST<|>CANTICLE</)
+  assert.doesNotMatch(revelation, />BRAHMALOK<|>VISHNULOK<|>KAILASH</)
   assert.match(revelation, />ORIGIN MODEL<.*>CONTINUITY MODEL<.*>RELEASE MODEL</s)
 })

@@ -10,9 +10,9 @@
     configureBrahmalokDirection,
     configureBrahmalokMargin,
     configureVerdanceGrafting,
-    configureTempestPath,
+    configureVishnulokPath,
     configureUniverseLaw,
-    editCanticleSlot,
+    editKailashSlot,
     kailashLongRestUnlocked,
     reviewBankedBrahmalokCommission,
     reviewBankedKailashFront,
@@ -25,15 +25,15 @@
     KAILASH_CYCLES,
     BRAHMALOK_DIRECTIONS,
     BRAHMALOK_MODES,
-    TEMPEST_PATHS,
-    TEMPEST_RISKS,
-    canticleStatus,
+    VISHNULOK_CIRCUITS,
+    VISHNULOK_BURDENS,
+    kailashStatus,
     kailashFrontStatus,
     kailashLongRestStatus,
     brahmalokStatus,
     brahmalokCommissionStatus,
     brahmalokMarginModeIndex,
-    tempestStatus,
+    vishnulokCircuitStatus,
     f4RateMultiplier,
     vishnulokStrainStatus,
   } from '../content/universes/f4-runtime'
@@ -51,48 +51,48 @@
   let instrumentExpanded = $state(true)
   let instrumentExperienced = $state(false)
   let instrumentPreference = $state<'auto' | 'expanded' | 'compact'>('auto')
-  const brahmalokKindlings = universeById('prismata').generators
+  const brahmalokKindlings = universeById('brahmalok').generators
   const verdanceKindlings = universeById('verdance').generators
   const verdanceGraft = $derived(game.activeUniverse === 'verdance'
     ? verdanceGraftingStatus(verdanceKindlings.map(({ id }) => id), game.owned, game.numericLawState)
     : null)
-  const brahmalok = $derived(game.activeUniverse === 'prismata' ? brahmalokStatus(game.numericLawState, game.owned) : null)
-  const brahmalokCommission = $derived(game.activeUniverse === 'prismata' && (game.owned['u5-kindling-07'] ?? 0) > 0 ? brahmalokCommissionStatus(game.numericLawState, game.owned, game.curiosities.length) : null)
-  const brahmalokMargin = $derived(game.activeUniverse === 'prismata' ? brahmalokMarginModeIndex(game.numericLawState) : null)
-  const tempest = $derived(game.activeUniverse === 'tempest' ? tempestStatus(game.numericLawState) : null)
-  const vishnulokStrain = $derived(game.activeUniverse === 'tempest' && (game.owned['u6-kindling-08'] ?? 0) > 0 ? vishnulokStrainStatus(game.numericLawState) : null)
-  const canticle = $derived(game.activeUniverse === 'canticle' ? canticleStatus(game.numericLawState, game.owned, now) : null)
-  const kailashFront = $derived(game.activeUniverse === 'canticle' && (game.owned['u7-kindling-09'] ?? 0) > 0 ? kailashFrontStatus(game.numericLawState, game.owned) : null)
-  const kailashRest = $derived(game.activeUniverse === 'canticle' ? kailashLongRestStatus(game.numericLawState) : null)
+  const brahmalok = $derived(game.activeUniverse === 'brahmalok' ? brahmalokStatus(game.numericLawState, game.owned) : null)
+  const brahmalokCommission = $derived(game.activeUniverse === 'brahmalok' && (game.owned['brahmalok-kindling-07'] ?? 0) > 0 ? brahmalokCommissionStatus(game.numericLawState, game.owned, game.curiosities.length) : null)
+  const brahmalokMargin = $derived(game.activeUniverse === 'brahmalok' ? brahmalokMarginModeIndex(game.numericLawState) : null)
+  const vishnulok = $derived(game.activeUniverse === 'vishnulok' ? vishnulokCircuitStatus(game.numericLawState) : null)
+  const vishnulokStrain = $derived(game.activeUniverse === 'vishnulok' && (game.owned['vishnulok-kindling-08'] ?? 0) > 0 ? vishnulokStrainStatus(game.numericLawState) : null)
+  const kailash = $derived(game.activeUniverse === 'kailash' ? kailashStatus(game.numericLawState, game.owned, now) : null)
+  const kailashFront = $derived(game.activeUniverse === 'kailash' && (game.owned['kailash-kindling-09'] ?? 0) > 0 ? kailashFrontStatus(game.numericLawState, game.owned) : null)
+  const kailashRest = $derived(game.activeUniverse === 'kailash' ? kailashLongRestStatus(game.numericLawState) : null)
   const pack = $derived(universeById(game.activeUniverse))
   const realmLawMultiplier = $derived(f4RateMultiplier(game.activeUniverse, game.numericLawState, game.owned, now))
   const rate = $derived(activeRatePerSec(now))
   const epochMatter = $derived(universeV2ById(game.activeUniverse)?.economy.localPrestige.rewardCurrency)
   const instrumentPrimers = {
-    prismata: {
+    brahmalok: {
       title: 'Reading the creation mandala',
       steps: ['Choose how the lotus unfolds', 'Route a Kindling through seed, measure, name, or form', 'Watch direction coverage and balance change the multiplier'],
       note: 'Mandala changes are free and never consume a Kindling.',
     },
-    tempest: {
+    vishnulok: {
       title: 'Reading the Endless Circuit',
       steps: ['Choose a correction circuit', 'Set its reach and the burden it carries', 'Let continuity reach the threshold, then Complete Return'],
       note: 'Longer, more burdened circuits ask for more continuity and return more sustaining power.',
     },
-    canticle: {
+    kailash: {
       title: 'Reading the Still Point',
       steps: ['Choose a mountain cycle', 'Select any numbered position to change its act', 'Keep refuge, grace, and meaningful rests inside release'],
       note: 'The five acts are game-fiction labels. Editing is free and immediately reversible.',
     },
   } as const
   const instrumentPrimer = $derived(
-    game.activeUniverse === 'prismata' || game.activeUniverse === 'tempest' || game.activeUniverse === 'canticle'
+    game.activeUniverse === 'brahmalok' || game.activeUniverse === 'vishnulok' || game.activeUniverse === 'kailash'
       ? instrumentPrimers[game.activeUniverse]
       : null,
   )
 
   $effect(() => {
-    const active = Boolean(verdanceGraft || ((brahmalok || tempest || canticle) && instrumentExpanded))
+    const active = Boolean(verdanceGraft || ((brahmalok || vishnulok || kailash) && instrumentExpanded))
     onactivitychange(active)
     return () => onactivitychange(false)
   })
@@ -100,7 +100,7 @@
   function configure(index: number) {
     if (!configureUniverseLaw(index)) return
     save()
-    if (game.activeUniverse === 'canticle') markInstrumentExperienced()
+    if (game.activeUniverse === 'kailash') markInstrumentExperienced()
   }
 
   function discharge() {
@@ -133,8 +133,8 @@
     markInstrumentExperienced()
   }
 
-  function configureStorm(length: number, riskIndex: number) {
-    if (configureTempestPath(length, riskIndex)) save()
+  function configureStorm(length: number, burdenIndex: number) {
+    if (configureVishnulokPath(length, burdenIndex)) save()
   }
 
   function chooseGraftRootstock(index: number) {
@@ -154,7 +154,7 @@
   }
 
   function editSlot(index: number) {
-    if (!editCanticleSlot(index)) return
+    if (!editKailashSlot(index)) return
     save()
     markInstrumentExperienced()
   }
@@ -189,14 +189,14 @@
   }
 
   function restoreInstrument(universeId: string) {
-    if (universeId !== 'prismata' && universeId !== 'tempest' && universeId !== 'canticle') return
+    if (universeId !== 'brahmalok' && universeId !== 'vishnulok' && universeId !== 'kailash') return
     try {
       const primerSeen = localStorage.getItem(primerStorageKey(universeId)) === 'seen'
       const experienced = localStorage.getItem(instrumentExperienceKey(universeId)) === 'complete' || primerSeen
       const storedLayout = localStorage.getItem(instrumentLayoutKey(universeId))
       const preference = storedLayout === 'expanded' || storedLayout === 'compact' ? storedLayout : 'auto'
-      const returnInProgress = universeId === 'tempest'
-        && tempestStatus(game.numericLawState).boostRemainingSec > 0
+      const returnInProgress = universeId === 'vishnulok'
+        && vishnulokCircuitStatus(game.numericLawState).returnRemainingSec > 0
       const shouldOpenPrimer = !primerSeen && !returnInProgress
       instrumentExperienced = experienced || returnInProgress
       instrumentPreference = preference
@@ -212,7 +212,7 @@
   }
 
   function markInstrumentExperienced() {
-    if (game.activeUniverse !== 'prismata' && game.activeUniverse !== 'tempest' && game.activeUniverse !== 'canticle') return
+    if (game.activeUniverse !== 'brahmalok' && game.activeUniverse !== 'vishnulok' && game.activeUniverse !== 'kailash') return
     instrumentExperienced = true
     try {
       localStorage.setItem(instrumentExperienceKey(game.activeUniverse), 'complete')
@@ -351,16 +351,16 @@
 {:else if brahmalok}
   <section class="law-panel brahmalok-mandala" class:instrument-compact={!instrumentExpanded} aria-label="Brahmalok creation mandala">
     {#if !instrumentExpanded}
-      {@render settledHeader(`${brahmalok.recipe.name} · ${brahmalok.activeBands}/4 directions · ${Math.round(brahmalok.balance * 100)}% balance · ×${realmLawMultiplier.toFixed(2)}`, brahmalokCommission?.phase === 'active' ? `${brahmalokCommission.commission.direction} Commission · ${brahmalokCommission.answered ? 'answer holding' : 'revision requested'}` : brahmalokMargin !== null ? `${BRAHMALOK_MODES[brahmalokMargin].name} in the margin` : `${Math.round(brahmalok.balance * 100)}% balance`, brahmalok.balance * 100)}
+      {@render settledHeader(`${brahmalok.mode.name} · ${brahmalok.activeDirections}/4 directions · ${Math.round(brahmalok.balance * 100)}% balance · ×${realmLawMultiplier.toFixed(2)}`, brahmalokCommission?.phase === 'active' ? `${brahmalokCommission.commission.direction} Commission · ${brahmalokCommission.answered ? 'answer holding' : 'revision requested'}` : brahmalokMargin !== null ? `${BRAHMALOK_MODES[brahmalokMargin].name} in the margin` : `${Math.round(brahmalok.balance * 100)}% balance`, brahmalok.balance * 100)}
     {:else}
-      {@render integratedHeader('LOTUS OF BECOMING', 'Four Directions', `${brahmalok.activeBands}/4 DIRECTIONS · ${Math.round(brahmalok.balance * 100)}% BALANCE`, 'CONTINUOUS CREATION', realmLawMultiplier)}
+      {@render integratedHeader('LOTUS OF BECOMING', 'Four Directions', `${brahmalok.activeDirections}/4 DIRECTIONS · ${Math.round(brahmalok.balance * 100)}% BALANCE`, 'CONTINUOUS CREATION', realmLawMultiplier)}
       {@render primerStrip()}
 
-      <div class="creation-stage" aria-label={`${brahmalok.activeBands} of 4 creation directions active; ${brahmalok.explanation}`}>
-      <div class="lotus-center" aria-hidden="true"><span>{brahmalok.recipe.glyph}</span><i></i></div>
+      <div class="creation-stage" aria-label={`${brahmalok.activeDirections} of 4 creation directions active; ${brahmalok.explanation}`}>
+      <div class="lotus-center" aria-hidden="true"><span>{brahmalok.mode.glyph}</span><i></i></div>
       <div class="creation-directions">
         {#each BRAHMALOK_DIRECTIONS as direction, index (direction.id)}
-          {@const quantity = brahmalok.bands[index]}
+          {@const quantity = brahmalok.directions[index]}
           <article class:active={quantity > 0} data-direction={direction.id} style={`--direction-index:${index}`}>
             <span>{direction.glyph}</span><strong>{direction.name}</strong><b>{quantity}</b>
           </article>
@@ -368,14 +368,14 @@
       </div>
       </div>
 
-      <div class="mandala-reading"><span>OPEN CENTER</span><b>{brahmalok.recipe.name}</b><small>{Math.round(brahmalok.balance * 100)}% balance</small></div>
+      <div class="mandala-reading"><span>OPEN CENTER</span><b>{brahmalok.mode.name}</b><small>{Math.round(brahmalok.balance * 100)}% balance</small></div>
 
       <p class="law-explanation">{brahmalok.explanation}</p>
 
       <div class="mandala-controls">
       <div class="creation-modes" role="group" aria-label="free creation mode selection">
         {#each BRAHMALOK_MODES as mode, index}
-          <button type="button" aria-pressed={brahmalok.recipeIndex === index} onclick={() => configure(index)} title={mode.description}>
+          <button type="button" aria-pressed={brahmalok.modeIndex === index} onclick={() => configure(index)} title={mode.description}>
             <span>{mode.glyph}</span><b>{mode.name}</b><small>{mode.description}</small>
           </button>
         {/each}
@@ -384,7 +384,7 @@
         <div class="margin-modes" role="group" aria-label="secondary margin mode at forty percent strength">
           <button type="button" aria-pressed={brahmalokMargin === null} onclick={() => setBrahmalokMargin(null)}>Open margin</button>
           {#each BRAHMALOK_MODES as mode, index}
-            <button type="button" disabled={brahmalok.recipeIndex === index} aria-pressed={brahmalokMargin === index} onclick={() => setBrahmalokMargin(index)} title={`${mode.name} at 40% strength`}>{mode.glyph} {mode.name}</button>
+            <button type="button" disabled={brahmalok.modeIndex === index} aria-pressed={brahmalokMargin === index} onclick={() => setBrahmalokMargin(index)} title={`${mode.name} at 40% strength`}>{mode.glyph} {mode.name}</button>
           {/each}
         </div>
       {/if}
@@ -421,33 +421,33 @@
       {/if}
     {/if}
   </section>
-{:else if tempest}
+{:else if vishnulok}
   <section class="law-panel vishnulok-circuit" class:instrument-compact={!instrumentExpanded} aria-label="Vishnulok Endless Circuit">
     {#if !instrumentExpanded}
-      {@render settledHeader(`${tempest.path.name} · ${tempest.length} shelters · ×${realmLawMultiplier.toFixed(2)} · ${tempest.confluenceActive ? 'CONFLUENCE' : tempest.boostRemainingSec > 0 || tempest.secondBoostRemainingSec > 0 ? `returns in ${Math.ceil(Math.max(tempest.boostRemainingSec, tempest.secondBoostRemainingSec))}s` : tempest.ready ? 'return ready' : `ready in ${Math.ceil(tempest.threshold - tempest.charge)}%`}`, vishnulokStrain?.phase === 'present' ? `${vishnulokStrain.strain.name} · ${vishnulokStrain.answered ? 'matching route' : 'waiting'}` : `${Math.round(tempest.charge)}% of ${tempest.threshold}% threshold`, tempest.threshold > 0 ? (tempest.charge / tempest.threshold) * 100 : 0)}
+      {@render settledHeader(`${vishnulok.circuit.name} · ${vishnulok.length} shelters · ×${realmLawMultiplier.toFixed(2)} · ${vishnulok.confluenceActive ? 'CONFLUENCE' : vishnulok.returnRemainingSec > 0 || vishnulok.secondReturnRemainingSec > 0 ? `returns in ${Math.ceil(Math.max(vishnulok.returnRemainingSec, vishnulok.secondReturnRemainingSec))}s` : vishnulok.ready ? 'return ready' : `ready in ${Math.ceil(vishnulok.threshold - vishnulok.continuity)}%`}`, vishnulokStrain?.phase === 'present' ? `${vishnulokStrain.strain.name} · ${vishnulokStrain.answered ? 'matching route' : 'waiting'}` : `${Math.round(vishnulok.continuity)}% of ${vishnulok.threshold}% threshold`, vishnulok.threshold > 0 ? (vishnulok.continuity / vishnulok.threshold) * 100 : 0)}
     {:else}
-      {@render integratedHeader('THE ENDLESS CIRCUIT', tempest.path.name, `${tempest.boostRemainingSec > 0 || tempest.secondBoostRemainingSec > 0 ? 'RETURNING' : tempest.ready ? 'CORRECTION READY' : 'GATHERING'} · ${Math.round(tempest.charge)}% CONTINUITY`, tempest.boostRemainingSec > 0 || tempest.secondBoostRemainingSec > 0 ? 'TEMPORARY RETURN' : 'GATHERING BASELINE', realmLawMultiplier)}
+      {@render integratedHeader('THE ENDLESS CIRCUIT', vishnulok.circuit.name, `${vishnulok.returnRemainingSec > 0 || vishnulok.secondReturnRemainingSec > 0 ? 'RETURNING' : vishnulok.ready ? 'CORRECTION READY' : 'GATHERING'} · ${Math.round(vishnulok.continuity)}% CONTINUITY`, vishnulok.returnRemainingSec > 0 || vishnulok.secondReturnRemainingSec > 0 ? 'TEMPORARY RETURN' : 'GATHERING BASELINE', realmLawMultiplier)}
       {@render primerStrip()}
 
       <div class="ocean-layout">
-      <div class="continuity-column" aria-label={`${Math.round(tempest.charge)} percent continuity reserve`}>
+      <div class="continuity-column" aria-label={`${Math.round(vishnulok.continuity)} percent continuity reserve`}>
         <span>FULL</span>
-        <div><i style={`height:${tempest.charge}%`}></i><b>{Math.round(tempest.charge)}%</b></div>
+        <div><i style={`height:${vishnulok.continuity}%`}></i><b>{Math.round(vishnulok.continuity)}%</b></div>
         <span>OPEN</span>
       </div>
 
-      <div class="circuit-map" data-burden={tempest.risk.id} aria-label={`${tempest.path.name}, ${tempest.length} shelters, ${tempest.risk.name} burden`}>
+      <div class="circuit-map" data-burden={vishnulok.burden.id} aria-label={`${vishnulok.circuit.name}, ${vishnulok.length} shelters, ${vishnulok.burden.name} burden`}>
         <div class="circuit-microgrid">
-          <span>{tempest.threshold}% threshold</span>
+          <span>{vishnulok.threshold}% threshold</span>
           <span>OPEN REFUGE</span>
-          <span>{tempest.risk.name} burden</span>
+          <span>{vishnulok.burden.name} burden</span>
         </div>
         <div class="circuit-art" aria-hidden="true">
           <div class="ocean-horizon"></div>
-          <div class="refuge-center"><b>{tempest.risk.glyph}</b></div>
+          <div class="refuge-center"><b>{vishnulok.burden.glyph}</b></div>
           <div class="current-network">
             {#each Array(8) as _, index}
-              <i class:lit={index < tempest.length} style={`--current-index:${index}`}></i>
+              <i class:lit={index < vishnulok.length} style={`--current-index:${index}`}></i>
             {/each}
           </div>
         </div>
@@ -455,27 +455,27 @@
 
       <div class="return-stack">
         <small>TEMPORARY RETURN</small>
-        <strong>×{tempest.boost.toFixed(2)}</strong>
-        <span>{tempest.length} shelters · {tempest.durationSec}s</span>
-        <button type="button" disabled={!tempest.ready || tempest.boostRemainingSec > 0} onclick={discharge}>
-          <b>{tempest.boostRemainingSec > 0 ? `${Math.ceil(tempest.boostRemainingSec)}s` : '↶ COMPLETE RETURN'}</b>
-          <small>{tempest.boostRemainingSec > 0 ? 'continuity rests during return' : tempest.ready ? 'close without enclosing' : `${Math.ceil(tempest.threshold - tempest.charge)}% continuity needed`}</small>
+        <strong>×{vishnulok.boost.toFixed(2)}</strong>
+        <span>{vishnulok.length} shelters · {vishnulok.durationSec}s</span>
+        <button type="button" disabled={!vishnulok.ready || vishnulok.returnRemainingSec > 0} onclick={discharge}>
+          <b>{vishnulok.returnRemainingSec > 0 ? `${Math.ceil(vishnulok.returnRemainingSec)}s` : '↶ COMPLETE RETURN'}</b>
+          <small>{vishnulok.returnRemainingSec > 0 ? 'continuity rests during return' : vishnulok.ready ? 'close without enclosing' : `${Math.ceil(vishnulok.threshold - vishnulok.continuity)}% continuity needed`}</small>
         </button>
-        {#if game.upgrades.includes('u6-auroral-return')}
-          <button type="button" class="second-return" disabled={!tempest.secondReady || tempest.secondBoostRemainingSec > 0} onclick={dischargeSecond}>
-            <b>{tempest.secondBoostRemainingSec > 0 ? `${Math.ceil(tempest.secondBoostRemainingSec)}s` : '↶ SECOND RETURN'}</b>
-            <small>{tempest.secondBoostRemainingSec > 0 ? 'second current returning' : tempest.secondReady ? 'stagger for confluence' : `${Math.ceil(tempest.threshold - tempest.secondCharge)}% second continuity needed`}</small>
+        {#if game.upgrades.includes('vishnulok-auroral-return')}
+          <button type="button" class="second-return" disabled={!vishnulok.secondReady || vishnulok.secondReturnRemainingSec > 0} onclick={dischargeSecond}>
+            <b>{vishnulok.secondReturnRemainingSec > 0 ? `${Math.ceil(vishnulok.secondReturnRemainingSec)}s` : '↶ SECOND RETURN'}</b>
+            <small>{vishnulok.secondReturnRemainingSec > 0 ? 'second current returning' : vishnulok.secondReady ? 'stagger for confluence' : `${Math.ceil(vishnulok.threshold - vishnulok.secondContinuity)}% second continuity needed`}</small>
           </button>
         {/if}
       </div>
       </div>
 
-      <p class="law-explanation">{tempest.explanation}</p>
+      <p class="law-explanation">{vishnulok.explanation}</p>
 
       <div class="circuit-controls">
       <div class="circuit-cards" role="group" aria-label="correction circuit selection">
-        {#each TEMPEST_PATHS as path, index}
-          <button type="button" aria-pressed={tempest.pathIndex === index} onclick={() => configure(index)} title={path.description}>
+        {#each VISHNULOK_CIRCUITS as path, index}
+          <button type="button" aria-pressed={vishnulok.circuitIndex === index} onclick={() => configure(index)} title={path.description}>
             <span>{path.glyph}</span><b>{path.name}</b><small>{path.threshold}% base</small>
           </button>
         {/each}
@@ -485,15 +485,15 @@
           <span>CIRCUIT REACH</span>
           <div role="group" aria-label="correction circuit reach">
             {#each Array(8) as _, index}
-              <button type="button" aria-pressed={tempest.length === index + 1} onclick={() => configureStorm(index + 1, tempest.riskIndex)}>{index + 1}</button>
+              <button type="button" aria-pressed={vishnulok.length === index + 1} onclick={() => configureStorm(index + 1, vishnulok.burdenIndex)}>{index + 1}</button>
             {/each}
           </div>
         </div>
         <div class="burden-scale">
           <span>BURDEN CARRIED</span>
           <div role="group" aria-label="correction circuit burden">
-            {#each TEMPEST_RISKS as risk, index (risk.id)}
-              <button type="button" aria-pressed={tempest.riskIndex === index} onclick={() => configureStorm(tempest.length, index)} title={risk.description}>
+            {#each VISHNULOK_BURDENS as risk, index (risk.id)}
+              <button type="button" aria-pressed={vishnulok.burdenIndex === index} onclick={() => configureStorm(vishnulok.length, index)} title={risk.description}>
                 {risk.glyph} {risk.name}
               </button>
             {/each}
@@ -513,45 +513,45 @@
       {/if}
     {/if}
   </section>
-{:else if canticle}
+{:else if kailash}
   <section class="law-panel kailash-stillpoint" class:instrument-compact={!instrumentExpanded} aria-label="Kailash Still Point cycle">
     {#if !instrumentExpanded}
-      {@render settledHeader(`${canticle.measure.name} · position ${canticle.slotIndex + 1}/16 · ${canticle.role} · ×${realmLawMultiplier.toFixed(2)}`, kailashRest?.resting ? `LONG REST · ${Math.round((kailashRest?.reserveFraction ?? 0) * 100)}% reserve` : kailashFront && kailashFront.phase !== 'calm' ? `${kailashFront.front.name} · ${kailashFront.phase}` : `${canticle.distinctRoles} acts · ${canticle.restCount} rests`, (canticle.distinctRoles / 6) * 100)}
+      {@render settledHeader(`${kailash.cycle.name} · position ${kailash.slotIndex + 1}/16 · ${kailash.role} · ×${realmLawMultiplier.toFixed(2)}`, kailashRest?.resting ? `LONG REST · ${Math.round((kailashRest?.reserveFraction ?? 0) * 100)}% reserve` : kailashFront && kailashFront.phase !== 'calm' ? `${kailashFront.front.name} · ${kailashFront.phase}` : `${kailash.distinctRoles} acts · ${kailash.restCount} rests`, (kailash.distinctRoles / 6) * 100)}
     {:else}
-      {@render integratedHeader('THE STILL POINT', canticle.measure.name, `POSITION ${canticle.slotIndex + 1}/16 · ${canticle.role.toUpperCase()}`, 'CONTINUOUS CYCLE', realmLawMultiplier)}
+      {@render integratedHeader('THE STILL POINT', kailash.cycle.name, `POSITION ${kailash.slotIndex + 1}/16 · ${kailash.role.toUpperCase()}`, 'CONTINUOUS CYCLE', realmLawMultiplier)}
       {@render primerStrip()}
 
       <div class="kailash-layout">
-      <div class="mountain-cycle" aria-label={canticle.explanation}>
+      <div class="mountain-cycle" aria-label={kailash.explanation}>
         <div class="summit-moon" aria-hidden="true"></div>
         <div class="summit-ridge ridge-back" aria-hidden="true"></div>
         <div class="summit-ridge ridge-front" aria-hidden="true"></div>
         <div class="river-thread" aria-hidden="true"></div>
-        <div class="late-ring" class:complete={canticle.distinctRoles === 6 && canticle.restCount >= 3} aria-hidden="true"></div>
+        <div class="late-ring" class:complete={kailash.distinctRoles === 6 && kailash.restCount >= 3} aria-hidden="true"></div>
         <div class="still-center">
-          <span>{canticle.measure.glyph}</span>
-          <strong>{roleGlyph(canticle.role)}</strong>
-          <small>{Math.ceil(canticle.nextSlotInMs)}ms</small>
+          <span>{kailash.cycle.glyph}</span>
+          <strong>{roleGlyph(kailash.role)}</strong>
+          <small>{Math.ceil(kailash.nextSlotInMs)}ms</small>
         </div>
       </div>
 
       <div class="cycle-console">
-        <p class="law-explanation">{canticle.explanation}</p>
+        <p class="law-explanation">{kailash.explanation}</p>
         <div class="cycle-sequence" role="group" aria-label="editable five-act release sequence">
-          {#each canticle.slots as role, index}
-            <button type="button" class:active={canticle.slotIndex === index} data-role={role} onclick={() => editSlot(index)} title={`Edit position ${index + 1}: ${role}`} aria-label={`Position ${index + 1}, ${role}; activate to choose next act`}>
+          {#each kailash.slots as role, index}
+            <button type="button" class:active={kailash.slotIndex === index} data-role={role} onclick={() => editSlot(index)} title={`Edit position ${index + 1}: ${role}`} aria-label={`Position ${index + 1}, ${role}; activate to choose next act`}>
               <span>{roleGlyph(role)}</span><small>{index + 1}</small>
             </button>
           {/each}
         </div>
         <div class="cycle-presets" role="group" aria-label="mountain cycle preset selection">
           {#each KAILASH_CYCLES as measure, index}
-            <button type="button" aria-pressed={canticle.measureIndex === index} onclick={() => configure(index)} title={measure.description}>
+            <button type="button" aria-pressed={kailash.cycleIndex === index} onclick={() => configure(index)} title={measure.description}>
               <span>{measure.glyph}</span><div><b>{measure.name}</b><small>{measure.description}</small></div>
             </button>
           {/each}
         </div>
-        <div class="act-legend" aria-label={`${canticle.restCount} rests and ${canticle.distinctRoles} distinct acts`}>
+        <div class="act-legend" aria-label={`${kailash.restCount} rests and ${kailash.distinctRoles} distinct acts`}>
           {#each KAILASH_ACTS as role}
             <span data-role={role}><i>{roleGlyph(role)}</i>{role}</span>
           {/each}

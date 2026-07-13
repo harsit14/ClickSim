@@ -78,18 +78,18 @@ const FIXTURES: Readonly<Record<UniverseId, UniverseSimulationFixture>> = Object
     mechanicPotential: 0.28, omenPotential: 0.06, archivePotential: 0.15, crossWorldPotential: 2.9,
     purchasesPerDay: 316, epochRecoveryDays: 0.16, deepRecoveryDays: 0.74,
   },
-  prismata: {
-    universeId: 'prismata', source: 'current-pack-profile-projection', basePassiveRate: '1e-1', dailyGrowth: 1.54,
+  brahmalok: {
+    universeId: 'brahmalok', source: 'current-pack-profile-projection', basePassiveRate: '1e-1', dailyGrowth: 1.54,
     mechanicPotential: 0.34, omenPotential: 0.11, archivePotential: 0.17, crossWorldPotential: 3.1,
     purchasesPerDay: 308, epochRecoveryDays: 0.19, deepRecoveryDays: 0.82,
   },
-  tempest: {
-    universeId: 'tempest', source: 'current-pack-profile-projection', basePassiveRate: '1.2e-1', dailyGrowth: 1.51,
+  vishnulok: {
+    universeId: 'vishnulok', source: 'current-pack-profile-projection', basePassiveRate: '1.2e-1', dailyGrowth: 1.51,
     mechanicPotential: 0.36, omenPotential: 0.13, archivePotential: 0.14, crossWorldPotential: 3.2,
     purchasesPerDay: 306, epochRecoveryDays: 0.21, deepRecoveryDays: 0.86,
   },
-  canticle: {
-    universeId: 'canticle', source: 'current-pack-profile-projection', basePassiveRate: '1e-1', dailyGrowth: 1.52,
+  kailash: {
+    universeId: 'kailash', source: 'current-pack-profile-projection', basePassiveRate: '1e-1', dailyGrowth: 1.52,
     mechanicPotential: 0.4, omenPotential: 0.05, archivePotential: 0.19, crossWorldPotential: 3,
     purchasesPerDay: 305, epochRecoveryDays: 0.2, deepRecoveryDays: 0.84,
   },

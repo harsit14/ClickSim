@@ -4,26 +4,26 @@ import {
   VISHNULOK_CIRCUITS,
   advanceF4LawState,
   brahmalokStatus,
-  canticleStatus,
+  kailashStatus,
   completeVishnulokReturn,
   selectBrahmalokMode,
-  selectCanticleMeasure,
-  selectTempestPath,
-  tempestStatus,
+  selectKailashCycle,
+  selectVishnulokCircuit,
+  vishnulokCircuitStatus,
 } from '../src/content/universes/f4-runtime'
 import type { EconomyAmount } from '../src/content/universes/types'
 
 type NumericLawState = Record<string, EconomyAmount>
 
 export interface LokaEquityCase {
-  readonly universeId: 'prismata' | 'tempest' | 'canticle'
+  readonly universeId: 'brahmalok' | 'vishnulok' | 'kailash'
   readonly strategyId: string
   readonly averageMultiplier: number
   readonly peakMultiplier: number
   readonly activeFraction: number
 }
 
-function ownedKindlings(prefix: 'u5' | 'u6' | 'u7'): Record<string, number> {
+function ownedKindlings(prefix: 'brahmalok' | 'vishnulok' | 'kailash'): Record<string, number> {
   return Object.fromEntries(Array.from({ length: 18 }, (_, index) => [
     `${prefix}-kindling-${String(index + 1).padStart(2, '0')}`,
     50,
@@ -33,43 +33,43 @@ function ownedKindlings(prefix: 'u5' | 'u6' | 'u7'): Record<string, number> {
 /** Simulates an established player actively using each loka's core instrument. */
 export function buildLokaActiveEquity(durationSec = 1_800): readonly LokaEquityCase[] {
   const cases: LokaEquityCase[] = []
-  const brahmaOwned = ownedKindlings('u5')
+  const brahmaOwned = ownedKindlings('brahmalok')
   for (let modeIndex = 0; modeIndex < BRAHMALOK_MODES.length; modeIndex++) {
     const state: NumericLawState = {}
     selectBrahmalokMode(state, modeIndex)
-    if (BRAHMALOK_MODES[modeIndex].id === 'memory') advanceF4LawState('prismata', state, brahmaOwned, 400)
+    if (BRAHMALOK_MODES[modeIndex].id === 'memory') advanceF4LawState('brahmalok', state, brahmaOwned, 400)
     const multiplier = brahmalokStatus(state, brahmaOwned).multiplier
-    cases.push({ universeId: 'prismata', strategyId: BRAHMALOK_MODES[modeIndex].id, averageMultiplier: multiplier, peakMultiplier: multiplier, activeFraction: 1 })
+    cases.push({ universeId: 'brahmalok', strategyId: BRAHMALOK_MODES[modeIndex].id, averageMultiplier: multiplier, peakMultiplier: multiplier, activeFraction: 1 })
   }
 
-  const vishnuOwned = ownedKindlings('u6')
+  const vishnuOwned = ownedKindlings('vishnulok')
   for (let circuitIndex = 0; circuitIndex < VISHNULOK_CIRCUITS.length; circuitIndex++) {
     const state: NumericLawState = {}
-    selectTempestPath(state, circuitIndex)
+    selectVishnulokCircuit(state, circuitIndex)
     let total = 0
     let peak = 1
     let returningSeconds = 0
     for (let second = 0; second < durationSec; second++) {
-      advanceF4LawState('tempest', state, vishnuOwned, 1)
-      let status = tempestStatus(state)
-      if (status.ready && status.boostRemainingSec <= 0) {
+      advanceF4LawState('vishnulok', state, vishnuOwned, 1)
+      let status = vishnulokCircuitStatus(state)
+      if (status.ready && status.returnRemainingSec <= 0) {
         completeVishnulokReturn(state)
-        status = tempestStatus(state)
+        status = vishnulokCircuitStatus(state)
       }
       total += status.multiplier
       peak = Math.max(peak, status.multiplier)
-      if (status.boostRemainingSec > 0) returningSeconds++
+      if (status.returnRemainingSec > 0) returningSeconds++
     }
-    cases.push({ universeId: 'tempest', strategyId: VISHNULOK_CIRCUITS[circuitIndex].id, averageMultiplier: total / durationSec, peakMultiplier: peak, activeFraction: returningSeconds / durationSec })
+    cases.push({ universeId: 'vishnulok', strategyId: VISHNULOK_CIRCUITS[circuitIndex].id, averageMultiplier: total / durationSec, peakMultiplier: peak, activeFraction: returningSeconds / durationSec })
   }
 
-  const kailashOwned = ownedKindlings('u7')
+  const kailashOwned = ownedKindlings('kailash')
   for (let cycleIndex = 0; cycleIndex < KAILASH_CYCLES.length; cycleIndex++) {
     const state: NumericLawState = {}
-    selectCanticleMeasure(state, cycleIndex)
-    const readings = Array.from({ length: 16 }, (_, position) => canticleStatus(state, kailashOwned, position * 900).multiplier)
+    selectKailashCycle(state, cycleIndex)
+    const readings = Array.from({ length: 16 }, (_, position) => kailashStatus(state, kailashOwned, position * 900).multiplier)
     cases.push({
-      universeId: 'canticle',
+      universeId: 'kailash',
       strategyId: KAILASH_CYCLES[cycleIndex].id,
       averageMultiplier: readings.reduce((sum, multiplier) => sum + multiplier, 0) / readings.length,
       peakMultiplier: Math.max(...readings),
@@ -86,7 +86,7 @@ export function validateLokaActiveEquity(cases = buildLokaActiveEquity()): reado
       issues.push(`${entry.universeId}/${entry.strategyId} has outlying average ×${entry.averageMultiplier.toFixed(2)}`)
     }
   }
-  const bestByUniverse = (['prismata', 'tempest', 'canticle'] as const).map((universeId) => Math.max(
+  const bestByUniverse = (['brahmalok', 'vishnulok', 'kailash'] as const).map((universeId) => Math.max(
     ...cases.filter((entry) => entry.universeId === universeId).map((entry) => entry.averageMultiplier),
   ))
   const spread = Math.max(...bestByUniverse) / Math.min(...bestByUniverse)

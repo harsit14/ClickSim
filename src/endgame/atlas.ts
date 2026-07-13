@@ -59,18 +59,17 @@ export interface AtlasReplayFrame {
 }
 
 const ALL_UNIVERSES: readonly UniverseId[] = [
-  'emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle',
+  'emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash',
 ]
 
-/** Public canon is intentionally decoupled from the save-stable u5-u7 route keys. */
 const ATLAS_WORLD_NAMES: Readonly<Record<UniverseId, string>> = {
   emberlight: 'Emberlight',
   tidefall: 'Tidefall',
   verdance: 'Verdance',
   clockwork: 'Clockwork',
-  prismata: 'Brahmalok',
-  tempest: 'Vishnulok',
-  canticle: 'Kailash',
+  brahmalok: 'Brahmalok',
+  vishnulok: 'Vishnulok',
+  kailash: 'Kailash',
 }
 
 const law = (
@@ -85,29 +84,29 @@ const law = (
 ): AtlasLaw => ({ id, kind, name, description, tags, universes, incompatibleWith, productionMultiplier })
 
 export const ATLAS_LAWS: readonly AtlasLaw[] = [
-  law('env-held-extremes', 'environment', 'Held Horizons', 'The world pauses briefly at each natural extreme, then permits return.', ['cyclic', 'active'], ['tidefall', 'tempest'], 1.04),
-  law('env-long-memory', 'environment', 'Carried Memory', 'Forms and relations survive change without being kept unchanged.', ['aging', 'idle'], ['verdance', 'prismata', 'canticle'], 1.03),
-  law('env-open-circuit', 'environment', 'Open Relation', 'One visible path remains incomplete so correction cannot become enclosure.', ['deterministic', 'active'], ['clockwork', 'tempest'], 1.06),
+  law('env-held-extremes', 'environment', 'Held Horizons', 'The world pauses briefly at each natural extreme, then permits return.', ['cyclic', 'active'], ['tidefall', 'vishnulok'], 1.04),
+  law('env-long-memory', 'environment', 'Carried Memory', 'Forms and relations survive change without being kept unchanged.', ['aging', 'idle'], ['verdance', 'brahmalok', 'kailash'], 1.03),
+  law('env-open-circuit', 'environment', 'Open Relation', 'One visible path remains incomplete so correction cannot become enclosure.', ['deterministic', 'active'], ['clockwork', 'vishnulok'], 1.06),
   law('env-shared-horizon', 'environment', 'Shared Horizon', 'Distant world objects contribute through declared relations.', ['stable', 'archive'], 'all', 1.02),
 
   law('eco-complete-shelves', 'economy', 'Complete Shelves', 'Only complete Archive shelves add their resonance.', ['archive', 'idle'], 'all', 1.08),
-  law('eco-narrow-band', 'economy', 'Focused Beginning', 'The strongest family germinates while fourfold breadth soft-caps its excess.', ['sequential', 'active'], ['prismata', 'emberlight'], 1.10, ['int-many-small']),
-  law('eco-patient-circulation', 'economy', 'Patient Circulation', 'Offline and low-attention production receive the larger share.', ['cyclic', 'idle'], ['tidefall', 'verdance', 'tempest', 'canticle'], 1.05),
+  law('eco-narrow-band', 'economy', 'Focused Beginning', 'The strongest family germinates while fourfold breadth soft-caps its excess.', ['sequential', 'active'], ['brahmalok', 'emberlight'], 1.10, ['int-many-small']),
+  law('eco-patient-circulation', 'economy', 'Patient Circulation', 'Offline and low-attention production receive the larger share.', ['cyclic', 'idle'], ['tidefall', 'verdance', 'vishnulok', 'kailash'], 1.05),
   law('eco-declared-costs', 'economy', 'Declared Costs', 'Purchase growth is fixed and forecast before the route begins.', ['deterministic'], 'all', 1.04),
 
   law('int-forecast-omens', 'interaction', 'Forecast Omens', 'Every third Omen is announced far in advance.', ['omen', 'active'], 'all', 1.05),
-  law('int-many-small', 'interaction', 'Many Small Relations', 'Lower Kindling families contribute more to active chains.', ['active', 'sequential'], ['emberlight', 'verdance', 'canticle'], 1.07, ['eco-narrow-band']),
-  law('int-saved-threshold', 'interaction', 'Declared Threshold', 'The active law returns automatically at a declared threshold.', ['idle', 'deterministic'], ['clockwork', 'tempest', 'prismata'], 1.03),
-  law('int-positive-rest', 'interaction', 'Deliberate Interval', 'Intentional pauses amplify the next visible action.', ['sequential', 'active'], ['canticle', 'tidefall', 'emberlight'], 1.06),
+  law('int-many-small', 'interaction', 'Many Small Relations', 'Lower Kindling families contribute more to active chains.', ['active', 'sequential'], ['emberlight', 'verdance', 'kailash'], 1.07, ['eco-narrow-band']),
+  law('int-saved-threshold', 'interaction', 'Declared Threshold', 'The active law returns automatically at a declared threshold.', ['idle', 'deterministic'], ['clockwork', 'vishnulok', 'brahmalok'], 1.03),
+  law('int-positive-rest', 'interaction', 'Deliberate Interval', 'Intentional pauses amplify the next visible action.', ['sequential', 'active'], ['kailash', 'tidefall', 'emberlight'], 1.06),
 ]
 
 export const ATLAS_FRAGMENTS: readonly AtlasFragment[] = [
   { id: 'fragment-cartographer', title: 'The Missing Cartographer', text: 'Recover the mapmaker who removed the moon so the current could choose for itself.', universeId: 'tidefall' },
   { id: 'fragment-consenting-garden', title: 'Consent in the Rootwork', text: 'The gardeners record which branches agreed to become shelter for another life.', universeId: 'verdance' },
   { id: 'fragment-open-gear', title: 'The Unfinished Machine', text: 'One gear remains unmeshed so prediction never becomes an order.', universeId: 'clockwork' },
-  { id: 'fragment-labeled-white', title: 'The Open Margin', text: 'A lotus, a seed, a measure, and a name begin forms without exhausting possibility.', universeId: 'prismata' },
-  { id: 'fragment-quiet-release', title: 'The Returning Harbor', text: 'A refuge remains trustworthy because correction can leave it and still find the way home.', universeId: 'tempest' },
-  { id: 'fragment-second-voice', title: 'The Path Downward', text: 'The summit opens its ring so release can become river, shelter, and renewal below.', universeId: 'canticle' },
+  { id: 'fragment-labeled-white', title: 'The Open Margin', text: 'A lotus, a seed, a measure, and a name begin forms without exhausting possibility.', universeId: 'brahmalok' },
+  { id: 'fragment-quiet-release', title: 'The Returning Harbor', text: 'A refuge remains trustworthy because correction can leave it and still find the way home.', universeId: 'vishnulok' },
+  { id: 'fragment-second-voice', title: 'The Path Downward', text: 'The summit opens its ring so release can become river, shelter, and renewal below.', universeId: 'kailash' },
   { id: 'fragment-first-warmth', title: 'A Fire That Asks', text: 'The first hearth learns to warm a stranger without naming itself their sun.', universeId: 'emberlight' },
 ]
 

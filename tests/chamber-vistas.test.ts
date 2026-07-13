@@ -9,18 +9,18 @@ const ids = (prefix: string) => Array.from({ length: 18 }, (_, index) => `${pref
 const owned = (prefix: string, count = 18) => Object.fromEntries(ids(prefix).slice(0, count).map((id) => [id, 10]))
 
 test('Verdance canopy dawn requires an ancient cohort and reports the grafted form', () => {
-  const generatorIds = ids('u3')
-  assert.equal(planChamberVista({ universeId: 'verdance', generatorIds, owned: owned('u3'), numericLawState: {} }), null)
+  const generatorIds = ids('verdance')
+  assert.equal(planChamberVista({ universeId: 'verdance', generatorIds, owned: owned('verdance'), numericLawState: {} }), null)
   const vista = planChamberVista({
     universeId: 'verdance',
     generatorIds,
-    owned: owned('u3'),
+    owned: owned('verdance'),
     numericLawState: {
-      'u3-kindling-01-cohort-quantity': amountFromNumber(10),
-      'u3-kindling-01-cohort-age': amountFromNumber(8 * 60 * 60_000),
-      'u3-graft-rootstock': amountFromNumber(0),
-      'u3-graft-scion': amountFromNumber(8),
-      'u3-graft-active': amountFromNumber(1),
+      'verdance-kindling-01-cohort-quantity': amountFromNumber(10),
+      'verdance-kindling-01-cohort-age': amountFromNumber(8 * 60 * 60_000),
+      'verdance-graft-rootstock': amountFromNumber(0),
+      'verdance-graft-scion': amountFromNumber(8),
+      'verdance-graft-active': amountFromNumber(1),
     },
   })
   assert.equal(vista?.id, 'canopy-dawn')
@@ -28,33 +28,33 @@ test('Verdance canopy dawn requires an ancient cohort and reports the grafted fo
 })
 
 test('Brahmalok unfolds its vista only from four active directions under Mandala', () => {
-  const generatorIds = ids('u5')
+  const generatorIds = ids('brahmalok')
   const routes = Object.fromEntries(Array.from({ length: 18 }, (_, index) => [
-    `u5-route-${String(index + 1).padStart(2, '0')}`,
+    `brahmalok-route-${String(index + 1).padStart(2, '0')}`,
     amountFromNumber(index % 4),
   ]))
   const vista = planChamberVista({
-    universeId: 'prismata', generatorIds, owned: owned('u5'),
-    numericLawState: { ...routes, 'u5-recipe': amountFromNumber(1) },
+    universeId: 'brahmalok', generatorIds, owned: owned('brahmalok'),
+    numericLawState: { ...routes, 'brahmalok-mode': amountFromNumber(1) },
   })
   assert.equal(vista?.id, 'lotus-unfolding')
   assert.match(vista?.label ?? '', /seed, measure, name, and form/)
   assert.equal(planChamberVista({
-    universeId: 'prismata', generatorIds, owned: owned('u5', 3),
-    numericLawState: { ...routes, 'u5-recipe': amountFromNumber(1) },
+    universeId: 'brahmalok', generatorIds, owned: owned('brahmalok', 3),
+    numericLawState: { ...routes, 'brahmalok-mode': amountFromNumber(1) },
   }), null)
 })
 
 test('Vishnulok vista persists only while a completed correction returns', () => {
-  const generatorIds = ids('u6')
-  assert.equal(planChamberVista({ universeId: 'tempest', generatorIds, owned: owned('u6'), numericLawState: {} }), null)
+  const generatorIds = ids('vishnulok')
+  assert.equal(planChamberVista({ universeId: 'vishnulok', generatorIds, owned: owned('vishnulok'), numericLawState: {} }), null)
   const vista = planChamberVista({
-    universeId: 'tempest', generatorIds, owned: owned('u6'),
+    universeId: 'vishnulok', generatorIds, owned: owned('vishnulok'),
     numericLawState: {
-      'u6-path': amountFromNumber(1),
-      'u6-path-length': amountFromNumber(8),
-      'u6-path-risk': amountFromNumber(2),
-      'u6-boost-seconds': amountFromNumber(20),
+      'vishnulok-circuit': amountFromNumber(1),
+      'vishnulok-shelter-count': amountFromNumber(8),
+      'vishnulok-burden': amountFromNumber(2),
+      'vishnulok-return-seconds': amountFromNumber(20),
     },
   })
   assert.equal(vista?.id, 'circuit-return')
@@ -62,16 +62,16 @@ test('Vishnulok vista persists only while a completed correction returns', () =>
 })
 
 test('Kailash open summit needs the Ring of Return, every act, and deliberate rests', () => {
-  const generatorIds = ids('u7')
+  const generatorIds = ids('kailash')
   const vista = planChamberVista({
-    universeId: 'canticle', generatorIds, owned: owned('u7', 17),
-    numericLawState: { 'u7-measure': amountFromNumber(3) }, nowMs: 0,
+    universeId: 'kailash', generatorIds, owned: owned('kailash', 17),
+    numericLawState: { 'kailash-cycle': amountFromNumber(3) }, nowMs: 0,
   })
   assert.equal(vista?.id, 'open-summit-ring')
   assert.match(vista?.label ?? '', /all five acts and \d+ deliberate rests/)
   assert.equal(planChamberVista({
-    universeId: 'canticle', generatorIds, owned: owned('u7', 16),
-    numericLawState: { 'u7-measure': amountFromNumber(3) }, nowMs: 0,
+    universeId: 'kailash', generatorIds, owned: owned('kailash', 16),
+    numericLawState: { 'kailash-cycle': amountFromNumber(3) }, nowMs: 0,
   }), null)
 })
 

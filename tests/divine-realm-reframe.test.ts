@@ -4,11 +4,10 @@ import test from 'node:test'
 import {
   DIVINE_REALMS,
   DIVINE_REALM_BY_ID,
-  DIVINE_REALM_BY_SAVE_SLOT,
   RESTORED_UNIVERSE_ROUTE,
   SACRED_CONTENT_GUARDRAILS,
-  SAVE_STABLE_STORY_ROUTE,
-  divineRealmForSaveSlot,
+  STORY_ROUTE,
+  divineRealmById,
 } from '../src/content/divine-realms'
 import { universeById } from '../src/content/universes'
 import {
@@ -22,23 +21,20 @@ import {
 import { CLOCKWORK_MAINTENANCE_SIGNALS } from '../src/content/universes/clockwork/maintenance'
 import { CLOCKWORK_STORY_SCENES } from '../src/content/universes/clockwork/story'
 
-test('Clockwork remains the final restored universe and the three lokas occupy save-stable slots', () => {
+test('Clockwork remains the final restored universe and the three lokas use canonical IDs', () => {
   assert.deepEqual(RESTORED_UNIVERSE_ROUTE, ['emberlight', 'tidefall', 'verdance', 'clockwork'])
   assert.deepEqual(DIVINE_REALMS.map(({ id }) => id), ['brahmalok', 'vishnulok', 'kailash'])
-  assert.deepEqual(DIVINE_REALMS.map(({ saveSlotUniverseId }) => saveSlotUniverseId), ['prismata', 'tempest', 'canticle'])
-  assert.deepEqual(DIVINE_REALMS.map(({ stablePrefix }) => stablePrefix), ['u5', 'u6', 'u7'])
-  assert.deepEqual(SAVE_STABLE_STORY_ROUTE, ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle'])
+  assert.deepEqual(STORY_ROUTE, ['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash'])
   assert.equal(DIVINE_REALM_BY_ID.size, 3)
-  assert.equal(DIVINE_REALM_BY_SAVE_SLOT.size, 3)
 
   for (const realm of DIVINE_REALMS) {
-    const currentPack = universeById(realm.saveSlotUniverseId)
-    assert.ok(currentPack.generators.every(({ id }) => id.startsWith(`${realm.stablePrefix}-`)))
+    const currentPack = universeById(realm.id)
+    assert.ok(currentPack.generators.every(({ id }) => id.startsWith(`${realm.id}-`)))
     assert.equal(currentPack.shortName, realm.publicName)
-    assert.equal(divineRealmForSaveSlot(realm.saveSlotUniverseId)?.id, realm.id)
+    assert.equal(divineRealmById(realm.id)?.id, realm.id)
     assert.ok(realm.sacredPresences.every((presence) => !realm.centralInterface.includes(presence)))
   }
-  assert.equal(divineRealmForSaveSlot('clockwork'), null)
+  assert.equal(divineRealmById('clockwork'), null)
 })
 
 test('the cultural contract prohibits turning sacred content into ordinary economy objects', () => {
@@ -56,7 +52,7 @@ test('the cultural contract prohibits turning sacred content into ordinary econo
 })
 
 test('the Unscheduled Interval is one contiguous, deterministic, accessible revelation', () => {
-  assert.equal(CLOCKWORK_REVELATION_TRIGGER.sceneId, 'u4-scene-unscheduled-interval')
+  assert.equal(CLOCKWORK_REVELATION_TRIGGER.sceneId, 'clockwork-scene-unscheduled-interval')
   assert.equal(CLOCKWORK_REVELATION_TRIGGER.seenId, CLOCKWORK_REVELATION_TRIGGER.sceneId)
   assert.equal(CLOCKWORK_REVELATION_DURATION_MS, 54_000)
   assert.equal(new Set(CLOCKWORK_REVELATION_BEATS.map(({ id }) => id)).size, CLOCKWORK_REVELATION_BEATS.length)
@@ -114,8 +110,8 @@ test('the visible revelation owns the viewport and remains replayable from the a
 test('the Clockwork revelation unlock predicate and fallback plan fail closed', () => {
   const complete = {
     beacons: ['clockwork'],
-    owned: { 'u4-great-regulator': 1 },
-    echoes: ['u4-echo-vulnerable-again'],
+    owned: { 'clockwork-great-regulator': 1 },
+    echoes: ['clockwork-echo-vulnerable-again'],
   }
   assert.equal(clockworkRevelationAvailable(complete), true)
   assert.equal(clockworkRevelationAvailable({ ...complete, beacons: [] }), false)

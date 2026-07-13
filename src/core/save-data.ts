@@ -853,7 +853,9 @@ function sanitizeLokaProgress(value: unknown): Record<string, number> {
   }
   const result: Record<string, number> = {}
   for (const [id, count] of Object.entries(value)) {
-    if (!/^u[567]-[a-z0-9-]+$/.test(id)) throw new TypeError(`Invalid loka progress entry ${id}`)
+    if (!/^(?:brahmalok|vishnulok|kailash)-[a-z0-9-]+$/.test(id)) {
+      throw new TypeError(`Invalid loka progress entry ${id}`)
+    }
     result[id] = integerValue(count, 0, 0, 1_000_000_000)
     if (Object.keys(result).length > 32) throw new RangeError('Too many loka progress entries')
   }

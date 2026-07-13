@@ -9,7 +9,7 @@ import {
   type SaveDataV23,
 } from './save-data'
 
-export type DevScenario = 'opening' | 'ember-camp' | 'midgame' | 'ember-cosmic' | 'ember-postnova' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'verdance' | 'pruning' | 'clockwork' | 'prismata' | 'tempest' | 'canticle' | 'garden' | 'markets'
+export type DevScenario = 'opening' | 'ember-camp' | 'midgame' | 'ember-cosmic' | 'ember-postnova' | 'endgame' | 'question' | 'crossing' | 'tidefall' | 'verdance' | 'pruning' | 'clockwork' | 'brahmalok' | 'vishnulok' | 'kailash' | 'garden' | 'markets'
 
 const GENERATORS = [
   'spark',
@@ -81,7 +81,7 @@ function emptyScenario(now: number): SaveDataV12 {
 
 /** Deterministic, dev-only states used for manual and browser regression passes. */
 export function createDevScenario(name: string | null, now = Date.now()): SaveDataV23 | null {
-  if (!['opening', 'ember-camp', 'midgame', 'ember-cosmic', 'ember-postnova', 'endgame', 'question', 'crossing', 'tidefall', 'verdance', 'pruning', 'clockwork', 'prismata', 'tempest', 'canticle', 'garden', 'markets'].includes(name ?? '')) return null
+  if (!['opening', 'ember-camp', 'midgame', 'ember-cosmic', 'ember-postnova', 'endgame', 'question', 'crossing', 'tidefall', 'verdance', 'pruning', 'clockwork', 'brahmalok', 'vishnulok', 'kailash', 'garden', 'markets'].includes(name ?? '')) return null
   const base = emptyScenario(now)
 
   if (name === 'opening') return migrateAndSanitizeSave(base)
@@ -166,22 +166,22 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
       eraEarned: 1e13,
       clicks: 8_000,
       owned: {
-        spark: 60,
-        wisp: 45,
-        hearth: 35,
-        kiln: 25,
-        forge: 18,
-        beacon: 12,
-        titan: 8,
-        starseed: 5,
-        protostar: 2,
-        sun: 1,
+        'tidefall-droplet': 60,
+        'tidefall-ripple': 45,
+        'tidefall-tidepool': 35,
+        'tidefall-current': 25,
+        'tidefall-reef-light': 18,
+        'tidefall-moonwake': 12,
+        'tidefall-kelp-cathedral': 8,
+        'tidefall-pearl-seed': 5,
+        'tidefall-bioluminance': 2,
+        'tidefall-drowned-beacon': 1,
       },
       upgrades: [
-        'spark-10',
-        'spark-25',
-        'wisp-10',
-        'hearth-10',
+        'tidefall-droplet-10',
+        'tidefall-droplet-25',
+        'tidefall-ripple-10',
+        'tidefall-tidepool-10',
         'undertow-touch',
         'moon-pull',
         'ripple-memory',
@@ -209,10 +209,10 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
     })
   }
 
-  if (name === 'verdance' || name === 'pruning' || name === 'clockwork' || name === 'prismata' || name === 'tempest' || name === 'canticle' || name === 'garden') {
-    const universeId = name === 'garden' ? 'canticle' : name === 'pruning' ? 'verdance' : name
+  if (name === 'verdance' || name === 'pruning' || name === 'clockwork' || name === 'brahmalok' || name === 'vishnulok' || name === 'kailash' || name === 'garden') {
+    const universeId = name === 'garden' ? 'kailash' : name === 'pruning' ? 'verdance' : name
     const pack = universeById(universeId)
-    const route = ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']
+    const route = ['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash']
     const priorBeacons = name === 'garden' ? route : route.slice(0, route.indexOf(universeId))
     const runCurrency = route.indexOf(universeId) >= 4 ? 1e24 : 1e18
     const scenario = migrateAndSanitizeSave({
@@ -253,37 +253,37 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
     if (!scenario) return null
     if (name === 'verdance') {
       scenario.numericLawState = {
-        'u3-kindling-01-cohort-quantity': amountFromNumber(70),
-        'u3-kindling-01-cohort-age': amountFromNumber(8 * 60 * 60_000),
-        'u3-kindling-04-cohort-quantity': amountFromNumber(55),
-        'u3-kindling-04-cohort-age': amountFromNumber(5 * 60_000),
-        'u3-kindling-07-cohort-quantity': amountFromNumber(40),
-        'u3-kindling-07-cohort-age': amountFromNumber(60 * 60_000),
-        'u3-kindling-10-cohort-quantity': amountFromNumber(25),
-        'u3-kindling-10-cohort-age': amountFromNumber(8 * 60 * 60_000),
-        'u3-kindling-09-cohort-quantity': amountFromNumber(30),
-        'u3-kindling-09-cohort-age': amountFromNumber(0),
-        'u3-graft-rootstock': amountFromNumber(0),
-        'u3-graft-scion': amountFromNumber(8),
-        'u3-graft-active': amountFromNumber(1),
+        'verdance-kindling-01-cohort-quantity': amountFromNumber(70),
+        'verdance-kindling-01-cohort-age': amountFromNumber(8 * 60 * 60_000),
+        'verdance-kindling-04-cohort-quantity': amountFromNumber(55),
+        'verdance-kindling-04-cohort-age': amountFromNumber(5 * 60_000),
+        'verdance-kindling-07-cohort-quantity': amountFromNumber(40),
+        'verdance-kindling-07-cohort-age': amountFromNumber(60 * 60_000),
+        'verdance-kindling-10-cohort-quantity': amountFromNumber(25),
+        'verdance-kindling-10-cohort-age': amountFromNumber(8 * 60 * 60_000),
+        'verdance-kindling-09-cohort-quantity': amountFromNumber(30),
+        'verdance-kindling-09-cohort-age': amountFromNumber(0),
+        'verdance-graft-rootstock': amountFromNumber(0),
+        'verdance-graft-scion': amountFromNumber(8),
+        'verdance-graft-active': amountFromNumber(1),
       }
-    } else if (name === 'prismata') {
+    } else if (name === 'brahmalok') {
       scenario.numericLawState = {
-        'u5-recipe': amountFromNumber(1),
-        'u5-route-12': amountFromNumber(3),
+        'brahmalok-mode': amountFromNumber(1),
+        'brahmalok-route-12': amountFromNumber(3),
       }
-    } else if (name === 'tempest') {
+    } else if (name === 'vishnulok') {
       scenario.numericLawState = {
-        'u6-path': amountFromNumber(1),
-        'u6-path-length': amountFromNumber(8),
-        'u6-path-risk': amountFromNumber(2),
-        'u6-charge': amountFromNumber(18),
-        'u6-boost-seconds': amountFromNumber(28),
-        'u6-last-discharge': amountFromNumber(2),
+        'vishnulok-circuit': amountFromNumber(1),
+        'vishnulok-shelter-count': amountFromNumber(8),
+        'vishnulok-burden': amountFromNumber(2),
+        'vishnulok-continuity': amountFromNumber(18),
+        'vishnulok-return-seconds': amountFromNumber(28),
+        'vishnulok-last-return': amountFromNumber(2),
       }
-    } else if (name === 'canticle') {
+    } else if (name === 'kailash') {
       scenario.numericLawState = {
-        'u7-measure': amountFromNumber(3),
+        'kailash-cycle': amountFromNumber(3),
       }
     }
     return scenario

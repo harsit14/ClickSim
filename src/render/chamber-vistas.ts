@@ -1,5 +1,5 @@
 import type { EconomyAmount } from '../content/universes/types'
-import { canticleStatus, prismataStatus, tempestStatus } from '../content/universes/f4-runtime'
+import { kailashStatus, brahmalokStatus, vishnulokCircuitStatus } from '../content/universes/f4-runtime'
 import {
   verdanceCohortRuntimeSummary,
   verdanceGraftingStatus,
@@ -13,7 +13,7 @@ export type ChamberVistaId =
 
 export interface ChamberVistaPlan {
   readonly id: ChamberVistaId
-  readonly universeId: 'verdance' | 'prismata' | 'tempest' | 'canticle'
+  readonly universeId: 'verdance' | 'brahmalok' | 'vishnulok' | 'kailash'
   readonly label: string
   readonly intensity: number
   readonly detail: number
@@ -45,7 +45,7 @@ export function planChamberVista({
 }: ChamberVistaInput): ChamberVistaPlan | null {
   if (universeId === 'verdance') {
     const cohort = verdanceCohortRuntimeSummary(generatorIds, owned, numericLawState)
-    if (cohort.stageQuantities['u3-cohort-ancient'] < 1) return null
+    if (cohort.stageQuantities['verdance-cohort-ancient'] < 1) return null
     const graft = verdanceGraftingStatus(generatorIds, owned, numericLawState)
     return {
       id: 'canopy-dawn',
@@ -53,14 +53,14 @@ export function planChamberVista({
       label: graft.active
         ? 'Canopy dawn: ancient crowns carry the active graft into first light.'
         : 'Canopy dawn: an ancient crown opens above the germination clearing.',
-      intensity: clampUnit(0.58 + cohort.stageQuantities['u3-cohort-ancient'] / Math.max(1, cohort.totalQuantity)),
+      intensity: clampUnit(0.58 + cohort.stageQuantities['verdance-cohort-ancient'] / Math.max(1, cohort.totalQuantity)),
       detail: graft.active ? 1 : 0.72,
     }
   }
 
-  if (universeId === 'prismata') {
-    const status = prismataStatus(numericLawState, owned)
-    if (status.recipe.id !== 'mandala' || status.activeBands < 4) return null
+  if (universeId === 'brahmalok') {
+    const status = brahmalokStatus(numericLawState, owned)
+    if (status.mode.id !== 'mandala' || status.activeDirections < 4) return null
     return {
       id: 'lotus-unfolding',
       universeId,
@@ -70,21 +70,21 @@ export function planChamberVista({
     }
   }
 
-  if (universeId === 'tempest') {
-    const status = tempestStatus(numericLawState)
-    if (status.boostRemainingSec <= 0) return null
+  if (universeId === 'vishnulok') {
+    const status = vishnulokCircuitStatus(numericLawState)
+    if (status.returnRemainingSec <= 0) return null
     return {
       id: 'circuit-return',
       universeId,
-      label: `Circuit return: ${status.path.name} travels through ${status.length} shelters with a ${status.risk.name.toLowerCase()} burden.`,
-      intensity: clampUnit(0.68 + status.riskIndex * 0.09),
+      label: `Circuit return: ${status.circuit.name} travels through ${status.length} shelters with a ${status.burden.name.toLowerCase()} burden.`,
+      intensity: clampUnit(0.68 + status.burdenIndex * 0.09),
       detail: clampUnit(status.length / 8),
     }
   }
 
-  if (universeId === 'canticle') {
-    const status = canticleStatus(numericLawState, owned, nowMs)
-    const ringOwned = (owned['u7-kindling-17'] ?? 0) > 0
+  if (universeId === 'kailash') {
+    const status = kailashStatus(numericLawState, owned, nowMs)
+    const ringOwned = (owned['kailash-kindling-17'] ?? 0) > 0
     if (!ringOwned || status.distinctRoles < 6 || status.restCount < 3) return null
     return {
       id: 'open-summit-ring',

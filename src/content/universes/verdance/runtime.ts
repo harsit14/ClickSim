@@ -12,10 +12,10 @@ import {
 } from './cohorts'
 
 export const VERDANCE_COHORT_LABELS: Readonly<Record<VerdanceCohortStageId, string>> = {
-  'u3-cohort-new': 'new',
-  'u3-cohort-rooted': 'rooted',
-  'u3-cohort-mature': 'mature',
-  'u3-cohort-ancient': 'ancient',
+  'verdance-cohort-new': 'new',
+  'verdance-cohort-rooted': 'rooted',
+  'verdance-cohort-mature': 'mature',
+  'verdance-cohort-ancient': 'ancient',
 }
 
 const STAGES = VERDANCE_COHORT_RULES.stages.map((stage) => ({
@@ -148,8 +148,8 @@ export function verdanceGeneratorCohortStatus(
       generatorId,
       quantity: 0,
       averageAgeMs: 0,
-      stageId: 'u3-cohort-new',
-      stageLabel: VERDANCE_COHORT_LABELS['u3-cohort-new'],
+      stageId: 'verdance-cohort-new',
+      stageLabel: VERDANCE_COHORT_LABELS['verdance-cohort-new'],
       multiplier: 1,
       nextStageInMs: STAGES[1].minimumAgeMs,
       rows: [],
@@ -160,11 +160,11 @@ export function verdanceGeneratorCohortStatus(
   const averageAgeMs = boundedStateNumber(state?.[ageKey(generatorId)])
   const trackedStageId = verdanceStageForAge(averageAgeMs)
   const rows: VerdanceCohort[] = []
-  if (newQuantity > 0) rows.push({ stageId: 'u3-cohort-new', quantity: newQuantity, ageMs: 0 })
+  if (newQuantity > 0) rows.push({ stageId: 'verdance-cohort-new', quantity: newQuantity, ageMs: 0 })
   if (trackedQuantity > 0) rows.push({ stageId: trackedStageId, quantity: trackedQuantity, ageMs: averageAgeMs })
   const trackedMultiplier = stageMultiplier(trackedStageId)
   const multiplier = (newQuantity + trackedQuantity * trackedMultiplier) / quantity
-  const stageId = trackedQuantity >= newQuantity ? trackedStageId : 'u3-cohort-new'
+  const stageId = trackedQuantity >= newQuantity ? trackedStageId : 'verdance-cohort-new'
   return {
     generatorId,
     quantity,
@@ -183,10 +183,10 @@ export function verdanceCohortRuntimeSummary(
   state: Readonly<Record<string, EconomyAmount>> | undefined,
 ): VerdanceCohortRuntimeSummary {
   const stageQuantities: Record<VerdanceCohortStageId, number> = {
-    'u3-cohort-new': 0,
-    'u3-cohort-rooted': 0,
-    'u3-cohort-mature': 0,
-    'u3-cohort-ancient': 0,
+    'verdance-cohort-new': 0,
+    'verdance-cohort-rooted': 0,
+    'verdance-cohort-mature': 0,
+    'verdance-cohort-ancient': 0,
   }
   const rows: VerdanceCohort[] = []
   let totalQuantity = 0
@@ -202,7 +202,7 @@ export function verdanceCohortRuntimeSummary(
   }
   const dominantStageId = STAGES.reduce((best, stage) => (
     stageQuantities[stage.id] > stageQuantities[best] ? stage.id : best
-  ), 'u3-cohort-new' as VerdanceCohortStageId)
+  ), 'verdance-cohort-new' as VerdanceCohortStageId)
   const pruning = previewVerdancePruning(rows)
   return {
     totalQuantity,
@@ -230,17 +230,17 @@ export function configureVerdanceGraft(
   if (!Number.isInteger(rootstockIndex) || rootstockIndex < 0 || rootstockIndex >= generatorCount) return false
   if (!Number.isInteger(scionIndex) || scionIndex < 0 || scionIndex >= generatorCount) return false
   if (rootstockIndex === scionIndex) return false
-  state['u3-graft-rootstock'] = amountFromNumber(rootstockIndex)
-  state['u3-graft-scion'] = amountFromNumber(scionIndex)
-  state['u3-graft-active'] = amountFromNumber(1)
+  state['verdance-graft-rootstock'] = amountFromNumber(rootstockIndex)
+  state['verdance-graft-scion'] = amountFromNumber(scionIndex)
+  state['verdance-graft-active'] = amountFromNumber(1)
   return true
 }
 
 export function clearVerdanceGraft(state: Record<string, EconomyAmount>): boolean {
-  const configured = boundedStateNumber(state['u3-graft-active']) >= 1
-  delete state['u3-graft-active']
-  delete state['u3-graft-rootstock']
-  delete state['u3-graft-scion']
+  const configured = boundedStateNumber(state['verdance-graft-active']) >= 1
+  delete state['verdance-graft-active']
+  delete state['verdance-graft-rootstock']
+  delete state['verdance-graft-scion']
   return configured
 }
 
@@ -251,12 +251,12 @@ export function verdanceGraftingStatus(
 ): VerdanceGraftingStatus {
   const generatorCount = generatorIds.length
   if (generatorCount < 2) throw new RangeError('Verdance grafting requires at least two Kindlings.')
-  const rootstockIndex = graftIndex(state, 'u3-graft-rootstock', 0, generatorCount)
+  const rootstockIndex = graftIndex(state, 'verdance-graft-rootstock', 0, generatorCount)
   const defaultScionIndex = rootstockIndex === 0 ? 1 : 0
-  const scionIndex = graftIndex(state, 'u3-graft-scion', defaultScionIndex, generatorCount)
+  const scionIndex = graftIndex(state, 'verdance-graft-scion', defaultScionIndex, generatorCount)
   const rootstockId = generatorIds[rootstockIndex]
   const scionId = generatorIds[scionIndex]
-  const configured = boundedStateNumber(state?.['u3-graft-active']) >= 1 && rootstockIndex !== scionIndex
+  const configured = boundedStateNumber(state?.['verdance-graft-active']) >= 1 && rootstockIndex !== scionIndex
   const rootstock = verdanceGeneratorCohortStatus(rootstockId, owned[rootstockId] ?? 0, state)
   const scion = verdanceGeneratorCohortStatus(scionId, owned[scionId] ?? 0, state)
   const maturityLead = Math.max(0, rootstock.multiplier - scion.multiplier)

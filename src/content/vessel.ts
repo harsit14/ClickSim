@@ -1,6 +1,6 @@
 import type { GameState } from '../engine/game.svelte'
 import type { EconomyAmount, UniverseId } from './universes/types'
-import { canticleStatus, prismataStatus, tempestStatus } from './universes/f4-runtime'
+import { kailashStatus, brahmalokStatus, vishnulokCircuitStatus } from './universes/f4-runtime'
 import { verdanceCohortRuntimeSummary } from './universes/verdance/runtime'
 import {
   amountFromNumber,
@@ -122,7 +122,7 @@ const constellationCount = (g: GameState) => g.constellation.length
 
 const VERDANCE_KINDLING_IDS = Array.from(
   { length: 18 },
-  (_, index) => `u3-kindling-${String(index + 1).padStart(2, '0')}`,
+  (_, index) => `verdance-kindling-${String(index + 1).padStart(2, '0')}`,
 )
 
 function rootedVerdanceCohorts(g: GameState): number {
@@ -131,7 +131,7 @@ function rootedVerdanceCohorts(g: GameState): number {
     g.owned,
     g.numericLawState,
   ).stageQuantities
-  return stages['u3-cohort-rooted'] + stages['u3-cohort-mature'] + stages['u3-cohort-ancient']
+  return stages['verdance-cohort-rooted'] + stages['verdance-cohort-mature'] + stages['verdance-cohort-ancient']
 }
 
 function numericLawMarker(g: GameState, id: string): number {
@@ -186,7 +186,7 @@ const TIDEFALL_VESSEL: VesselBlueprint = {
   parts: [
     amountPart('hull-hearths', 'Pressure Shell', 'Shell', 'Moon Salt anneals a hull that treats the Dark Between as one more depth.', '40 Moon Salt gathered', 188, 'seal the shell', '◉', 40, (g) => g.stardustTotal),
     countPart('sails-constellation', 'Moonwake Fins', 'Fins', 'Eight recovered lives teach the ark how a world moves without a shore.', '8 Pelagic Archive objects catalogued', 202, 'set the fins', '≈', 8, archiveCount),
-    countPart('heart-sun', 'Heart of the Drowned Beacon', 'Heart', 'A hundred distant calls become one patient pressure-pulse.', '100 Drowned Beacons to release', 194, 'release 100 Beacons', '●', 100, (g) => g.owned.sun ?? 0, { gen: 'sun', count: 100 }),
+    countPart('heart-sun', 'Heart of the Drowned Beacon', 'Heart', 'A hundred distant calls become one patient pressure-pulse.', '100 Drowned Beacons to release', 194, 'release 100 Beacons', '●', 100, (g) => g.owned['tidefall-drowned-beacon'] ?? 0, { gen: 'tidefall-drowned-beacon', count: 100 }),
     countPart('keel-trials', 'Hadal Ballast', 'Ballast', 'Six impossible depths become the weight that keeps the crossing true.', '6 pressure trials endured', 218, 'lower the ballast', '▼', 6, trialCount),
     countPart('archive', 'Pelagic Memory Vault', 'Memory', 'The chosen answer is sealed as a shore the ark can carry.', 'an answer chosen', 260, 'seal the memory', '▣', 1, answered),
   ],
@@ -210,7 +210,7 @@ const VERDANCE_VESSEL: VesselBlueprint = {
   parts: [
     countPart('hull-hearths', 'Rooted Seedcoat', 'Seedcoat', 'The hull is alive; every planted cohort must first choose to stay.', '50 Kindlings rooted for at least five minutes', 104, 'close the seedcoat', '◒', 50, rootedVerdanceCohorts),
     countPart('sails-constellation', 'Folded Canopy', 'Canopy', 'Ten canopy paths become leaves that steer by opening toward possibility.', '10 Living Canopy nodes grown', 82, 'fold the canopy', '❧', 10, constellationCount),
-    countPart('heart-sun', 'Heartwood Core', 'Heartwood', 'Fifty old trunks join without becoming one identical ring.', '50 Heartwoods to graft', 42, 'graft 50 Heartwoods', '◎', 50, (g) => g.owned['u3-kindling-09'] ?? 0, { gen: 'u3-kindling-09', count: 50 }),
+    countPart('heart-sun', 'Heartwood Core', 'Heartwood', 'Fifty old trunks join without becoming one identical ring.', '50 Heartwoods to graft', 42, 'graft 50 Heartwoods', '◎', 50, (g) => g.owned['verdance-kindling-09'] ?? 0, { gen: 'verdance-kindling-09', count: 50 }),
     countPart('keel-trials', 'Pollinator Compass', 'Compass', 'Eight specimens teach the ark to exchange difference across the dark.', '8 Herbarium specimens catalogued', 136, 'invite the pollinators', '✾', 8, archiveCount),
     countPart('archive', 'Garden Gate Cutting', 'Cutting', 'An answered branch remains open for a world not yet grown.', 'an answer chosen', 68, 'plant the cutting', '⌇', 1, answered),
   ],
@@ -234,14 +234,14 @@ const CLOCKWORK_VESSEL: VesselBlueprint = {
   parts: [
     amountPart('hull-hearths', 'Indexed Chassis', 'Chassis', 'Preserved intervals set every plate beneath a public mark.', '50 Preserved Intervals gathered', 42, 'index the chassis', '⌑', 50, (g) => g.stardustTotal),
     countPart('sails-constellation', 'Civic Transmission', 'Train', 'Eighteen installed laws expose where force enters, changes, and leaves.', '18 Clockwork laws installed', 210, 'engage the train', '⚙', 18, (g) => g.upgrades.length),
-    countPart('heart-sun', 'Difference Spring', 'Spring', 'Fifty prediction engines surrender certainty and store only declared intent.', '50 Difference Engines to unwind', 195, 'unwind 50 Engines', '↻', 50, (g) => g.owned['u4-difference-engine'] ?? 0, { gen: 'u4-difference-engine', count: 50 }),
+    countPart('heart-sun', 'Difference Spring', 'Spring', 'Fifty prediction engines surrender certainty and store only declared intent.', '50 Difference Engines to unwind', 195, 'unwind 50 Engines', '↻', 50, (g) => g.owned['clockwork-difference-engine'] ?? 0, { gen: 'clockwork-difference-engine', count: 50 }),
     countPart('keel-trials', 'Governor Assembly', 'Governor', 'Six deterministic trials prove the engine stops when its law says stop.', '6 regulation trials completed', 30, 'set the governor', '◎', 6, trialCount),
     countPart('archive', 'The Blank Route', 'Route', 'The final instruction is an answer, not a prediction.', 'an answer chosen', 214, 'leave the route open', '□', 1, answered),
   ],
 }
 
-const PRISMATA_VESSEL: VesselBlueprint = {
-  universeId: 'prismata',
+const BRAHMALOK_VESSEL: VesselBlueprint = {
+  universeId: 'brahmalok',
   name: 'The Unclosed Folio',
   overline: 'brahmalok · a passage approached through revisable creation',
   description: 'Balance seed, measure, name, and form; bind their relation without closing the margin through which another beginning may enter.',
@@ -256,16 +256,16 @@ const PRISMATA_VESSEL: VesselBlueprint = {
     'the Unclosed Folio, aligned for passage',
   ],
   parts: [
-    countPart('hull-hearths', 'Four-Direction Binding', 'Binding', 'Seed, measure, name, and form must all reach the folio without one becoming sovereign.', 'all 4 creation directions active', 38, 'bind the four directions', '⌘', 4, (g) => prismataStatus(g.numericLawState, g.owned).activeBands),
+    countPart('hull-hearths', 'Four-Direction Binding', 'Binding', 'Seed, measure, name, and form must all reach the folio without one becoming sovereign.', 'all 4 creation directions active', 38, 'bind the four directions', '⌘', 4, (g) => brahmalokStatus(g.numericLawState, g.owned).activeDirections),
     countPart('sails-constellation', 'Margins of Relation', 'Margins', 'Ten learned relations keep the crossing answerable to revision.', '10 knowledge-map nodes understood', 214, 'rule the margins', '⌜', 10, constellationCount),
-    countPart('heart-sun', 'Script Garden Leaf', 'Leaf', 'Fifty Script Gardens grow a page broad enough for an unfamiliar hand.', '50 Script Gardens to align', 38, 'align 50 Gardens', '▤', 50, (g) => g.owned['u5-kindling-10'] ?? 0, { gen: 'u5-kindling-10', count: 50 }),
+    countPart('heart-sun', 'Script Garden Leaf', 'Leaf', 'Fifty Script Gardens grow a page broad enough for an unfamiliar hand.', '50 Script Gardens to align', 38, 'align 50 Gardens', '▤', 50, (g) => g.owned['brahmalok-kindling-10'] ?? 0, { gen: 'brahmalok-kindling-10', count: 50 }),
     countPart('keel-trials', 'First-Forms Index', 'Index', 'Eight encountered records show how creation remains accountable to correction.', '8 First Form records encountered', 38, 'read the index', '⌑', 8, archiveCount),
     countPart('archive', 'The Open Square', 'Opening', 'The final page keeps one place that no traveler may claim.', 'an answer chosen', 206, 'leave the square open', '□', 1, answered),
   ],
 }
 
-const TEMPEST_VESSEL: VesselBlueprint = {
-  universeId: 'tempest',
+const VISHNULOK_VESSEL: VesselBlueprint = {
+  universeId: 'vishnulok',
   name: 'The Returning Harbor',
   overline: 'vishnulok · a crossing built by carrying every correction home',
   description: 'Open the widest safe refuge route, complete its return by choice, and hold the surviving continuity around one still horizon.',
@@ -280,16 +280,16 @@ const TEMPEST_VESSEL: VesselBlueprint = {
     'the Returning Harbor, open and homeward-bound',
   ],
   parts: [
-    countPart('hull-hearths', 'Eight-Shore Circuit', 'Circuit', 'The crossing route must reach the full field before it can carry a world.', 'an 8-shelter correction circuit configured', 218, 'open the circuit', '∞', 8, (g) => tempestStatus(g.numericLawState).length),
-    countPart('sails-constellation', 'Completed Return', 'Return', 'A completed correction proves the route can come home without becoming a cage.', 'one configured circuit returned', 42, 'bind the return line', '↶', 1, (g) => numericLawMarker(g, 'u6-last-discharge') > 0 ? 1 : 0),
+    countPart('hull-hearths', 'Eight-Shore Circuit', 'Circuit', 'The crossing route must reach the full field before it can carry a world.', 'an 8-shelter correction circuit configured', 218, 'open the circuit', '∞', 8, (g) => vishnulokCircuitStatus(g.numericLawState).length),
+    countPart('sails-constellation', 'Completed Return', 'Return', 'A completed correction proves the route can come home without becoming a cage.', 'one configured circuit returned', 42, 'bind the return line', '↶', 1, (g) => numericLawMarker(g, 'vishnulok-last-return') > 0 ? 1 : 0),
     amountPart('heart-sun', 'Continuity Hull', 'Hull', 'Harbor stone is set from the continuity that survived fifty Renewals.', '50 Returns gathered', 205, 'set the harbor hull', '≋', 50, (g) => g.stardustTotal),
     countPart('keel-trials', 'Refuge Threshold', 'Refuge', 'Six trials teach every route a visible path back into relation.', '6 continuance trials completed', 172, 'open the threshold', '⌂', 6, trialCount),
     countPart('archive', 'The Still Horizon', 'Horizon', 'The answer is calm water that remains alive beneath the crossing.', 'an answer chosen', 42, 'sound the horizon', '⌒', 1, answered),
   ],
 }
 
-const CANTICLE_VESSEL: VesselBlueprint = {
-  universeId: 'canticle',
+const KAILASH_VESSEL: VesselBlueprint = {
+  universeId: 'kailash',
   name: 'The Downward Path',
   overline: 'kailash · a crossing that returns from the summit',
   description: 'Keep every act legible, open shelter before release, and carry the surviving relation back toward ordinary life.',
@@ -304,8 +304,8 @@ const CANTICLE_VESSEL: VesselBlueprint = {
     'the Downward Path through an open ring',
   ],
   parts: [
-    countPart('hull-hearths', 'Five-Act Ascent', 'Ascent', 'Emergence, shelter, release, veil, and grace must all remain legible beside rest.', 'all 6 cycle positions present', 196, 'mark the five acts', '△', 6, (g) => canticleStatus(g.numericLawState, g.owned, 0).distinctRoles),
-    countPart('sails-constellation', 'Three Deliberate Rests', 'Rests', 'Stillness becomes consent only when the cycle makes room to stop.', 'at least 3 rests in the cycle', 196, 'leave the intervals', '○', 3, (g) => canticleStatus(g.numericLawState, g.owned, 0).restCount),
+    countPart('hull-hearths', 'Five-Act Ascent', 'Ascent', 'Emergence, shelter, release, veil, and grace must all remain legible beside rest.', 'all 6 cycle positions present', 196, 'mark the five acts', '△', 6, (g) => kailashStatus(g.numericLawState, g.owned, 0).distinctRoles),
+    countPart('sails-constellation', 'Three Deliberate Rests', 'Rests', 'Stillness becomes consent only when the cycle makes room to stop.', 'at least 3 rests in the cycle', 196, 'leave the intervals', '○', 3, (g) => kailashStatus(g.numericLawState, g.owned, 0).restCount),
     countPart('heart-sun', 'Carried Witness', 'Witness', 'Eight recovered records teach the path to retain consequence and refuge together.', '8 Echoes recovered', 196, 'carry the witness', '⌃', 8, (g) => g.echoes.length),
     countPart('keel-trials', 'Refuge Boundary', 'Refuge', 'Six trials prove Release remains complete under silence, constraint, and cancellation.', '6 release trials completed', 31, 'open the refuge', '⌂', 6, trialCount),
     countPart('archive', 'Open Summit Interval', 'Return', 'The chosen answer is carried down as a path, not sealed into a final enclosure.', 'an answer chosen', 196, 'open the path down', '▽', 1, answered),
@@ -317,9 +317,9 @@ export const VESSEL_BLUEPRINTS: readonly VesselBlueprint[] = [
   TIDEFALL_VESSEL,
   VERDANCE_VESSEL,
   CLOCKWORK_VESSEL,
-  PRISMATA_VESSEL,
-  TEMPEST_VESSEL,
-  CANTICLE_VESSEL,
+  BRAHMALOK_VESSEL,
+  VISHNULOK_VESSEL,
+  KAILASH_VESSEL,
 ]
 
 const VESSEL_BLUEPRINT_BY_UNIVERSE = new Map(

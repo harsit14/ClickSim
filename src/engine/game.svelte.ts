@@ -16,10 +16,10 @@ import {
 } from '../content/universes/verdance/runtime'
 import {
   advanceF4LawState,
-  configureTempestRoute,
-  cycleCanticleSlot,
-  dischargeTempest,
-  dischargeTempestSecond,
+  configureVishnulokCircuit as configureVishnulokCircuitState,
+  cycleKailashAct,
+  completeVishnulokReturn,
+  completeSecondVishnulokReturn,
   enterKailashLongRest as enterKailashLongRestState,
   exitKailashLongRest as exitKailashLongRestState,
   kailashLongRestStatus,
@@ -27,10 +27,10 @@ import {
   recallBankedKailashFront,
   retainedF4LawConfiguration,
   routeBrahmalokKindling,
-  selectCanticleMeasure,
+  selectKailashCycle,
   selectBrahmalokMode,
   selectBrahmalokMarginMode,
-  selectTempestPath,
+  selectVishnulokCircuit,
   type F4LawEvents,
 } from '../content/universes/f4-runtime'
 import {
@@ -565,9 +565,9 @@ export function universeRouteUnlocked(id: string): boolean {
   if (id === 'tidefall') return game.beacons.includes(DEFAULT_UNIVERSE_ID)
   if (id === 'verdance') return game.beacons.includes('tidefall')
   if (id === 'clockwork') return game.beacons.includes('verdance')
-  if (id === 'prismata') return game.beacons.includes('clockwork')
-  if (id === 'tempest') return game.beacons.includes('prismata')
-  if (id === 'canticle') return game.beacons.includes('tempest')
+  if (id === 'brahmalok') return game.beacons.includes('clockwork')
+  if (id === 'vishnulok') return game.beacons.includes('brahmalok')
+  if (id === 'kailash') return game.beacons.includes('vishnulok')
   return false
 }
 
@@ -953,7 +953,7 @@ export function buyCuriosity(id: string): boolean {
   if (game.challenge || !def || game.curiosities.includes(id) || !gteAmount(game.light, cost)) return false
   game.light = subtractAmounts(game.light, cost)
   game.curiosities.push(id)
-  const lokaPrefix = game.activeUniverse === 'prismata' ? 'u5' : game.activeUniverse === 'tempest' ? 'u6' : game.activeUniverse === 'canticle' ? 'u7' : null
+  const lokaPrefix = game.activeUniverse === 'brahmalok' ? 'brahmalok' : game.activeUniverse === 'vishnulok' ? 'vishnulok' : game.activeUniverse === 'kailash' ? 'kailash' : null
   if (lokaPrefix) {
     const held = new Set(game.curiosities)
     const shelfIndex = cabinet.shelves.findIndex((shelf) => shelf.ids.includes(id) && shelf.ids.every((recordId) => held.has(recordId)))
@@ -1062,7 +1062,7 @@ export function buyNode(id: string): boolean {
 
 /** extraMult carries the rhythm-combo multiplier from the UI layer. */
 export function clickEmber(extraMult = 1): ClickResult {
-  if (game.activeUniverse === 'canticle' && kailashLongRestStatus(game.numericLawState).resting) {
+  if (game.activeUniverse === 'kailash' && kailashLongRestStatus(game.numericLawState).resting) {
     return { amount: ZERO_AMOUNT, crit: false, critMult: 1 }
   }
   const randomAllowed = universeById(game.activeUniverse).twist.randomnessAllowed
@@ -1150,13 +1150,13 @@ export function applyF4LawEvents(events: F4LawEvents): void {
     if (value <= 0) return
     game.lokaProgress[key] = Math.min(1_000_000_000, (game.lokaProgress[key] ?? 0) + value)
   }
-  add('u5-folios', events.foliosEarned)
-  add('u6-routes', events.routesEarned)
-  add('u6-returns', events.returnsCompleted)
-  add('u7-traces', events.tracesEarned)
+  add('brahmalok-folios', events.foliosEarned)
+  add('vishnulok-routes', events.routesEarned)
+  add('vishnulok-returns', events.returnsCompleted)
+  add('kailash-traces', events.tracesEarned)
   for (const announcement of events.announcements) {
     pushToast(
-      game.activeUniverse === 'canticle' ? 'Mountain weather' : game.activeUniverse === 'tempest' ? 'Ocean strain' : 'Folio Commission',
+      game.activeUniverse === 'kailash' ? 'Mountain weather' : game.activeUniverse === 'vishnulok' ? 'Ocean strain' : 'Folio Commission',
       announcement.text,
       announcement.key,
     )
@@ -1166,25 +1166,22 @@ export function applyF4LawEvents(events: F4LawEvents): void {
 /** Free, local reconfiguration for the active F4 world law. */
 export function configureUniverseLaw(index: number): boolean {
   if (game.challenge) return false
-  if (game.activeUniverse === 'prismata') return selectBrahmalokMode(game.numericLawState, index)
-  if (game.activeUniverse === 'tempest') return selectTempestPath(game.numericLawState, index)
-  if (game.activeUniverse === 'canticle') return selectCanticleMeasure(game.numericLawState, index)
+  if (game.activeUniverse === 'brahmalok') return selectBrahmalokMode(game.numericLawState, index)
+  if (game.activeUniverse === 'vishnulok') return selectVishnulokCircuit(game.numericLawState, index)
+  if (game.activeUniverse === 'kailash') return selectKailashCycle(game.numericLawState, index)
   return false
 }
 
 /** Routes one Brahmalok Kindling through seed, measure, name, or form. */
 export function configureBrahmalokDirection(kindlingIndex: number, directionIndex: number): boolean {
-  return game.challenge === null && game.activeUniverse === 'prismata'
+  return game.challenge === null && game.activeUniverse === 'brahmalok'
     ? routeBrahmalokKindling(game.numericLawState, kindlingIndex, directionIndex)
     : false
 }
 
-/** @deprecated Save-slot compatibility alias. */
-export const configurePrismataRoute = configureBrahmalokDirection
-
 export function configureBrahmalokMargin(index: number | null): boolean {
   return game.challenge === null
-    && game.activeUniverse === 'prismata'
+    && game.activeUniverse === 'brahmalok'
     && game.curiosities.length >= 12
     ? selectBrahmalokMarginMode(game.numericLawState, index)
     : false
@@ -1192,7 +1189,7 @@ export function configureBrahmalokMargin(index: number | null): boolean {
 
 export function reviewBankedBrahmalokCommission(): boolean {
   return game.challenge === null
-    && game.activeUniverse === 'prismata'
+    && game.activeUniverse === 'brahmalok'
     ? openBankedBrahmalokCommission(game.numericLawState, game.curiosities.length)
     : false
 }
@@ -1216,25 +1213,23 @@ export function severVerdanceGrafting(): boolean {
 }
 
 /** Configures Vishnulok's declared circuit reach and carried burden. */
-export function configureTempestPath(length: number, riskIndex: number): boolean {
-  return game.challenge === null && game.activeUniverse === 'tempest'
-    ? configureTempestRoute(game.numericLawState, length, riskIndex)
+export function configureVishnulokPath(length: number, riskIndex: number): boolean {
+  return game.challenge === null && game.activeUniverse === 'vishnulok'
+    ? configureVishnulokCircuitState(game.numericLawState, length, riskIndex)
     : false
 }
-
-export const configureVishnulokRoute = configureTempestPath
 
 /** Advances one editable Kailash position through five game-fiction acts and rest. */
-export function editCanticleSlot(slotIndex: number): boolean {
-  return game.challenge === null && game.activeUniverse === 'canticle'
-    ? cycleCanticleSlot(game.numericLawState, slotIndex)
+export function editKailashSlot(slotIndex: number): boolean {
+  return game.challenge === null && game.activeUniverse === 'kailash'
+    ? cycleKailashAct(game.numericLawState, slotIndex)
     : false
 }
 
-export const editKailashAct = editCanticleSlot
+export const editKailashAct = editKailashSlot
 
 export function kailashLongRestUnlocked(): boolean {
-  return game.activeUniverse === 'canticle' && game.curiosities.length >= 12
+  return game.activeUniverse === 'kailash' && game.curiosities.length >= 12
 }
 
 export function beginKailashLongRest(): boolean {
@@ -1244,30 +1239,30 @@ export function beginKailashLongRest(): boolean {
 }
 
 export function endKailashLongRest(): boolean {
-  return game.activeUniverse === 'canticle'
+  return game.activeUniverse === 'kailash'
     ? exitKailashLongRestState(game.numericLawState)
     : false
 }
 
 export function reviewBankedKailashFront(): boolean {
   return game.challenge === null
-    && game.activeUniverse === 'canticle'
+    && game.activeUniverse === 'kailash'
     ? recallBankedKailashFront(game.numericLawState)
     : false
 }
 
 /** Executes the active law action; Vishnulok completes its declared return. */
 export function activateUniverseLaw(): boolean {
-  return game.challenge === null && game.activeUniverse === 'tempest'
-    ? dischargeTempest(game.numericLawState)
+  return game.challenge === null && game.activeUniverse === 'vishnulok'
+    ? completeVishnulokReturn(game.numericLawState)
     : false
 }
 
 export function activateVishnulokConfluence(): boolean {
   return game.challenge === null
-    && game.activeUniverse === 'tempest'
-    && game.upgrades.includes('u6-auroral-return')
-    ? dischargeTempestSecond(game.numericLawState)
+    && game.activeUniverse === 'vishnulok'
+    && game.upgrades.includes('vishnulok-auroral-return')
+    ? completeSecondVishnulokReturn(game.numericLawState)
     : false
 }
 

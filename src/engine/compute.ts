@@ -272,7 +272,7 @@ export function globalMult(s: EcoState, now = Date.now()): EconomyAmount {
 
 /** The active universe's living physics at a specific moment. */
 export function universeRateMult(s: EcoState, now = Date.now()): number {
-  if (s.activeUniverse === 'prismata' || s.activeUniverse === 'tempest' || s.activeUniverse === 'canticle') {
+  if (s.activeUniverse === 'brahmalok' || s.activeUniverse === 'vishnulok' || s.activeUniverse === 'kailash') {
     return f4RateMultiplier(s.activeUniverse, s.numericLawState, s.owned, now)
   }
   const raw = universeById(s.activeUniverse).twist.rateMultiplier?.(now) ?? 1
@@ -485,7 +485,7 @@ function generatorRateFormula(
       genMultiplierInputs.push(formulaTerm(
         `${prefix}:grafting`,
         'universe-law',
-        'u3-grafting',
+        'verdance-grafting',
         generator.id === graft.rootstockId ? 'Rootstock sap contribution' : `Grafted maturity from ${sourceName}`,
         formulaScalar('multiplier', graftMultiplier),
         universe.id,

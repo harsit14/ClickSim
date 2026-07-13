@@ -37,8 +37,8 @@
   import LokaShelfSetPieces from './LokaShelfSetPieces.svelte'
   import {
     brahmalokStatus,
-    canticleStatus,
-    tempestStatus,
+    kailashStatus,
+    vishnulokCircuitStatus,
     type KailashAct,
   } from '../content/universes/f4-runtime'
 
@@ -95,15 +95,15 @@
   const archiveIdSet = $derived(new Set(unlockedArchiveIds))
   const activeOmenIdSet = $derived(new Set(activeOmenIds))
   const beaconLit = $derived(litBeaconUniverseIds.includes(pack.id))
-  const brahmalokWorldState = $derived(pack.id === 'prismata' ? brahmalokStatus(numericLawState, owned) : null)
-  const vishnulokWorldState = $derived(pack.id === 'tempest' ? tempestStatus(numericLawState) : null)
-  const vishnulokReturningSchoolOwned = $derived(pack.id === 'tempest' ? owned['u6-kindling-05'] ?? 0 : 0)
-  const vishnulokShelterReefOwned = $derived(pack.id === 'tempest' ? owned['u6-kindling-04'] ?? 0 : 0)
-  const kailashWorldState = $derived(pack.id === 'canticle' ? canticleStatus(numericLawState, owned, now) : null)
-  const brahmalokDirectionMax = $derived(Math.max(1, ...(brahmalokWorldState?.bands ?? [0])))
+  const brahmalokWorldState = $derived(pack.id === 'brahmalok' ? brahmalokStatus(numericLawState, owned) : null)
+  const vishnulokWorldState = $derived(pack.id === 'vishnulok' ? vishnulokCircuitStatus(numericLawState) : null)
+  const vishnulokReturningSchoolOwned = $derived(pack.id === 'vishnulok' ? owned['vishnulok-kindling-05'] ?? 0 : 0)
+  const vishnulokShelterReefOwned = $derived(pack.id === 'vishnulok' ? owned['vishnulok-kindling-04'] ?? 0 : 0)
+  const kailashWorldState = $derived(pack.id === 'kailash' ? kailashStatus(numericLawState, owned, now) : null)
+  const brahmalokDirectionMax = $derived(Math.max(1, ...(brahmalokWorldState?.directions ?? [0])))
 
   function brahmalokDirectionStrength(index: number): number {
-    return (brahmalokWorldState?.bands[index] ?? 0) / brahmalokDirectionMax
+    return (brahmalokWorldState?.directions[index] ?? 0) / brahmalokDirectionMax
   }
 
   function kailashActGlyph(role: KailashAct): string {
@@ -206,9 +206,9 @@
   class:tidefall={pack.id === 'tidefall'}
   class:verdance={pack.id === 'verdance'}
   class:clockwork={pack.id === 'clockwork'}
-  class:prismata={pack.id === 'prismata'}
-  class:tempest={pack.id === 'tempest'}
-  class:canticle={pack.id === 'canticle'}
+  class:brahmalok={pack.id === 'brahmalok'}
+  class:vishnulok={pack.id === 'vishnulok'}
+  class:kailash={pack.id === 'kailash'}
   class:motion-paused={preferences.reducedMotion}
   class:low-quality={preferences.quality === 'low'}
   aria-label={`${pack.identity.shortName} authored world`}
@@ -218,10 +218,10 @@
   data-presentation-ready={presentation !== null}
   data-world-state={worldState?.key ?? 'none'}
   data-virgin-state={virginWorld}
-  data-brahmalok-directions={brahmalokWorldState?.activeBands ?? undefined}
-  data-vishnulok-returning={vishnulokWorldState ? vishnulokWorldState.boostRemainingSec > 0 : undefined}
+  data-brahmalok-directions={brahmalokWorldState?.activeDirections ?? undefined}
+  data-vishnulok-returning={vishnulokWorldState ? vishnulokWorldState.returnRemainingSec > 0 : undefined}
   data-kailash-act={kailashWorldState?.role ?? undefined}
-  style={`--scene-strength:${sceneStrength};--loka-balance:${brahmalokWorldState?.balance ?? 0};--loka-continuity:${(vishnulokWorldState?.charge ?? 0) / 100};--loka-reach:${(vishnulokWorldState?.length ?? 0) / 8};--loka-pattern:${Math.max(0, (kailashWorldState?.patternBonus ?? 1) - 1)};--loka-cycle:${kailashWorldState ? (kailashWorldState.slotIndex + 1) / kailashWorldState.slots.length : 0}`}
+  style={`--scene-strength:${sceneStrength};--loka-balance:${brahmalokWorldState?.balance ?? 0};--loka-continuity:${(vishnulokWorldState?.continuity ?? 0) / 100};--loka-reach:${(vishnulokWorldState?.length ?? 0) / 8};--loka-pattern:${Math.max(0, (kailashWorldState?.patternBonus ?? 1) - 1)};--loka-cycle:${kailashWorldState ? (kailashWorldState.slotIndex + 1) / kailashWorldState.slots.length : 0}`}
 >
   <h2 class="sr-only">Visible {pack.identity.shortName} world</h2>
 
@@ -239,22 +239,22 @@
             <i style={`--x:${leaf[0]};--y:${leaf[1]};--leaf-rotation:${leaf[2]}`}></i>
           {/each}
         </div>
-      {:else if pack.id === 'prismata'}
+      {:else if pack.id === 'brahmalok'}
         <div class="brahmalok-dawn"></div>
         <div class="brahmalok-manuscript"></div>
         <div class="brahmalok-rivers"><i></i><i></i><i></i><i></i></div>
         <div class="brahmalok-courts">
-          {#each Array.from({ length: 4 }) as _, index}<i class:active={(brahmalokWorldState?.bands[index] ?? 0) > 0} style={`--direction-strength:${brahmalokDirectionStrength(index)}`}></i>{/each}
+          {#each Array.from({ length: 4 }) as _, index}<i class:active={(brahmalokWorldState?.directions[index] ?? 0) > 0} style={`--direction-strength:${brahmalokDirectionStrength(index)}`}></i>{/each}
         </div>
         <div class="brahmalok-lotus">
           {#each Array.from({ length: 12 }) as _, index}
             {@const directionIndex = Math.floor(index / 3)}
-            <i class:active={(brahmalokWorldState?.bands[directionIndex] ?? 0) > 0} style={`--petal-index:${index};--petal-strength:${brahmalokDirectionStrength(directionIndex)}`}></i>
+            <i class:active={(brahmalokWorldState?.directions[directionIndex] ?? 0) > 0} style={`--petal-index:${index};--petal-strength:${brahmalokDirectionStrength(directionIndex)}`}></i>
           {/each}
           <b></b><span></span>
         </div>
         <div class="brahmalok-script"><i></i><i></i><i></i><i></i><i></i></div>
-      {:else if pack.id === 'tempest'}
+      {:else if pack.id === 'vishnulok'}
         <div class="vishnulok-depth"></div>
         <div class="vishnulok-horizon"></div>
         <div class="vishnulok-currents">
@@ -264,10 +264,10 @@
           {#each Array.from({ length: 4 }) as _, index}<i class:active={index < Math.ceil((vishnulokWorldState?.length ?? 0) / 2)}></i>{/each}
         </div>
         <div class="vishnulok-leaves"><i></i><i></i><i></i></div>
-        <div class="vishnulok-return" class:returning={(vishnulokWorldState?.boostRemainingSec ?? 0) > 0}><i></i></div>
-        <div class="vishnulok-continuity" class:returning={(vishnulokWorldState?.boostRemainingSec ?? 0) > 0}></div>
+        <div class="vishnulok-return" class:returning={(vishnulokWorldState?.returnRemainingSec ?? 0) > 0}><i></i></div>
+        <div class="vishnulok-continuity" class:returning={(vishnulokWorldState?.returnRemainingSec ?? 0) > 0}></div>
         <div class="vishnulok-sounding"></div>
-      {:else if pack.id === 'canticle'}
+      {:else if pack.id === 'kailash'}
         <div class="kailash-sky"></div>
         <div class="kailash-moon"></div>
         <div class="kailash-range range-far"></div>
@@ -289,9 +289,9 @@
     {/if}
 
     {#if brahmalokWorldState}
-      <p class="sr-only">Brahmalok world state: {brahmalokWorldState.activeBands} creation directions active at {Math.round(brahmalokWorldState.balance * 100)} percent balance.</p>
+      <p class="sr-only">Brahmalok world state: {brahmalokWorldState.activeDirections} creation directions active at {Math.round(brahmalokWorldState.balance * 100)} percent balance.</p>
     {:else if vishnulokWorldState}
-      <p class="sr-only">Vishnulok world state: {Math.round(vishnulokWorldState.charge)} percent continuity across {vishnulokWorldState.length} shelters; {vishnulokWorldState.boostRemainingSec > 0 ? 'return in progress' : 'gathering continuity'}.</p>
+      <p class="sr-only">Vishnulok world state: {Math.round(vishnulokWorldState.continuity)} percent continuity across {vishnulokWorldState.length} shelters; {vishnulokWorldState.returnRemainingSec > 0 ? 'return in progress' : 'gathering continuity'}.</p>
     {:else if kailashWorldState}
       <p class="sr-only">Kailash world state: position {kailashWorldState.slotIndex + 1} of {kailashWorldState.slots.length}, {kailashWorldState.role}; {kailashWorldState.restCount} rests and {kailashWorldState.distinctRoles} distinct acts.</p>
     {/if}
@@ -317,12 +317,12 @@
       />
     {/if}
 
-    {#if pack.id === 'prismata' && !virginWorld}
+    {#if pack.id === 'brahmalok' && !virginWorld}
       <BrahmalokWorldLayer
         objects={pack.visual.objects}
         {owned}
         {numericLawState}
-        folios={lokaProgress['u5-folios'] ?? 0}
+        folios={lokaProgress['brahmalok-folios'] ?? 0}
         archiveCount={unlockedArchiveIds.length}
         reducedMotion={preferences.reducedMotion}
         quality={preferences.quality}
@@ -348,26 +348,26 @@
       <ClockworkFlagshipLayer {owned} reducedMotion={preferences.reducedMotion} />
     {/if}
 
-    {#if pack.id === 'canticle' && !virginWorld}
+    {#if pack.id === 'kailash' && !virginWorld}
       <KailashWorldLayer
         objects={pack.visual.objects}
         {owned}
         reducedMotion={preferences.reducedMotion}
         quality={preferences.quality}
         {numericLawState}
-        traces={lokaProgress['u7-traces'] ?? 0}
+        traces={lokaProgress['kailash-traces'] ?? 0}
         {releaseCount}
       />
-      <p class="sr-only">The inhabited descent holds {lokaProgress['u7-traces'] ?? 0} traces{(lokaProgress['u7-traces'] ?? 0) > 18 ? `; and ${(lokaProgress['u7-traces'] ?? 0) - 18} more are kept along the way` : ''}.</p>
+      <p class="sr-only">The inhabited descent holds {lokaProgress['kailash-traces'] ?? 0} traces{(lokaProgress['kailash-traces'] ?? 0) > 18 ? `; and ${(lokaProgress['kailash-traces'] ?? 0) - 18} more are kept along the way` : ''}.</p>
     {/if}
 
-    {#if pack.id === 'tempest' && !virginWorld}
+    {#if pack.id === 'vishnulok' && !virginWorld}
       <VishnulokWorldLayer
         objects={pack.visual.objects}
         {owned}
         {numericLawState}
-        wovenRoutes={lokaProgress['u6-routes'] ?? 0}
-        completedReturns={lokaProgress['u6-returns'] ?? 0}
+        wovenRoutes={lokaProgress['vishnulok-routes'] ?? 0}
+        completedReturns={lokaProgress['vishnulok-returns'] ?? 0}
         reducedMotion={preferences.reducedMotion}
         quality={preferences.quality}
       />
@@ -379,7 +379,7 @@
       />
     {/if}
 
-    {#if pack.id === 'prismata' || pack.id === 'tempest' || pack.id === 'canticle'}
+    {#if pack.id === 'brahmalok' || pack.id === 'vishnulok' || pack.id === 'kailash'}
       <LokaShelfSetPieces
         universeId={pack.id}
         archiveIds={unlockedArchiveIds}
@@ -435,12 +435,12 @@
           >
             <span
               class="archive-sigil"
-              class:world-material={pack.id === 'verdance' || pack.id === 'prismata' || pack.id === 'tempest' || pack.id === 'canticle'}
+              class:world-material={pack.id === 'verdance' || pack.id === 'brahmalok' || pack.id === 'vishnulok' || pack.id === 'kailash'}
               aria-hidden="true"
             >
               {#if pack.id === 'verdance'}
                 <VerdanceArchiveSilhouette index={archiveRecordIndexById.get(record.id) ?? 0} />
-              {:else if pack.id === 'prismata' || pack.id === 'tempest' || pack.id === 'canticle'}
+              {:else if pack.id === 'brahmalok' || pack.id === 'vishnulok' || pack.id === 'kailash'}
                 <ChamberLandmarkSilhouette id={record.id} universeId={pack.id} />
               {:else}
                 <ArchiveRecordArt
@@ -451,7 +451,7 @@
               {/if}
               <span class="landmark-interior"><i></i><i></i><i></i></span>
             </span>
-            {#if pack.id === 'verdance' || pack.id === 'prismata' || pack.id === 'tempest' || pack.id === 'canticle'}
+            {#if pack.id === 'verdance' || pack.id === 'brahmalok' || pack.id === 'vishnulok' || pack.id === 'kailash'}
               <span class="landmark-name">{record.name}</span>
             {/if}
             <span class="archive-hint" role="tooltip">
@@ -705,9 +705,9 @@
   [data-side='center'][data-slot$='22'] .landmark-name,
   [data-side='center'][data-slot$='24'] .landmark-name { top:auto;bottom:calc(100% + .2rem); }
   .verdance .archive-landmark,
-  .prismata .archive-landmark,
-  .tempest .archive-landmark,
-  .canticle .archive-landmark { width:4.1rem;height:4.1rem; }
+  .brahmalok .archive-landmark,
+  .vishnulok .archive-landmark,
+  .kailash .archive-landmark { width:4.1rem;height:4.1rem; }
   :global(html[data-text-scale='large']) .landmark-name { max-width:8rem;font-size:.66rem; }
   .archive-hint {
     position: absolute;
@@ -874,14 +874,14 @@
     border-radius: 0;
     transform: rotate(28deg);
   }
-  .canticle .heart-frame {
+  .kailash .heart-frame {
     inset: -22%;
     border: 1px dashed color-mix(in srgb, #dce9ee 58%, transparent);
     border-top-color: transparent;
     border-radius: 54% 46% 34% 66%;
     box-shadow: 0 0 0 1px color-mix(in srgb, #63a9bf 14%, transparent), 0 0 2.2rem color-mix(in srgb, #63a9bf 18%, transparent);
   }
-  .canticle .heart-frame::before {
+  .kailash .heart-frame::before {
     left: 12%; right: 12%; top: 8%; bottom: 42%;
     border: 0;
     border-bottom: 1px solid color-mix(in srgb, #dce9ee 64%, transparent);
@@ -889,7 +889,7 @@
     clip-path: polygon(0 100%, 20% 58%, 34% 72%, 58% 8%, 100% 100%);
     background: linear-gradient(160deg, color-mix(in srgb, #63a9bf 12%, transparent), transparent 70%);
   }
-  .canticle .heart-frame::after {
+  .kailash .heart-frame::after {
     left: 50%; top: 52%; bottom: -36%; width: 1px;
     border: 0;
     border-radius: 0;

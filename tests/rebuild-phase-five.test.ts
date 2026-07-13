@@ -152,7 +152,7 @@ test('Phase 5.3 first arrival is one contiguous twenty-second six-beat Crossing'
 })
 
 test('every world owns a vocabulary correction and three habit breaks inside ten minutes', () => {
-  const ids: readonly UniverseId[] = ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']
+  const ids: readonly UniverseId[] = ['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash']
   for (const id of ids) {
     const moments = crossingHabitBreaks(id)
     assert.equal(moments.length, 3)

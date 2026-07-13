@@ -6,7 +6,7 @@
     planKailashFormations,
     planKailashFrontWeather,
     planKailashValley,
-  } from '../render/canticle/world-layer'
+  } from '../render/kailash/world-layer'
 
   let {
     objects,

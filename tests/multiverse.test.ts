@@ -37,7 +37,7 @@ function tideState(): EcoState {
     light: ZERO_AMOUNT,
     totalEarned: amountFromNumber(1_000),
     clicks: 0,
-    owned: { spark: 1 },
+    owned: { 'tidefall-droplet': 1 },
     upgrades: [],
     achievements: [],
     stardustTotal: ZERO_AMOUNT,
@@ -92,7 +92,7 @@ test('achievements and vestments adopt the active universe identity', () => {
   assert.ok(THEMES.every((theme) => themeVarsForUniverse(theme, 'clockwork')['--amber'] !== theme.vars['--amber']))
 })
 
-test('Vessel and prestige layers use Tidefall-specific fiction without changing stable ids', () => {
+test('Vessel and prestige layers use Tidefall-specific fiction with canonical Kindling IDs', () => {
   const heart = VESSEL_PARTS.find((part) => part.id === 'heart-sun')!
   const tideHeart = vesselPartCopy(heart, 'tidefall')
   assert.equal(heart.consumes?.gen, 'sun')
@@ -134,7 +134,7 @@ test('universe music modes carry different rhythm grids', () => {
 })
 
 test('every realm owns a distinct harmonic and synthesized music profile', () => {
-  const ids = ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle'] as const
+  const ids = ['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash'] as const
   assert.equal(new Set(ids.map(musicProfileFingerprint)).size, ids.length)
   assert.equal(new Set(ids.map((id) => MUSIC_PROFILES[id].chords.flat().join(','))).size, ids.length)
   for (const id of ids) {
@@ -149,7 +149,7 @@ test('every realm owns a distinct harmonic and synthesized music profile', () =>
 })
 
 test('Kailash Long Rest switches to a reversible sparse stillness score', () => {
-  setMusicMode('canticle')
+  setMusicMode('kailash')
   setMusicStillness(true)
   assert.equal(musicStillnessActive(), true)
   setMusicStillness(false)

@@ -4,11 +4,11 @@ import { readFileSync } from 'node:fs'
 import { compile } from 'svelte/compiler'
 import { universeById, V2_UNIVERSE_BY_ID } from '../src/content/universes'
 import {
-  CANTICLE_ARCHIVE_MARKS,
+  KAILASH_ARCHIVE_MARKS,
   CHAMBER_ARCHIVE_MARKS,
   CHAMBER_ARCHIVE_MARK_BY_ID,
-  PRISMATA_ARCHIVE_MARKS,
-  TEMPEST_ARCHIVE_MARKS,
+  BRAHMALOK_ARCHIVE_MARKS,
+  VISHNULOK_ARCHIVE_MARKS,
   VERDANCE_ARCHIVE_MARKS,
 } from '../src/render/chamber-archive-marks'
 
@@ -18,9 +18,9 @@ const componentSource = readFileSync(componentUrl, 'utf8')
 test('each revisited chamber world owns twelve unique native Archive marks', () => {
   const sets = [
     ['verdance', VERDANCE_ARCHIVE_MARKS],
-    ['prismata', PRISMATA_ARCHIVE_MARKS],
-    ['tempest', TEMPEST_ARCHIVE_MARKS],
-    ['canticle', CANTICLE_ARCHIVE_MARKS],
+    ['brahmalok', BRAHMALOK_ARCHIVE_MARKS],
+    ['vishnulok', VISHNULOK_ARCHIVE_MARKS],
+    ['kailash', KAILASH_ARCHIVE_MARKS],
   ] as const
 
   for (const [universeId, marks] of sets) {
@@ -51,7 +51,7 @@ test('the chamber Archive registry is complete and collision-free', () => {
 test('ArchiveRecordArt uses native plates before the celestial fallback', () => {
   assert.match(componentSource, /CHAMBER_ARCHIVE_MARK_BY_ID/)
   assert.match(componentSource, /else if chamberMark[\s\S]*class="chamber-frame"[\s\S]*class="chamber-diagram"[\s\S]*class="chamber-accent"[\s\S]*\{:else\}/)
-  for (const universeId of ['verdance', 'prismata', 'tempest', 'canticle']) {
+  for (const universeId of ['verdance', 'brahmalok', 'vishnulok', 'kailash']) {
     assert.match(componentSource, new RegExp(`data-native-universe='${universeId}'`))
   }
   assert.deepEqual(compile(componentSource, { filename: componentUrl.pathname, generate: 'client' }).warnings, [])

@@ -26,9 +26,9 @@ export const REALM_PACING_TARGETS: Readonly<Record<UniverseId, RealmPacingTarget
   tidefall: LONG_RESTORED,
   verdance: REGENERATIVE,
   clockwork: LONG_RESTORED,
-  prismata: LOKA,
-  tempest: LOKA,
-  canticle: LOKA,
+  brahmalok: LOKA,
+  vishnulok: LOKA,
+  kailash: LOKA,
 }
 
 export interface RealmPacingFinding {

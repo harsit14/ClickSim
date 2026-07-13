@@ -6,14 +6,14 @@ import { universeById, V2_UNIVERSE_BY_ID } from '../src/content/universes'
 import { runCurrentPackAudit } from '../balance/current-pack-audit'
 import { SIMULATOR_PROFILES } from '../balance/simulator-contract'
 
-const CHAMBER_IDS = ['verdance', 'prismata', 'tempest', 'canticle'] as const
+const CHAMBER_IDS = ['verdance', 'brahmalok', 'vishnulok', 'kailash'] as const
 
 test('Phase 6.2 gives every chamber world a ten-line authored Lumen arc', () => {
   const expectedEpochLanguage = {
     verdance: /Pruning.*(?:cut|memory|seed)/i,
-    prismata: /Recomposition.*Folio/i,
-    tempest: /Renewal.*Return/i,
-    canticle: /Release.*Trace/i,
+    brahmalok: /Recomposition.*Folio/i,
+    vishnulok: /Renewal.*Return/i,
+    kailash: /Release.*Trace/i,
   }
   const allTexts: string[] = []
 
@@ -52,9 +52,9 @@ test('each chamber Epoch decision uses native ceremony prose instead of shared s
 test('Pruning, Recomposition, Renewal, and Release have distinct semantic cadences', () => {
   const expectedCadence = {
     verdance: /pruning/i,
-    prismata: /folio-close.*open final interval/i,
-    tempest: /returning current.*quiet/i,
-    canticle: /silence.*return/i,
+    brahmalok: /folio-close.*open final interval/i,
+    vishnulok: /returning current.*quiet/i,
+    kailash: /silence.*return/i,
   }
   const families = CHAMBER_IDS.map((universeId) => {
     const audio = V2_UNIVERSE_BY_ID.get(universeId)!.audio

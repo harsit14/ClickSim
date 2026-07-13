@@ -45,7 +45,7 @@ node --import tsx --test suggestion/kailash/*.test.ts
 6. **Traces are Chronicle data, not law state.** `advanceKailashFronts`
    *returns* `tracesEarned`; the caller persists the lifetime counter next to
    the realm's other lifetime stats so it survives Release. Law-state keys
-   (`u7-front-*`, `u7-long-rest`, `u7-grace-*`) are all deliberately
+   (`kailash-front-*`, `kailash-long-rest`, `kailash-grace-*`) are all deliberately
    epoch-resettable — `retainedF4LawConfiguration` needs **no change**.
 7. **The summit stays empty.** Every descent station sits at or below
    `SUMMIT_CLEARANCE_Y_PERCENT`; accumulation builds downward and outward
@@ -62,15 +62,15 @@ node --import tsx --test suggestion/kailash/*.test.ts
 
 - `fronts.ts` state machine → merge into `src/content/universes/f4-runtime.ts`;
   reuse its private `readNumber`/`writeNumber`; extend `advanceF4LawState`
-  (canticle currently doesn't tick there) and multiply
-  `kailashFrontMultiplier` into `f4RateMultiplier('canticle', …)`.
-- `markKailashCycleEdited` → call from `selectCanticleMeasure`,
-  `setCanticleSlotRole`, and `cycleCanticleSlot`.
+  (kailash currently doesn't tick there) and multiply
+  `kailashFrontMultiplier` into `f4RateMultiplier('kailash', …)`.
+- `markKailashCycleEdited` → call from `selectKailashCycle`,
+  `setKailashAct`, and `cycleKailashAct`.
 - Front/rest copy, `KAILASH_FRONT_SIGNALS`, and `KAILASH_FRONT_LUMEN` → into
-  `KAILASH_SPEC` in `src/content/universes/canticle/index.ts` (signals append
+  `KAILASH_SPEC` in `src/content/universes/kailash/index.ts` (signals append
   to `nonColorSignals`; announcements go through the existing per-universe
   announcement policy with dedupe keys).
-- `descent.ts` planners → `src/render/canticle/world-layer.ts`, feeding the
+- `descent.ts` planners → `src/render/kailash/world-layer.ts`, feeding the
   same drawing layer Verdance uses; respect the density governor and the
   heart's central clearing.
 - Long Rest entry/exit UI → the Still Point panel; the shelf-completion gate

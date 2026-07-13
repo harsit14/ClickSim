@@ -53,8 +53,8 @@ test('Clockwork Maintenance Trials use mechanism, Ticks, and named machine tiers
 })
 
 test('Vishnulok and Kailash keep distinct public trial-unit language', () => {
-  const vishnulok = UNIVERSES.find(({ id }) => id === 'tempest')!
-  const kailash = UNIVERSES.find(({ id }) => id === 'canticle')!
+  const vishnulok = UNIVERSES.find(({ id }) => id === 'vishnulok')!
+  const kailash = UNIVERSES.find(({ id }) => id === 'kailash')!
 
   assert.equal(localizeChallengeText('One Kindling remains.', vishnulok), 'One Refuge remains.')
   assert.equal(localizeChallengeText('Two Kindlings remain.', vishnulok), 'Two Refuges remain.')

@@ -70,7 +70,7 @@ test('generic rotated primitive stacking has no remaining shipping exemption', (
   assert.match(future, /@deprecated No shipping realm may use this frozen compatibility bridge/)
   assert.match(future, /new Set<string>\(\)/)
   assert.match(future, /must register authored set-piece paths; generic primitive stacking is frozen/)
-  for (const realm of ['prismata', 'tempest', 'canticle']) {
+  for (const realm of ['brahmalok', 'vishnulok', 'kailash']) {
     const source = readFileSync(new URL(`../src/render/${realm}/presentation.ts`, import.meta.url), 'utf8')
     assert.doesNotMatch(source, /createFuturePresentation/)
     assert.match(source, /createAuthoredLokaPresentation/)

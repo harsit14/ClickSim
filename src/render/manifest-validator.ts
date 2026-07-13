@@ -31,9 +31,9 @@ const UNIVERSE_IDS = new Set([
   'tidefall',
   'verdance',
   'clockwork',
-  'prismata',
-  'tempest',
-  'canticle',
+  'brahmalok',
+  'vishnulok',
+  'kailash',
 ])
 const SOURCE_KINDS = new Set(['generator', 'archive', 'omen', 'story', 'beacon'])
 const SCREEN_ZONES = new Set(['heart', 'near', 'far', 'horizon'])

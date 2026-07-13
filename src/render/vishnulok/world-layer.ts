@@ -1,5 +1,5 @@
 import type { EconomyAmount, WorldObjectManifest } from '../../content/universes/types'
-import { tempestStatus, vishnulokStrainStatus } from '../../content/universes/f4-runtime'
+import { vishnulokCircuitStatus, vishnulokStrainStatus } from '../../content/universes/f4-runtime'
 
 export type VishnulokOwnershipThreshold = 0 | 1 | 10 | 25 | 50 | 100
 export const WOVEN_ROUTE_CAP = 20
@@ -102,15 +102,15 @@ export function planVishnulokReturn(
   state: Readonly<Record<string, EconomyAmount>> | undefined,
   reducedMotion: boolean,
 ): VishnulokReturnPlan {
-  const status = tempestStatus(state)
-  const active = status.boostRemainingSec > 0 || status.secondBoostRemainingSec > 0
+  const status = vishnulokCircuitStatus(state)
+  const active = status.returnRemainingSec > 0 || status.secondReturnRemainingSec > 0
   return {
     active,
     confluence: status.confluenceActive,
     routeLength: status.length,
     progressLabel: active
-      ? `${status.path.name}, ${status.length} numbered shelters, ${Math.ceil(Math.max(status.boostRemainingSec, status.secondBoostRemainingSec))} seconds returning`
-      : `${status.path.name}, still water, ${Math.round(status.charge)} percent continuity`,
+      ? `${status.circuit.name}, ${status.length} numbered shelters, ${Math.ceil(Math.max(status.returnRemainingSec, status.secondReturnRemainingSec))} seconds returning`
+      : `${status.circuit.name}, still water, ${Math.round(status.continuity)} percent continuity`,
     motion: reducedMotion ? 'static-numbered-path' : 'travel',
   }
 }

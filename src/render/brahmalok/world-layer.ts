@@ -3,7 +3,7 @@ import {
   BRAHMALOK_DIRECTIONS,
   brahmalokCommissionStatus,
   brahmalokMarginModeIndex,
-  prismataStatus,
+  brahmalokStatus,
 } from '../../content/universes/f4-runtime'
 
 export type BrahmalokOwnershipThreshold = 0 | 1 | 10 | 25 | 50 | 100
@@ -40,10 +40,10 @@ export function planBrahmalokCourts(
   state: Readonly<Record<string, EconomyAmount>> | undefined,
   owned: Readonly<Record<string, number>>,
 ): readonly BrahmalokCourtPlan[] {
-  const status = prismataStatus(state, owned)
+  const status = brahmalokStatus(state, owned)
   return BRAHMALOK_DIRECTIONS.map((direction, index) => {
     const seat = COURT_SEATS[index]
-    const routedOwnership = status.bands[index]
+    const routedOwnership = status.directions[index]
     const threshold = brahmalokOwnershipThreshold(routedOwnership)
     return {
       id: `brahmalok-court-${direction.id}`,
@@ -116,18 +116,18 @@ export function planBrahmalokHeartResponse(
   archiveCount: number,
   reducedMotion: boolean,
 ): BrahmalokHeartResponsePlan {
-  const status = prismataStatus(state, owned)
-  const maximum = Math.max(1, ...status.bands)
+  const status = brahmalokStatus(state, owned)
+  const maximum = Math.max(1, ...status.directions)
   const commission = brahmalokCommissionStatus(state, owned, archiveCount)
   const margin = brahmalokMarginModeIndex(state)
   const askingDirection = commission.phase === 'active' ? commission.commission.direction : null
   return {
-    directionFractions: status.bands.map((value) => value / maximum),
-    modePattern: MODE_PATTERNS[status.recipeIndex],
+    directionFractions: status.directions.map((value) => value / maximum),
+    modePattern: MODE_PATTERNS[status.modeIndex],
     marginPattern: margin === null ? null : MODE_PATTERNS[margin],
     askingDirection,
     attention: askingDirection === null ? 'none' : reducedMotion ? 'static-ring' : 'pulse',
     center: 'open-square',
-    label: `${status.recipe.name}; ${status.activeBands} of four directions active; open center; ${askingDirection ? `${askingDirection} Commission asking` : 'quiet margins'}`,
+    label: `${status.mode.name}; ${status.activeDirections} of four directions active; open center; ${askingDirection ? `${askingDirection} Commission asking` : 'quiet margins'}`,
   }
 }

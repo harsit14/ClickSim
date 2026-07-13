@@ -18,17 +18,17 @@ The project has no ads, gacha, energy timers, paid boosts, expiring rewards, or 
 
 Each realm has its own economy, visual language, soundscape, active system, Archive, trials, story, and ending ritual.
 
-| Realm | Core identity | Heart | First reset | Archive | Save-stable ID |
+| Realm | Core identity | Heart | First reset | Archive | ID |
 |---|---|---|---|---|---|
 | **Emberlight** | Rebuild warmth, settlement, and a remembered sky | Last Ember | Supernova / Stardust | Astral Cabinet | `emberlight` |
 | **Tidefall** | Raise Glow through a moonless living ocean | Tideheart | Turning tide | Pelagic Archive | `tidefall` |
 | **Verdance** | Grow living cohorts that root, mature, remember, and renew | First Seed | Pruning / Memory Seeds | Impossible Herbarium | `verdance` |
 | **Clockwork** | Route deterministic power through a civic machine | Escapement Heart | Rewinding / Mainsprings | Patent Ledger | `clockwork` |
-| **Brahmalok** | Unfold possibility through seed, measure, name, and form | Lotus of Becoming | Epoch Recomposition | Archive of First Forms | `prismata` |
-| **Vishnulok** | Sustain continuity through refuge, correction, and return | The Endless Circuit | Renewal | Ocean of Continuance | `tempest` |
-| **Kailash** | Approach release with shelter, grace, stillness, and renewal visible | The Still Point | Release | Mountain Witness | `canticle` |
+| **Brahmalok** | Unfold possibility through seed, measure, name, and form | Lotus of Becoming | Epoch Recomposition | Archive of First Forms | `brahmalok` |
+| **Vishnulok** | Sustain continuity through refuge, correction, and return | The Endless Circuit | Renewal | Ocean of Continuance | `vishnulok` |
+| **Kailash** | Approach release with shelter, grace, stillness, and renewal visible | The Still Point | Release | Mountain Witness | `kailash` |
 
-The final three internal IDs are intentionally frozen for save compatibility. Public copy and current canon use Brahmalok, Vishnulok, and Kailash; persisted slots remain `prismata`, `tempest`, and `canticle`. Their stable content prefixes are `u5-`, `u6-`, and `u7-`.
+Every realm and its content use the current canonical name as their internal namespace. Brahmalok, Vishnulok, and Kailash therefore use `brahmalok-`, `vishnulok-`, and `kailash-` content IDs.
 
 ### Terminology contract
 
@@ -36,7 +36,7 @@ The final three internal IDs are intentionally frozen for save compatibility. Pu
 - **Restored world** refers specifically to Emberlight, Tidefall, Verdance, or Clockwork.
 - **Loka** refers specifically to Brahmalok, Vishnulok, or Kailash.
 - **World** by itself is reserved for the local reset scope: currency, current-run earnings, Kindlings, ordinary upgrades, and buy mode.
-- **Universe ID** is an implementation and save-compatibility term. Identifiers such as `activeUniverse`, `universeId`, `prismata`, `tempest`, and `canticle` do not name player-facing destinations.
+- **Universe ID** is the implementation term for a realm’s canonical key, such as `emberlight`, `brahmalok`, or `kailash`.
 
 ### Current world presentation
 
@@ -114,17 +114,16 @@ Hindu traditions are diverse; these realms are original game fiction shaped by c
 
 Saraswati, Lakshmi, and Parvati are not accessories to a progression system. Their names, presences, and associated traditions require restraint and contextual review. A qualified cultural consultant and South Asian iconographic reviewer must review this material before public release. External cultural review remains a release gate even when automated tests and internal QA pass.
 
-Public loka names may appear in live UI only after their environment, mechanics, copy, and save-compatible route are implemented together. Save identifiers are not renamed after release-facing adoption.
+Public loka names may appear in live UI only after their environment, mechanics, copy, and route are implemented together.
 
 ## Saves and compatibility
 
 The current save schema is version **23**. Economy values use canonical base-10 strings in persisted data and normalized mantissa/exponent values at runtime; older numeric saves migrate through the compatibility path. Version 22 introduced Chronicle, Garden, and Atlas state. Version 23 made Vessel progression local to each realm.
 
-Compatibility rules:
+Save rules:
 
-- Stable IDs are never reused or remapped by array position.
-- New realm content stays within its assigned stable namespace (`u3-` through `u7-` where applicable).
-- The `prismata`, `tempest`, and `canticle` save-slot IDs remain frozen.
+- IDs are never reused or remapped by array position.
+- New realm content stays within its canonical realm namespace.
 - Import validates structure and content before replacing the active save.
 - The game autosaves locally and supports export codes, downloadable backups, rolling recovery checkpoints, and offline progress.
 
@@ -165,7 +164,7 @@ Development states can be reached without modifying progression:
 http://localhost:5173/?scenario=kailash&playtest=1
 ```
 
-Available scenario names are `opening`, `ember-camp`, `midgame`, `ember-cosmic`, `ember-postnova`, `endgame`, `question`, `crossing`, `tidefall`, `verdance`, `pruning`, `clockwork`, `prismata`, `tempest`, `canticle`, `garden`, and `markets`. The Dev Playtest Panel and `window.__ember` expose development-only navigation and state cheats.
+Available scenario names are `opening`, `ember-camp`, `midgame`, `ember-cosmic`, `ember-postnova`, `endgame`, `question`, `crossing`, `tidefall`, `verdance`, `pruning`, `clockwork`, `brahmalok`, `vishnulok`, `kailash`, `garden`, and `markets`. The Dev Playtest Panel and `window.__ember` expose development-only navigation and state cheats.
 
 ## Verification and release workflow
 

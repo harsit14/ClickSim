@@ -20,7 +20,7 @@ import {
   kailashFrontStatus,
   kailashLongRestStatus,
   recallBankedKailashFront,
-  selectCanticleMeasure,
+  selectKailashCycle,
 } from '../src/content/universes/f4-runtime'
 import {
   DESCENT_STATION_CAP,
@@ -29,7 +29,7 @@ import {
   planKailashAshBands,
   planKailashDescent,
   planKailashValley,
-} from '../src/render/canticle/world-layer'
+} from '../src/render/kailash/world-layer'
 
 type NumericLawState = Record<string, EconomyAmount>
 const NO_KINDLINGS: Readonly<Record<string, number>> = {}
@@ -37,10 +37,10 @@ const NO_KINDLINGS: Readonly<Record<string, number>> = {}
 test('Kailash front timeline is deterministic and gated by Cloud Stair ownership', () => {
   const state: NumericLawState = {}
   assert.equal(kailashFrontStatus(state, NO_KINDLINGS).phase, 'calm')
-  assert.equal(advanceF4LawState('canticle', state, NO_KINDLINGS, KAILASH_FRONT_CALM_SECONDS).announcements.length, 0)
+  assert.equal(advanceF4LawState('kailash', state, NO_KINDLINGS, KAILASH_FRONT_CALM_SECONDS).announcements.length, 0)
   assert.equal(kailashFrontStatus(state, NO_KINDLINGS).phase, 'calm')
 
-  const toApproach = advanceF4LawState('canticle', state, { 'u7-kindling-09': 1 }, KAILASH_FRONT_CALM_SECONDS)
+  const toApproach = advanceF4LawState('kailash', state, { 'kailash-kindling-09': 1 }, KAILASH_FRONT_CALM_SECONDS)
   assert.equal(kailashFrontStatus(state, NO_KINDLINGS).phase, 'approaching')
   assert.equal(toApproach.announcements.length, 1)
   advanceKailashFronts(state, NO_KINDLINGS, KAILASH_FRONT_APPROACH_SECONDS)
@@ -52,11 +52,11 @@ test('Kailash front timeline is deterministic and gated by Cloud Stair ownership
 
 test('Kailash idle neutrality requires a deliberate post-announcement edit', () => {
   const state: NumericLawState = {}
-  const owned = { 'u7-kindling-09': 1 }
+  const owned = { 'kailash-kindling-09': 1 }
   let traces = 0
   const fullCycle = KAILASH_FRONT_CALM_SECONDS + KAILASH_FRONT_APPROACH_SECONDS + KAILASH_FRONT_ACTIVE_SECONDS
   for (let second = 0; second < fullCycle * 2; second += 5) {
-    traces += advanceF4LawState('canticle', state, owned, 5).tracesEarned
+    traces += advanceF4LawState('kailash', state, owned, 5).tracesEarned
     assert.equal(kailashFrontMultiplier(state, owned, second * 1_000), 1)
   }
   assert.equal(traces, 0)
@@ -64,12 +64,12 @@ test('Kailash idle neutrality requires a deliberate post-announcement edit', () 
 
 test('answering Passing Snow earns one persistent trace event', () => {
   const state: NumericLawState = {}
-  const owned = { 'u7-kindling-09': 1 }
-  advanceF4LawState('canticle', state, owned, KAILASH_FRONT_CALM_SECONDS)
-  selectCanticleMeasure(state, 3)
-  advanceF4LawState('canticle', state, owned, KAILASH_FRONT_APPROACH_SECONDS)
+  const owned = { 'kailash-kindling-09': 1 }
+  advanceF4LawState('kailash', state, owned, KAILASH_FRONT_CALM_SECONDS)
+  selectKailashCycle(state, 3)
+  advanceF4LawState('kailash', state, owned, KAILASH_FRONT_APPROACH_SECONDS)
   assert.equal(kailashFrontStatus(state, owned).answered, true)
-  const events = advanceF4LawState('canticle', state, owned, KAILASH_FRONT_ACTIVE_SECONDS)
+  const events = advanceF4LawState('kailash', state, owned, KAILASH_FRONT_ACTIVE_SECONDS)
   assert.equal(events.tracesEarned, 1)
   assert.ok(events.announcements.some(({ text }) => /new trace/.test(text)))
 })
@@ -88,7 +88,7 @@ test('Kailash uses one combiner for the existing cycle and all new factors', () 
   assert.equal(combineKailashLawFactors(1, 1, 1, 1), 1)
   assert.equal(combineKailashLawFactors(0, 0.5, Number.NaN, 0), 1)
   const state: NumericLawState = {}
-  assert.ok(f4RateMultiplier('canticle', state, { 'u7-kindling-09': 100 }, 0) <= KAILASH_LAW_FACTOR_CEILING)
+  assert.ok(f4RateMultiplier('kailash', state, { 'kailash-kindling-09': 100 }, 0) <= KAILASH_LAW_FACTOR_CEILING)
 })
 
 test('the Long Rest banks a capped reserve, holds fronts, and decays after exit', () => {
@@ -119,6 +119,6 @@ test('the inhabited descent preserves summit clearance and reports overflow', ()
   const overflowing = planKailashDescent(25)
   assert.equal(overflowing.stations.length, DESCENT_STATION_CAP)
   assert.equal(overflowing.unrenderedTraces, 7)
-  assert.equal(planKailashValley({ 'u7-kindling-05': 60 })[0]?.threshold, 50)
+  assert.equal(planKailashValley({ 'kailash-kindling-05': 60 })[0]?.threshold, 50)
   assert.equal(planKailashAshBands(40).length, 8)
 })

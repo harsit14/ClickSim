@@ -51,7 +51,7 @@ export const VERDANCE_BASE_RATES = [
 ] as const
 
 const generator = (index: number, name: string, flavor: string): GeneratorDef => ({
-  id: `u3-kindling-${String(index + 1).padStart(2, '0')}`,
+  id: `verdance-kindling-${String(index + 1).padStart(2, '0')}`,
   name,
   flavor,
   baseCost: VERDANCE_BASE_COSTS[index],
@@ -85,21 +85,21 @@ export const VERDANCE_UPGRADES: UpgradeDef[] = VERDANCE_GENERATORS.flatMap((entr
 ))
 
 VERDANCE_UPGRADES.push(
-  { id: 'u3-upgrade-seedcoat', name: 'Open Seedcoat', flavor: 'The first touch becomes a season.', cost: 60, glyph: '❧', hue: 92, unlock: { clicks: 10 }, effects: [{ kind: 'clickMult', value: 2 }] },
-  { id: 'u3-upgrade-seedborne-instinct', name: 'Seedborne Instinct', flavor: 'Every seed remembers enough darkness to teach the first leaf where to open.', cost: 55_000, glyph: '⌇', hue: 92, unlock: { gen: 'u3-kindling-03', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-03', per: 'u3-kindling-01', value: 0.018 }] },
-  { id: 'u3-upgrade-rhizome', name: 'Rhizome Accord', flavor: 'Every root lends strength to the next.', cost: 45_000, glyph: '⌇', hue: 112, unlock: { gen: 'u3-kindling-05', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-05', per: 'u3-kindling-02', value: 0.012 }] },
-  { id: 'u3-upgrade-moss-nursery', name: 'Moss Nursery', flavor: 'Soft ground shelters each young grove until shelter becomes inheritance.', cost: 3e6, glyph: '⌇', hue: 118, unlock: { gen: 'u3-kindling-06', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-06', per: 'u3-kindling-04', value: 0.012 }] },
-  { id: 'u3-upgrade-pollinator-covenant', name: 'Pollinator Covenant', flavor: 'Every orchard returns a season of sweetness for each choir that carried it pollen.', cost: 4e8, glyph: '⌇', hue: 128, unlock: { gen: 'u3-kindling-08', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-08', per: 'u3-kindling-07', value: 0.01 }] },
-  { id: 'u3-upgrade-heartwood-commons', name: 'Heartwood Commons', flavor: 'Young groves lend their changing shapes to the patient architecture within old trunks.', cost: 8e9, glyph: '⌇', hue: 136, unlock: { gen: 'u3-kindling-09', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-09', per: 'u3-kindling-06', value: 0.008 }] },
-  { id: 'u3-upgrade-rain-harvest', name: 'Rain Harvest', flavor: 'Every amber orchard teaches the canopy how to keep abundance moving.', cost: 2e11, glyph: '⌇', hue: 142, unlock: { gen: 'u3-kindling-10', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-10', per: 'u3-kindling-08', value: 0.006 }] },
-  { id: 'u3-upgrade-walking-shore', name: 'Walking Shore', flavor: 'The mycelium carries news of retreating water before the mangroves must choose a direction.', cost: 2e12, glyph: '⌇', hue: 148, unlock: { gen: 'u3-kindling-11', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-11', per: 'u3-kindling-05', value: 0.008 }] },
-  { id: 'u3-upgrade-canopy-cartography', name: 'Canopy Cartography', flavor: 'Rain-dark clearings become coordinates in a forest that has begun reading the sky.', cost: 1e14, glyph: '⌇', hue: 154, unlock: { gen: 'u3-kindling-12', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-12', per: 'u3-kindling-10', value: 0.006 }] },
-  { id: 'u3-upgrade-continental-graft', name: 'Continental Graft', flavor: 'Walking roots teach whole continents that connection does not require stillness.', cost: 2e15, glyph: '⌇', hue: 150, unlock: { gen: 'u3-kindling-13', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-13', per: 'u3-kindling-11', value: 0.006 }] },
-  { id: 'u3-upgrade-starlight-pollination', name: 'Starlight Pollination', flavor: 'Photosphere blooms carry enough living light to seed an atmosphere.', cost: 5e17, glyph: '⌇', hue: 138, unlock: { gen: 'u3-kindling-15', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-15', per: 'u3-kindling-14', value: 0.005 }] },
-  { id: 'u3-upgrade-worldroot-skybridge', name: 'Worldroot Skybridge', flavor: 'The forest above and the roots below agree that a constellation can be crossed in either direction.', cost: 2e19, glyph: '⌇', hue: 126, unlock: { gen: 'u3-kindling-16', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-16', per: 'u3-kindling-12', value: 0.004 }] },
-  { id: 'u3-upgrade-inheritance-rings', name: 'Inheritance Rings', flavor: 'The World-Tree grows from every remembered season without becoming a copy of any of them.', cost: 1e22, glyph: '⌇', hue: 112, unlock: { gen: 'u3-kindling-18', count: 10 }, effects: [{ kind: 'synergy', gen: 'u3-kindling-18', per: 'u3-kindling-17', value: 0.004 }] },
-  { id: 'u3-upgrade-canopy', name: 'Shared Canopy', flavor: 'Nothing beneath it grows alone.', cost: 8e8, glyph: '⌒', hue: 82, unlock: { gen: 'u3-kindling-10', count: 10 }, effects: [{ kind: 'globalMult', value: 2 }] },
-  { id: 'u3-upgrade-seedbank', name: 'Seedbank Memory', flavor: 'A careful ending shortens every beginning.', cost: 2e12, glyph: '◇', hue: 68, unlock: { gen: 'u3-kindling-14', count: 1 }, effects: [{ kind: 'globalMult', value: 2.5 }] },
+  { id: 'verdance-upgrade-seedcoat', name: 'Open Seedcoat', flavor: 'The first touch becomes a season.', cost: 60, glyph: '❧', hue: 92, unlock: { clicks: 10 }, effects: [{ kind: 'clickMult', value: 2 }] },
+  { id: 'verdance-upgrade-seedborne-instinct', name: 'Seedborne Instinct', flavor: 'Every seed remembers enough darkness to teach the first leaf where to open.', cost: 55_000, glyph: '⌇', hue: 92, unlock: { gen: 'verdance-kindling-03', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-03', per: 'verdance-kindling-01', value: 0.018 }] },
+  { id: 'verdance-upgrade-rhizome', name: 'Rhizome Accord', flavor: 'Every root lends strength to the next.', cost: 45_000, glyph: '⌇', hue: 112, unlock: { gen: 'verdance-kindling-05', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-05', per: 'verdance-kindling-02', value: 0.012 }] },
+  { id: 'verdance-upgrade-moss-nursery', name: 'Moss Nursery', flavor: 'Soft ground shelters each young grove until shelter becomes inheritance.', cost: 3e6, glyph: '⌇', hue: 118, unlock: { gen: 'verdance-kindling-06', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-06', per: 'verdance-kindling-04', value: 0.012 }] },
+  { id: 'verdance-upgrade-pollinator-covenant', name: 'Pollinator Covenant', flavor: 'Every orchard returns a season of sweetness for each choir that carried it pollen.', cost: 4e8, glyph: '⌇', hue: 128, unlock: { gen: 'verdance-kindling-08', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-08', per: 'verdance-kindling-07', value: 0.01 }] },
+  { id: 'verdance-upgrade-heartwood-commons', name: 'Heartwood Commons', flavor: 'Young groves lend their changing shapes to the patient architecture within old trunks.', cost: 8e9, glyph: '⌇', hue: 136, unlock: { gen: 'verdance-kindling-09', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-09', per: 'verdance-kindling-06', value: 0.008 }] },
+  { id: 'verdance-upgrade-rain-harvest', name: 'Rain Harvest', flavor: 'Every amber orchard teaches the canopy how to keep abundance moving.', cost: 2e11, glyph: '⌇', hue: 142, unlock: { gen: 'verdance-kindling-10', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-10', per: 'verdance-kindling-08', value: 0.006 }] },
+  { id: 'verdance-upgrade-walking-shore', name: 'Walking Shore', flavor: 'The mycelium carries news of retreating water before the mangroves must choose a direction.', cost: 2e12, glyph: '⌇', hue: 148, unlock: { gen: 'verdance-kindling-11', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-11', per: 'verdance-kindling-05', value: 0.008 }] },
+  { id: 'verdance-upgrade-canopy-cartography', name: 'Canopy Cartography', flavor: 'Rain-dark clearings become coordinates in a forest that has begun reading the sky.', cost: 1e14, glyph: '⌇', hue: 154, unlock: { gen: 'verdance-kindling-12', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-12', per: 'verdance-kindling-10', value: 0.006 }] },
+  { id: 'verdance-upgrade-continental-graft', name: 'Continental Graft', flavor: 'Walking roots teach whole continents that connection does not require stillness.', cost: 2e15, glyph: '⌇', hue: 150, unlock: { gen: 'verdance-kindling-13', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-13', per: 'verdance-kindling-11', value: 0.006 }] },
+  { id: 'verdance-upgrade-starlight-pollination', name: 'Starlight Pollination', flavor: 'Photosphere blooms carry enough living light to seed an atmosphere.', cost: 5e17, glyph: '⌇', hue: 138, unlock: { gen: 'verdance-kindling-15', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-15', per: 'verdance-kindling-14', value: 0.005 }] },
+  { id: 'verdance-upgrade-worldroot-skybridge', name: 'Worldroot Skybridge', flavor: 'The forest above and the roots below agree that a constellation can be crossed in either direction.', cost: 2e19, glyph: '⌇', hue: 126, unlock: { gen: 'verdance-kindling-16', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-16', per: 'verdance-kindling-12', value: 0.004 }] },
+  { id: 'verdance-upgrade-inheritance-rings', name: 'Inheritance Rings', flavor: 'The World-Tree grows from every remembered season without becoming a copy of any of them.', cost: 1e22, glyph: '⌇', hue: 112, unlock: { gen: 'verdance-kindling-18', count: 10 }, effects: [{ kind: 'synergy', gen: 'verdance-kindling-18', per: 'verdance-kindling-17', value: 0.004 }] },
+  { id: 'verdance-upgrade-canopy', name: 'Shared Canopy', flavor: 'Nothing beneath it grows alone.', cost: 8e8, glyph: '⌒', hue: 82, unlock: { gen: 'verdance-kindling-10', count: 10 }, effects: [{ kind: 'globalMult', value: 2 }] },
+  { id: 'verdance-upgrade-seedbank', name: 'Seedbank Memory', flavor: 'A careful ending shortens every beginning.', cost: 2e12, glyph: '◇', hue: 68, unlock: { gen: 'verdance-kindling-14', count: 1 }, effects: [{ kind: 'globalMult', value: 2.5 }] },
 )
 
 const ARCHIVE_NAMES = [
@@ -110,7 +110,7 @@ const ARCHIVE_NAMES = [
 const ARCHIVE_GLYPHS = ['⌁', '✾', '⌇', '◇', '◈', '≋', '↗', 'ϟ', '✦', '◉', '⌁', '❧'] as const
 
 export const VERDANCE_CURIOSITIES: CuriosityDef[] = ARCHIVE_NAMES.map((name, index) => ({
-  id: `u3-archive-${String(index + 1).padStart(2, '0')}`,
+  id: `verdance-archive-${String(index + 1).padStart(2, '0')}`,
   name,
   glyph: ARCHIVE_GLYPHS[index],
   classification: `${index < 4 ? 'survival' : index < 8 ? 'communication' : 'inheritance'} specimen · herbarium ${String(index + 1).padStart(2, '0')}`,
@@ -184,16 +184,16 @@ export const VERDANCE_CABINET: CuriosityCabinetDef = {
 }
 
 export const VERDANCE_LUMEN: LumenLine[] = [
-  { id: 'u3-lumen-arrival', text: 'This Heart is a seed. It has been waiting so long that patience became a climate.', when: (g) => g.clicks >= 1 },
-  { id: 'u3-lumen-root', text: 'The first root turned toward you instead of gravity.', when: (g) => (g.owned['u3-kindling-02'] ?? 0) >= 1 },
-  { id: 'u3-lumen-law', text: 'These Kindlings are aging. Time is part of their body here.', when: (g) => gteAmount(g.totalEarned, amountFromNumber(1e5)) },
-  { id: 'u3-lumen-pruning', text: 'Pruning is not erasure. The cut becomes a memory the next seed can use.', when: (g) => g.supernovae >= 1 },
-  { id: 'u3-lumen-amber', text: 'The amber remembers each season without insisting any season return.', when: (g) => g.curiosities.includes('u3-archive-05') },
-  { id: 'u3-lumen-forest', text: 'Their civilization loved preservation until change began to look like violence.', when: (g) => (g.owned['u3-kindling-09'] ?? 0) >= 1 },
-  { id: 'u3-lumen-shade', text: 'The trials remove light because this world once removed uncertainty.', when: (g) => g.challengesDone.length >= 6 },
-  { id: 'u3-lumen-root-network', text: 'The roots are exchanging stories faster than I can catalogue them.', when: (g) => (g.owned['u3-kindling-13'] ?? 0) >= 1 },
-  { id: 'u3-lumen-question', text: 'If nothing is allowed to end, care becomes another kind of cage.', when: (g) => (g.owned['u3-kindling-17'] ?? 0) >= 1 },
-  { id: 'u3-lumen-beacon', text: 'The World-Tree is opening a flower toward the dark between worlds.', when: (g) => (g.owned['u3-kindling-18'] ?? 0) >= 1 },
+  { id: 'verdance-lumen-arrival', text: 'This Heart is a seed. It has been waiting so long that patience became a climate.', when: (g) => g.clicks >= 1 },
+  { id: 'verdance-lumen-root', text: 'The first root turned toward you instead of gravity.', when: (g) => (g.owned['verdance-kindling-02'] ?? 0) >= 1 },
+  { id: 'verdance-lumen-law', text: 'These Kindlings are aging. Time is part of their body here.', when: (g) => gteAmount(g.totalEarned, amountFromNumber(1e5)) },
+  { id: 'verdance-lumen-pruning', text: 'Pruning is not erasure. The cut becomes a memory the next seed can use.', when: (g) => g.supernovae >= 1 },
+  { id: 'verdance-lumen-amber', text: 'The amber remembers each season without insisting any season return.', when: (g) => g.curiosities.includes('verdance-archive-05') },
+  { id: 'verdance-lumen-forest', text: 'Their civilization loved preservation until change began to look like violence.', when: (g) => (g.owned['verdance-kindling-09'] ?? 0) >= 1 },
+  { id: 'verdance-lumen-shade', text: 'The trials remove light because this world once removed uncertainty.', when: (g) => g.challengesDone.length >= 6 },
+  { id: 'verdance-lumen-root-network', text: 'The roots are exchanging stories faster than I can catalogue them.', when: (g) => (g.owned['verdance-kindling-13'] ?? 0) >= 1 },
+  { id: 'verdance-lumen-question', text: 'If nothing is allowed to end, care becomes another kind of cage.', when: (g) => (g.owned['verdance-kindling-17'] ?? 0) >= 1 },
+  { id: 'verdance-lumen-beacon', text: 'The World-Tree is opening a flower toward the dark between worlds.', when: (g) => (g.owned['verdance-kindling-18'] ?? 0) >= 1 },
 ]
 
 const ECHO_TITLES = [
@@ -215,13 +215,13 @@ const ECHO_TEXT = [
 ] as const
 
 export const VERDANCE_ECHOES: EchoDef[] = ECHO_TITLES.map((title, index) => ({
-  id: `u3-echo-${String(index + 1).padStart(2, '0')}`,
+  id: `verdance-echo-${String(index + 1).padStart(2, '0')}`,
   title,
   provenance: ['a seed coat', 'a council ledger', 'living cambium', 'a heartwood core', 'a pollen plate', 'a salt-stained root', 'a canopy gap', 'golden resin', 'a pruning blade', 'the first Beacon flower'][index],
   text: ECHO_TEXT[index],
   when: (g) => index < 2
     ? gteAmount(g.totalEarned, amountFromNumber(10 ** (5 + index * 3)))
-    : (g.owned[`u3-kindling-${String(Math.min(18, index * 2 + 1)).padStart(2, '0')}`] ?? 0) >= 1,
+    : (g.owned[`verdance-kindling-${String(Math.min(18, index * 2 + 1)).padStart(2, '0')}`] ?? 0) >= 1,
 }))
 
 export const VERDANCE: UniversePack = {
@@ -246,14 +246,14 @@ export const VERDANCE: UniversePack = {
     noun: 'golden pollinator',
     motion: 'meteor',
     powerUps: [
-      { id: 'u3-pollinator', label: 'Golden Pollinator', glyph: '✾', hue: 82, weight: 38, prodMult: 7, clickMult: 4, durationSec: 48, toast: 'A pollinator carries living Sap between every flowering Kindling.' },
-      { id: 'u3-spore-rain', label: 'Spore Rain', glyph: '⌇', hue: 112, weight: 34, prodMult: 9, durationSec: 42, toast: 'New roots appear wherever the spores remember ground.' },
-      { id: 'u3-sunbreak', label: 'Sunbreak', glyph: '☼', hue: 64, weight: 22, clickMult: 25, durationSec: 18, toast: 'A moving shaft of light finds every patient leaf.' },
-      { id: 'u3-amber-fruit', label: 'Amber Fruit', glyph: '◈', hue: 42, weight: 6, prodMult: 18, rateSeconds: 1800, minAward: 80, durationSec: 24, toast: 'Stored age opens as sweetness, memory, and Sap.' },
+      { id: 'verdance-pollinator', label: 'Golden Pollinator', glyph: '✾', hue: 82, weight: 38, prodMult: 7, clickMult: 4, durationSec: 48, toast: 'A pollinator carries living Sap between every flowering Kindling.' },
+      { id: 'verdance-spore-rain', label: 'Spore Rain', glyph: '⌇', hue: 112, weight: 34, prodMult: 9, durationSec: 42, toast: 'New roots appear wherever the spores remember ground.' },
+      { id: 'verdance-sunbreak', label: 'Sunbreak', glyph: '☼', hue: 64, weight: 22, clickMult: 25, durationSec: 18, toast: 'A moving shaft of light finds every patient leaf.' },
+      { id: 'verdance-amber-fruit', label: 'Amber Fruit', glyph: '◈', hue: 42, weight: 6, prodMult: 18, rateSeconds: 1800, minAward: 80, durationSec: 24, toast: 'Stored age opens as sweetness, memory, and Sap.' },
     ],
   },
   cabinet: VERDANCE_CABINET,
   twist: { id: 'living-cohorts', name: 'The Patient Growth', randomnessAllowed: true, description: 'Kindlings mature through new, rooted, mature, and ancient cohorts; mature growth strengthens production and Pruning.', },
   route: { glyph: '❧', epithet: 'the patient world', arrival: 'one seed opens beneath a sky made entirely of waiting', unlockText: 'light Tidefall’s Beacon' },
-  beacon: { generatorId: 'u3-kindling-18', count: 1, reward: 3, description: 'The World-Tree flowers into the Dark Between without abandoning its roots.' },
+  beacon: { generatorId: 'verdance-kindling-18', count: 1, reward: 3, description: 'The World-Tree flowers into the Dark Between without abandoning its roots.' },
 }

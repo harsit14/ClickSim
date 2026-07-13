@@ -33,9 +33,9 @@ test('initial socket rules reject fan-out, fan-in, self-routes, and cycles actio
     ...graph,
     edges: [
       ...graph.edges,
-      { id: 'duplicate-output', from: 'u4-tooth' as const, to: 'u4-flywheel' as const, kind: 'power' as const },
-      { id: 'cycle', from: 'u4-flywheel' as const, to: 'u4-tooth' as const, kind: 'cadence' as const },
-      { id: 'self', from: 'u4-governor' as const, to: 'u4-governor' as const, kind: 'efficiency' as const },
+      { id: 'duplicate-output', from: 'clockwork-tooth' as const, to: 'clockwork-flywheel' as const, kind: 'power' as const },
+      { id: 'cycle', from: 'clockwork-flywheel' as const, to: 'clockwork-tooth' as const, kind: 'cadence' as const },
+      { id: 'self', from: 'clockwork-governor' as const, to: 'clockwork-governor' as const, kind: 'efficiency' as const },
     ],
   }
   const codes = new Set(validateClockworkRoutingGraph(malformed).map(({ code }) => code))
@@ -50,9 +50,9 @@ test('advanced splitter sockets expand capacity without permitting forbidden fee
   const split = {
     ...graph,
     edges: [...graph.edges, {
-      id: 'u4-splitter-test',
-      from: 'u4-tooth' as const,
-      to: 'u4-governor' as const,
+      id: 'clockwork-splitter-test',
+      from: 'clockwork-tooth' as const,
+      to: 'clockwork-governor' as const,
       kind: 'efficiency' as const,
     }],
   }
@@ -61,14 +61,14 @@ test('advanced splitter sockets expand capacity without permitting forbidden fee
 })
 
 test('loadout switching is free outside trials and fails closed inside them', () => {
-  assert.deepEqual(switchClockworkRouteLoadout('u4-loadout-first-shift', true), {
+  assert.deepEqual(switchClockworkRouteLoadout('clockwork-loadout-first-shift', true), {
     accepted: false,
-    loadoutId: 'u4-loadout-first-shift',
+    loadoutId: 'clockwork-loadout-first-shift',
     rewiringCost: 0,
     graph: null,
     reason: 'trial-active',
   })
-  const switched = switchClockworkRouteLoadout('u4-loadout-civic-chain', false)
+  const switched = switchClockworkRouteLoadout('clockwork-loadout-civic-chain', false)
   assert.equal(switched.accepted, true)
   assert.equal(switched.rewiringCost, 0)
   assert.strictEqual(switched.graph, CLOCKWORK_ROUTE_LOADOUTS[1].graph)
@@ -77,11 +77,11 @@ test('loadout switching is free outside trials and fails closed inside them', ()
 
 test('scheduled loadout changes use caller time and stable ordering only', () => {
   const schedule = [
-    { atMs: 20_000, loadoutId: 'u4-loadout-distributed-works' },
-    { atMs: 5_000, loadoutId: 'u4-loadout-civic-chain' },
+    { atMs: 20_000, loadoutId: 'clockwork-loadout-distributed-works' },
+    { atMs: 5_000, loadoutId: 'clockwork-loadout-civic-chain' },
   ]
-  assert.equal(resolveClockworkScheduledLoadout(schedule, 0, 'u4-loadout-first-shift'), 'u4-loadout-first-shift')
-  assert.equal(resolveClockworkScheduledLoadout(schedule, 5_000, 'u4-loadout-first-shift'), 'u4-loadout-civic-chain')
-  assert.equal(resolveClockworkScheduledLoadout(schedule, 25_000, 'u4-loadout-first-shift'), 'u4-loadout-distributed-works')
-  assert.throws(() => resolveClockworkScheduledLoadout(schedule, Number.NaN, 'u4-loadout-first-shift'), /finite/)
+  assert.equal(resolveClockworkScheduledLoadout(schedule, 0, 'clockwork-loadout-first-shift'), 'clockwork-loadout-first-shift')
+  assert.equal(resolveClockworkScheduledLoadout(schedule, 5_000, 'clockwork-loadout-first-shift'), 'clockwork-loadout-civic-chain')
+  assert.equal(resolveClockworkScheduledLoadout(schedule, 25_000, 'clockwork-loadout-first-shift'), 'clockwork-loadout-distributed-works')
+  assert.throws(() => resolveClockworkScheduledLoadout(schedule, Number.NaN, 'clockwork-loadout-first-shift'), /finite/)
 })

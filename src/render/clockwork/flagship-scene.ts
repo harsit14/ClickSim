@@ -43,24 +43,24 @@ export interface ClockworkFlagshipScene {
 }
 
 export const CLOCKWORK_MACHINE_SEATS: readonly ClockworkMachineSeat[] = [
-  { id: 'u4-tooth', name: 'Tooth Press', x: 6, y: 77, scale: 0.72, machine: 'tooth' },
-  { id: 'u4-cog', name: 'Cog Bench', x: 14, y: 70, scale: 0.8, machine: 'wheel' },
-  { id: 'u4-ratchet', name: 'Ratchet Gate', x: 22, y: 77, scale: 0.86, machine: 'stop' },
-  { id: 'u4-escapement', name: 'Civic Escapement', x: 30, y: 68, scale: 0.92, machine: 'stop' },
-  { id: 'u4-mainspring', name: 'Mainspring Vault', x: 39, y: 76, scale: 0.94, machine: 'spring' },
-  { id: 'u4-flywheel', name: 'Flywheel District', x: 61, y: 76, scale: 1.02, machine: 'wheel' },
-  { id: 'u4-governor', name: 'Governor Stand', x: 70, y: 68, scale: 0.92, machine: 'governor' },
-  { id: 'u4-clockmaker-automaton', name: 'Repair Guild', x: 73, y: 76, scale: 0.9, machine: 'engine' },
-  { id: 'u4-orrery', name: 'Moonless Orrery', x: 74, y: 64, scale: 1, machine: 'wheel' },
-  { id: 'u4-difference-engine', name: 'Difference Hall', x: 71, y: 45, scale: 0.9, machine: 'engine' },
-  { id: 'u4-relay-foundry', name: 'Relay Foundry', x: 66, y: 51, scale: 0.96, machine: 'engine' },
-  { id: 'u4-meridian-clock', name: 'Meridian Clock', x: 61, y: 36, scale: 0.92, machine: 'wheel' },
-  { id: 'u4-prediction-mill', name: 'Prediction Mill', x: 56, y: 47, scale: 0.9, machine: 'engine' },
-  { id: 'u4-city-of-hours', name: 'City of Hours', x: 44, y: 38, scale: 1.04, machine: 'engine' },
-  { id: 'u4-causal-engine', name: 'Causal Engine', x: 35, y: 48, scale: 0.95, machine: 'engine' },
-  { id: 'u4-world-gear', name: 'World Gear', x: 24, y: 52, scale: 1.08, machine: 'wheel' },
-  { id: 'u4-last-calendar', name: 'Last Calendar', x: 14, y: 43, scale: 0.88, machine: 'engine' },
-  { id: 'u4-great-regulator', name: 'Great Regulator', x: 50, y: 18, scale: 1.15, machine: 'governor' },
+  { id: 'clockwork-tooth', name: 'Tooth Press', x: 6, y: 77, scale: 0.72, machine: 'tooth' },
+  { id: 'clockwork-cog', name: 'Cog Bench', x: 14, y: 70, scale: 0.8, machine: 'wheel' },
+  { id: 'clockwork-ratchet', name: 'Ratchet Gate', x: 22, y: 77, scale: 0.86, machine: 'stop' },
+  { id: 'clockwork-escapement', name: 'Civic Escapement', x: 30, y: 68, scale: 0.92, machine: 'stop' },
+  { id: 'clockwork-mainspring', name: 'Mainspring Vault', x: 39, y: 76, scale: 0.94, machine: 'spring' },
+  { id: 'clockwork-flywheel', name: 'Flywheel District', x: 61, y: 76, scale: 1.02, machine: 'wheel' },
+  { id: 'clockwork-governor', name: 'Governor Stand', x: 70, y: 68, scale: 0.92, machine: 'governor' },
+  { id: 'clockwork-clockmaker-automaton', name: 'Repair Guild', x: 73, y: 76, scale: 0.9, machine: 'engine' },
+  { id: 'clockwork-orrery', name: 'Moonless Orrery', x: 74, y: 64, scale: 1, machine: 'wheel' },
+  { id: 'clockwork-difference-engine', name: 'Difference Hall', x: 71, y: 45, scale: 0.9, machine: 'engine' },
+  { id: 'clockwork-relay-foundry', name: 'Relay Foundry', x: 66, y: 51, scale: 0.96, machine: 'engine' },
+  { id: 'clockwork-meridian-clock', name: 'Meridian Clock', x: 61, y: 36, scale: 0.92, machine: 'wheel' },
+  { id: 'clockwork-prediction-mill', name: 'Prediction Mill', x: 56, y: 47, scale: 0.9, machine: 'engine' },
+  { id: 'clockwork-city-of-hours', name: 'City of Hours', x: 44, y: 38, scale: 1.04, machine: 'engine' },
+  { id: 'clockwork-causal-engine', name: 'Causal Engine', x: 35, y: 48, scale: 0.95, machine: 'engine' },
+  { id: 'clockwork-world-gear', name: 'World Gear', x: 24, y: 52, scale: 1.08, machine: 'wheel' },
+  { id: 'clockwork-last-calendar', name: 'Last Calendar', x: 14, y: 43, scale: 0.88, machine: 'engine' },
+  { id: 'clockwork-great-regulator', name: 'Great Regulator', x: 50, y: 18, scale: 1.15, machine: 'governor' },
 ] as const
 
 const SEAT_BY_ID = new Map(CLOCKWORK_MACHINE_SEATS.map((seat) => [seat.id, seat]))
@@ -82,7 +82,7 @@ export function buildClockworkFlagshipScene(
     .map((seat) => ({ ...seat, count: owned[seat.id] ?? 0 }))
     .filter((seat) => seat.count > 0)
   const visible = new Set(machines.map(({ id }) => id))
-  const civic = CLOCKWORK_ROUTE_LOADOUTS.find(({ id }) => id === 'u4-loadout-civic-chain')!
+  const civic = CLOCKWORK_ROUTE_LOADOUTS.find(({ id }) => id === 'clockwork-loadout-civic-chain')!
   const routes = civic.graph.edges.flatMap((edge) => {
     if (!visible.has(edge.from) || !visible.has(edge.to)) return []
     const from = SEAT_BY_ID.get(edge.from)

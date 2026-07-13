@@ -1,6 +1,6 @@
 import type { CohortRules } from '../types'
 
-export type VerdanceCohortStageId = 'u3-cohort-new' | 'u3-cohort-rooted' | 'u3-cohort-mature' | 'u3-cohort-ancient'
+export type VerdanceCohortStageId = 'verdance-cohort-new' | 'verdance-cohort-rooted' | 'verdance-cohort-mature' | 'verdance-cohort-ancient'
 
 export interface VerdanceCohort {
   readonly stageId: VerdanceCohortStageId
@@ -16,10 +16,10 @@ export interface VerdancePruningPreview {
 
 export const VERDANCE_COHORT_RULES: CohortRules = {
   stages: [
-    { id: 'u3-cohort-new', minimumAgeMs: 0, multiplier: 1 },
-    { id: 'u3-cohort-rooted', minimumAgeMs: 5 * 60_000, multiplier: 1.35 },
-    { id: 'u3-cohort-mature', minimumAgeMs: 60 * 60_000, multiplier: 2 },
-    { id: 'u3-cohort-ancient', minimumAgeMs: 8 * 60 * 60_000, multiplier: 3.5 },
+    { id: 'verdance-cohort-new', minimumAgeMs: 0, multiplier: 1 },
+    { id: 'verdance-cohort-rooted', minimumAgeMs: 5 * 60_000, multiplier: 1.35 },
+    { id: 'verdance-cohort-mature', minimumAgeMs: 60 * 60_000, multiplier: 2 },
+    { id: 'verdance-cohort-ancient', minimumAgeMs: 8 * 60 * 60_000, multiplier: 3.5 },
   ],
   mergeByStage: true,
   witheringAllowed: false,
@@ -45,7 +45,7 @@ export function verdanceStageForAge(ageMs: number): VerdanceCohortStageId {
 }
 
 export function plantVerdanceCohort(quantity: number): VerdanceCohort {
-  return { stageId: 'u3-cohort-new', quantity: positiveQuantity(quantity), ageMs: 0 }
+  return { stageId: 'verdance-cohort-new', quantity: positiveQuantity(quantity), ageMs: 0 }
 }
 
 export function compactVerdanceCohorts(rows: readonly VerdanceCohort[]): readonly VerdanceCohort[] {
@@ -97,10 +97,10 @@ export function previewVerdancePruning(rows: readonly VerdanceCohort[]): Verdanc
   let maturityPoints = 0
   let prunableQuantity = 0
   for (const row of compactVerdanceCohorts(rows)) {
-    if (row.stageId === 'u3-cohort-mature') {
+    if (row.stageId === 'verdance-cohort-mature') {
       maturityPoints += row.quantity
       prunableQuantity += row.quantity
-    } else if (row.stageId === 'u3-cohort-ancient') {
+    } else if (row.stageId === 'verdance-cohort-ancient') {
       maturityPoints += row.quantity * 3
       prunableQuantity += row.quantity
     }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { planVishnulokTraffic, vishnulokTrafficForm } from '../src/render/tempest/traffic'
+import { planVishnulokTraffic, vishnulokTrafficForm } from '../src/render/vishnulok/traffic'
 
 test('Vishnulok traffic changes form at the shared ownership thresholds', () => {
   assert.deepEqual([0, 1, 9, 10, 24, 25, 49, 50, 99, 100].map(vishnulokTrafficForm), [0, 1, 1, 2, 2, 3, 3, 4, 4, 5])

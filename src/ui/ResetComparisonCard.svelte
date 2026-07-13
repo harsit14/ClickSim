@@ -48,9 +48,9 @@
     universeId === 'tidefall' ? '≈'
       : universeId === 'verdance' ? '❧'
         : universeId === 'clockwork' ? '⌁'
-          : universeId === 'prismata' ? '✤'
-            : universeId === 'tempest' ? '↶'
-              : universeId === 'canticle' ? '▽'
+          : universeId === 'brahmalok' ? '✤'
+            : universeId === 'vishnulok' ? '↶'
+              : universeId === 'kailash' ? '▽'
                 : '✦',
   )
 
@@ -281,17 +281,17 @@
       radial-gradient(circle at 50% 46%, rgba(183, 137, 72, 0.09), transparent 48%),
       rgba(4, 5, 7, 0.9);
   }
-  .scrim[data-universe='prismata'] {
+  .scrim[data-universe='brahmalok'] {
     --turn-accent: #fff0c7;
     --turn-warm: #d7a34c;
     background: repeating-linear-gradient(0deg, transparent 0 4.2rem, rgba(255, 240, 199, 0.02) 4.25rem 4.3rem), radial-gradient(circle at 50% 46%, rgba(215, 163, 76, .08), transparent 42%), rgba(6, 5, 11, 0.91);
   }
-  .scrim[data-universe='tempest'] {
+  .scrim[data-universe='vishnulok'] {
     --turn-accent: #f1d58b;
     --turn-warm: #658f78;
     background: repeating-radial-gradient(ellipse at 50% 58%, transparent 0 4rem, rgba(241, 213, 139, 0.018) 4.05rem 4.1rem, transparent 4.15rem 7rem), linear-gradient(180deg, rgba(5, 8, 28, 0.9), rgba(8, 16, 38, 0.96));
   }
-  .scrim[data-universe='canticle'] {
+  .scrim[data-universe='kailash'] {
     --turn-accent: #e8edf2;
     --turn-warm: #c47d4f;
     background:linear-gradient(145deg,transparent 0 29%,rgba(99,169,191,.022) 29.2% 29.5%,transparent 29.8% 48%),radial-gradient(circle at 68% 20%,rgba(232,237,242,.09),transparent 22%),rgba(4,8,14,.93);
@@ -334,15 +334,15 @@
       repeating-linear-gradient(90deg, transparent 0 4.8rem, color-mix(in srgb, var(--turn-accent) 3%, transparent) 4.84rem 4.9rem),
       linear-gradient(118deg, color-mix(in srgb, var(--panel) 94%, #0c0d10), color-mix(in srgb, var(--panel) 82%, transparent));
   }
-  [data-universe='prismata'] .reset-card {
+  [data-universe='brahmalok'] .reset-card {
     border-radius: 1.4rem 1.4rem .35rem .35rem;
     background: repeating-linear-gradient(0deg, transparent 0 4.5rem, color-mix(in srgb, var(--turn-warm) 4%, transparent) 4.55rem 4.62rem), radial-gradient(circle at 8% 12%, color-mix(in srgb, var(--turn-warm) 9%, transparent), transparent 23%), linear-gradient(118deg, color-mix(in srgb, var(--panel) 94%, #0c0810), color-mix(in srgb, var(--panel) 82%, transparent));
   }
-  [data-universe='tempest'] .reset-card {
+  [data-universe='vishnulok'] .reset-card {
     border-radius: 1.8rem 1.8rem 0.45rem 0.45rem;
     background: repeating-radial-gradient(ellipse at 7% 14%, transparent 0 1.7rem, color-mix(in srgb, var(--turn-accent) 4%, transparent) 1.74rem 1.78rem, transparent 1.82rem 2.8rem), radial-gradient(ellipse at 8% 10%, color-mix(in srgb, var(--turn-warm) 10%, transparent), transparent 26%), linear-gradient(128deg, color-mix(in srgb, var(--panel) 94%, #07102d), color-mix(in srgb, var(--panel) 82%, transparent));
   }
-  [data-universe='canticle'] .reset-card {
+  [data-universe='kailash'] .reset-card {
     border-radius:2.2rem 2.2rem .4rem .4rem;
     background:linear-gradient(145deg,transparent 0 17%,color-mix(in srgb,var(--turn-accent) 4%,transparent) 17.3% 17.8%,transparent 18.1% 31%),radial-gradient(circle at 8% 10%,color-mix(in srgb,var(--turn-warm) 8%,transparent),transparent 23%),linear-gradient(118deg,color-mix(in srgb,var(--panel) 94%,#08111c),color-mix(in srgb,var(--panel) 82%,transparent));
   }
@@ -385,12 +385,12 @@
   [data-universe='verdance'] .turn-orbit { inset: -0.3rem; border-right: 1px solid color-mix(in srgb, var(--turn-accent) 28%, transparent); transform: rotate(38deg); }
   [data-universe='clockwork'] .turn-mark { outline: 1px dashed color-mix(in srgb, var(--turn-accent) 24%, transparent); outline-offset: 0.28rem; }
   [data-universe='clockwork'] .turn-orbit { inset: 0.3rem; border: 1px dashed color-mix(in srgb, var(--turn-accent) 35%, transparent); transform: rotate(8deg); }
-  [data-universe='prismata'] .turn-mark { border-radius: 54% 46% 54% 46%; outline: 1px dashed color-mix(in srgb, #8ecbe0 24%, transparent); outline-offset: .25rem; }
-  [data-universe='prismata'] .turn-orbit { inset: .2rem; border-radius: 50%; transform: rotate(45deg); }
-  [data-universe='tempest'] .turn-mark { border-radius: 50%; }
-  [data-universe='tempest'] .turn-orbit { inset: 0.35rem -0.3rem; border-right: 1px solid color-mix(in srgb, var(--turn-accent) 26%, transparent); transform: rotate(-10deg); }
-  [data-universe='canticle'] .turn-mark { border-radius:50% 50% 18% 18%;border-bottom-style:dashed; }
-  [data-universe='canticle'] .turn-orbit { inset:-.2rem;border-left-color:transparent;transform:rotate(-12deg); }
+  [data-universe='brahmalok'] .turn-mark { border-radius: 54% 46% 54% 46%; outline: 1px dashed color-mix(in srgb, #8ecbe0 24%, transparent); outline-offset: .25rem; }
+  [data-universe='brahmalok'] .turn-orbit { inset: .2rem; border-radius: 50%; transform: rotate(45deg); }
+  [data-universe='vishnulok'] .turn-mark { border-radius: 50%; }
+  [data-universe='vishnulok'] .turn-orbit { inset: 0.35rem -0.3rem; border-right: 1px solid color-mix(in srgb, var(--turn-accent) 26%, transparent); transform: rotate(-10deg); }
+  [data-universe='kailash'] .turn-mark { border-radius:50% 50% 18% 18%;border-bottom-style:dashed; }
+  [data-universe='kailash'] .turn-orbit { inset:-.2rem;border-left-color:transparent;transform:rotate(-12deg); }
   .eyebrow {
     color: color-mix(in srgb, var(--turn-accent) 72%, var(--dim));
     font-size: 0.62rem;

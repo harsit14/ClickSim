@@ -99,9 +99,9 @@ const UNIVERSE_IDS = new Set([
   'tidefall',
   'verdance',
   'clockwork',
-  'prismata',
-  'tempest',
-  'canticle',
+  'brahmalok',
+  'vishnulok',
+  'kailash',
 ])
 const SOURCE_KINDS = new Set([
   'generator',

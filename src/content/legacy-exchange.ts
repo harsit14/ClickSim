@@ -41,25 +41,25 @@ export const SUCCESSION_RELAYS: readonly SuccessionRelay[] = [
     sourceGift: 'spent root pressure becomes +12% Clockwork production per rank',
   },
   {
-    id: 'relay-clockwork-prismata',
+    id: 'relay-clockwork-brahmalok',
     sourceUniverseId: 'clockwork',
-    targetUniverseId: 'prismata',
+    targetUniverseId: 'brahmalok',
     name: 'The Unscheduled Margin',
     description: 'Clockwork’s protected blank date becomes a ruled margin at the edge of Brahmalok.',
     sourceGift: 'spent mainspring pressure becomes +12% Brahmalok production per rank',
   },
   {
-    id: 'relay-prismata-tempest',
-    sourceUniverseId: 'prismata',
-    targetUniverseId: 'tempest',
+    id: 'relay-brahmalok-vishnulok',
+    sourceUniverseId: 'brahmalok',
+    targetUniverseId: 'vishnulok',
     name: 'The First Current',
     description: 'Brahmalok’s open margin becomes a route of continuity across Vishnulok’s first harbor.',
     sourceGift: 'spent margin pressure becomes +12% Vishnulok production per rank',
   },
   {
-    id: 'relay-tempest-canticle',
-    sourceUniverseId: 'tempest',
-    targetUniverseId: 'canticle',
+    id: 'relay-vishnulok-kailash',
+    sourceUniverseId: 'vishnulok',
+    targetUniverseId: 'kailash',
     name: 'The Quiet Ascent',
     description: 'Vishnulok’s completed return leaves one still current approaching Kailash’s mountain passage.',
     sourceGift: 'spent continuity pressure becomes +12% Kailash production per rank',
@@ -183,6 +183,6 @@ export function lumenDistillationCost(count: number): EconomyAmount | null {
 }
 
 export function lumenClaimIds(): readonly string[] {
-  return (['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle'] as const)
+  return (['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash'] as const)
     .flatMap((id) => [`beacon-${id}`, `atlas-${id}`])
 }

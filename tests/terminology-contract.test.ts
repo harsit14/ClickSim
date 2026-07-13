@@ -15,7 +15,7 @@ test('the public terminology contract is documented and used by player-facing su
   assert.match(readme, /\*\*Realm\*\* is the public umbrella term/)
   assert.match(readme, /\*\*Restored world\*\* refers specifically/)
   assert.match(readme, /\*\*Loka\*\* refers specifically/)
-  assert.match(readme, /\*\*Universe ID\*\* is an implementation and save-compatibility term/)
+  assert.match(readme, /\*\*Universe ID\*\* is the implementation term for a realm’s canonical key/)
   assert.match(stats, /<dt>realm<\/dt>/)
   assert.doesNotMatch(stats, /<dt>universe<\/dt>/)
   assert.match(codex, /current realm.*visited realm/)

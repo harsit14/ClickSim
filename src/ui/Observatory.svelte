@@ -68,7 +68,7 @@
   const tideNext = $derived(universeRateMult(game, now + 500))
   const tidePosition = $derived(Math.max(0, Math.min(100, ((tideRate - 0.6) / 0.8) * 100)))
   const tideLabel = $derived(tideRate >= 1.22 ? 'crest' : tideRate <= 0.78 ? 'ebb' : tideNext > tideRate ? 'rising' : 'falling')
-  const growthStageIds: readonly VerdanceCohortStageId[] = ['u3-cohort-new', 'u3-cohort-rooted', 'u3-cohort-mature', 'u3-cohort-ancient']
+  const growthStageIds: readonly VerdanceCohortStageId[] = ['verdance-cohort-new', 'verdance-cohort-rooted', 'verdance-cohort-mature', 'verdance-cohort-ancient']
   const growth = $derived(verdanceCohortRuntimeSummary(
     pack.generators.map(({ id }) => id),
     game.owned,
@@ -152,7 +152,7 @@
   }
 </script>
 
-<section bind:this={observatoryPanel} class="observatory instrument-panel" class:tidefall class:verdance={pack.id === 'verdance'} class:clockwork={pack.id === 'clockwork'} class:prismata={pack.id === 'prismata'} class:tempest={pack.id === 'tempest'} class:canticle={pack.id === 'canticle'}>
+<section bind:this={observatoryPanel} class="observatory instrument-panel" class:tidefall class:verdance={pack.id === 'verdance'} class:clockwork={pack.id === 'clockwork'} class:brahmalok={pack.id === 'brahmalok'} class:vishnulok={pack.id === 'vishnulok'} class:kailash={pack.id === 'kailash'}>
   <header>
     <div class="title-block">
       <span>{identity.overline}</span>
@@ -536,19 +536,19 @@
     -webkit-mask: linear-gradient(90deg, #000, transparent 68%);
     mask: linear-gradient(90deg, #000, transparent 68%);
   }
-  .nova.armed[data-universe='prismata']::after {
+  .nova.armed[data-universe='brahmalok']::after {
     background:
       radial-gradient(circle at 12% 50%, color-mix(in srgb, var(--amber) 14%, transparent), transparent 24%),
       repeating-linear-gradient(0deg, transparent 0 17%, color-mix(in srgb, var(--gold) 7%, transparent) 17.4% 18%, transparent 18.4% 34%);
     clip-path: polygon(0 10%, 92% 10%, 100% 22%, 100% 90%, 8% 90%, 0 78%);
   }
-  .nova.armed[data-universe='tempest']::after {
+  .nova.armed[data-universe='vishnulok']::after {
     background:
       repeating-radial-gradient(ellipse at 50% 54%, transparent 0 11%, color-mix(in srgb, var(--gold) 9%, transparent) 11.5% 12.2%, transparent 12.7% 23%),
       radial-gradient(ellipse at 50% 62%, color-mix(in srgb, #628a75 11%, transparent), transparent 62%);
     clip-path: ellipse(50% 42% at 50% 54%);
   }
-  .nova.armed[data-universe='canticle']::after {
+  .nova.armed[data-universe='kailash']::after {
     background:linear-gradient(145deg,transparent 0 34%,color-mix(in srgb,var(--gold) 13%,transparent) 34.5% 35.3%,transparent 35.8%),radial-gradient(circle at 66% 22%,color-mix(in srgb,var(--gold) 9%,transparent),transparent 19%);
     clip-path:polygon(0 100%,16% 70%,30% 78%,51% 15%,69% 76%,82% 63%,100% 100%);
   }
@@ -566,9 +566,9 @@
   .nova.armed[data-universe='tidefall']::before { content: '≈'; border-radius: 58% 42% 58% 42%; }
   .nova.armed[data-universe='verdance']::before { content: '❧'; border-radius: 60% 40% 60% 40%; }
   .nova.armed[data-universe='clockwork']::before { content: '⌁'; outline: 1px dashed color-mix(in srgb, var(--gold) 20%, transparent); outline-offset: 0.16rem; }
-  .nova.armed[data-universe='prismata']::before { content: '✤'; border-radius: 54% 46% 54% 46%; outline: 1px dashed color-mix(in srgb, #8ecbe0 26%, transparent); outline-offset: .16rem; }
-  .nova.armed[data-universe='tempest']::before { content: '↶'; border-radius: 50%; border-left-style: dashed; }
-  .nova.armed[data-universe='canticle']::before { content: '▽'; border-bottom-style: dashed; border-radius: 50% 50% 18% 18%; }
+  .nova.armed[data-universe='brahmalok']::before { content: '✤'; border-radius: 54% 46% 54% 46%; outline: 1px dashed color-mix(in srgb, #8ecbe0 26%, transparent); outline-offset: .16rem; }
+  .nova.armed[data-universe='vishnulok']::before { content: '↶'; border-radius: 50%; border-left-style: dashed; }
+  .nova.armed[data-universe='kailash']::before { content: '▽'; border-bottom-style: dashed; border-radius: 50% 50% 18% 18%; }
   .nova.armed .nova-text {
     margin: 0;
   }
@@ -1035,9 +1035,9 @@
   .tidefall .eternal-head > strong { color: #b9fff2; }
   .observatory.verdance,
   .observatory.clockwork,
-  .observatory.prismata,
-  .observatory.tempest,
-  .observatory.canticle {
+  .observatory.brahmalok,
+  .observatory.vishnulok,
+  .observatory.kailash {
     border-color: color-mix(in srgb, var(--gold) 22%, transparent);
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.56), inset 0 1px color-mix(in srgb, var(--gold) 4%, transparent);
   }
@@ -1051,19 +1051,19 @@
       repeating-linear-gradient(90deg, transparent 0 4.9rem, color-mix(in srgb, var(--gold) 3%, transparent) 4.92rem 4.98rem),
       linear-gradient(180deg, color-mix(in srgb, var(--panel) 97%, #0b0d10), color-mix(in srgb, var(--panel) 92%, #05070a));
   }
-  .observatory.canticle {
+  .observatory.kailash {
     background:linear-gradient(145deg,transparent 0 28%,color-mix(in srgb,var(--gold) 3%,transparent) 28.3% 28.8%,transparent 29.1% 46%),radial-gradient(circle at 72% -2%,color-mix(in srgb,var(--gold) 12%,transparent),transparent 30%),linear-gradient(180deg,color-mix(in srgb,var(--panel) 97%,#09121e),color-mix(in srgb,var(--panel) 93%,#04080e));
   }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .title-block > span,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .eternal-head span,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .work-copy small { color: color-mix(in srgb, var(--amber) 78%, var(--dim)); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) h2,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .balance,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .eternal h3,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .work-copy strong,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .detail strong { color: color-mix(in srgb, var(--gold) 82%, white); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .balance { text-shadow: 0 0 16px color-mix(in srgb, var(--amber) 42%, transparent); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .map {
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .title-block > span,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .eternal-head span,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .work-copy small { color: color-mix(in srgb, var(--amber) 78%, var(--dim)); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) h2,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .balance,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .eternal h3,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .work-copy strong,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .detail strong { color: color-mix(in srgb, var(--gold) 82%, white); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .balance { text-shadow: 0 0 16px color-mix(in srgb, var(--amber) 42%, transparent); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .map {
     margin: 0.2rem 0;
     border: 1px solid color-mix(in srgb, var(--gold) 10%, transparent);
     background: radial-gradient(ellipse at center, color-mix(in srgb, var(--amber) 5%, transparent), transparent 56%);
@@ -1075,24 +1075,24 @@
       linear-gradient(90deg, transparent 49.9%, color-mix(in srgb, var(--gold) 8%, transparent) 50%, transparent 50.1%),
       radial-gradient(circle at center, color-mix(in srgb, var(--amber) 6%, transparent), transparent 58%);
   }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .edge { stroke: color-mix(in srgb, var(--amber) 18%, transparent); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .edge.lit { stroke: color-mix(in srgb, var(--gold) 72%, transparent); filter: drop-shadow(0 0 1.5px color-mix(in srgb, var(--amber) 75%, transparent)); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .node .halo { fill: color-mix(in srgb, var(--amber) 6%, transparent); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .node .core { fill: color-mix(in srgb, var(--amber) 32%, var(--bg)); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .node text { fill: color-mix(in srgb, var(--gold) 46%, transparent); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .node.owned .core { fill: color-mix(in srgb, var(--gold) 88%, white); filter: drop-shadow(0 0 2px color-mix(in srgb, var(--amber) 88%, transparent)); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .node.owned text,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .node.ready text { fill: color-mix(in srgb, var(--gold) 88%, white); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .node.ready .core { fill: var(--amber); filter: drop-shadow(0 0 2px color-mix(in srgb, var(--amber) 92%, transparent)); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .detail,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .eternal,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .work { border-color: color-mix(in srgb, var(--gold) 18%, transparent); background: color-mix(in srgb, var(--amber) 5%, transparent); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .detail ul,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .work-copy span { color: color-mix(in srgb, var(--gold) 68%, var(--dim)); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .work-glyph { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 24%, transparent); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .work-copy b,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .eternal-head > strong { color: var(--gold); }
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .buy,
-  :is(.verdance, .clockwork, .prismata, .tempest, .canticle) .work button { color: var(--bg); background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 88%, white), var(--amber)); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .edge { stroke: color-mix(in srgb, var(--amber) 18%, transparent); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .edge.lit { stroke: color-mix(in srgb, var(--gold) 72%, transparent); filter: drop-shadow(0 0 1.5px color-mix(in srgb, var(--amber) 75%, transparent)); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .node .halo { fill: color-mix(in srgb, var(--amber) 6%, transparent); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .node .core { fill: color-mix(in srgb, var(--amber) 32%, var(--bg)); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .node text { fill: color-mix(in srgb, var(--gold) 46%, transparent); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .node.owned .core { fill: color-mix(in srgb, var(--gold) 88%, white); filter: drop-shadow(0 0 2px color-mix(in srgb, var(--amber) 88%, transparent)); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .node.owned text,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .node.ready text { fill: color-mix(in srgb, var(--gold) 88%, white); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .node.ready .core { fill: var(--amber); filter: drop-shadow(0 0 2px color-mix(in srgb, var(--amber) 92%, transparent)); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .detail,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .eternal,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .work { border-color: color-mix(in srgb, var(--gold) 18%, transparent); background: color-mix(in srgb, var(--amber) 5%, transparent); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .detail ul,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .work-copy span { color: color-mix(in srgb, var(--gold) 68%, var(--dim)); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .work-glyph { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 24%, transparent); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .work-copy b,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .eternal-head > strong { color: var(--gold); }
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .buy,
+  :is(.verdance, .clockwork, .brahmalok, .vishnulok, .kailash) .work button { color: var(--bg); background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 88%, white), var(--amber)); }
   @media (max-width: 620px) { .work-grid { grid-template-columns: 1fr; } }
 </style>

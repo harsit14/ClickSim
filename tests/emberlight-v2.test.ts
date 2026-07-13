@@ -11,9 +11,9 @@ import type { UniversePackV2Supplement } from '../src/content/universes/legacy-v
 import { TIDEFALL_V2_PACK } from '../src/content/universes/tidefall-v2'
 import { VERDANCE_V2_PACK } from '../src/content/universes/verdance'
 import { CLOCKWORK_V2_PACK } from '../src/content/universes/clockwork'
-import { PRISMATA_V2_PACK } from '../src/content/universes/prismata'
-import { TEMPEST_V2_PACK } from '../src/content/universes/tempest'
-import { CANTICLE_V2_PACK } from '../src/content/universes/canticle'
+import { BRAHMALOK_V2_PACK } from '../src/content/universes/brahmalok'
+import { VISHNULOK_V2_PACK } from '../src/content/universes/vishnulok'
+import { KAILASH_V2_PACK } from '../src/content/universes/kailash'
 import { universeV2ById, V2_UNIVERSE_BY_ID } from '../src/content/universes'
 import { planManifestLayout } from '../src/render/manifest-layout'
 import { validateUniversePackV2 } from '../src/render/manifest-validator'
@@ -45,9 +45,9 @@ test('the lead registry exposes only approved V2 packs and never falls back acro
   assert.strictEqual(universeV2ById('tidefall'), TIDEFALL_V2_PACK)
   assert.strictEqual(universeV2ById('verdance'), VERDANCE_V2_PACK)
   assert.strictEqual(universeV2ById('clockwork'), CLOCKWORK_V2_PACK)
-  assert.strictEqual(universeV2ById('prismata'), PRISMATA_V2_PACK)
-  assert.strictEqual(universeV2ById('tempest'), TEMPEST_V2_PACK)
-  assert.strictEqual(universeV2ById('canticle'), CANTICLE_V2_PACK)
+  assert.strictEqual(universeV2ById('brahmalok'), BRAHMALOK_V2_PACK)
+  assert.strictEqual(universeV2ById('vishnulok'), VISHNULOK_V2_PACK)
+  assert.strictEqual(universeV2ById('kailash'), KAILASH_V2_PACK)
   assert.equal(universeV2ById('unknown'), null)
   assert.equal(universeV2ById(null), null)
 })

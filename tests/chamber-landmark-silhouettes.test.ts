@@ -4,9 +4,9 @@ import test from 'node:test'
 import { compile } from 'svelte/compiler'
 import { V2_UNIVERSE_BY_ID } from '../src/content/universes'
 import {
-  CANTICLE_ARCHIVE_MARKS,
-  PRISMATA_ARCHIVE_MARKS,
-  TEMPEST_ARCHIVE_MARKS,
+  KAILASH_ARCHIVE_MARKS,
+  BRAHMALOK_ARCHIVE_MARKS,
+  VISHNULOK_ARCHIVE_MARKS,
   VERDANCE_ARCHIVE_MARKS,
 } from '../src/render/chamber-archive-marks'
 import { VERDANCE_ARCHIVE_SILHOUETTES } from '../src/render/verdance/archive-silhouettes'
@@ -33,7 +33,7 @@ test('four chamber worlds expose 48 raw world-material silhouettes without badge
 })
 
 test('every retired badge retains a distinct 32px object form', () => {
-  for (const marks of [PRISMATA_ARCHIVE_MARKS, TEMPEST_ARCHIVE_MARKS, CANTICLE_ARCHIVE_MARKS]) {
+  for (const marks of [BRAHMALOK_ARCHIVE_MARKS, VISHNULOK_ARCHIVE_MARKS, KAILASH_ARCHIVE_MARKS]) {
     assert.equal(marks.length, 12)
     assert.equal(new Set(marks.map(({ diagramPath, accentPath }) => `${diagramPath}|${accentPath}`)).size, 12)
     assert.ok(marks.every(({ diagramPath, accentPath }) => diagramPath.startsWith('M') && accentPath.startsWith('M')))
@@ -43,7 +43,7 @@ test('every retired badge retains a distinct 32px object form', () => {
 })
 
 test('all 48 chamber Archive objects pass the complete no-naked-primitives card', () => {
-  for (const universeId of ['verdance', 'prismata', 'tempest', 'canticle'] as const) {
+  for (const universeId of ['verdance', 'brahmalok', 'vishnulok', 'kailash'] as const) {
     const pack = V2_UNIVERSE_BY_ID.get(universeId)
     assert.ok(pack)
     const archiveObjects = pack.visual.objects.filter(({ sourceKind }) => sourceKind === 'archive')

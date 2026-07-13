@@ -45,9 +45,9 @@
     tidefall: 'returning water and salt',
     verdance: 'root, leaf, and living shade',
     clockwork: 'open brass and an unclaimed interval',
-    prismata: 'lotus water, manuscript margin, and fourfold light',
-    tempest: 'still ocean, open refuge, and returning current',
-    canticle: 'moonlit snow, blue stone, and the path downward',
+    brahmalok: 'lotus water, manuscript margin, and fourfold light',
+    vishnulok: 'still ocean, open refuge, and returning current',
+    kailash: 'moonlit snow, blue stone, and the path downward',
   }
 
   function materialFor(universeId: UniverseId): string {
@@ -295,9 +295,9 @@
             <i class="trunk"></i><i class="branch left"></i><i class="branch right"></i><b class="leaf one"></b><b class="leaf two"></b><b class="leaf three"></b>
           {:else if node.universeId === 'clockwork'}
             <i class="wheel"></i><i class="tooth"></i><b class="hand"></b><b class="interval"></b>
-          {:else if node.universeId === 'prismata'}
+          {:else if node.universeId === 'brahmalok'}
             <i class="lotus-petal north"></i><i class="lotus-petal east"></i><i class="lotus-petal south"></i><i class="lotus-petal west"></i><b class="lotus-center"></b><b class="open-margin"></b>
-          {:else if node.universeId === 'tempest'}
+          {:else if node.universeId === 'vishnulok'}
             <i class="returning-current"></i><i class="refuge-arc"></i><b class="harbor-light"></b>
           {:else}
             <i class="summit left"></i><i class="summit right"></i><b class="downward-river"></b><b class="open-ring"></b>
@@ -466,9 +466,9 @@
   .presence.tidefall { left: 12%; top: 63%; --world: #57d9c1; }
   .presence.verdance { left: 37%; top: 70%; --world: #9bcc71; }
   .presence.clockwork { left: 83%; top: 29%; --world: #d7b46f; }
-  .presence.prismata { left: 72%; top: 25%; --world: #d9a060; }
-  .presence.tempest { left: 87%; top: 62%; --world: #e2cb7e; }
-  .presence.canticle { left: 62%; top: 72%; --world: #78aec0; }
+  .presence.brahmalok { left: 72%; top: 25%; --world: #d9a060; }
+  .presence.vishnulok { left: 87%; top: 62%; --world: #e2cb7e; }
+  .presence.kailash { left: 62%; top: 72%; --world: #78aec0; }
   .material { position: relative; width: 5.8rem; height: 5.8rem; margin: 0 auto .25rem; filter: drop-shadow(0 0 .8rem color-mix(in srgb, var(--world) 22%, transparent)); }
   .material i, .material b { position: absolute; display: block; box-sizing: border-box; }
   figcaption strong { display: block; color: color-mix(in srgb, var(--world) 60%, #f3e8cf); font: 600 .78rem Fraunces, Georgia, serif; }
@@ -560,9 +560,9 @@
   .companion-armed .presence.tidefall { translate: calc(1.3rem * var(--ritual-progress)) calc(-.7rem * var(--ritual-progress)); }
   .companion-armed .presence.verdance { translate: calc(.6rem * var(--ritual-progress)) calc(-1rem * var(--ritual-progress)); }
   .companion-armed .presence.clockwork { translate: calc(-1.2rem * var(--ritual-progress)) calc(.55rem * var(--ritual-progress)); }
-  .companion-armed .presence.prismata { translate: calc(-.8rem * var(--ritual-progress)) calc(.5rem * var(--ritual-progress)); }
-  .companion-armed .presence.tempest { translate: calc(-1.25rem * var(--ritual-progress)) calc(-.7rem * var(--ritual-progress)); }
-  .companion-armed .presence.canticle { translate: calc(-.5rem * var(--ritual-progress)) calc(-1rem * var(--ritual-progress)); }
+  .companion-armed .presence.brahmalok { translate: calc(-.8rem * var(--ritual-progress)) calc(.5rem * var(--ritual-progress)); }
+  .companion-armed .presence.vishnulok { translate: calc(-1.25rem * var(--ritual-progress)) calc(-.7rem * var(--ritual-progress)); }
+  .companion-armed .presence.kailash { translate: calc(-.5rem * var(--ritual-progress)) calc(-1rem * var(--ritual-progress)); }
   .ending-companion .relations { opacity: .9; filter: drop-shadow(0 0 .45rem rgba(205,202,166,.3)); }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
@@ -579,7 +579,7 @@
     .relations, .relation-names { display: none; }
     .presences { position: relative; inset: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem .5rem; padding: 8rem 1rem 2rem; }
     .presence { position: relative; left: auto !important; top: auto !important; width: auto; transform: none; }
-    .presence.canticle { grid-column: 1 / -1; }
+    .presence.kailash { grid-column: 1 / -1; }
     figcaption small { color: rgba(235,226,204,.58); }
     .clearing { display: none; }
     .garden-answers, .garden-credits, .ritual-instruction { position: relative; left: auto; top: auto; bottom: auto; width: calc(100% - 2rem); margin: 0 auto 2rem; transform: none; }

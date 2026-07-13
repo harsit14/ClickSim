@@ -40,7 +40,7 @@ import {
 } from '../balance/law-interaction-matrix'
 
 const universeIds: readonly UniverseId[] = [
-  'emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle',
+  'emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash',
 ]
 
 test('seeded Atlas routes use compatible authored laws and replay deterministically', () => {
@@ -58,18 +58,18 @@ test('seeded Atlas routes use compatible authored laws and replay deterministica
 })
 
 test('Atlas validation rejects damaged codes and mismatched route claims', () => {
-  const route = generateAtlasRoute(7129, 'canticle')
+  const route = generateAtlasRoute(7129, 'kailash')
   assert.equal(decodeAtlasRoute(`${route.code.slice(0, -1)}x`), null)
   assert.ok(validateAtlasRoute({ ...route, universeId: 'emberlight' }).length > 0)
   assert.throws(() => generateAtlasRoute(-1), /nonnegative/)
 })
 
 test('law loadout codes round-trip configuration without progression', () => {
-  const pack = V2_UNIVERSE_BY_ID.get('prismata')!
+  const pack = V2_UNIVERSE_BY_ID.get('brahmalok')!
   const loadout = {
     id: 'loadout-prism-test',
     name: 'White with labels',
-    universeId: 'prismata' as const,
+    universeId: 'brahmalok' as const,
     doctrineId: pack.economy.doctrines[1].id,
     wayfinderLawIds: WAYFINDER_NODES.map((law) => law.id),
     archiveShelfId: pack.archive.shelves[2].id,
@@ -116,10 +116,10 @@ test('Garden requires seven Beacons and exposes reconciliation only after all an
 test('v23 save migration preserves F5 records and strips forged progression metadata', () => {
   const scenario = createDevScenario('garden', 50_000)
   assert.ok(scenario)
-  const route = generateAtlasRoute(5021, 'canticle')
-  const pack = V2_UNIVERSE_BY_ID.get('canticle')!
+  const route = generateAtlasRoute(5021, 'kailash')
+  const pack = V2_UNIVERSE_BY_ID.get('kailash')!
   const loadout = {
-    id: 'loadout-silent-route', name: 'Room to answer', universeId: 'canticle' as const,
+    id: 'loadout-silent-route', name: 'Room to answer', universeId: 'kailash' as const,
     doctrineId: pack.economy.doctrines[3].id,
     wayfinderLawIds: [], archiveShelfId: pack.archive.shelves[1].id,
     vestmentId: THEMES[0].id, anomalyResponseIds: [], automation: 'idle' as const,
@@ -128,12 +128,12 @@ test('v23 save migration preserves F5 records and strips forged progression meta
     ...serializeSaveDataV23(scenario),
     endgame: {
       ...scenario.endgame,
-      beaconNames: { canticle: 'The Answering Rest', exploit: 'bad' },
+      beaconNames: { kailash: 'The Answering Rest', exploit: 'bad' },
       lawLoadouts: [loadout, { ...loadout, id: '../../bad' }],
       activeLawLoadoutId: loadout.id,
-      chronicleEvents: [{ id: 'chronicle-test', universeId: 'canticle', milestone: 'garden', at: 50_000, detail: 'Continue.' }],
+      chronicleEvents: [{ id: 'chronicle-test', universeId: 'kailash', milestone: 'garden', at: 50_000, detail: 'Continue.' }],
       chronicleBests: [{ routeCode: route.code, durationMs: 9_000, completedAt: 50_000 }],
-      atlasCompletions: [{ routeCode: route.code, universeId: 'canticle', seed: route.seed, durationMs: 9_000, completedAt: 50_000, replayDigest: atlasReplayDigest(route) }],
+      atlasCompletions: [{ routeCode: route.code, universeId: 'kailash', seed: route.seed, durationMs: 9_000, completedAt: 50_000, replayDigest: atlasReplayDigest(route) }],
       unlockedConvergences: ['first-neighbors', 'exploit'],
       gardenEnding: 'continue',
       gardenSceneSeen: true,
@@ -141,7 +141,7 @@ test('v23 save migration preserves F5 records and strips forged progression meta
   }
   const clean = migrateAndSanitizeSave(enriched)
   assert.ok(clean)
-  assert.deepEqual(clean.endgame.beaconNames, { canticle: 'The Answering Rest' })
+  assert.deepEqual(clean.endgame.beaconNames, { kailash: 'The Answering Rest' })
   assert.equal(clean.endgame.lawLoadouts.length, 1)
   assert.equal(clean.endgame.activeLawLoadoutId, loadout.id)
   assert.equal(clean.endgame.atlasCompletions.length, 1)

@@ -27,18 +27,18 @@ const NAMES: Readonly<Record<string, readonly [string, string]>> = {
 }
 
 const GOALS: Readonly<Record<string, TrialDef['goal']>> = {
-  silence: { metricId: 'u4-run-ticks', target: 1e9, description: 'Transmit one billion Ticks during the Silent Shift.' },
-  entropy: { metricId: 'u4-difference-engine-owned', target: 1, description: 'Build one Difference Engine under immediate backlash costs.' },
-  'bare-hands': { metricId: 'u4-run-ticks', target: 1e6, description: 'Transmit one million Ticks without mechanism transmission.' },
-  drought: { metricId: 'u4-run-ticks', target: 1e12, description: 'Transmit one trillion Ticks without Maintenance Signals.' },
-  'half-light': { metricId: 'u4-run-ticks', target: 1e10, description: 'Transmit ten billion Ticks at one-tenth torque.' },
-  swarm: { metricId: 'u4-run-ticks', target: 1e9, description: 'Transmit one billion Ticks using only Tooth, Cog, and Ratchet.' },
-  'glass-ceiling': { metricId: 'u4-difference-engine-owned', target: 1, description: 'Build one Difference Engine with every mechanism capped at fifteen.' },
-  'ashen-touch': { metricId: 'u4-run-ticks', target: 1e12, description: 'Transmit one trillion Ticks with weakened Heart torque.' },
-  unwritten: { metricId: 'u4-difference-engine-owned', target: 1, description: 'Build one Difference Engine without ordinary upgrades.' },
-  'broken-ladder': { metricId: 'u4-run-ticks', target: 1e13, description: 'Transmit ten trillion Ticks while even tiers are disconnected.' },
-  'single-voice': { metricId: 'u4-run-ticks', target: 1e15, description: 'Transmit one quadrillion Ticks using only the highest owned tier.' },
-  'small-vessels': { metricId: 'u4-great-regulator-owned', target: 1, description: 'Build The Great Regulator with every tier capped at ten.' },
+  silence: { metricId: 'clockwork-run-ticks', target: 1e9, description: 'Transmit one billion Ticks during the Silent Shift.' },
+  entropy: { metricId: 'clockwork-difference-engine-owned', target: 1, description: 'Build one Difference Engine under immediate backlash costs.' },
+  'bare-hands': { metricId: 'clockwork-run-ticks', target: 1e6, description: 'Transmit one million Ticks without mechanism transmission.' },
+  drought: { metricId: 'clockwork-run-ticks', target: 1e12, description: 'Transmit one trillion Ticks without Maintenance Signals.' },
+  'half-light': { metricId: 'clockwork-run-ticks', target: 1e10, description: 'Transmit ten billion Ticks at one-tenth torque.' },
+  swarm: { metricId: 'clockwork-run-ticks', target: 1e9, description: 'Transmit one billion Ticks using only Tooth, Cog, and Ratchet.' },
+  'glass-ceiling': { metricId: 'clockwork-difference-engine-owned', target: 1, description: 'Build one Difference Engine with every mechanism capped at fifteen.' },
+  'ashen-touch': { metricId: 'clockwork-run-ticks', target: 1e12, description: 'Transmit one trillion Ticks with weakened Heart torque.' },
+  unwritten: { metricId: 'clockwork-difference-engine-owned', target: 1, description: 'Build one Difference Engine without ordinary upgrades.' },
+  'broken-ladder': { metricId: 'clockwork-run-ticks', target: 1e13, description: 'Transmit ten trillion Ticks while even tiers are disconnected.' },
+  'single-voice': { metricId: 'clockwork-run-ticks', target: 1e15, description: 'Transmit one quadrillion Ticks using only the highest owned tier.' },
+  'small-vessels': { metricId: 'clockwork-great-regulator-owned', target: 1, description: 'Build The Great Regulator with every tier capped at ten.' },
 }
 
 export const CLOCKWORK_TRIALS: readonly TrialDef[] = CHALLENGES.map((challenge) => {
@@ -46,7 +46,7 @@ export const CLOCKWORK_TRIALS: readonly TrialDef[] = CHALLENGES.map((challenge) 
   const goal = GOALS[challenge.id]
   if (!identity || !goal) throw new Error(`Missing Clockwork trial identity for ${challenge.id}.`)
   return {
-    id: `u4-trial-${challenge.id}`,
+    id: `clockwork-trial-${challenge.id}`,
     name: identity[0],
     historicalFailure: identity[1],
     rules: Object.fromEntries(Object.entries(challenge.mods)) as Readonly<Record<string, PureLawValue>>,

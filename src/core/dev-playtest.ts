@@ -175,29 +175,29 @@ function unlockMultiverse(game: GameState): void {
 
 function primeLokaDepth(game: GameState): void {
   completeEconomy(game)
-  if (game.activeUniverse === 'prismata') {
-    game.lokaProgress['u5-folios'] = 18
-    game.numericLawState['u5-commission-phase'] = amountFromNumber(1)
-    game.numericLawState['u5-commission-index'] = amountFromNumber(3)
-    game.numericLawState['u5-commission-elapsed'] = amountFromNumber(0)
-    game.numericLawState['u5-commission-route-changes'] = amountFromNumber(3)
-    game.numericLawState['u5-commission-held-seconds'] = amountFromNumber(58)
-    game.numericLawState['u5-commission-edited'] = amountFromNumber(0)
-  } else if (game.activeUniverse === 'tempest') {
-    game.lokaProgress['u6-routes'] = 14
-    game.lokaProgress['u6-returns'] = 120
-    game.numericLawState['u6-strain-phase'] = amountFromNumber(1)
-    game.numericLawState['u6-strain-index'] = amountFromNumber(0)
-    game.numericLawState['u6-charge'] = amountFromNumber(100)
-    game.numericLawState['u6-charge-2'] = amountFromNumber(100)
-  } else if (game.activeUniverse === 'canticle') {
-    game.lokaProgress['u7-traces'] = 14
+  if (game.activeUniverse === 'brahmalok') {
+    game.lokaProgress['brahmalok-folios'] = 18
+    game.numericLawState['brahmalok-commission-phase'] = amountFromNumber(1)
+    game.numericLawState['brahmalok-commission-index'] = amountFromNumber(3)
+    game.numericLawState['brahmalok-commission-elapsed'] = amountFromNumber(0)
+    game.numericLawState['brahmalok-commission-route-changes'] = amountFromNumber(3)
+    game.numericLawState['brahmalok-commission-held-seconds'] = amountFromNumber(58)
+    game.numericLawState['brahmalok-commission-edited'] = amountFromNumber(0)
+  } else if (game.activeUniverse === 'vishnulok') {
+    game.lokaProgress['vishnulok-routes'] = 14
+    game.lokaProgress['vishnulok-returns'] = 120
+    game.numericLawState['vishnulok-strain-phase'] = amountFromNumber(1)
+    game.numericLawState['vishnulok-strain-index'] = amountFromNumber(0)
+    game.numericLawState['vishnulok-continuity'] = amountFromNumber(100)
+    game.numericLawState['vishnulok-continuity-2'] = amountFromNumber(100)
+  } else if (game.activeUniverse === 'kailash') {
+    game.lokaProgress['kailash-traces'] = 14
     game.supernovae = Math.max(game.supernovae, 6)
-    game.numericLawState['u7-front-phase'] = amountFromNumber(2)
-    game.numericLawState['u7-front-index'] = amountFromNumber(0)
-    game.numericLawState['u7-front-elapsed'] = amountFromNumber(185)
-    game.numericLawState['u7-front-answered-seconds'] = amountFromNumber(124)
-    game.numericLawState['u7-front-edited'] = amountFromNumber(0)
+    game.numericLawState['kailash-front-phase'] = amountFromNumber(2)
+    game.numericLawState['kailash-front-index'] = amountFromNumber(0)
+    game.numericLawState['kailash-front-elapsed'] = amountFromNumber(185)
+    game.numericLawState['kailash-front-answered-seconds'] = amountFromNumber(124)
+    game.numericLawState['kailash-front-edited'] = amountFromNumber(0)
   }
 }
 

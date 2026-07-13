@@ -13,9 +13,9 @@
     { id: 'tidefall', label: 'Tidefall' },
     { id: 'verdance', label: 'Verdance' },
     { id: 'clockwork', label: 'Clockwork' },
-    { id: 'prismata', label: 'Brahmalok' },
-    { id: 'tempest', label: 'Vishnulok' },
-    { id: 'canticle', label: 'Kailash' },
+    { id: 'brahmalok', label: 'Brahmalok' },
+    { id: 'vishnulok', label: 'Vishnulok' },
+    { id: 'kailash', label: 'Kailash' },
   ] as const satisfies readonly { id: DevScenario; label: string }[]
 
   const milestonePresets = [

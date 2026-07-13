@@ -39,7 +39,7 @@ test('Verdance cannot light its Beacon before the first Pruning window', () => {
 })
 
 test('Brahmalok and Vishnulok preserve an hour of signature play after the first Epoch', () => {
-  for (const universeId of ['prismata', 'tempest'] as const) {
+  for (const universeId of ['brahmalok', 'vishnulok'] as const) {
     for (const profile of SIMULATOR_PROFILES.filter(({ id }) => (
       id === 'casual-one-click-per-second'
       || id === 'active-six-clicks-per-second'

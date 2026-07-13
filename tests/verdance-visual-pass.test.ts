@@ -18,10 +18,10 @@ test('Verdance grove seats expose real new, rooted, mature, and ancient cohort f
 
   assert.equal(groves.length, 6)
   assert.deepEqual(groves.slice(0, 4).map(({ stageId }) => stageId), [
-    'u3-cohort-ancient',
-    'u3-cohort-rooted',
-    'u3-cohort-mature',
-    'u3-cohort-ancient',
+    'verdance-cohort-ancient',
+    'verdance-cohort-rooted',
+    'verdance-cohort-mature',
+    'verdance-cohort-ancient',
   ])
   assert.deepEqual(groves.map(({ threshold }) => threshold), [50, 50, 25, 25, 10, 10])
   assert.ok(groves.every(({ xPercent }) => xPercent <= 40 || xPercent >= 61), 'the Heart clearing stays open')
@@ -70,7 +70,7 @@ test('Verdance world and silhouette layers compile and carry root, canopy, cohor
   assert.match(worldSource, /class="root-network"/)
   assert.match(worldSource, /data-cohort-stage=\{grove\.stageId\}/)
   assert.match(worldSource, /data-ownership-threshold=\{grove\.threshold\}/)
-  assert.match(worldSource, /u3-cohort-new[\s\S]*u3-cohort-rooted[\s\S]*u3-cohort-mature[\s\S]*u3-cohort-ancient/)
+  assert.match(worldSource, /verdance-cohort-new[\s\S]*verdance-cohort-rooted[\s\S]*verdance-cohort-mature[\s\S]*verdance-cohort-ancient/)
   assert.match(worldSource, /motion-paused/)
   assert.match(manifestSource, /<VerdanceArchiveSilhouette index=/)
   assert.match(manifestSource, /<VerdanceWorldLayer/)

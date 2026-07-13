@@ -15,7 +15,7 @@ export interface ClockworkRewindingPhase {
 }
 
 export interface ClockworkRewindingPlan {
-  readonly id: 'u4-rewinding-ceremony'
+  readonly id: 'clockwork-rewinding-ceremony'
   readonly canonicalBoundary: 'epoch-turn'
   readonly localName: 'Rewinding'
   readonly rewardName: 'Mainsprings'
@@ -60,7 +60,7 @@ export function planClockworkRewinding(
     return result
   })
   return {
-    id: 'u4-rewinding-ceremony',
+    id: 'clockwork-rewinding-ceremony',
     canonicalBoundary: 'epoch-turn',
     localName: 'Rewinding',
     rewardName: 'Mainsprings',

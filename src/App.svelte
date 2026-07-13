@@ -159,7 +159,7 @@
   const activeV2Pack = $derived(universeV2ById(game.activeUniverse))
   const observatoryIdentity = $derived(progressionIdentity(activePack.id).observatory)
   const epochMatterGlyph = $derived(activeV2Pack?.economy.localPrestige.rewardCurrency.glyph ?? '✧')
-  const observatoryDockGlyph = $derived(activePack.id === 'prismata' ? '✤' : epochMatterGlyph)
+  const observatoryDockGlyph = $derived(activePack.id === 'brahmalok' ? '✤' : epochMatterGlyph)
   const effectiveQuality = $derived(resolveEffectiveVisualQuality(game.visualQuality, {
     width: window.innerWidth,
     devicePixelRatio: window.devicePixelRatio || 1,
@@ -527,7 +527,7 @@
   $effect(() => {
     setMusicMode(activePack.audio.music)
     setMusicStillness(
-      activePack.id === 'canticle'
+      activePack.id === 'kailash'
       && kailashLongRestStatus(game.numericLawState).resting,
     )
     document.documentElement.dataset.motion = game.motionPreference
@@ -611,8 +611,8 @@
     />
   {/if}
   <PurchaseCeremonyLayer />
-  <section class="top-stack" class:future-law={activePack.id === 'prismata' || activePack.id === 'tempest' || activePack.id === 'canticle'} aria-label="Run status and upgrades">
-    {#if activePack.id !== 'prismata' && activePack.id !== 'tempest' && activePack.id !== 'canticle'}
+  <section class="top-stack" class:future-law={activePack.id === 'brahmalok' || activePack.id === 'vishnulok' || activePack.id === 'kailash'} aria-label="Run status and upgrades">
+    {#if activePack.id !== 'brahmalok' && activePack.id !== 'vishnulok' && activePack.id !== 'kailash'}
       <Hud />
       <BuffBar />
     {/if}

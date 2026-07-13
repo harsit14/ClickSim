@@ -114,11 +114,11 @@ export interface ValleyFeaturePlan {
  * summit clearance and outside the heart clearing.
  */
 const VALLEY_SEATS = [
-  { sourceId: 'u7-kindling-04', name: 'River Braid', xPercent: 70, yPercent: 74, stages: ['single silver thread', 'thread with one visible pool', 'two braided threads', 'braid feeding terrace channels', 'full braid with stepped pools'] },
-  { sourceId: 'u7-kindling-05', name: 'Cedar Stand', xPercent: 22, yPercent: 76, stages: ['one cedar profile', 'three cedar profiles', 'staggered grove edge', 'deep grove with open paths', 'grove sheltering four rooflines'] },
-  { sourceId: 'u7-kindling-07', name: 'Ash Meadow Recovery', xPercent: 80, yPercent: 78, stages: ['dark meadow seam', 'pale shoots along the seam', 'shoots crossing the seam', 'young growth over old ash', 'meadow in flower, seam still visible'] },
-  { sourceId: 'u7-kindling-11', name: 'Valley Shelters', xPercent: 30, yPercent: 79, stages: ['one unlit dwelling', 'one lit dwelling', 'three dwellings, two lit', 'four dwellings lit with walk paths', 'lit settlement with an open commons'] },
-  { sourceId: 'u7-kindling-12', name: 'High Lake Shore', xPercent: 12, yPercent: 71, stages: ['dark oval lake', 'lake with one reflection mark', 'lake reflecting three horizon marks', 'lake reflecting five horizon marks', 'still lake with a small pier'] },
+  { sourceId: 'kailash-kindling-04', name: 'River Braid', xPercent: 70, yPercent: 74, stages: ['single silver thread', 'thread with one visible pool', 'two braided threads', 'braid feeding terrace channels', 'full braid with stepped pools'] },
+  { sourceId: 'kailash-kindling-05', name: 'Cedar Stand', xPercent: 22, yPercent: 76, stages: ['one cedar profile', 'three cedar profiles', 'staggered grove edge', 'deep grove with open paths', 'grove sheltering four rooflines'] },
+  { sourceId: 'kailash-kindling-07', name: 'Ash Meadow Recovery', xPercent: 80, yPercent: 78, stages: ['dark meadow seam', 'pale shoots along the seam', 'shoots crossing the seam', 'young growth over old ash', 'meadow in flower, seam still visible'] },
+  { sourceId: 'kailash-kindling-11', name: 'Valley Shelters', xPercent: 30, yPercent: 79, stages: ['one unlit dwelling', 'one lit dwelling', 'three dwellings, two lit', 'four dwellings lit with walk paths', 'lit settlement with an open commons'] },
+  { sourceId: 'kailash-kindling-12', name: 'High Lake Shore', xPercent: 12, yPercent: 71, stages: ['dark oval lake', 'lake with one reflection mark', 'lake reflecting three horizon marks', 'lake reflecting five horizon marks', 'still lake with a small pier'] },
 ] as const
 
 export function planKailashValley(owned: Readonly<Record<string, number>>): readonly ValleyFeaturePlan[] {

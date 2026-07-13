@@ -1,7 +1,7 @@
-import { PRISMATA_V2_PACK } from '../../content/universes/prismata'
+import { BRAHMALOK_V2_PACK } from '../../content/universes/brahmalok'
 import { createAuthoredLokaPresentation } from '../loka-authored-presentation'
 
-export const PRISMATA_PRESENTATION = createAuthoredLokaPresentation(PRISMATA_V2_PACK, {
+export const BRAHMALOK_PRESENTATION = createAuthoredLokaPresentation(BRAHMALOK_V2_PACK, {
   palette: { primary: '#d7a34c', secondary: '#7ebed2', highlight: '#fff0c7', shadow: '#38243a', void: '#080810' },
   primitives: ['branch', 'polygon', 'ribbon'],
   heartPrimitives: ['arc', 'polygon', 'branch'],

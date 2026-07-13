@@ -58,7 +58,7 @@ test('Deep Collapse clears World and Epoch scopes but not Deep/history or Betwee
 test('Deep Collapse and Remembrance comparison copy is plain language, never a raw key', () => {
   for (const boundary of ['deep-collapse', 'remembrance'] as const) {
     const comparison = compareProgressionBoundary({ boundary })
-    for (const universeId of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']) {
+    for (const universeId of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash']) {
       for (const key of [
         comparison.actionLabelKey,
         comparison.resultKey,

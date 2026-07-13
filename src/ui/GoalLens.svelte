@@ -45,9 +45,9 @@
     universeId === 'tidefall' ? '≈'
       : universeId === 'verdance' ? '❧'
         : universeId === 'clockwork' ? '⌁'
-          : universeId === 'prismata' ? '✤'
-            : universeId === 'tempest' ? '≈'
-              : universeId === 'canticle' ? '△'
+          : universeId === 'brahmalok' ? '✤'
+            : universeId === 'vishnulok' ? '≈'
+              : universeId === 'kailash' ? '△'
                 : '✦',
   )
 
@@ -240,9 +240,9 @@
       repeating-linear-gradient(90deg, transparent 0 2.8rem, color-mix(in srgb, var(--lens-accent) 4%, transparent) 2.82rem 2.88rem),
       linear-gradient(105deg, color-mix(in srgb, var(--panel) 84%, #0c0d10), color-mix(in srgb, var(--panel) 94%, transparent));
   }
-  .goal-lens[data-universe='prismata'] { border-radius: 0.15rem; clip-path: polygon(1.5% 0, 98.5% 0, 100% 50%, 98.5% 100%, 1.5% 100%, 0 50%); }
-  .goal-lens[data-universe='tempest'] { border-radius: 1.2rem; background: repeating-radial-gradient(ellipse at 8% 50%, transparent 0 0.8rem, color-mix(in srgb, var(--lens-warm) 4%, transparent) 0.84rem 0.88rem, transparent 0.92rem 1.5rem), linear-gradient(105deg, color-mix(in srgb, var(--panel) 84%, #07102d), color-mix(in srgb, var(--panel) 93%, transparent)); }
-  .goal-lens[data-universe='canticle'] { border-radius: 1.3rem 1.3rem .25rem .25rem; background: linear-gradient(145deg, transparent 0 18%, color-mix(in srgb,var(--lens-warm) 4%,transparent) 18.3% 18.8%, transparent 19.1% 34%), linear-gradient(105deg, color-mix(in srgb, var(--panel) 86%, #08101a), color-mix(in srgb, var(--panel) 94%, transparent)); }
+  .goal-lens[data-universe='brahmalok'] { border-radius: 0.15rem; clip-path: polygon(1.5% 0, 98.5% 0, 100% 50%, 98.5% 100%, 1.5% 100%, 0 50%); }
+  .goal-lens[data-universe='vishnulok'] { border-radius: 1.2rem; background: repeating-radial-gradient(ellipse at 8% 50%, transparent 0 0.8rem, color-mix(in srgb, var(--lens-warm) 4%, transparent) 0.84rem 0.88rem, transparent 0.92rem 1.5rem), linear-gradient(105deg, color-mix(in srgb, var(--panel) 84%, #07102d), color-mix(in srgb, var(--panel) 93%, transparent)); }
+  .goal-lens[data-universe='kailash'] { border-radius: 1.3rem 1.3rem .25rem .25rem; background: linear-gradient(145deg, transparent 0 18%, color-mix(in srgb,var(--lens-warm) 4%,transparent) 18.3% 18.8%, transparent 19.1% 34%), linear-gradient(105deg, color-mix(in srgb, var(--panel) 86%, #08101a), color-mix(in srgb, var(--panel) 94%, transparent)); }
   .goal-lens::after {
     content: '';
     position: absolute;
@@ -318,9 +318,9 @@
     outline: 1px dashed color-mix(in srgb, var(--lens-accent) 22%, transparent);
     outline-offset: 0.18rem;
   }
-  [data-universe='prismata'] .sigil { border-radius: 0; transform: rotate(45deg); }
-  [data-universe='tempest'] .sigil { border-radius: 50%; border-left-style: dashed; border-right-style: dashed; }
-  [data-universe='canticle'] .sigil { border-radius:50% 50% 18% 18%;border-bottom-style:dashed; }
+  [data-universe='brahmalok'] .sigil { border-radius: 0; transform: rotate(45deg); }
+  [data-universe='vishnulok'] .sigil { border-radius: 50%; border-left-style: dashed; border-right-style: dashed; }
+  [data-universe='kailash'] .sigil { border-radius:50% 50% 18% 18%;border-bottom-style:dashed; }
   .summary-copy,
   .rhythm-copy {
     min-width: 0;

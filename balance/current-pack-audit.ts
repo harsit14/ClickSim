@@ -23,8 +23,8 @@ import {
 import { SIMULATOR_PROFILES, type SimulatorProfile } from './simulator-contract'
 import {
   advanceF4LawState,
-  dischargeTempest,
-  tempestStatus,
+  completeVishnulokReturn,
+  vishnulokCircuitStatus,
 } from '../src/content/universes/f4-runtime'
 import { advanceVerdanceCohortLawState } from '../src/content/universes/verdance/runtime'
 
@@ -106,10 +106,10 @@ function advanceActiveUniverseLaw(
     )
   }
   advanceF4LawState(state.activeUniverse, numericLawState, state.owned, elapsedSeconds)
-  if (state.activeUniverse === 'tempest' && profile.mechanicUse > 0) {
-    const status = tempestStatus(numericLawState)
+  if (state.activeUniverse === 'vishnulok' && profile.mechanicUse > 0) {
+    const status = vishnulokCircuitStatus(numericLawState)
     const releaseThreshold = status.threshold + (100 - status.threshold) * (1 - profile.mechanicUse)
-    if (status.boostRemainingSec <= 0 && status.charge >= releaseThreshold) dischargeTempest(numericLawState)
+    if (status.returnRemainingSec <= 0 && status.continuity >= releaseThreshold) completeVishnulokReturn(numericLawState)
   }
 }
 
@@ -304,7 +304,7 @@ export function runAllCurrentPackAudits(): readonly CurrentPackAuditResult[] {
     profile.id === 'casual-one-click-per-second'
     || profile.id === 'active-six-clicks-per-second'
     || profile.id === 'competent-universe-mechanic')
-  return (['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle'] as const).flatMap((universeId) =>
+  return (['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash'] as const).flatMap((universeId) =>
     legacyProfiles.map((profile) => runCurrentPackAudit(
       universeId,
       profile,

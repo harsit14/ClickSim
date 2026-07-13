@@ -5,10 +5,10 @@ const archive = (name: string, glyph: string, observation: string, implication: 
 const story = (title: string, provenance: string, text: string) => ({ title, provenance, text })
 
 export const KAILASH_FRONT_SIGNALS = [
-  { id: 'u7-front-approaching', text: 'front approaching', shape: 'turned weather vane', pattern: 'single leaning pointer above the ridge' },
-  { id: 'u7-front-active', text: 'front on the ridge', shape: 'named weather band', pattern: 'labeled band with the favored acts listed' },
-  { id: 'u7-front-answered', text: 'front answered', shape: 'weather band with open notch', pattern: 'band broken by one bright composition mark' },
-  { id: 'u7-long-rest', text: 'long rest', shape: 'held ring with lamp below', pattern: 'still act ring above one slowly filling lamp' },
+  { id: 'kailash-front-approaching', text: 'front approaching', shape: 'turned weather vane', pattern: 'single leaning pointer above the ridge' },
+  { id: 'kailash-front-active', text: 'front on the ridge', shape: 'named weather band', pattern: 'labeled band with the favored acts listed' },
+  { id: 'kailash-front-answered', text: 'front answered', shape: 'weather band with open notch', pattern: 'band broken by one bright composition mark' },
+  { id: 'kailash-long-rest', text: 'long rest', shape: 'held ring with lamp below', pattern: 'still act ring above one slowly filling lamp' },
 ] as const
 
 export const KAILASH_FRONT_LUMEN = {
@@ -18,15 +18,14 @@ export const KAILASH_FRONT_LUMEN = {
 } as const
 
 /**
- * Kailash occupies the frozen u7/canticle save slot. Public content is
- * environment-first: sacred presences are never resources, instruments, or
- * collectibles, and the five-act sequence is explicitly game fiction.
+ * Kailash is environment-first: sacred presences are never resources,
+ * instruments, or collectibles, and the five-act sequence is game fiction.
  */
 export const KAILASH_SPEC: FutureUniverseSpec = {
-  id: 'canticle', prefix: 'u7', name: 'Kailash', shortName: 'Kailash', epithet: 'The Mountain Beyond Ending',
+  id: 'kailash', prefix: 'kailash', name: 'Kailash', shortName: 'Kailash', epithet: 'The Mountain Beyond Ending',
   premise: 'Approach a mountain where endings make refuge, renewal, concealment, and grace possible without turning dissolution into spectacle.',
   primaryVerb: 'release', question: 'What can end without being discarded?',
-  currency: 'Cadence', currencyGlyph: '△', currencyMaterial: 'measured change moving through snow, river, stone, ash, shelter, and deliberate stillness',
+  currency: 'Stillness', currencyGlyph: '△', currencyMaterial: 'measured change moving through snow, river, stone, ash, shelter, and deliberate stillness',
   heartName: 'The Still Point', heartPhenomenon: 'A quiet mountain threshold where five visible acts and one chosen rest may be arranged without making a sacred presence into an instrument.',
   heartSilhouette: 'blue-stone summit divided by a silver river thread, five horizon notches, and one open resting interval',
   heartVerb: 'releases one bounded change through the current cycle and returns attention to the still center', achievementPower: 'Release',
@@ -42,9 +41,9 @@ export const KAILASH_SPEC: FutureUniverseSpec = {
     costMultiplier: 1.14,
   },
   signatureUpgrades: (generators) => [
-    { id: 'u7-open-measure', name: 'Open Interval', flavor: 'A bounded pause keeps release from becoming compulsion.', cost: 2e7, glyph: '○', hue: 196, unlock: { gen: generators[3].id, count: 10 }, effects: [{ kind: 'synergy', gen: generators[3].id, per: generators[0].id, value: 0.016 }] },
-    { id: 'u7-counterpoint-gate', name: 'Refuge Before Fire', flavor: 'The pass opens shelter before the dissolving front arrives.', cost: 7e10, glyph: '⌂', hue: 31, unlock: { gen: generators[10].id, count: 10 }, effects: [{ kind: 'synergy', gen: generators[10].id, per: generators[6].id, value: 0.014 }, { kind: 'synergyMult', value: 1.15 }] },
-    { id: 'u7-room-for-answer', name: 'Path Downward', flavor: 'Completion includes a route back into ordinary life.', cost: 4e16, glyph: '▽', hue: 196, unlock: { gen: generators[16].id, count: 10 }, effects: [{ kind: 'globalMult', value: 1.65 }, { kind: 'clickShare', value: 0.012 }] },
+    { id: 'kailash-open-measure', name: 'Open Interval', flavor: 'A bounded pause keeps release from becoming compulsion.', cost: 2e7, glyph: '○', hue: 196, unlock: { gen: generators[3].id, count: 10 }, effects: [{ kind: 'synergy', gen: generators[3].id, per: generators[0].id, value: 0.016 }] },
+    { id: 'kailash-counterpoint-gate', name: 'Refuge Before Fire', flavor: 'The pass opens shelter before the dissolving front arrives.', cost: 7e10, glyph: '⌂', hue: 31, unlock: { gen: generators[10].id, count: 10 }, effects: [{ kind: 'synergy', gen: generators[10].id, per: generators[6].id, value: 0.014 }, { kind: 'synergyMult', value: 1.15 }] },
+    { id: 'kailash-room-for-answer', name: 'Path Downward', flavor: 'Completion includes a route back into ordinary life.', cost: 4e16, glyph: '▽', hue: 196, unlock: { gen: generators[16].id, count: 10 }, effects: [{ kind: 'globalMult', value: 1.65 }, { kind: 'clickShare', value: 0.012 }] },
   ],
   kindlings: [
     kindling('Snowmelt', 'An ending becomes water before it becomes absence.', 'small snow shelf releasing one bright downward thread'),
@@ -128,25 +127,22 @@ export const KAILASH_SPEC: FutureUniverseSpec = {
     { name: 'Path Downward', failure: 'The summit forgot ordinary life.', rule: 'complete with all five acts and a rest present', accessibility: 'Act coverage and the return path are listed in text.', rewardEffects: [{ kind: 'globalMult', value: 1.08 }] },
   ],
   tempo: 72, meter: 'five-act visible cycle with player-authored rests',
-  audioFamilies: ['low mountain wind', 'soft stone contact', 'meltwater thread', 'bounded copper warmth', 'final silence-and-return cadence'],
+  audioFamilies: ['low mountain wind', 'soft stone contact', 'meltwater thread', 'bounded copper warmth', 'final silence-and-return interval'],
   silenceState: 'Act labels, numbered sequence positions, named front captions, the static weather band, reserve percentage, mountain silhouettes, and the open ring provide complete mechanical equivalence.',
   fatiguePolicy: 'No mantra, raga, temple ceremony, sacred bell, conch, or damaru simulation. Neutral wind, water, stone, and low bounded percussion remain below fatigue limits.',
   routeGlyph: '△', routeArrival: 'a moonlit mountain appears above an open valley while one silver path descends toward shelter', unlockText: 'complete Vishnulok’s Still Horizon passage',
   beaconName: 'Open Summit Beacon', beaconSilhouette: 'five mountain approaches stopping around an unoccupied still point, with one silver path descending through an incomplete copper ring', beaconReward: 6,
   nonColorSignals: [
-    { id: 'u7-emergence', text: 'emergence', shape: 'upward silver thread', pattern: 'one rising line' },
-    { id: 'u7-shelter', text: 'shelter', shape: 'open roof', pattern: 'nested valley bands' },
-    { id: 'u7-release', text: 'release', shape: 'downward triangle', pattern: 'separated ash marks' },
-    { id: 'u7-rest', text: 'rest', shape: 'open circle', pattern: 'bounded empty interval' },
-    { id: 'u7-veil', text: 'veil', shape: 'offset cloud ledges', pattern: 'two broken horizontal lines' },
-    { id: 'u7-grace', text: 'grace', shape: 'open diamond', pattern: 'one lit mark beside the path down' },
+    { id: 'kailash-emergence', text: 'emergence', shape: 'upward silver thread', pattern: 'one rising line' },
+    { id: 'kailash-shelter', text: 'shelter', shape: 'open roof', pattern: 'nested valley bands' },
+    { id: 'kailash-release', text: 'release', shape: 'downward triangle', pattern: 'separated ash marks' },
+    { id: 'kailash-rest', text: 'rest', shape: 'open circle', pattern: 'bounded empty interval' },
+    { id: 'kailash-veil', text: 'veil', shape: 'offset cloud ledges', pattern: 'two broken horizontal lines' },
+    { id: 'kailash-grace', text: 'grace', shape: 'open diamond', pattern: 'one lit mark beside the path down' },
     ...KAILASH_FRONT_SIGNALS,
   ],
 }
 
-/** @deprecated Save-stable compatibility name; use KAILASH_SPEC in new code. */
-export const CANTICLE_SPEC = KAILASH_SPEC
-
 const packs = createFutureUniversePack(KAILASH_SPEC)
-export const CANTICLE = packs.legacy
-export const CANTICLE_V2_PACK = packs.v2
+export const KAILASH = packs.legacy
+export const KAILASH_V2_PACK = packs.v2

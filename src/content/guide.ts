@@ -125,7 +125,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     eyebrow: 'different laws, different senses',
     title: 'Realm identities and physics',
     summary: 'A crossing changes far more than color: economy names, living physics, music, clicks, events, collections, lore, and world rendering all belong to the destination.',
-    keywords: ['universe', 'realm', 'emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash', 'prismata', 'tempest', 'canticle', 'physics', 'tide', 'cohort', 'creation', 'mandala', 'continuity', 'refuge', 'release', 'grace', 'rest', 'crossing', 'world'],
+    keywords: ['universe', 'realm', 'emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash', 'brahmalok', 'vishnulok', 'kailash', 'physics', 'tide', 'cohort', 'creation', 'mandala', 'continuity', 'refuge', 'release', 'grace', 'rest', 'crossing', 'world'],
     blocks: [
       {
         heading: 'Emberlight',

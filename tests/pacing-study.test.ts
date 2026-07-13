@@ -16,7 +16,7 @@ test('offline returns meet the short, overnight, and earned-upgrade targets', ()
 test('all seven realms meet player-scale Epoch, signature runway, and completion targets', () => {
   const hours: Readonly<Record<UniverseId, readonly [number, number]>> = {
     emberlight: [1.92, 9.9], tidefall: [3.42, 16.75], verdance: [3.7, 4.58],
-    clockwork: [3.53, 17.4], prismata: [2.57, 4.07], tempest: [4.05, 5.7], canticle: [3.73, 5.82],
+    clockwork: [3.53, 17.4], brahmalok: [2.57, 4.07], vishnulok: [4.05, 5.7], kailash: [3.73, 5.82],
   }
   const audits = Object.entries(hours).map(([universeId, [epoch, beacon]]) => ({
     source: 'current-engine-compute-v13', universeId, profileId: 'casual-one-click-per-second', horizonMs: 20 * 3_600_000,

@@ -87,9 +87,9 @@ const GROUND_COLORS = {
   tidefall: '#0A2432',
   verdance: '#1C2415',
   clockwork: '#262019',
-  prismata: '#171013',
-  tempest: '#0B1530',
-  canticle: '#0D1824',
+  brahmalok: '#171013',
+  vishnulok: '#0B1530',
+  kailash: '#0D1824',
 } as const
 
 const PARALLAX_BY_TIER = {
@@ -381,13 +381,13 @@ export class World {
     if (game.activeUniverse === 'clockwork') {
       return { c0: '255, 244, 210', c1: '239, 199, 116', c2: '194, 135, 62', c3: '105, 72, 42', halo: '216, 168, 78', mid: '118, 143, 158' }
     }
-    if (game.activeUniverse === 'prismata') {
+    if (game.activeUniverse === 'brahmalok') {
       return { c0: '255, 244, 207', c1: '231, 196, 128', c2: '196, 139, 76', c3: '91, 59, 56', halo: '218, 166, 80', mid: '103, 166, 189' }
     }
-    if (game.activeUniverse === 'tempest') {
+    if (game.activeUniverse === 'vishnulok') {
       return { c0: '255, 242, 199', c1: '171, 202, 220', c2: '82, 118, 185', c3: '28, 48, 102', halo: '219, 180, 92', mid: '93, 154, 157' }
     }
-    if (game.activeUniverse === 'canticle') {
+    if (game.activeUniverse === 'kailash') {
       return { c0: '232, 237, 242', c1: '150, 190, 203', c2: '79, 119, 145', c3: '24, 45, 63', halo: '99, 169, 191', mid: '196, 125, 79' }
     }
     switch (game.ending) {
@@ -1668,7 +1668,7 @@ export class World {
           ctx.stroke()
         }
         ctx.restore()
-      } else if (game.activeUniverse === 'prismata') {
+      } else if (game.activeUniverse === 'brahmalok') {
         ctx.save()
         ctx.translate(c.x, c.y)
         ctx.strokeStyle = `rgba(${pal.c0}, 0.66)`
@@ -1685,7 +1685,7 @@ export class World {
         ctx.strokeStyle = `rgba(${pal.mid}, 0.54)`
         ctx.strokeRect(-r * 0.19, -r * 0.19, r * 0.38, r * 0.38)
         ctx.restore()
-      } else if (game.activeUniverse === 'tempest') {
+      } else if (game.activeUniverse === 'vishnulok') {
         ctx.save()
         ctx.translate(c.x, c.y)
         ctx.strokeStyle = `rgba(${pal.c0}, 0.58)`
@@ -1701,7 +1701,7 @@ export class World {
         ctx.quadraticCurveTo(0, r * 0.48, r * 0.5, r * 0.12)
         ctx.stroke()
         ctx.restore()
-      } else if (game.activeUniverse === 'canticle') {
+      } else if (game.activeUniverse === 'kailash') {
         ctx.save()
         ctx.translate(c.x, c.y)
         ctx.strokeStyle = `rgba(${pal.c0}, 0.65)`

@@ -22,11 +22,11 @@ export interface ClockworkRevelationBeat {
 }
 
 export const CLOCKWORK_REVELATION_TRIGGER = {
-  sceneId: 'u4-scene-unscheduled-interval',
+  sceneId: 'clockwork-scene-unscheduled-interval',
   requiredBeaconUniverseId: 'clockwork',
-  requiredGeneratorId: 'u4-great-regulator',
-  requiredEchoId: 'u4-echo-vulnerable-again',
-  seenId: 'u4-scene-unscheduled-interval',
+  requiredGeneratorId: 'clockwork-great-regulator',
+  requiredEchoId: 'clockwork-echo-vulnerable-again',
+  seenId: 'clockwork-scene-unscheduled-interval',
   replayable: true,
   skippableAfterFirstView: true,
 } as const
@@ -80,7 +80,7 @@ export const CLOCKWORK_REVELATION_BEATS: readonly ClockworkRevelationBeat[] = [
   {
     id: 'forecasts-reclassified', startsAtMs: 26_000, durationMs: 9_000,
     prose: 'Divided light. Directed force. Ordered sound. Not destinations the machine invented—shadows cast by places already beyond its calendar.',
-    visualIntent: 'Prismata, Tempest, and Canticle forecast plates become transparent, revealing older archive traces beneath the three Clockwork chamber diagrams.',
+    visualIntent: 'Brahmalok, Vishnulok, and Kailash forecast plates become transparent, revealing older archive traces beneath the three Clockwork chamber diagrams.',
     reducedMotionIntent: 'Three labeled forecast plates change status from DESTINATION to INCOMPLETE READING, with OLDER TRACE printed beneath each one.',
     audioIntent: 'Glass, thunder, and waveform memories play once as quiet archival references, not realm themes.',
     accessibleDescription: 'The three former projected destinations are reclassified as incomplete readings of pre-existing places, not designs for worlds.',

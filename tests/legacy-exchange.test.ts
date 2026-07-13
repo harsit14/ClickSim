@@ -24,9 +24,9 @@ test('Succession Relays form one strict immediate-neighbour chain', () => {
       'emberlight>tidefall',
       'tidefall>verdance',
       'verdance>clockwork',
-      'clockwork>prismata',
-      'prismata>tempest',
-      'tempest>canticle',
+      'clockwork>brahmalok',
+      'brahmalok>vishnulok',
+      'vishnulok>kailash',
     ],
   )
   assert.equal(successionRelayMultiplier('tidefall', { 'relay-emberlight-tidefall': 2 }), 1.24)

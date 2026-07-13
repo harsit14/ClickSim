@@ -26,7 +26,7 @@ import {
 import { simulateProfileCase } from '../balance/profile-simulator'
 
 const universes: readonly UniverseId[] = [
-  'emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle',
+  'emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash',
 ]
 
 test('final object-purpose audit covers every Heart, Kindling, Archive object, and Beacon', () => {

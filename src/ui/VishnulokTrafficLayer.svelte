@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { planVishnulokTraffic } from '../render/tempest/traffic'
+  import { planVishnulokTraffic } from '../render/vishnulok/traffic'
   interface Props {
     returningSchoolOwned: number
     shelterReefOwned: number

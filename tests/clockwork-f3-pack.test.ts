@@ -50,7 +50,7 @@ test('all new Clockwork save-stable content IDs remain pack-local', () => {
     ...CLOCKWORK_V2_PACK.trials.map(({ id }) => id),
     ...CLOCKWORK_V2_PACK.story.scenes.map(({ id }) => id),
   ]
-  assert.ok(ids.every((id) => id.startsWith('u4-')))
+  assert.ok(ids.every((id) => id.startsWith('clockwork-')))
   assert.equal(new Set(ids).size, ids.length)
 })
 
@@ -78,7 +78,7 @@ test('Clockwork V2 carries four doctrines, twelve patents, ten Echoes, Deep tria
   assert.equal(CLOCKWORK_V2_PACK.story.echoes.length, 10)
   assert.equal(CLOCKWORK_V2_PACK.trials.length, 12)
   assert.ok(['arrival', 'epoch', 'deep', 'beacon'].every((kind) => CLOCKWORK_V2_PACK.story.scenes.some((scene) => scene.kind === kind)))
-  assert.equal(CLOCKWORK_V2_PACK.beacon.requirement.sourceId, 'u4-great-regulator')
+  assert.equal(CLOCKWORK_V2_PACK.beacon.requirement.sourceId, 'clockwork-great-regulator')
   assert.equal(CLOCKWORK_V2_PACK.beacon.requirement.target, 1)
 })
 
@@ -122,7 +122,7 @@ test('muted, reduced-motion, low-quality, and non-color paths preserve complete 
   assert.equal(accessibility.lowQuality.preservesHitTargets, true)
   assert.equal(accessibility.lowQuality.preservesStateLabels, true)
   assert.deepEqual(accessibility.timing.averagedRewardRatio, [0.85, 0.9])
-  assert.ok(accessibility.nonColorSignals.some(({ stateId }) => stateId === 'u4-route-power'))
-  assert.ok(accessibility.nonColorSignals.some(({ stateId }) => stateId === 'u4-route-overload'))
-  assert.ok(accessibility.nonColorSignals.some(({ stateId }) => stateId === 'u4-signal-forecast'))
+  assert.ok(accessibility.nonColorSignals.some(({ stateId }) => stateId === 'clockwork-route-power'))
+  assert.ok(accessibility.nonColorSignals.some(({ stateId }) => stateId === 'clockwork-route-overload'))
+  assert.ok(accessibility.nonColorSignals.some(({ stateId }) => stateId === 'clockwork-signal-forecast'))
 })

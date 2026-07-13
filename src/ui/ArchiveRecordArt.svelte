@@ -158,29 +158,29 @@
   }
   [data-native-universe='verdance'] .chamber-frame { stroke-dasharray: 1.2 1.8; }
   [data-native-universe='verdance'] .chamber-accent { stroke: #d9f3a9; }
-  [data-native-universe='prismata'] {
+  [data-native-universe='brahmalok'] {
     border-radius: 48% 48% 42% 42%;
     background:
       repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,231,178,.035) 6px 7px),
       radial-gradient(circle, hsla(var(--record-hue), 54%, 30%, 0.24), rgba(10, 7, 15, 0.98) 72%);
   }
-  [data-native-universe='prismata'] .chamber-frame { stroke: rgba(255, 235, 195, 0.28); stroke-dasharray: 1.2 1.4; }
-  [data-native-universe='prismata'] .chamber-accent { stroke: #8ecbe0; animation-timing-function: ease-in-out; }
-  [data-native-universe='tempest'] {
+  [data-native-universe='brahmalok'] .chamber-frame { stroke: rgba(255, 235, 195, 0.28); stroke-dasharray: 1.2 1.4; }
+  [data-native-universe='brahmalok'] .chamber-accent { stroke: #8ecbe0; animation-timing-function: ease-in-out; }
+  [data-native-universe='vishnulok'] {
     border-radius: 50% 50% 32% 32%;
     background:
       repeating-radial-gradient(ellipse at 50% 0, transparent 0 5px, hsla(var(--record-hue), 54%, 70%, 0.04) 5px 6px),
       linear-gradient(180deg, hsla(var(--record-hue), 38%, 27%, 0.24), rgba(4, 8, 22, 0.98));
   }
-  [data-native-universe='tempest'] .chamber-accent { stroke: #efd78f; animation-timing-function: ease-in-out; animation-duration: 3.6s; }
-  [data-native-universe='canticle'] {
+  [data-native-universe='vishnulok'] .chamber-accent { stroke: #efd78f; animation-timing-function: ease-in-out; animation-duration: 3.6s; }
+  [data-native-universe='kailash'] {
     border-radius: 50% 50% 18% 18%;
     background:
       linear-gradient(145deg, transparent 0 42%, hsla(var(--record-hue), 48%, 70%, 0.05) 43% 44%, transparent 45%),
       linear-gradient(180deg, hsla(var(--record-hue), 34%, 29%, 0.18), rgba(5, 10, 18, 0.98));
   }
-  [data-native-universe='canticle'] .chamber-frame { stroke-dasharray: 4 1.5; }
-  [data-native-universe='canticle'] .chamber-accent { stroke: #d39a70; animation-duration: 5.6s; }
+  [data-native-universe='kailash'] .chamber-frame { stroke-dasharray: 4 1.5; }
+  [data-native-universe='kailash'] .chamber-accent { stroke: #d39a70; animation-duration: 5.6s; }
 
   .art-moth .core { width: 0.6rem; height: 0.6rem; background: #eff8ff; box-shadow: 0 0 5px #fff, 0 0 14px rgba(170, 215, 255, 0.75); }
   .art-moth .halo { inset: 0.7rem; border-color: rgba(202, 232, 255, 0.3); }

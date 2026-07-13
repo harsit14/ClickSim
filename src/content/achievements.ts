@@ -26,6 +26,11 @@ const A = (id: string, name: string, flavor: string, when: AchievementDef['when'
 const H = (id: string, name: string, flavor: string, when: AchievementDef['when']) =>
   defs.push({ id, name, flavor, when, hidden: true })
 
+function currentGenerator(g: GameState, emberlightGeneratorId: string) {
+  const tierIndex = GENERATORS.findIndex(({ id }) => id === emberlightGeneratorId)
+  return tierIndex < 0 ? undefined : universeById(g.activeUniverse).generators[tierIndex]
+}
+
 // ── Wealth (total light ever earned) ────────────────────────────────────
 const wealth: Array<[string, string, number, string]> = [
   ['first-hundred', 'A Hundred Points of Light', 100, 'It’s a start.'],
@@ -67,7 +72,10 @@ for (const [id, name, rate, flavor] of flow) {
 
 // ── Firsts: one per generator ───────────────────────────────────────────
 for (const gen of GENERATORS) {
-  A(`first-${gen.id}`, `First ${gen.name}`, gen.flavor, (g) => (g.owned[gen.id] ?? 0) >= 1)
+  A(`first-${gen.id}`, `First ${gen.name}`, gen.flavor, (g) => {
+    const current = currentGenerator(g, gen.id)
+    return current ? (g.owned[current.id] ?? 0) >= 1 : false
+  })
 }
 
 // ── Collections ─────────────────────────────────────────────────────────
@@ -83,7 +91,10 @@ const counts: Array<[string, string, string, number, string]> = [
   ['galaxy-x10', 'Cluster Parent', 'galaxy', 10, 'A trillion bedtimes.'],
 ]
 for (const [id, name, gen, count, flavor] of counts)
-  A(id, name, flavor, (g) => (g.owned[gen] ?? 0) >= count)
+  A(id, name, flavor, (g) => {
+    const current = currentGenerator(g, gen)
+    return current ? (g.owned[current.id] ?? 0) >= count : false
+  })
 
 // ── Refinement ──────────────────────────────────────────────────────────
 A('a-better-way', 'A Better Way', 'The first improvement of infinitely many.', (g) => g.upgrades.length >= 1)
@@ -160,7 +171,7 @@ A('ending-hunger', 'The Hunger', 'Honest, at last, about what you are.', (g) => 
 H('ending-companion', 'What Stayed', 'The archive, the cycle, and one answer no one can author alone.', (g) =>
   g.ending === 'companion')
 A('loka-cycle', 'The Cycle Remains Open', 'Creation, preservation, and release completed their route without becoming possessions.', (g) =>
-  ['prismata', 'tempest', 'canticle'].every((id) => g.beacons.includes(id)))
+  ['brahmalok', 'vishnulok', 'kailash'].every((id) => g.beacons.includes(id)))
 A('garden-renewal', 'A Path Down, A Garden Ahead', 'The completed cycle became a beginning without pretending nothing ended.', (g) =>
   g.gardenEnding !== null)
 
@@ -252,7 +263,8 @@ export function achievementDisplay(def: AchievementDef, universeId: string): Ach
   if (pack.id === 'emberlight') return { name: def.name, flavor: def.flavor }
 
   if (def.id.startsWith('first-')) {
-    const generator = pack.generatorById.get(def.id.slice('first-'.length))
+    const tierIndex = GENERATORS.findIndex(({ id }) => id === def.id.slice('first-'.length))
+    const generator = tierIndex < 0 ? undefined : pack.generators[tierIndex]
     if (generator) return { name: `First ${generator.name}`, flavor: generator.flavor }
   }
 

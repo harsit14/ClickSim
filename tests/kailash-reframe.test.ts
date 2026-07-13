@@ -2,26 +2,26 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { amountFromNumber } from '../src/core/numeric/amount'
-import { CANTICLE, CANTICLE_V2_PACK, KAILASH_SPEC } from '../src/content/universes/canticle'
-import { KAILASH_ACTS, KAILASH_CYCLES, canticleStatus } from '../src/content/universes/f4-runtime'
-import { CANTICLE_ARCHIVE_MARKS } from '../src/render/chamber-archive-marks'
+import { KAILASH, KAILASH_V2_PACK, KAILASH_SPEC } from '../src/content/universes/kailash'
+import { KAILASH_ACTS, KAILASH_CYCLES, kailashStatus } from '../src/content/universes/f4-runtime'
+import { KAILASH_ARCHIVE_MARKS } from '../src/render/chamber-archive-marks'
 
 const STABLE_KINDLING_IDS = Array.from(
   { length: 18 },
-  (_, index) => `u7-kindling-${String(index + 1).padStart(2, '0')}`,
+  (_, index) => `kailash-kindling-${String(index + 1).padStart(2, '0')}`,
 )
 
-test('Kailash fully occupies the save-stable u7 slot without renumbering player data', () => {
-  assert.equal(KAILASH_SPEC.id, 'canticle')
-  assert.equal(KAILASH_SPEC.prefix, 'u7')
-  assert.equal(CANTICLE.shortName, 'Kailash')
-  assert.deepEqual(CANTICLE.generators.map(({ id }) => id), STABLE_KINDLING_IDS)
-  assert.equal(CANTICLE.generators.length, 18)
-  assert.equal(CANTICLE_V2_PACK.archive.records.length, 12)
-  assert.ok(CANTICLE.upgrades.every(({ id }) => id.startsWith('u7-')))
+test('Kailash fully occupies the save-stable kailash slot without renumbering player data', () => {
+  assert.equal(KAILASH_SPEC.id, 'kailash')
+  assert.equal(KAILASH_SPEC.prefix, 'kailash')
+  assert.equal(KAILASH.shortName, 'Kailash')
+  assert.deepEqual(KAILASH.generators.map(({ id }) => id), STABLE_KINDLING_IDS)
+  assert.equal(KAILASH.generators.length, 18)
+  assert.equal(KAILASH_V2_PACK.archive.records.length, 12)
+  assert.ok(KAILASH.upgrades.every(({ id }) => id.startsWith('kailash-')))
 })
 
-test('the public u7 economy and archive are mountain-native rather than musical reskins', () => {
+test('the public kailash economy and archive are mountain-native rather than musical reskins', () => {
   const publicCopy = JSON.stringify({
     name: KAILASH_SPEC.name,
     premise: KAILASH_SPEC.premise,
@@ -43,11 +43,11 @@ test('the Still Point sequence remains labeled, save-safe, and deterministic', (
   assert.deepEqual(KAILASH_CYCLES.map(({ id }) => id), ['mountain-cycle', 'refuge-cycle', 'river-cycle', 'open-ring'])
   assert.ok(KAILASH_CYCLES.every(({ slots }) => slots.length === 16))
   const legacyState = {
-    'u7-measure': amountFromNumber(99),
-    'u7-slot-01': amountFromNumber(99),
+    'kailash-cycle': amountFromNumber(99),
+    'kailash-slot-01': amountFromNumber(99),
   }
-  const status = canticleStatus(legacyState, {}, 0)
-  assert.equal(status.measure.id, 'open-ring')
+  const status = kailashStatus(legacyState, {}, 0)
+  assert.equal(status.cycle.id, 'open-ring')
   assert.equal(status.slots[0], 'grace')
   assert.match(status.explanation, /composition bonus.*continuous cycle total/)
 })
@@ -57,7 +57,7 @@ test('sacred presences and attributes remain outside ordinary mechanics and coll
     currency: KAILASH_SPEC.currency,
     heart: KAILASH_SPEC.heartName,
     kindlings: KAILASH_SPEC.kindlings,
-    upgrades: CANTICLE.upgrades,
+    upgrades: KAILASH.upgrades,
     archives: KAILASH_SPEC.archives,
     doctrines: KAILASH_SPEC.doctrines,
     omens: KAILASH_SPEC.omens,
@@ -68,14 +68,14 @@ test('sacred presences and attributes remain outside ordinary mechanics and coll
   assert.match(KAILASH_SPEC.fatiguePolicy, /no mantra, raga, temple ceremony, sacred bell, conch, or damaru simulation/i)
 })
 
-test('Kailash supplies twelve distinct Cabinet marks and no Canticle world scaffold', () => {
-  assert.equal(CANTICLE_ARCHIVE_MARKS.length, 12)
-  assert.equal(new Set(CANTICLE_ARCHIVE_MARKS.map(({ diagramPath, accentPath }) => `${diagramPath}|${accentPath}`)).size, 12)
+test('Kailash supplies twelve distinct Cabinet marks and no Kailash world scaffold', () => {
+  assert.equal(KAILASH_ARCHIVE_MARKS.length, 12)
+  assert.equal(new Set(KAILASH_ARCHIVE_MARKS.map(({ diagramPath, accentPath }) => `${diagramPath}|${accentPath}`)).size, 12)
   const world = readFileSync(new URL('../src/ui/ManifestWorldLayer.svelte', import.meta.url), 'utf8')
   const panel = readFileSync(new URL('../src/ui/UniverseLawPanel.svelte', import.meta.url), 'utf8')
   assert.match(world, /kailash-range range-near/)
   assert.match(panel, /Kailash Still Point cycle/)
-  assert.doesNotMatch(world, /canticle-plate|canticle-nodal|canticle-wave/)
+  assert.doesNotMatch(world, /kailash-plate|kailash-nodal|kailash-wave/)
   assert.doesNotMatch(panel, /RESONANCE SCORE|orbital-measure|nodal-figure/)
 })
 

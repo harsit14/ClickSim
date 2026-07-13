@@ -1,7 +1,7 @@
 import type { EconomyAmount } from './types'
 import { amountFromNumber, amountToBoundedNumber } from '../../core/numeric/amount'
-import { VISHNULOK_STRAIN_COPY } from './tempest'
-import { BRAHMALOK_FOLIO_COMMISSIONS } from './prismata'
+import { VISHNULOK_STRAIN_COPY } from './vishnulok'
+import { BRAHMALOK_FOLIO_COMMISSIONS } from './brahmalok'
 
 type NumericLawState = Record<string, EconomyAmount>
 
@@ -64,19 +64,19 @@ function totalOwned(owned: Readonly<Record<string, number>>, prefix: string): nu
   return total
 }
 
-/** Keeps player-authored F4 configuration across an Epoch while dropping live charge/storage. */
+/** Keeps player-authored F4 configuration across an Epoch while dropping live continuity/storage. */
 export function retainedF4LawConfiguration(
   universeId: string,
   state: Readonly<NumericLawState>,
 ): NumericLawState {
   const keep = universeId === 'verdance'
-    ? (key: string) => key.startsWith('u3-graft-')
-    : universeId === 'prismata'
-      ? (key: string) => key === 'u5-recipe' || key === 'u5-margin-mode' || key.startsWith('u5-route-')
-      : universeId === 'tempest'
-        ? (key: string) => key === 'u6-path' || key === 'u6-path-length' || key === 'u6-path-risk'
-        : universeId === 'canticle'
-          ? (key: string) => key === 'u7-measure' || key.startsWith('u7-slot-')
+    ? (key: string) => key.startsWith('verdance-graft-')
+    : universeId === 'brahmalok'
+      ? (key: string) => key === 'brahmalok-mode' || key === 'brahmalok-margin-mode' || key.startsWith('brahmalok-route-')
+      : universeId === 'vishnulok'
+        ? (key: string) => key === 'vishnulok-circuit' || key === 'vishnulok-shelter-count' || key === 'vishnulok-burden'
+        : universeId === 'kailash'
+          ? (key: string) => key === 'kailash-cycle' || key.startsWith('kailash-slot-')
           : () => false
   return Object.fromEntries(Object.entries(state).filter(([key]) => keep(key)))
 }
@@ -88,10 +88,7 @@ export const BRAHMALOK_MODES = [
   { id: 'proliferation', name: 'Proliferation', glyph: '✤', description: 'Spread possibility across distinct forms and active openings.' },
 ] as const
 
-/** @deprecated Save-slot compatibility alias. */
-export const PRISMATA_RECIPES = BRAHMALOK_MODES
 export type BrahmalokModeId = (typeof BRAHMALOK_MODES)[number]['id']
-export type PrismataRecipeId = BrahmalokModeId
 
 export const BRAHMALOK_DIRECTIONS = [
   { id: 'seed', name: 'Seed', glyph: '•' },
@@ -100,95 +97,84 @@ export const BRAHMALOK_DIRECTIONS = [
   { id: 'form', name: 'Form', glyph: '◇' },
 ] as const
 
-/** @deprecated Save-slot compatibility alias. */
-export const PRISMATA_BANDS = BRAHMALOK_DIRECTIONS
-
-export interface PrismataStatus {
-  readonly recipeIndex: number
-  readonly recipe: (typeof PRISMATA_RECIPES)[number]
-  readonly bands: readonly number[]
+export interface BrahmalokStatus {
+  readonly modeIndex: number
+  readonly mode: (typeof BRAHMALOK_MODES)[number]
+  readonly directions: readonly number[]
   readonly routes: readonly number[]
-  readonly activeBands: number
+  readonly activeDirections: number
   readonly balance: number
-  readonly fluorescence: number
+  readonly manuscriptMemory: number
   readonly multiplier: number
   readonly explanation: string
 }
 
-export type BrahmalokStatus = PrismataStatus
-
-export function prismataStatus(
+export function brahmalokStatus(
   state: Readonly<NumericLawState> | undefined,
   owned: Readonly<Record<string, number>>,
-): PrismataStatus {
-  const recipeIndex = Math.min(BRAHMALOK_MODES.length - 1, Math.floor(readNumber(state, 'u5-recipe', 1, 3)))
+): BrahmalokStatus {
+  const modeIndex = Math.min(BRAHMALOK_MODES.length - 1, Math.floor(readNumber(state, 'brahmalok-mode', 1, 3)))
   const routes = Array.from({ length: 18 }, (_, index) => Math.floor(readNumber(
     state,
-    `u5-route-${String(index + 1).padStart(2, '0')}`,
+    `brahmalok-route-${String(index + 1).padStart(2, '0')}`,
     index % BRAHMALOK_DIRECTIONS.length,
     BRAHMALOK_DIRECTIONS.length - 1,
   )))
-  const bands = Array.from({ length: BRAHMALOK_DIRECTIONS.length }, () => 0)
+  const directions = Array.from({ length: BRAHMALOK_DIRECTIONS.length }, () => 0)
   routes.forEach((band, index) => {
-    bands[band] += Math.max(0, owned[`u5-kindling-${String(index + 1).padStart(2, '0')}`] ?? 0)
+    directions[band] += Math.max(0, owned[`brahmalok-kindling-${String(index + 1).padStart(2, '0')}`] ?? 0)
   })
-  const active = bands.filter((quantity) => quantity > 0)
-  const activeBands = active.length
-  const strongest = Math.max(0, ...bands)
-  const total = bands.reduce((sum, quantity) => sum + quantity, 0)
+  const active = directions.filter((quantity) => quantity > 0)
+  const activeDirections = active.length
+  const strongest = Math.max(0, ...directions)
+  const total = directions.reduce((sum, quantity) => sum + quantity, 0)
   const weakestActive = active.length > 0 ? Math.min(...active) : 0
   const balance = strongest > 0 ? weakestActive / strongest : 0
-  const fluorescence = readNumber(state, 'u5-fluorescence', 0, 100)
+  const manuscriptMemory = readNumber(state, 'brahmalok-manuscript-memory', 0, 100)
   let multiplier = 1
   let explanation = 'Unfold a Kindling to begin the four-direction creation field.'
-  if (recipeIndex === 0 && total > 0) {
+  if (modeIndex === 0 && total > 0) {
     const focus = strongest / total
     multiplier = 1 + focus * 2.4
     explanation = `${Math.round(focus * 100)}% of Possibility gathers in the strongest creation direction.`
-  } else if (recipeIndex === 1 && activeBands > 0) {
-    multiplier = 1 + activeBands * 0.21 + balance * 0.5 + (activeBands === 4 ? 0.45 : 0)
-    explanation = `${activeBands}/4 creation directions contribute; balance is ${Math.round(balance * 100)}%.`
-  } else if (recipeIndex === 2) {
-    multiplier = 0.9 + fluorescence * 0.022
-    explanation = `${Math.round(fluorescence)}% manuscript memory remains visible in the margins.`
-  } else if (recipeIndex === 3) {
-    multiplier = 1 + activeBands * 0.24
-    explanation = `${activeBands}/4 directions are opening distinct, revisable forms.`
+  } else if (modeIndex === 1 && activeDirections > 0) {
+    multiplier = 1 + activeDirections * 0.21 + balance * 0.5 + (activeDirections === 4 ? 0.45 : 0)
+    explanation = `${activeDirections}/4 creation directions contribute; balance is ${Math.round(balance * 100)}%.`
+  } else if (modeIndex === 2) {
+    multiplier = 0.9 + manuscriptMemory * 0.022
+    explanation = `${Math.round(manuscriptMemory)}% manuscript memory remains visible in the margins.`
+  } else if (modeIndex === 3) {
+    multiplier = 1 + activeDirections * 0.24
+    explanation = `${activeDirections}/4 directions are opening distinct, revisable forms.`
   }
-  return { recipeIndex, recipe: BRAHMALOK_MODES[recipeIndex], bands, routes, activeBands, balance, fluorescence, multiplier, explanation }
+  return { modeIndex, mode: BRAHMALOK_MODES[modeIndex], directions, routes, activeDirections, balance, manuscriptMemory, multiplier, explanation }
 }
 
-export const brahmalokStatus = prismataStatus
-
-export function selectPrismataRecipe(state: NumericLawState, index: number): boolean {
+export function selectBrahmalokMode(state: NumericLawState, index: number): boolean {
   if (!Number.isInteger(index) || index < 0 || index >= BRAHMALOK_MODES.length) return false
-  if (prismataStatus(state, {}).recipeIndex !== index) markBrahmalokCommissionEdited(state)
-  writeNumber(state, 'u5-recipe', index)
+  if (brahmalokStatus(state, {}).modeIndex !== index) markBrahmalokCommissionEdited(state)
+  writeNumber(state, 'brahmalok-mode', index)
   return true
 }
 
-export const selectBrahmalokMode = selectPrismataRecipe
-
-export function routePrismataKindling(
+export function routeBrahmalokKindling(
   state: NumericLawState,
   kindlingIndex: number,
   bandIndex: number,
 ): boolean {
   if (!Number.isInteger(kindlingIndex) || kindlingIndex < 0 || kindlingIndex >= 18) return false
   if (!Number.isInteger(bandIndex) || bandIndex < 0 || bandIndex >= BRAHMALOK_DIRECTIONS.length) return false
-  const key = `u5-route-${String(kindlingIndex + 1).padStart(2, '0')}`
+  const key = `brahmalok-route-${String(kindlingIndex + 1).padStart(2, '0')}`
   const current = Math.floor(readNumber(state, key, kindlingIndex % BRAHMALOK_DIRECTIONS.length, BRAHMALOK_DIRECTIONS.length - 1))
   if (current !== bandIndex) {
     markBrahmalokCommissionEdited(state)
-    if (readNumber(state, 'u5-commission-phase', 0, 1) >= 1) {
-      writeNumber(state, 'u5-commission-route-changes', readNumber(state, 'u5-commission-route-changes', 0, 18) + 1)
+    if (readNumber(state, 'brahmalok-commission-phase', 0, 1) >= 1) {
+      writeNumber(state, 'brahmalok-commission-route-changes', readNumber(state, 'brahmalok-commission-route-changes', 0, 18) + 1)
     }
   }
   writeNumber(state, key, bandIndex)
   return true
 }
-
-export const routeBrahmalokKindling = routePrismataKindling
 
 export type BrahmalokCommissionDef = (typeof BRAHMALOK_FOLIO_COMMISSIONS)[number]
 export const BRAHMALOK_COMMISSIONS: readonly BrahmalokCommissionDef[] = BRAHMALOK_FOLIO_COMMISSIONS
@@ -214,7 +200,7 @@ export interface BrahmalokCommissionStatus {
 }
 
 export function markBrahmalokCommissionEdited(state: NumericLawState): void {
-  if (readNumber(state, 'u5-commission-phase', 0, 1) >= 1) writeNumber(state, 'u5-commission-edited', 1)
+  if (readNumber(state, 'brahmalok-commission-phase', 0, 1) >= 1) writeNumber(state, 'brahmalok-commission-edited', 1)
 }
 
 export function brahmalokCommissionPredicate(
@@ -222,33 +208,33 @@ export function brahmalokCommissionPredicate(
   state: Readonly<NumericLawState> | undefined,
   owned: Readonly<Record<string, number>>,
 ): boolean {
-  const status = prismataStatus(state, owned)
-  const seed = status.bands[0]
-  const name = status.bands[2]
-  const form = status.bands[3]
-  const strongest = Math.max(...status.bands)
-  const active = status.bands.filter((value) => value > 0)
+  const status = brahmalokStatus(state, owned)
+  const seed = status.directions[0]
+  const name = status.directions[2]
+  const form = status.directions[3]
+  const strongest = Math.max(...status.directions)
+  const active = status.directions.filter((value) => value > 0)
   const balanced = active.length > 0 && Math.min(...active) >= strongest * 0.8
-  const changes = Math.floor(readNumber(state, 'u5-commission-route-changes', 0, 18))
+  const changes = Math.floor(readNumber(state, 'brahmalok-commission-route-changes', 0, 18))
   const seedStrong = seed > 0 && seed === strongest
   const nameStrong = name > 0 && name === strongest
   const formStrong = form > 0 && form === strongest
   if (predicate === 'form-zero-seed-strong') return form === 0 && seedStrong
   if (predicate === 'balance-twenty') return active.length >= 2 && balanced
-  if (predicate === 'name-strong-three') return nameStrong && status.activeBands >= 3
+  if (predicate === 'name-strong-three') return nameStrong && status.activeDirections >= 3
   if (predicate === 'routes-four') return changes >= 4
-  if (predicate === 'seed-strong-three') return seedStrong && status.activeBands >= 3
-  if (predicate === 'all-four-balanced') return status.activeBands === 4 && balanced
-  if (predicate === 'name-strong-four') return nameStrong && status.activeBands === 4
-  if (predicate === 'form-strong-three') return formStrong && status.activeBands >= 3
+  if (predicate === 'seed-strong-three') return seedStrong && status.activeDirections >= 3
+  if (predicate === 'all-four-balanced') return status.activeDirections === 4 && balanced
+  if (predicate === 'name-strong-four') return nameStrong && status.activeDirections === 4
+  if (predicate === 'form-strong-three') return formStrong && status.activeDirections >= 3
   if (predicate === 'seed-open-changes-two') return form === 0 && seedStrong && changes >= 2
-  if (predicate === 'balanced-changes-four') return status.activeBands === 4 && balanced && changes >= 4
-  if (predicate === 'name-memory') return nameStrong && status.recipe.id === 'memory'
-  if (predicate === 'form-four-changes-four') return status.activeBands === 4 && formStrong && changes >= 4
+  if (predicate === 'balanced-changes-four') return status.activeDirections === 4 && balanced && changes >= 4
+  if (predicate === 'name-memory') return nameStrong && status.mode.id === 'memory'
+  if (predicate === 'form-four-changes-four') return status.activeDirections === 4 && formStrong && changes >= 4
   if (predicate === 'seed-open-changes-four') return form === 0 && seedStrong && changes >= 4
-  if (predicate === 'balanced-changes-five') return status.activeBands === 4 && balanced && changes >= 5
-  if (predicate === 'name-four-changes-five') return nameStrong && status.activeBands === 4 && changes >= 5
-  if (predicate === 'all-four-changes-six') return status.activeBands === 4 && changes >= 6
+  if (predicate === 'balanced-changes-five') return status.activeDirections === 4 && balanced && changes >= 5
+  if (predicate === 'name-four-changes-five') return nameStrong && status.activeDirections === 4 && changes >= 5
+  if (predicate === 'all-four-changes-six') return status.activeDirections === 4 && changes >= 6
   return false
 }
 
@@ -262,17 +248,17 @@ export function brahmalokCommissionStatus(
   archiveCount = 0,
 ): BrahmalokCommissionStatus {
   const available = availableBrahmalokCommissionCount(archiveCount)
-  const index = Math.floor(readNumber(state, 'u5-commission-index', 0, BRAHMALOK_COMMISSIONS.length - 1)) % available
+  const index = Math.floor(readNumber(state, 'brahmalok-commission-index', 0, BRAHMALOK_COMMISSIONS.length - 1)) % available
   const commission = BRAHMALOK_COMMISSIONS[index]
-  const phase: 'waiting' | 'active' = readNumber(state, 'u5-commission-phase', 0, 1) >= 1 ? 'active' : 'waiting'
-  const elapsed = readNumber(state, 'u5-commission-elapsed', 0, phase === 'active' ? BRAHMALOK_COMMISSION_ACTIVE_SECONDS : BRAHMALOK_COMMISSION_WAIT_SECONDS)
-  const edited = readNumber(state, 'u5-commission-edited', 0, 1) >= 1
-  const routeChanges = Math.floor(readNumber(state, 'u5-commission-route-changes', 0, 18))
+  const phase: 'waiting' | 'active' = readNumber(state, 'brahmalok-commission-phase', 0, 1) >= 1 ? 'active' : 'waiting'
+  const elapsed = readNumber(state, 'brahmalok-commission-elapsed', 0, phase === 'active' ? BRAHMALOK_COMMISSION_ACTIVE_SECONDS : BRAHMALOK_COMMISSION_WAIT_SECONDS)
+  const edited = readNumber(state, 'brahmalok-commission-edited', 0, 1) >= 1
+  const routeChanges = Math.floor(readNumber(state, 'brahmalok-commission-route-changes', 0, 18))
   const predicateSatisfied = brahmalokCommissionPredicate(commission.predicate, state, owned)
   const answered = phase === 'active' && edited && predicateSatisfied
-  const heldSeconds = readNumber(state, 'u5-commission-held-seconds', 0, BRAHMALOK_COMMISSION_HOLD_SECONDS)
-  const buffSecondsRemaining = readNumber(state, 'u5-commission-buff-seconds', 0, BRAHMALOK_COMMISSION_BUFF_SECONDS)
-  const bankedCount = promptBankValues(state, 'u5-commission').length
+  const heldSeconds = readNumber(state, 'brahmalok-commission-held-seconds', 0, BRAHMALOK_COMMISSION_HOLD_SECONDS)
+  const buffSecondsRemaining = readNumber(state, 'brahmalok-commission-buff-seconds', 0, BRAHMALOK_COMMISSION_BUFF_SECONDS)
+  const bankedCount = promptBankValues(state, 'brahmalok-commission').length
   const duration = phase === 'active' ? BRAHMALOK_COMMISSION_ACTIVE_SECONDS : BRAHMALOK_COMMISSION_WAIT_SECONDS
   const explanation = phase === 'waiting'
     ? `The folio margins are quiet. Another direction may ask in ${Math.ceil(duration - elapsed)}s.${bankedCount > 0 ? ` ${bankedCount} saved Commission${bankedCount === 1 ? '' : 's'} may be reopened now.` : ''}`
@@ -286,15 +272,15 @@ export function openBankedBrahmalokCommission(
   state: NumericLawState,
   archiveCount = 0,
 ): boolean {
-  if (readNumber(state, 'u5-commission-phase', 0, 1) >= 1) return false
-  const index = takeBankedPrompt(state, 'u5-commission')
+  if (readNumber(state, 'brahmalok-commission-phase', 0, 1) >= 1) return false
+  const index = takeBankedPrompt(state, 'brahmalok-commission')
   if (index === null) return false
-  writeNumber(state, 'u5-commission-index', index % availableBrahmalokCommissionCount(archiveCount))
-  writeNumber(state, 'u5-commission-phase', 1)
-  writeNumber(state, 'u5-commission-elapsed', 0)
-  writeNumber(state, 'u5-commission-edited', 0)
-  writeNumber(state, 'u5-commission-route-changes', 0)
-  writeNumber(state, 'u5-commission-held-seconds', 0)
+  writeNumber(state, 'brahmalok-commission-index', index % availableBrahmalokCommissionCount(archiveCount))
+  writeNumber(state, 'brahmalok-commission-phase', 1)
+  writeNumber(state, 'brahmalok-commission-elapsed', 0)
+  writeNumber(state, 'brahmalok-commission-edited', 0)
+  writeNumber(state, 'brahmalok-commission-route-changes', 0)
+  writeNumber(state, 'brahmalok-commission-held-seconds', 0)
   return true
 }
 
@@ -308,24 +294,24 @@ export function advanceBrahmalokCommissions(
   const announcements: F4LawAnnouncement[] = []
   let foliosEarned = 0
   if (!Number.isFinite(elapsedSeconds) || elapsedSeconds <= 0) return { foliosEarned, announcements }
-  const buff = readNumber(state, 'u5-commission-buff-seconds', 0, BRAHMALOK_COMMISSION_BUFF_SECONDS)
-  if (buff > 0) writeNumber(state, 'u5-commission-buff-seconds', Math.max(0, buff - elapsedSeconds))
+  const buff = readNumber(state, 'brahmalok-commission-buff-seconds', 0, BRAHMALOK_COMMISSION_BUFF_SECONDS)
+  if (buff > 0) writeNumber(state, 'brahmalok-commission-buff-seconds', Math.max(0, buff - elapsedSeconds))
   if (!promptsEnabled) return { foliosEarned, announcements }
   const fullCycle = BRAHMALOK_COMMISSION_WAIT_SECONDS + BRAHMALOK_COMMISSION_ACTIVE_SECONDS
   if (elapsedSeconds > fullCycle * 2) {
     const available = availableBrahmalokCommissionCount(archiveCount)
-    let index = Math.floor(readNumber(state, 'u5-commission-index', 0, BRAHMALOK_COMMISSIONS.length - 1)) % available
+    let index = Math.floor(readNumber(state, 'brahmalok-commission-index', 0, BRAHMALOK_COMMISSIONS.length - 1)) % available
     const windows = Math.min(TIMED_PROMPT_BANK_CAP, Math.floor(elapsedSeconds / fullCycle))
     for (let window = 0; window < windows; window += 1) {
-      bankPrompt(state, 'u5-commission', index)
+      bankPrompt(state, 'brahmalok-commission', index)
       index = (index + 1) % available
     }
-    writeNumber(state, 'u5-commission-index', index)
-    writeNumber(state, 'u5-commission-phase', 0)
-    writeNumber(state, 'u5-commission-elapsed', 0)
-    writeNumber(state, 'u5-commission-edited', 0)
-    writeNumber(state, 'u5-commission-route-changes', 0)
-    writeNumber(state, 'u5-commission-held-seconds', 0)
+    writeNumber(state, 'brahmalok-commission-index', index)
+    writeNumber(state, 'brahmalok-commission-phase', 0)
+    writeNumber(state, 'brahmalok-commission-elapsed', 0)
+    writeNumber(state, 'brahmalok-commission-edited', 0)
+    writeNumber(state, 'brahmalok-commission-route-changes', 0)
+    writeNumber(state, 'brahmalok-commission-held-seconds', 0)
     return { foliosEarned, announcements }
   }
 
@@ -338,31 +324,31 @@ export function advanceBrahmalokCommissions(
     remaining -= step
     if (status.phase === 'active' && status.answered) {
       const held = Math.min(BRAHMALOK_COMMISSION_HOLD_SECONDS, status.heldSeconds + step)
-      writeNumber(state, 'u5-commission-held-seconds', held)
+      writeNumber(state, 'brahmalok-commission-held-seconds', held)
       if (held >= BRAHMALOK_COMMISSION_HOLD_SECONDS) {
         foliosEarned += 1
-        writeNumber(state, 'u5-commission-buff-seconds', BRAHMALOK_COMMISSION_BUFF_SECONDS)
+        writeNumber(state, 'brahmalok-commission-buff-seconds', BRAHMALOK_COMMISSION_BUFF_SECONDS)
         announcements.push({ key: `${status.commission.id}-answered`, text: `${status.commission.direction[0].toUpperCase()}${status.commission.direction.slice(1)} keeps the answer. A Folio Sketch joins the margin shelf.`, politeness: 'polite' })
         finishBrahmalokCommission(state, archiveCount)
         continue
       }
     } else if (status.phase === 'active' && status.heldSeconds > 0 && status.edited) {
-      writeNumber(state, 'u5-commission-held-seconds', 0)
+      writeNumber(state, 'brahmalok-commission-held-seconds', 0)
     }
     if (elapsed + step < duration) {
-      writeNumber(state, 'u5-commission-elapsed', elapsed + step)
+      writeNumber(state, 'brahmalok-commission-elapsed', elapsed + step)
       continue
     }
     if (status.phase === 'waiting') {
-      writeNumber(state, 'u5-commission-phase', 1)
-      writeNumber(state, 'u5-commission-elapsed', 0)
-      writeNumber(state, 'u5-commission-edited', 0)
-      writeNumber(state, 'u5-commission-route-changes', 0)
-      writeNumber(state, 'u5-commission-held-seconds', 0)
+      writeNumber(state, 'brahmalok-commission-phase', 1)
+      writeNumber(state, 'brahmalok-commission-elapsed', 0)
+      writeNumber(state, 'brahmalok-commission-edited', 0)
+      writeNumber(state, 'brahmalok-commission-route-changes', 0)
+      writeNumber(state, 'brahmalok-commission-held-seconds', 0)
       announcements.push({ key: `${status.commission.id}-open`, text: `${status.commission.direction[0].toUpperCase()}${status.commission.direction.slice(1)} opens a Folio Commission: ${status.commission.question}`, politeness: 'polite' })
     } else {
-      const currentIndex = Math.floor(readNumber(state, 'u5-commission-index', 0, BRAHMALOK_COMMISSIONS.length - 1))
-      const banked = bankPrompt(state, 'u5-commission', currentIndex)
+      const currentIndex = Math.floor(readNumber(state, 'brahmalok-commission-index', 0, BRAHMALOK_COMMISSIONS.length - 1))
+      const banked = bankPrompt(state, 'brahmalok-commission', currentIndex)
       announcements.push({ key: `${status.commission.id}-blank`, text: banked ? 'The Commission closes without an answer and waits in the margin bank.' : 'The Commission closes without an answer. Three saved margins are already waiting.', politeness: 'polite' })
       finishBrahmalokCommission(state, archiveCount)
     }
@@ -372,25 +358,25 @@ export function advanceBrahmalokCommissions(
 
 function finishBrahmalokCommission(state: NumericLawState, archiveCount: number): void {
   const available = availableBrahmalokCommissionCount(archiveCount)
-  const index = Math.floor(readNumber(state, 'u5-commission-index', 0, BRAHMALOK_COMMISSIONS.length - 1))
-  writeNumber(state, 'u5-commission-index', (index + 1) % available)
-  writeNumber(state, 'u5-commission-phase', 0)
-  writeNumber(state, 'u5-commission-elapsed', 0)
-  writeNumber(state, 'u5-commission-edited', 0)
-  writeNumber(state, 'u5-commission-route-changes', 0)
-  writeNumber(state, 'u5-commission-held-seconds', 0)
+  const index = Math.floor(readNumber(state, 'brahmalok-commission-index', 0, BRAHMALOK_COMMISSIONS.length - 1))
+  writeNumber(state, 'brahmalok-commission-index', (index + 1) % available)
+  writeNumber(state, 'brahmalok-commission-phase', 0)
+  writeNumber(state, 'brahmalok-commission-elapsed', 0)
+  writeNumber(state, 'brahmalok-commission-edited', 0)
+  writeNumber(state, 'brahmalok-commission-route-changes', 0)
+  writeNumber(state, 'brahmalok-commission-held-seconds', 0)
 }
 
 export function selectBrahmalokMarginMode(state: NumericLawState, index: number | null): boolean {
   if (index !== null && (!Number.isInteger(index) || index < 0 || index >= BRAHMALOK_MODES.length)) return false
-  const primary = prismataStatus(state, {}).recipeIndex
+  const primary = brahmalokStatus(state, {}).modeIndex
   if (index === primary) return false
-  writeNumber(state, 'u5-margin-mode', index === null ? 0 : index + 1)
+  writeNumber(state, 'brahmalok-margin-mode', index === null ? 0 : index + 1)
   return true
 }
 
 export function brahmalokMarginModeIndex(state: Readonly<NumericLawState> | undefined): number | null {
-  const encoded = Math.floor(readNumber(state, 'u5-margin-mode', 0, BRAHMALOK_MODES.length))
+  const encoded = Math.floor(readNumber(state, 'brahmalok-margin-mode', 0, BRAHMALOK_MODES.length))
   return encoded <= 0 ? null : encoded - 1
 }
 
@@ -404,15 +390,15 @@ export function brahmalokLawMultiplier(
   state: Readonly<NumericLawState> | undefined,
   owned: Readonly<Record<string, number>>,
 ): number {
-  const primary = prismataStatus(state, owned)
+  const primary = brahmalokStatus(state, owned)
   const marginIndex = brahmalokMarginModeIndex(state)
   let marginFactor = 1
-  if (marginIndex !== null && marginIndex !== primary.recipeIndex) {
-    const marginState: NumericLawState = { ...(state ?? {}), 'u5-recipe': amountFromNumber(marginIndex) }
-    const marginMultiplier = prismataStatus(marginState, owned).multiplier
+  if (marginIndex !== null && marginIndex !== primary.modeIndex) {
+    const marginState: NumericLawState = { ...(state ?? {}), 'brahmalok-mode': amountFromNumber(marginIndex) }
+    const marginMultiplier = brahmalokStatus(marginState, owned).multiplier
     marginFactor = 1 + Math.max(0, marginMultiplier - 1) * 0.4
   }
-  const commissionFactor = readNumber(state, 'u5-commission-buff-seconds', 0, BRAHMALOK_COMMISSION_BUFF_SECONDS) > 0 ? BRAHMALOK_COMMISSION_BUFF : 1
+  const commissionFactor = readNumber(state, 'brahmalok-commission-buff-seconds', 0, BRAHMALOK_COMMISSION_BUFF_SECONDS) > 0 ? BRAHMALOK_COMMISSION_BUFF : 1
   return combineBrahmalokLawFactors(primary.multiplier, commissionFactor, marginFactor)
 }
 
@@ -423,9 +409,6 @@ export const VISHNULOK_CIRCUITS = [
   { id: 'ocean-balance', name: 'Ocean Balance', glyph: '∞', threshold: 35, boost: 3.1, durationSec: 26, defaultLength: 4, defaultRisk: 3, description: 'Follow changing strain through a sharper responsive return.' },
 ] as const
 
-/** @deprecated Save-slot compatibility alias. */
-export const TEMPEST_PATHS = VISHNULOK_CIRCUITS
-
 export const VISHNULOK_BURDENS = [
   { id: 'sheltered', name: 'Sheltered', glyph: '⌂', description: 'Lower return, stable refuge.' },
   { id: 'open-water', name: 'Open Water', glyph: '≈', description: 'Moderate burden and return.' },
@@ -433,22 +416,19 @@ export const VISHNULOK_BURDENS = [
   { id: 'far-reaching', name: 'Far-Reaching', glyph: '∞', description: 'Maximum return with the widest obligation.' },
 ] as const
 
-/** @deprecated Save-slot compatibility alias. */
-export const TEMPEST_RISKS = VISHNULOK_BURDENS
-
-export interface TempestStatus {
-  readonly pathIndex: number
-  readonly path: (typeof VISHNULOK_CIRCUITS)[number]
+export interface VishnulokStatus {
+  readonly circuitIndex: number
+  readonly circuit: (typeof VISHNULOK_CIRCUITS)[number]
   readonly length: number
-  readonly riskIndex: number
-  readonly risk: (typeof VISHNULOK_BURDENS)[number]
+  readonly burdenIndex: number
+  readonly burden: (typeof VISHNULOK_BURDENS)[number]
   readonly threshold: number
   readonly boost: number
   readonly durationSec: number
-  readonly charge: number
-  readonly boostRemainingSec: number
-  readonly secondCharge: number
-  readonly secondBoostRemainingSec: number
+  readonly continuity: number
+  readonly returnRemainingSec: number
+  readonly secondContinuity: number
+  readonly secondReturnRemainingSec: number
   readonly secondReady: boolean
   readonly confluenceActive: boolean
   readonly ready: boolean
@@ -456,79 +436,73 @@ export interface TempestStatus {
   readonly explanation: string
 }
 
-export function tempestStatus(
+export function vishnulokCircuitStatus(
   state: Readonly<NumericLawState> | undefined,
-): TempestStatus {
-  const pathIndex = Math.min(VISHNULOK_CIRCUITS.length - 1, Math.floor(readNumber(state, 'u6-path', 0, 3)))
-  const path = VISHNULOK_CIRCUITS[pathIndex]
-  const length = Math.max(1, Math.floor(readNumber(state, 'u6-path-length', path.defaultLength, 8)))
-  const riskIndex = Math.min(VISHNULOK_BURDENS.length - 1, Math.floor(readNumber(state, 'u6-path-risk', path.defaultRisk, 3)))
-  const risk = VISHNULOK_BURDENS[riskIndex]
-  const threshold = Math.min(95, Math.max(10, path.threshold + (length - path.defaultLength) * 4 + (riskIndex - path.defaultRisk) * 5))
-  const boost = path.boost * (0.78 + length * 0.055 + riskIndex * 0.12)
-  const durationSec = Math.max(12, Math.round(path.durationSec * (0.78 + length * 0.045)))
-  const charge = readNumber(state, 'u6-charge', 0, 100)
-  const boostRemainingSec = readNumber(state, 'u6-boost-seconds', 0, durationSec)
-  const secondCharge = readNumber(state, 'u6-charge-2', 0, 100)
-  const secondBoostRemainingSec = readNumber(state, 'u6-boost-seconds-2', 0, durationSec)
-  const ready = charge >= threshold
-  const secondReady = secondCharge >= threshold
-  const confluenceActive = boostRemainingSec > 0 && secondBoostRemainingSec > 0
-  const returning = boostRemainingSec > 0 || secondBoostRemainingSec > 0
-  const multiplier = returning ? boost : Math.max(0.72, 0.9 + charge * 0.0038 - riskIndex * 0.035)
+): VishnulokStatus {
+  const circuitIndex = Math.min(VISHNULOK_CIRCUITS.length - 1, Math.floor(readNumber(state, 'vishnulok-circuit', 0, 3)))
+  const circuit = VISHNULOK_CIRCUITS[circuitIndex]
+  const length = Math.max(1, Math.floor(readNumber(state, 'vishnulok-shelter-count', circuit.defaultLength, 8)))
+  const burdenIndex = Math.min(VISHNULOK_BURDENS.length - 1, Math.floor(readNumber(state, 'vishnulok-burden', circuit.defaultRisk, 3)))
+  const burden = VISHNULOK_BURDENS[burdenIndex]
+  const threshold = Math.min(95, Math.max(10, circuit.threshold + (length - circuit.defaultLength) * 4 + (burdenIndex - circuit.defaultRisk) * 5))
+  const boost = circuit.boost * (0.78 + length * 0.055 + burdenIndex * 0.12)
+  const durationSec = Math.max(12, Math.round(circuit.durationSec * (0.78 + length * 0.045)))
+  const continuity = readNumber(state, 'vishnulok-continuity', 0, 100)
+  const returnRemainingSec = readNumber(state, 'vishnulok-return-seconds', 0, durationSec)
+  const secondContinuity = readNumber(state, 'vishnulok-continuity-2', 0, 100)
+  const secondReturnRemainingSec = readNumber(state, 'vishnulok-return-seconds-2', 0, durationSec)
+  const ready = continuity >= threshold
+  const secondReady = secondContinuity >= threshold
+  const confluenceActive = returnRemainingSec > 0 && secondReturnRemainingSec > 0
+  const returning = returnRemainingSec > 0 || secondReturnRemainingSec > 0
+  const multiplier = returning ? boost : Math.max(0.72, 0.9 + continuity * 0.0038 - burdenIndex * 0.035)
   const explanation = returning
-    ? `${path.name} is returning across ${length} shelters for ${Math.ceil(Math.max(boostRemainingSec, secondBoostRemainingSec))}s with a ${risk.name.toLowerCase()} burden${confluenceActive ? '; two currents are in confluence' : ''}: ×${boost.toFixed(2)} temporary return.`
+    ? `${circuit.name} is returning across ${length} shelters for ${Math.ceil(Math.max(returnRemainingSec, secondReturnRemainingSec))}s with a ${burden.name.toLowerCase()} burden${confluenceActive ? '; two currents are in confluence' : ''}: ×${boost.toFixed(2)} temporary return.`
     : ready
-      ? `${path.name} is ready: ${length} shelters, ${risk.name.toLowerCase()} burden, ×${boost.toFixed(2)} temporary return.`
-      : `${Math.ceil(threshold - charge)}% more continuity is required for this ${length}-shelter ${path.name}; current ×${multiplier.toFixed(2)} gathering baseline.`
-  return { pathIndex, path, length, riskIndex, risk, threshold, boost, durationSec, charge, boostRemainingSec, secondCharge, secondBoostRemainingSec, secondReady, confluenceActive, ready, multiplier, explanation }
+      ? `${circuit.name} is ready: ${length} shelters, ${burden.name.toLowerCase()} burden, ×${boost.toFixed(2)} temporary return.`
+      : `${Math.ceil(threshold - continuity)}% more continuity is required for this ${length}-shelter ${circuit.name}; current ×${multiplier.toFixed(2)} gathering baseline.`
+  return { circuitIndex, circuit, length, burdenIndex, burden, threshold, boost, durationSec, continuity, returnRemainingSec, secondContinuity, secondReturnRemainingSec, secondReady, confluenceActive, ready, multiplier, explanation }
 }
 
-export function selectTempestPath(state: NumericLawState, index: number): boolean {
+export function selectVishnulokCircuit(state: NumericLawState, index: number): boolean {
   if (!Number.isInteger(index) || index < 0 || index >= VISHNULOK_CIRCUITS.length) return false
-  if (tempestStatus(state).pathIndex !== index) markVishnulokCircuitEdited(state)
-  writeNumber(state, 'u6-path', index)
+  if (vishnulokCircuitStatus(state).circuitIndex !== index) markVishnulokCircuitEdited(state)
+  writeNumber(state, 'vishnulok-circuit', index)
   return true
 }
 
-export const selectVishnulokCircuit = selectTempestPath
-
-export function configureTempestRoute(
+export function configureVishnulokCircuit(
   state: NumericLawState,
   length: number,
-  riskIndex: number,
+  burdenIndex: number,
 ): boolean {
   if (!Number.isInteger(length) || length < 1 || length > 8) return false
-  if (!Number.isInteger(riskIndex) || riskIndex < 0 || riskIndex >= VISHNULOK_BURDENS.length) return false
-  const current = tempestStatus(state)
-  if (current.length !== length || current.riskIndex !== riskIndex) markVishnulokCircuitEdited(state)
-  writeNumber(state, 'u6-path-length', length)
-  writeNumber(state, 'u6-path-risk', riskIndex)
+  if (!Number.isInteger(burdenIndex) || burdenIndex < 0 || burdenIndex >= VISHNULOK_BURDENS.length) return false
+  const current = vishnulokCircuitStatus(state)
+  if (current.length !== length || current.burdenIndex !== burdenIndex) markVishnulokCircuitEdited(state)
+  writeNumber(state, 'vishnulok-shelter-count', length)
+  writeNumber(state, 'vishnulok-burden', burdenIndex)
   return true
 }
 
-export const configureVishnulokCircuit = configureTempestRoute
-
-export function dischargeTempest(state: NumericLawState): boolean {
-  const status = tempestStatus(state)
-  if (!status.ready || status.boostRemainingSec > 0) return false
-  writeNumber(state, 'u6-charge', Math.max(0, status.charge - status.threshold))
-  writeNumber(state, 'u6-boost-seconds', status.durationSec)
-  writeNumber(state, 'u6-last-discharge', status.pathIndex + 1)
-  writeNumber(state, 'u6-last-length', status.length)
-  writeNumber(state, 'u6-last-risk', status.riskIndex)
+export function completeVishnulokReturn(state: NumericLawState): boolean {
+  const status = vishnulokCircuitStatus(state)
+  if (!status.ready || status.returnRemainingSec > 0) return false
+  writeNumber(state, 'vishnulok-continuity', Math.max(0, status.continuity - status.threshold))
+  writeNumber(state, 'vishnulok-return-seconds', status.durationSec)
+  writeNumber(state, 'vishnulok-last-return', status.circuitIndex + 1)
+  writeNumber(state, 'vishnulok-last-length', status.length)
+  writeNumber(state, 'vishnulok-last-risk', status.burdenIndex)
   recordVishnulokReturn(state, status)
   return true
 }
 
-export const completeVishnulokReturn = dischargeTempest
-
-export function dischargeTempestSecond(state: NumericLawState): boolean {
-  const status = tempestStatus(state)
-  if (!status.secondReady || status.secondBoostRemainingSec > 0) return false
-  writeNumber(state, 'u6-charge-2', Math.max(0, status.secondCharge - status.threshold))
-  writeNumber(state, 'u6-boost-seconds-2', status.durationSec)
-  writeNumber(state, 'u6-last-discharge-2', status.pathIndex + 1)
+export function completeSecondVishnulokReturn(state: NumericLawState): boolean {
+  const status = vishnulokCircuitStatus(state)
+  if (!status.secondReady || status.secondReturnRemainingSec > 0) return false
+  writeNumber(state, 'vishnulok-continuity-2', Math.max(0, status.secondContinuity - status.threshold))
+  writeNumber(state, 'vishnulok-return-seconds-2', status.durationSec)
+  writeNumber(state, 'vishnulok-last-return-2', status.circuitIndex + 1)
   recordVishnulokReturn(state, status)
   return true
 }
@@ -566,27 +540,27 @@ export interface VishnulokStrainStatus {
 }
 
 export function markVishnulokCircuitEdited(state: NumericLawState): void {
-  if (readNumber(state, 'u6-strain-phase', 0, 1) >= 1) writeNumber(state, 'u6-strain-edited', 1)
+  if (readNumber(state, 'vishnulok-strain-phase', 0, 1) >= 1) writeNumber(state, 'vishnulok-strain-edited', 1)
 }
 
-export function vishnulokStrainPredicate(strainId: string, status: TempestStatus): boolean {
-  if (strainId === 'thinning-coast') return status.length >= 6 && status.risk.id === 'sheltered'
-  if (strainId === 'scattered-school') return status.length <= 3 && status.risk.id === 'far-reaching'
-  if (strainId === 'crowded-shelter') return status.length >= 4 && status.length <= 6 && status.risk.id === 'strained'
-  if (strainId === 'divided-currents') return status.path.id === 'ocean-balance'
+export function vishnulokStrainPredicate(strainId: string, status: VishnulokStatus): boolean {
+  if (strainId === 'thinning-coast') return status.length >= 6 && status.burden.id === 'sheltered'
+  if (strainId === 'scattered-school') return status.length <= 3 && status.burden.id === 'far-reaching'
+  if (strainId === 'crowded-shelter') return status.length >= 4 && status.length <= 6 && status.burden.id === 'strained'
+  if (strainId === 'divided-currents') return status.circuit.id === 'ocean-balance'
   return false
 }
 
 export function vishnulokStrainStatus(state: Readonly<NumericLawState> | undefined): VishnulokStrainStatus {
-  const index = Math.floor(readNumber(state, 'u6-strain-index', 0, VISHNULOK_STRAINS.length - 1))
+  const index = Math.floor(readNumber(state, 'vishnulok-strain-index', 0, VISHNULOK_STRAINS.length - 1))
   const strain = VISHNULOK_STRAINS[index]
-  const phase: VishnulokStrainPhase = readNumber(state, 'u6-strain-phase', 0, 1) >= 1 ? 'present' : 'waiting'
-  const elapsed = readNumber(state, 'u6-strain-elapsed', 0, VISHNULOK_STRAIN_WAIT_SECONDS)
-  const edited = readNumber(state, 'u6-strain-edited', 0, 1) >= 1
-  const predicateSatisfied = vishnulokStrainPredicate(strain.id, tempestStatus(state))
+  const phase: VishnulokStrainPhase = readNumber(state, 'vishnulok-strain-phase', 0, 1) >= 1 ? 'present' : 'waiting'
+  const elapsed = readNumber(state, 'vishnulok-strain-elapsed', 0, VISHNULOK_STRAIN_WAIT_SECONDS)
+  const edited = readNumber(state, 'vishnulok-strain-edited', 0, 1) >= 1
+  const predicateSatisfied = vishnulokStrainPredicate(strain.id, vishnulokCircuitStatus(state))
   const answered = phase === 'present' && edited && predicateSatisfied
-  const genericReturns = Math.floor(readNumber(state, 'u6-strain-generic-returns', 0, 2))
-  const bankedCount = promptBankValues(state, 'u6-strain').length
+  const genericReturns = Math.floor(readNumber(state, 'vishnulok-strain-generic-returns', 0, 2))
+  const bankedCount = promptBankValues(state, 'vishnulok-strain').length
   const explanation = phase === 'waiting'
     ? `The ocean is settled. Another imbalance may become legible in ${Math.ceil(VISHNULOK_STRAIN_WAIT_SECONDS - elapsed)}s.`
     : answered
@@ -595,19 +569,19 @@ export function vishnulokStrainStatus(state: Readonly<NumericLawState> | undefin
   return { strain, phase, secondsUntilPresent: Math.max(0, VISHNULOK_STRAIN_WAIT_SECONDS - elapsed), edited, predicateSatisfied, answered, genericReturns, bankedCount, explanation }
 }
 
-function recordVishnulokReturn(state: NumericLawState, status: TempestStatus): void {
-  writeNumber(state, 'u6-return-pending', readNumber(state, 'u6-return-pending', 0, 10) + 1)
-  if (readNumber(state, 'u6-strain-phase', 0, 1) < 1) return
+function recordVishnulokReturn(state: NumericLawState, status: VishnulokStatus): void {
+  writeNumber(state, 'vishnulok-return-pending', readNumber(state, 'vishnulok-return-pending', 0, 10) + 1)
+  if (readNumber(state, 'vishnulok-strain-phase', 0, 1) < 1) return
   const strain = vishnulokStrainStatus(state)
   if (strain.answered) {
-    writeNumber(state, 'u6-route-pending', readNumber(state, 'u6-route-pending', 0, 10) + 1)
-    writeNumber(state, 'u6-strain-resolved', 1)
-    writeNumber(state, 'u6-strain-bonus-seconds', status.durationSec)
+    writeNumber(state, 'vishnulok-route-pending', readNumber(state, 'vishnulok-route-pending', 0, 10) + 1)
+    writeNumber(state, 'vishnulok-strain-resolved', 1)
+    writeNumber(state, 'vishnulok-strain-bonus-seconds', status.durationSec)
     return
   }
   const genericReturns = Math.min(2, strain.genericReturns + 1)
-  writeNumber(state, 'u6-strain-generic-returns', genericReturns)
-  if (genericReturns >= 2) writeNumber(state, 'u6-strain-resolved', 1)
+  writeNumber(state, 'vishnulok-strain-generic-returns', genericReturns)
+  if (genericReturns >= 2) writeNumber(state, 'vishnulok-strain-resolved', 1)
 }
 
 export function advanceVishnulokStrains(
@@ -616,39 +590,39 @@ export function advanceVishnulokStrains(
   promptsEnabled = true,
 ): Pick<F4LawEvents, 'routesEarned' | 'returnsCompleted' | 'announcements'> {
   const announcements: F4LawAnnouncement[] = []
-  const routesEarned = Math.floor(readNumber(state, 'u6-route-pending', 0, 10))
-  const returnsCompleted = Math.floor(readNumber(state, 'u6-return-pending', 0, 10))
-  if (routesEarned > 0) writeNumber(state, 'u6-route-pending', 0)
-  if (returnsCompleted > 0) writeNumber(state, 'u6-return-pending', 0)
+  const routesEarned = Math.floor(readNumber(state, 'vishnulok-route-pending', 0, 10))
+  const returnsCompleted = Math.floor(readNumber(state, 'vishnulok-return-pending', 0, 10))
+  if (routesEarned > 0) writeNumber(state, 'vishnulok-route-pending', 0)
+  if (returnsCompleted > 0) writeNumber(state, 'vishnulok-return-pending', 0)
   if (!Number.isFinite(elapsedSeconds) || elapsedSeconds <= 0) return { routesEarned, returnsCompleted, announcements }
 
-  const bonusSeconds = readNumber(state, 'u6-strain-bonus-seconds', 0, 120)
-  if (bonusSeconds > 0) writeNumber(state, 'u6-strain-bonus-seconds', Math.max(0, bonusSeconds - elapsedSeconds))
+  const bonusSeconds = readNumber(state, 'vishnulok-strain-bonus-seconds', 0, 120)
+  if (bonusSeconds > 0) writeNumber(state, 'vishnulok-strain-bonus-seconds', Math.max(0, bonusSeconds - elapsedSeconds))
   if (!promptsEnabled) return { routesEarned, returnsCompleted, announcements }
   const status = vishnulokStrainStatus(state)
   if (status.phase === 'present') {
-    const bankElapsed = readNumber(state, 'u6-strain-bank-elapsed', 0, VISHNULOK_STRAIN_WAIT_SECONDS)
+    const bankElapsed = readNumber(state, 'vishnulok-strain-bank-elapsed', 0, VISHNULOK_STRAIN_WAIT_SECONDS)
     const totalBankElapsed = bankElapsed + elapsedSeconds
     const opportunities = Math.min(
       TIMED_PROMPT_BANK_CAP - status.bankedCount,
       Math.floor(totalBankElapsed / VISHNULOK_STRAIN_WAIT_SECONDS),
     )
-    const currentIndex = Math.floor(readNumber(state, 'u6-strain-index', 0, VISHNULOK_STRAINS.length - 1))
+    const currentIndex = Math.floor(readNumber(state, 'vishnulok-strain-index', 0, VISHNULOK_STRAINS.length - 1))
     for (let opportunity = 0; opportunity < opportunities; opportunity += 1) {
-      const offset = promptBankValues(state, 'u6-strain').length + 1
-      bankPrompt(state, 'u6-strain', (currentIndex + offset) % VISHNULOK_STRAINS.length)
+      const offset = promptBankValues(state, 'vishnulok-strain').length + 1
+      bankPrompt(state, 'vishnulok-strain', (currentIndex + offset) % VISHNULOK_STRAINS.length)
     }
-    writeNumber(state, 'u6-strain-bank-elapsed', totalBankElapsed % VISHNULOK_STRAIN_WAIT_SECONDS)
-    if (readNumber(state, 'u6-strain-resolved', 0, 1) >= 1) {
+    writeNumber(state, 'vishnulok-strain-bank-elapsed', totalBankElapsed % VISHNULOK_STRAIN_WAIT_SECONDS)
+    if (readNumber(state, 'vishnulok-strain-resolved', 0, 1) >= 1) {
       announcements.push({ key: `${status.strain.id}-restored`, text: routesEarned > 0 ? `${status.strain.name} is restored. The living chart keeps one woven route.` : `${status.strain.name} settles after two patient returns.`, politeness: 'polite' })
       const nextRegularIndex = (currentIndex + 1) % VISHNULOK_STRAINS.length
-      const nextBankedIndex = takeBankedPrompt(state, 'u6-strain')
-      writeNumber(state, 'u6-strain-phase', nextBankedIndex === null ? 0 : 1)
-      writeNumber(state, 'u6-strain-elapsed', 0)
-      writeNumber(state, 'u6-strain-resolved', 0)
-      writeNumber(state, 'u6-strain-edited', 0)
-      writeNumber(state, 'u6-strain-generic-returns', 0)
-      writeNumber(state, 'u6-strain-index', nextBankedIndex ?? nextRegularIndex)
+      const nextBankedIndex = takeBankedPrompt(state, 'vishnulok-strain')
+      writeNumber(state, 'vishnulok-strain-phase', nextBankedIndex === null ? 0 : 1)
+      writeNumber(state, 'vishnulok-strain-elapsed', 0)
+      writeNumber(state, 'vishnulok-strain-resolved', 0)
+      writeNumber(state, 'vishnulok-strain-edited', 0)
+      writeNumber(state, 'vishnulok-strain-generic-returns', 0)
+      writeNumber(state, 'vishnulok-strain-index', nextBankedIndex ?? nextRegularIndex)
     }
     return { routesEarned, returnsCompleted, announcements }
   }
@@ -660,18 +634,18 @@ export function advanceVishnulokStrains(
       TIMED_PROMPT_BANK_CAP + 1,
       Math.floor(totalWaitingElapsed / VISHNULOK_STRAIN_WAIT_SECONDS),
     )
-    const currentIndex = Math.floor(readNumber(state, 'u6-strain-index', 0, VISHNULOK_STRAINS.length - 1))
+    const currentIndex = Math.floor(readNumber(state, 'vishnulok-strain-index', 0, VISHNULOK_STRAINS.length - 1))
     for (let opportunity = 1; opportunity < opportunities; opportunity += 1) {
-      bankPrompt(state, 'u6-strain', (currentIndex + opportunity) % VISHNULOK_STRAINS.length)
+      bankPrompt(state, 'vishnulok-strain', (currentIndex + opportunity) % VISHNULOK_STRAINS.length)
     }
-    writeNumber(state, 'u6-strain-phase', 1)
-    writeNumber(state, 'u6-strain-elapsed', 0)
-    writeNumber(state, 'u6-strain-bank-elapsed', totalWaitingElapsed % VISHNULOK_STRAIN_WAIT_SECONDS)
+    writeNumber(state, 'vishnulok-strain-phase', 1)
+    writeNumber(state, 'vishnulok-strain-elapsed', 0)
+    writeNumber(state, 'vishnulok-strain-bank-elapsed', totalWaitingElapsed % VISHNULOK_STRAIN_WAIT_SECONDS)
     if (elapsedSeconds <= VISHNULOK_STRAIN_WAIT_SECONDS * 2) {
       announcements.push({ key: `${status.strain.id}-present`, text: `${status.strain.name} becomes legible in the middle water. It waits for ${status.strain.preference}.`, politeness: 'polite' })
     }
   } else {
-    writeNumber(state, 'u6-strain-elapsed', totalWaitingElapsed)
+    writeNumber(state, 'vishnulok-strain-elapsed', totalWaitingElapsed)
   }
   return { routesEarned, returnsCompleted, announcements }
 }
@@ -683,8 +657,8 @@ export function combineVishnulokLawFactors(baseFactor: number, strainFactor: num
 }
 
 export function vishnulokLawMultiplier(state: Readonly<NumericLawState> | undefined): number {
-  const status = tempestStatus(state)
-  const strainFactor = readNumber(state, 'u6-strain-bonus-seconds', 0, 120) > 0 ? VISHNULOK_STRAIN_BONUS : 1
+  const status = vishnulokCircuitStatus(state)
+  const strainFactor = readNumber(state, 'vishnulok-strain-bonus-seconds', 0, 120) > 0 ? VISHNULOK_STRAIN_BONUS : 1
   const confluenceFactor = status.confluenceActive ? VISHNULOK_CONFLUENCE_BONUS : 1
   return combineVishnulokLawFactors(status.multiplier, strainFactor, confluenceFactor)
 }
@@ -699,18 +673,14 @@ export const KAILASH_CYCLES = [
   { id: 'open-ring', name: 'Open Ring', glyph: '◜', description: 'Grace and meaningful rests keep completion from becoming enclosure.', slots: ['rest', 'rest', 'emergence', 'rest', 'release', 'rest', 'grace', 'rest', 'shelter', 'rest', 'veil', 'rest', 'release', 'rest', 'grace', 'rest'] },
 ] as const satisfies readonly { readonly id: string; readonly name: string; readonly glyph: string; readonly description: string; readonly slots: readonly KailashAct[] }[]
 
-/** @deprecated Save-stable compatibility names retained for existing consumers. */
-export const CANTICLE_ROLES = KAILASH_ACTS
-export type CanticleRole = KailashAct
-/** @deprecated Save-stable compatibility name retained for existing consumers. */
-export const CANTICLE_MEASURES = KAILASH_CYCLES
+export type KailashRole = KailashAct
 
-export interface CanticleStatus {
-  readonly measureIndex: number
-  readonly measure: (typeof CANTICLE_MEASURES)[number]
-  readonly slots: readonly CanticleRole[]
+export interface KailashStatus {
+  readonly cycleIndex: number
+  readonly cycle: (typeof KAILASH_CYCLES)[number]
+  readonly slots: readonly KailashRole[]
   readonly slotIndex: number
-  readonly role: CanticleRole
+  readonly role: KailashRole
   readonly restCount: number
   readonly distinctRoles: number
   readonly patternBonus: number
@@ -719,7 +689,7 @@ export interface CanticleStatus {
   readonly explanation: string
 }
 
-const ROLE_MULTIPLIERS: Record<CanticleRole, number> = {
+const ROLE_MULTIPLIERS: Record<KailashRole, number> = {
   emergence: 1.45,
   shelter: 1.38,
   release: 2.15,
@@ -728,36 +698,36 @@ const ROLE_MULTIPLIERS: Record<CanticleRole, number> = {
   rest: 1.72,
 }
 
-export function canticleStatus(
+export function kailashStatus(
   state: Readonly<NumericLawState> | undefined,
   owned: Readonly<Record<string, number>>,
   nowMs = Date.now(),
-): CanticleStatus {
-  const measureIndex = Math.min(KAILASH_CYCLES.length - 1, Math.floor(readNumber(state, 'u7-measure', 1, 3)))
-  const measure = KAILASH_CYCLES[measureIndex]
-  const slots = measure.slots.map((defaultRole, index) => {
+): KailashStatus {
+  const cycleIndex = Math.min(KAILASH_CYCLES.length - 1, Math.floor(readNumber(state, 'kailash-cycle', 1, 3)))
+  const cycle = KAILASH_CYCLES[cycleIndex]
+  const slots = cycle.slots.map((defaultRole, index) => {
     const defaultIndex = KAILASH_ACTS.indexOf(defaultRole)
-    const roleIndex = Math.floor(readNumber(state, `u7-slot-${String(index + 1).padStart(2, '0')}`, defaultIndex, KAILASH_ACTS.length - 1))
+    const roleIndex = Math.floor(readNumber(state, `kailash-slot-${String(index + 1).padStart(2, '0')}`, defaultIndex, KAILASH_ACTS.length - 1))
     return KAILASH_ACTS[roleIndex]
   })
   const slotDurationMs = 900
   const normalizedNow = Number.isFinite(nowMs) && nowMs >= 0 ? nowMs : 0
   const slotIndex = Math.floor(normalizedNow / slotDurationMs) % slots.length
   const role = slots[slotIndex]
-  const families = Math.min(6, Math.ceil(totalOwned(owned, 'u7') / 50))
+  const families = Math.min(6, Math.ceil(totalOwned(owned, 'kailash') / 50))
   const familyBonus = 1 + families * 0.035
-  const measureBonus = measureIndex === 0 ? 1.05 : measureIndex === 1 ? 1.08 : measureIndex === 2 ? 1.12 : 1.1
+  const cycleBonus = cycleIndex === 0 ? 1.05 : cycleIndex === 1 ? 1.08 : cycleIndex === 2 ? 1.12 : 1.1
   const restCount = slots.filter((slotRole) => slotRole === 'rest').length
   const distinctRoles = new Set(slots).size
   const transitions = slots.reduce((count, slotRole, index) => (
     slotRole === slots[(index + slots.length - 1) % slots.length] ? count : count + 1
   ), 0)
   const patternBonus = 1 + Math.min(0.36, restCount * 0.016 + Math.max(0, distinctRoles - 2) * 0.032 + transitions / slots.length * 0.08)
-  const multiplier = ROLE_MULTIPLIERS[role] * familyBonus * measureBonus * patternBonus
+  const multiplier = ROLE_MULTIPLIERS[role] * familyBonus * cycleBonus * patternBonus
   const nextSlotInMs = slotDurationMs - (normalizedNow % slotDurationMs)
   return {
-    measureIndex,
-    measure,
+    cycleIndex,
+    cycle,
     slots,
     slotIndex,
     role,
@@ -766,21 +736,21 @@ export function canticleStatus(
     patternBonus,
     multiplier,
     nextSlotInMs,
-    explanation: `${measure.name} position ${slotIndex + 1}/${slots.length}: ${role}. ${restCount} rests and ${distinctRoles} acts shape a ×${patternBonus.toFixed(2)} composition bonus inside the current ×${multiplier.toFixed(2)} continuous cycle total.`,
+    explanation: `${cycle.name} position ${slotIndex + 1}/${slots.length}: ${role}. ${restCount} rests and ${distinctRoles} acts shape a ×${patternBonus.toFixed(2)} composition bonus inside the current ×${multiplier.toFixed(2)} continuous cycle total.`,
   }
 }
 
-export function selectCanticleMeasure(state: NumericLawState, index: number): boolean {
+export function selectKailashCycle(state: NumericLawState, index: number): boolean {
   if (!Number.isInteger(index) || index < 0 || index >= KAILASH_CYCLES.length) return false
   markKailashCycleEdited(state)
-  writeNumber(state, 'u7-measure', index)
+  writeNumber(state, 'kailash-cycle', index)
   KAILASH_CYCLES[index].slots.forEach((role, slotIndex) => {
-    writeNumber(state, `u7-slot-${String(slotIndex + 1).padStart(2, '0')}`, KAILASH_ACTS.indexOf(role))
+    writeNumber(state, `kailash-slot-${String(slotIndex + 1).padStart(2, '0')}`, KAILASH_ACTS.indexOf(role))
   })
   return true
 }
 
-export function setCanticleSlotRole(
+export function setKailashAct(
   state: NumericLawState,
   slotIndex: number,
   roleIndex: number,
@@ -788,20 +758,16 @@ export function setCanticleSlotRole(
   if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= 16) return false
   if (!Number.isInteger(roleIndex) || roleIndex < 0 || roleIndex >= KAILASH_ACTS.length) return false
   markKailashCycleEdited(state)
-  writeNumber(state, `u7-slot-${String(slotIndex + 1).padStart(2, '0')}`, roleIndex)
+  writeNumber(state, `kailash-slot-${String(slotIndex + 1).padStart(2, '0')}`, roleIndex)
   return true
 }
 
-export function cycleCanticleSlot(state: NumericLawState, slotIndex: number): boolean {
+export function cycleKailashAct(state: NumericLawState, slotIndex: number): boolean {
   if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= 16) return false
-  const status = canticleStatus(state, {}, 0)
+  const status = kailashStatus(state, {}, 0)
   const currentRoleIndex = KAILASH_ACTS.indexOf(status.slots[slotIndex])
-  return setCanticleSlotRole(state, slotIndex, (currentRoleIndex + 1) % KAILASH_ACTS.length)
+  return setKailashAct(state, slotIndex, (currentRoleIndex + 1) % KAILASH_ACTS.length)
 }
-
-export const selectKailashCycle = selectCanticleMeasure
-export const setKailashAct = setCanticleSlotRole
-export const cycleKailashAct = cycleCanticleSlot
 
 // Kailash weather fronts ----------------------------------------------------
 
@@ -946,8 +912,8 @@ function kailashPhaseDuration(phase: number): number {
 }
 
 export function markKailashCycleEdited(state: NumericLawState): void {
-  if (readNumber(state, 'u7-front-phase', KAILASH_PHASE_CALM, KAILASH_PHASE_ACTIVE) !== KAILASH_PHASE_CALM) {
-    writeNumber(state, 'u7-front-edited', 1)
+  if (readNumber(state, 'kailash-front-phase', KAILASH_PHASE_CALM, KAILASH_PHASE_ACTIVE) !== KAILASH_PHASE_CALM) {
+    writeNumber(state, 'kailash-front-edited', 1)
   }
 }
 
@@ -955,18 +921,18 @@ export function kailashFrontStatus(
   state: Readonly<NumericLawState> | undefined,
   owned: Readonly<Record<string, number>>,
 ): KailashFrontStatus {
-  const index = Math.floor(readNumber(state, 'u7-front-index', 0, KAILASH_FRONTS.length - 1))
+  const index = Math.floor(readNumber(state, 'kailash-front-index', 0, KAILASH_FRONTS.length - 1))
   const front = KAILASH_FRONTS[index]
-  const phaseIndex = Math.floor(readNumber(state, 'u7-front-phase', KAILASH_PHASE_CALM, KAILASH_PHASE_ACTIVE))
+  const phaseIndex = Math.floor(readNumber(state, 'kailash-front-phase', KAILASH_PHASE_CALM, KAILASH_PHASE_ACTIVE))
   const phase: KailashFrontPhase = phaseIndex === KAILASH_PHASE_ACTIVE ? 'active' : phaseIndex === KAILASH_PHASE_APPROACHING ? 'approaching' : 'calm'
-  const elapsed = readNumber(state, 'u7-front-elapsed', 0, kailashPhaseDuration(phaseIndex))
-  const slots = canticleStatus(state, owned, 0).slots
+  const elapsed = readNumber(state, 'kailash-front-elapsed', 0, kailashPhaseDuration(phaseIndex))
+  const slots = kailashStatus(state, owned, 0).slots
   const predicateSatisfied = kailashFrontPredicate(front.id, slots)
-  const edited = readNumber(state, 'u7-front-edited', 0, 1) >= 1
+  const edited = readNumber(state, 'kailash-front-edited', 0, 1) >= 1
   const answered = phase === 'active' && predicateSatisfied && edited
-  const answeredSeconds = readNumber(state, 'u7-front-answered-seconds', 0, KAILASH_FRONT_ACTIVE_SECONDS)
-  const carrySecondsRemaining = readNumber(state, 'u7-front-carry-seconds', 0, KAILASH_FRONT_CARRY_SECONDS)
-  const bankedCount = promptBankValues(state, 'u7-front').length
+  const answeredSeconds = readNumber(state, 'kailash-front-answered-seconds', 0, KAILASH_FRONT_ACTIVE_SECONDS)
+  const carrySecondsRemaining = readNumber(state, 'kailash-front-carry-seconds', 0, KAILASH_FRONT_CARRY_SECONDS)
+  const bankedCount = promptBankValues(state, 'kailash-front').length
   const explanation = phase === 'calm'
     ? `The ridge is quiet. ${front.name} will approach in ${Math.ceil(kailashPhaseDuration(KAILASH_PHASE_CALM) - elapsed)}s.${bankedCount > 0 ? ` ${bankedCount} earlier front${bankedCount === 1 ? '' : 's'} may be recalled.` : ''}`
     : phase === 'approaching'
@@ -978,15 +944,15 @@ export function kailashFrontStatus(
 }
 
 export function recallBankedKailashFront(state: NumericLawState): boolean {
-  if (readNumber(state, 'u7-long-rest', 0, 1) >= 1) return false
-  if (readNumber(state, 'u7-front-phase', KAILASH_PHASE_CALM, KAILASH_PHASE_ACTIVE) !== KAILASH_PHASE_CALM) return false
-  const index = takeBankedPrompt(state, 'u7-front')
+  if (readNumber(state, 'kailash-long-rest', 0, 1) >= 1) return false
+  if (readNumber(state, 'kailash-front-phase', KAILASH_PHASE_CALM, KAILASH_PHASE_ACTIVE) !== KAILASH_PHASE_CALM) return false
+  const index = takeBankedPrompt(state, 'kailash-front')
   if (index === null) return false
-  writeNumber(state, 'u7-front-index', index % KAILASH_FRONTS.length)
-  writeNumber(state, 'u7-front-phase', KAILASH_PHASE_APPROACHING)
-  writeNumber(state, 'u7-front-elapsed', 0)
-  writeNumber(state, 'u7-front-answered-seconds', 0)
-  writeNumber(state, 'u7-front-edited', 0)
+  writeNumber(state, 'kailash-front-index', index % KAILASH_FRONTS.length)
+  writeNumber(state, 'kailash-front-phase', KAILASH_PHASE_APPROACHING)
+  writeNumber(state, 'kailash-front-elapsed', 0)
+  writeNumber(state, 'kailash-front-answered-seconds', 0)
+  writeNumber(state, 'kailash-front-edited', 0)
   return true
 }
 
@@ -998,73 +964,73 @@ export function advanceKailashFronts(
   const announcements: F4LawAnnouncement[] = []
   let tracesEarned = 0
   if (!Number.isFinite(elapsedSeconds) || elapsedSeconds <= 0) return { tracesEarned, announcements }
-  if (readNumber(state, 'u7-long-rest', 0, 1) >= 1) {
-    const reserve = readNumber(state, 'u7-grace-reserve', 0, KAILASH_GRACE_RESERVE_CAP_SECONDS)
-    writeNumber(state, 'u7-grace-reserve', Math.min(KAILASH_GRACE_RESERVE_CAP_SECONDS, reserve + Math.min(elapsedSeconds, 7 * 24 * 60 * 60)))
+  if (readNumber(state, 'kailash-long-rest', 0, 1) >= 1) {
+    const reserve = readNumber(state, 'kailash-grace-reserve', 0, KAILASH_GRACE_RESERVE_CAP_SECONDS)
+    writeNumber(state, 'kailash-grace-reserve', Math.min(KAILASH_GRACE_RESERVE_CAP_SECONDS, reserve + Math.min(elapsedSeconds, 7 * 24 * 60 * 60)))
     return { tracesEarned, announcements }
   }
   const fullCycle = KAILASH_FRONT_CALM_SECONDS + KAILASH_FRONT_APPROACH_SECONDS + KAILASH_FRONT_ACTIVE_SECONDS
   let remaining = elapsedSeconds
   if (remaining > fullCycle * 2) {
-    const startIndex = Math.floor(readNumber(state, 'u7-front-index', 0, KAILASH_FRONTS.length - 1))
+    const startIndex = Math.floor(readNumber(state, 'kailash-front-index', 0, KAILASH_FRONTS.length - 1))
     const windows = Math.min(TIMED_PROMPT_BANK_CAP, Math.floor(remaining / fullCycle))
     for (let window = 0; window < windows; window += 1) {
-      bankPrompt(state, 'u7-front', (startIndex + window) % KAILASH_FRONTS.length)
+      bankPrompt(state, 'kailash-front', (startIndex + window) % KAILASH_FRONTS.length)
     }
-    writeNumber(state, 'u7-front-index', (startIndex + windows) % KAILASH_FRONTS.length)
-    writeNumber(state, 'u7-front-phase', KAILASH_PHASE_CALM)
-    writeNumber(state, 'u7-front-elapsed', 0)
-    writeNumber(state, 'u7-front-answered-seconds', 0)
-    writeNumber(state, 'u7-front-edited', 0)
+    writeNumber(state, 'kailash-front-index', (startIndex + windows) % KAILASH_FRONTS.length)
+    writeNumber(state, 'kailash-front-phase', KAILASH_PHASE_CALM)
+    writeNumber(state, 'kailash-front-elapsed', 0)
+    writeNumber(state, 'kailash-front-answered-seconds', 0)
+    writeNumber(state, 'kailash-front-edited', 0)
     remaining = 0
   }
-  const carry = readNumber(state, 'u7-front-carry-seconds', 0, KAILASH_FRONT_CARRY_SECONDS)
-  if (carry > 0) writeNumber(state, 'u7-front-carry-seconds', Math.max(0, carry - elapsedSeconds))
-  const bonusSeconds = readNumber(state, 'u7-grace-bonus-seconds', 0, KAILASH_GRACE_BONUS_WINDOW_SECONDS)
-  if (bonusSeconds > 0) writeNumber(state, 'u7-grace-bonus-seconds', Math.max(0, bonusSeconds - elapsedSeconds))
+  const carry = readNumber(state, 'kailash-front-carry-seconds', 0, KAILASH_FRONT_CARRY_SECONDS)
+  if (carry > 0) writeNumber(state, 'kailash-front-carry-seconds', Math.max(0, carry - elapsedSeconds))
+  const bonusSeconds = readNumber(state, 'kailash-grace-bonus-seconds', 0, KAILASH_GRACE_BONUS_WINDOW_SECONDS)
+  if (bonusSeconds > 0) writeNumber(state, 'kailash-grace-bonus-seconds', Math.max(0, bonusSeconds - elapsedSeconds))
 
   while (remaining > 0) {
-    const phase = Math.floor(readNumber(state, 'u7-front-phase', KAILASH_PHASE_CALM, KAILASH_PHASE_ACTIVE))
-    const elapsed = readNumber(state, 'u7-front-elapsed', 0, kailashPhaseDuration(phase))
+    const phase = Math.floor(readNumber(state, 'kailash-front-phase', KAILASH_PHASE_CALM, KAILASH_PHASE_ACTIVE))
+    const elapsed = readNumber(state, 'kailash-front-elapsed', 0, kailashPhaseDuration(phase))
     const step = Math.min(remaining, kailashPhaseDuration(phase) - elapsed)
     remaining -= step
-    const index = Math.floor(readNumber(state, 'u7-front-index', 0, KAILASH_FRONTS.length - 1))
+    const index = Math.floor(readNumber(state, 'kailash-front-index', 0, KAILASH_FRONTS.length - 1))
     const front = KAILASH_FRONTS[index]
     if (phase === KAILASH_PHASE_ACTIVE) {
-      const slots = canticleStatus(state, owned, 0).slots
-      if (kailashFrontPredicate(front.id, slots) && readNumber(state, 'u7-front-edited', 0, 1) >= 1) {
-        writeNumber(state, 'u7-front-answered-seconds', Math.min(
+      const slots = kailashStatus(state, owned, 0).slots
+      if (kailashFrontPredicate(front.id, slots) && readNumber(state, 'kailash-front-edited', 0, 1) >= 1) {
+        writeNumber(state, 'kailash-front-answered-seconds', Math.min(
           KAILASH_FRONT_ACTIVE_SECONDS,
-          readNumber(state, 'u7-front-answered-seconds', 0, KAILASH_FRONT_ACTIVE_SECONDS) + step,
+          readNumber(state, 'kailash-front-answered-seconds', 0, KAILASH_FRONT_ACTIVE_SECONDS) + step,
         ))
       }
     }
     if (elapsed + step < kailashPhaseDuration(phase)) {
-      writeNumber(state, 'u7-front-elapsed', elapsed + step)
+      writeNumber(state, 'kailash-front-elapsed', elapsed + step)
       continue
     }
-    writeNumber(state, 'u7-front-elapsed', 0)
+    writeNumber(state, 'kailash-front-elapsed', 0)
     if (phase === KAILASH_PHASE_CALM) {
-      writeNumber(state, 'u7-front-phase', KAILASH_PHASE_APPROACHING)
+      writeNumber(state, 'kailash-front-phase', KAILASH_PHASE_APPROACHING)
       announcements.push({ key: `${front.id}-approach`, text: `${front.name} approaches the ridge. The mountain will favor ${front.favoredRoles.join(' and ')}.`, politeness: 'polite' })
     } else if (phase === KAILASH_PHASE_APPROACHING) {
-      writeNumber(state, 'u7-front-phase', KAILASH_PHASE_ACTIVE)
+      writeNumber(state, 'kailash-front-phase', KAILASH_PHASE_ACTIVE)
       announcements.push({ key: `${front.id}-arrive`, text: `${front.name} crosses the ridge.`, politeness: 'polite' })
     } else {
-      const answeredSeconds = readNumber(state, 'u7-front-answered-seconds', 0, KAILASH_FRONT_ACTIVE_SECONDS)
+      const answeredSeconds = readNumber(state, 'kailash-front-answered-seconds', 0, KAILASH_FRONT_ACTIVE_SECONDS)
       const earned = answeredSeconds >= KAILASH_FRONT_ACTIVE_SECONDS * KAILASH_FRONT_ANSWER_FRACTION
       if (earned) {
         tracesEarned += 1
-        writeNumber(state, 'u7-front-carry-seconds', KAILASH_FRONT_CARRY_SECONDS)
+        writeNumber(state, 'kailash-front-carry-seconds', KAILASH_FRONT_CARRY_SECONDS)
         announcements.push({ key: `${front.id}-answered`, text: 'The front clears. The descent gains a new trace.', politeness: 'polite' })
       } else {
-        const banked = bankPrompt(state, 'u7-front', index)
+        const banked = bankPrompt(state, 'kailash-front', index)
         announcements.push({ key: `${front.id}-cleared`, text: banked ? 'The front clears without an answer and remains available in the ridge bank.' : 'The front clears without an answer. Three earlier fronts already wait.', politeness: 'polite' })
       }
-      writeNumber(state, 'u7-front-phase', KAILASH_PHASE_CALM)
-      writeNumber(state, 'u7-front-answered-seconds', 0)
-      writeNumber(state, 'u7-front-edited', 0)
-      writeNumber(state, 'u7-front-index', (index + 1) % KAILASH_FRONTS.length)
+      writeNumber(state, 'kailash-front-phase', KAILASH_PHASE_CALM)
+      writeNumber(state, 'kailash-front-answered-seconds', 0)
+      writeNumber(state, 'kailash-front-edited', 0)
+      writeNumber(state, 'kailash-front-index', (index + 1) % KAILASH_FRONTS.length)
     }
   }
   return { tracesEarned, announcements }
@@ -1080,11 +1046,11 @@ export interface KailashLongRestStatus {
 }
 
 export function kailashLongRestStatus(state: Readonly<NumericLawState> | undefined): KailashLongRestStatus {
-  const resting = readNumber(state, 'u7-long-rest', 0, 1) >= 1
-  const reserveSeconds = readNumber(state, 'u7-grace-reserve', 0, KAILASH_GRACE_RESERVE_CAP_SECONDS)
+  const resting = readNumber(state, 'kailash-long-rest', 0, 1) >= 1
+  const reserveSeconds = readNumber(state, 'kailash-grace-reserve', 0, KAILASH_GRACE_RESERVE_CAP_SECONDS)
   const reserveFraction = reserveSeconds / KAILASH_GRACE_RESERVE_CAP_SECONDS
-  const bonusSecondsRemaining = readNumber(state, 'u7-grace-bonus-seconds', 0, KAILASH_GRACE_BONUS_WINDOW_SECONDS)
-  const bonusStrength = Math.min(KAILASH_GRACE_BONUS_MAX, readNumber(state, 'u7-grace-bonus-strength', 0, KAILASH_GRACE_BONUS_MAX))
+  const bonusSecondsRemaining = readNumber(state, 'kailash-grace-bonus-seconds', 0, KAILASH_GRACE_BONUS_WINDOW_SECONDS)
+  const bonusStrength = Math.min(KAILASH_GRACE_BONUS_MAX, readNumber(state, 'kailash-grace-bonus-strength', 0, KAILASH_GRACE_BONUS_MAX))
   const explanation = resting
     ? `The Still Point holds. The lamp at the lowest shelter is ${Math.round(reserveFraction * 100)}% full.`
     : bonusSecondsRemaining > 0
@@ -1094,18 +1060,18 @@ export function kailashLongRestStatus(state: Readonly<NumericLawState> | undefin
 }
 
 export function enterKailashLongRest(state: NumericLawState): boolean {
-  if (readNumber(state, 'u7-long-rest', 0, 1) >= 1) return false
-  writeNumber(state, 'u7-long-rest', 1)
+  if (readNumber(state, 'kailash-long-rest', 0, 1) >= 1) return false
+  writeNumber(state, 'kailash-long-rest', 1)
   return true
 }
 
 export function exitKailashLongRest(state: NumericLawState): boolean {
-  if (readNumber(state, 'u7-long-rest', 0, 1) < 1) return false
-  const reserve = readNumber(state, 'u7-grace-reserve', 0, KAILASH_GRACE_RESERVE_CAP_SECONDS)
-  writeNumber(state, 'u7-long-rest', 0)
-  writeNumber(state, 'u7-grace-reserve', 0)
-  writeNumber(state, 'u7-grace-bonus-strength', KAILASH_GRACE_BONUS_MAX * (reserve / KAILASH_GRACE_RESERVE_CAP_SECONDS))
-  writeNumber(state, 'u7-grace-bonus-seconds', reserve > 0 ? KAILASH_GRACE_BONUS_WINDOW_SECONDS : 0)
+  if (readNumber(state, 'kailash-long-rest', 0, 1) < 1) return false
+  const reserve = readNumber(state, 'kailash-grace-reserve', 0, KAILASH_GRACE_RESERVE_CAP_SECONDS)
+  writeNumber(state, 'kailash-long-rest', 0)
+  writeNumber(state, 'kailash-grace-reserve', 0)
+  writeNumber(state, 'kailash-grace-bonus-strength', KAILASH_GRACE_BONUS_MAX * (reserve / KAILASH_GRACE_RESERVE_CAP_SECONDS))
+  writeNumber(state, 'kailash-grace-bonus-seconds', reserve > 0 ? KAILASH_GRACE_BONUS_WINDOW_SECONDS : 0)
   return true
 }
 
@@ -1124,7 +1090,7 @@ export function kailashFrontMultiplier(
   const status = kailashFrontStatus(state, owned)
   let frontFactor = 1
   if (status.answered) {
-    const currentRole = canticleStatus(state, owned, nowMs).role
+    const currentRole = kailashStatus(state, owned, nowMs).role
     frontFactor = status.front.favoredRoles.includes(currentRole) ? 1.5 : 1.1
   }
   const carryFactor = status.carrySecondsRemaining > 0 ? 1.2 : 1
@@ -1144,40 +1110,40 @@ export function advanceF4LawState(
 ): F4LawEvents {
   if (!Number.isFinite(elapsedSeconds) || elapsedSeconds <= 0) return NO_F4_EVENTS
   const elapsed = Math.min(elapsedSeconds, 7 * 24 * 60 * 60)
-  if (universeId === 'prismata') {
-    const status = prismataStatus(state, owned)
-    const direction = status.recipe.id === 'memory' ? 1 : -0.22
-    const breadth = Math.max(0.25, status.activeBands / 4)
-    writeNumber(state, 'u5-fluorescence', Math.max(0, Math.min(100, status.fluorescence + direction * breadth * elapsed / 4)))
+  if (universeId === 'brahmalok') {
+    const status = brahmalokStatus(state, owned)
+    const direction = status.mode.id === 'memory' ? 1 : -0.22
+    const breadth = Math.max(0.25, status.activeDirections / 4)
+    writeNumber(state, 'brahmalok-manuscript-memory', Math.max(0, Math.min(100, status.manuscriptMemory + direction * breadth * elapsed / 4)))
     const events = advanceBrahmalokCommissions(
       state,
       owned,
       elapsed,
       context.archiveCount ?? 0,
-      (owned['u5-kindling-07'] ?? 0) > 0 && !context.promptsPaused,
+      (owned['brahmalok-kindling-07'] ?? 0) > 0 && !context.promptsPaused,
     )
     return { ...NO_F4_EVENTS, ...events }
-  } else if (universeId === 'tempest') {
-    const status = tempestStatus(state)
-    const productionScale = 0.55 + Math.min(1.8, Math.log10(totalOwned(owned, 'u6') + 1) * 0.42)
-    const routeScale = (1 + status.riskIndex * 0.06) / (1 + (status.length - 1) * 0.025)
-    const returningSeconds = Math.min(elapsed, status.boostRemainingSec)
+  } else if (universeId === 'vishnulok') {
+    const status = vishnulokCircuitStatus(state)
+    const productionScale = 0.55 + Math.min(1.8, Math.log10(totalOwned(owned, 'vishnulok') + 1) * 0.42)
+    const routeScale = (1 + status.burdenIndex * 0.06) / (1 + (status.length - 1) * 0.025)
+    const returningSeconds = Math.min(elapsed, status.returnRemainingSec)
     const gatheringSeconds = elapsed - returningSeconds
-    writeNumber(state, 'u6-charge', Math.min(100, status.charge + gatheringSeconds * productionScale * routeScale))
-    writeNumber(state, 'u6-boost-seconds', Math.max(0, status.boostRemainingSec - elapsed))
-    if (context.upgrades?.includes('u6-auroral-return')) {
-      const secondReturningSeconds = Math.min(elapsed, status.secondBoostRemainingSec)
+    writeNumber(state, 'vishnulok-continuity', Math.min(100, status.continuity + gatheringSeconds * productionScale * routeScale))
+    writeNumber(state, 'vishnulok-return-seconds', Math.max(0, status.returnRemainingSec - elapsed))
+    if (context.upgrades?.includes('vishnulok-auroral-return')) {
+      const secondReturningSeconds = Math.min(elapsed, status.secondReturnRemainingSec)
       const secondGatheringSeconds = elapsed - secondReturningSeconds
-      writeNumber(state, 'u6-charge-2', Math.min(100, status.secondCharge + secondGatheringSeconds * productionScale * routeScale * 0.5))
-      writeNumber(state, 'u6-boost-seconds-2', Math.max(0, status.secondBoostRemainingSec - elapsed))
+      writeNumber(state, 'vishnulok-continuity-2', Math.min(100, status.secondContinuity + secondGatheringSeconds * productionScale * routeScale * 0.5))
+      writeNumber(state, 'vishnulok-return-seconds-2', Math.max(0, status.secondReturnRemainingSec - elapsed))
     }
     const events = advanceVishnulokStrains(
       state,
       elapsed,
-      (owned['u6-kindling-08'] ?? 0) > 0 && !context.promptsPaused,
+      (owned['vishnulok-kindling-08'] ?? 0) > 0 && !context.promptsPaused,
     )
     return { ...NO_F4_EVENTS, ...events }
-  } else if (universeId === 'canticle' && (owned['u7-kindling-09'] ?? 0) > 0) {
+  } else if (universeId === 'kailash' && (owned['kailash-kindling-09'] ?? 0) > 0) {
     if (context.promptsPaused) return NO_F4_EVENTS
     const events = advanceKailashFronts(state, owned, elapsed)
     return { ...NO_F4_EVENTS, ...events }
@@ -1191,10 +1157,10 @@ export function f4RateMultiplier(
   owned: Readonly<Record<string, number>>,
   nowMs = Date.now(),
 ): number {
-  if (universeId === 'prismata') return brahmalokLawMultiplier(state, owned)
-  if (universeId === 'tempest') return vishnulokLawMultiplier(state)
-  if (universeId === 'canticle') {
-    const base = canticleStatus(state, owned, nowMs).multiplier
+  if (universeId === 'brahmalok') return brahmalokLawMultiplier(state, owned)
+  if (universeId === 'vishnulok') return vishnulokLawMultiplier(state)
+  if (universeId === 'kailash') {
+    const base = kailashStatus(state, owned, nowMs).multiplier
     return kailashFrontMultiplier(state, owned, nowMs, base)
   }
   return 1
@@ -1206,16 +1172,16 @@ export function f4ClickMultiplier(
   owned: Readonly<Record<string, number>>,
   nowMs = Date.now(),
 ): number {
-  if (universeId === 'prismata') {
-    const status = prismataStatus(state, owned)
-    return status.recipe.id === 'germination' ? 1.35 : status.recipe.id === 'proliferation' ? 1.2 : 1
+  if (universeId === 'brahmalok') {
+    const status = brahmalokStatus(state, owned)
+    return status.mode.id === 'germination' ? 1.35 : status.mode.id === 'proliferation' ? 1.2 : 1
   }
-  if (universeId === 'tempest') {
-    const status = tempestStatus(state)
-    return (status.boostRemainingSec > 0 || status.secondBoostRemainingSec > 0) && status.path.id === 'ocean-balance' ? 1.5 : 1
+  if (universeId === 'vishnulok') {
+    const status = vishnulokCircuitStatus(state)
+    return (status.returnRemainingSec > 0 || status.secondReturnRemainingSec > 0) && status.circuit.id === 'ocean-balance' ? 1.5 : 1
   }
-  if (universeId === 'canticle') {
-    const status = canticleStatus(state, owned, nowMs)
+  if (universeId === 'kailash') {
+    const status = kailashStatus(state, owned, nowMs)
     return status.role === 'emergence' || status.role === 'veil' ? 1.25 : 1
   }
   return 1

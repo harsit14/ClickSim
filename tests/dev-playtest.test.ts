@@ -12,20 +12,20 @@ import { createDevScenario } from '../src/core/dev-scenarios'
 import { applyDevCheat } from '../src/core/dev-playtest'
 import type { GameState } from '../src/engine/game.svelte'
 
-function scenario(name: 'tempest' | 'opening'): GameState {
+function scenario(name: 'vishnulok' | 'opening'): GameState {
   const result = createDevScenario(name, 10_000)
   assert.ok(result)
   return { ...result, ...result.endgame } as unknown as GameState
 }
 
 test('ready Beacon cheat completes local requirements but preserves the real ignition interaction', () => {
-  const state = scenario('tempest')
+  const state = scenario('vishnulok')
   applyDevCheat(state, 'ready-beacon', 20_000)
-  const pack = universeById('tempest')
+  const pack = universeById('vishnulok')
 
-  assert.equal(state.activeUniverse, 'tempest')
-  assert.equal(state.beacons.includes('tempest'), false)
-  assert.deepEqual(state.vesselPartsByUniverse.tempest, VESSEL_PART_IDS)
+  assert.equal(state.activeUniverse, 'vishnulok')
+  assert.equal(state.beacons.includes('vishnulok'), false)
+  assert.deepEqual(state.vesselPartsByUniverse.vishnulok, VESSEL_PART_IDS)
   assert.ok(pack.generators.every(({ id }) => state.owned[id] === 125))
   assert.deepEqual(state.challengesDone, CHALLENGES.map(({ id }) => id))
   assert.ok(pack.cabinet.items.every(({ id }) => state.curiosities.includes(id)))
@@ -66,12 +66,12 @@ test('presentation QA exposes a five-notification storm without changing progres
 })
 
 test('loka depth QA primes an authored prompt and permanent world traces', () => {
-  const state = scenario('tempest')
+  const state = scenario('vishnulok')
   assert.match(applyDevCheat(state, 'prime-loka-depth', 1_000), /Prime Loka Depth/)
-  assert.equal(state.lokaProgress['u6-routes'], 14)
-  assert.equal(state.lokaProgress['u6-returns'], 120)
-  assert.ok(state.numericLawState['u6-strain-phase'])
-  assert.ok(universeById('tempest').generators.every(({ id }) => state.owned[id] === 125))
+  assert.equal(state.lokaProgress['vishnulok-routes'], 14)
+  assert.equal(state.lokaProgress['vishnulok-returns'], 120)
+  assert.ok(state.numericLawState['vishnulok-strain-phase'])
+  assert.ok(universeById('vishnulok').generators.every(({ id }) => state.owned[id] === 125))
 })
 
 test('playtest console compiles accessibly and remains behind an explicit dev URL gate', () => {

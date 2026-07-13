@@ -19,7 +19,7 @@ const state = (
 ): VisualState => ({ label, silhouette, material, motion: stateMotion, countPresentation: 'single' })
 
 export const CLOCKWORK_HEART: HeartManifest = {
-  id: 'u4-escapement-heart',
+  id: 'clockwork-escapement-heart',
   canonicalName: 'Heart',
   localName: 'Escapement Heart',
   phenomenon: 'A ruby-pallet escapement converting deliberate touch into counted torque.',

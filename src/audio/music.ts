@@ -86,7 +86,7 @@ export const MUSIC_PROFILES: Readonly<Record<MusicMode, RealmMusicProfile>> = {
     pulseBeats: [0, 1, 2, 3], pulseType: 'square', pulseStartHz: 880, pulseEndHz: 440, pulsePeak: 0.042, pulseDecay: 0.055,
     malletDensity: 0.72, malletType: 'square', malletMultiplier: 2, bassBeats: [0, 2],
   },
-  prismata: {
+  brahmalok: {
     character: 'open dawn intervals unfolding in four measured directions', tempoBpm: 78,
     chords: [
       [146.83, 184.99, 220, 277.18], [164.81, 207.65, 246.94, 329.63],
@@ -97,7 +97,7 @@ export const MUSIC_PROFILES: Readonly<Record<MusicMode, RealmMusicProfile>> = {
     pulseBeats: [0, 2], pulseType: 'sine', pulseStartHz: 220, pulseEndHz: 146.83, pulsePeak: 0.05, pulseDecay: 0.64,
     malletDensity: 0.3, malletType: 'sine', malletMultiplier: 2, bassBeats: [0],
   },
-  tempest: {
+  vishnulok: {
     character: 'returning suspended currents around a stable low refuge', tempoBpm: 68,
     chords: [
       [196, 233.08, 293.66, 392], [174.61, 220, 261.63, 349.23],
@@ -108,7 +108,7 @@ export const MUSIC_PROFILES: Readonly<Record<MusicMode, RealmMusicProfile>> = {
     pulseBeats: [0, 2.5], pulseType: 'sine', pulseStartHz: 118, pulseEndHz: 52, pulsePeak: 0.085, pulseDecay: 0.88,
     malletDensity: 0.26, malletType: 'sine', malletMultiplier: 1.25, bassBeats: [0, 3],
   },
-  canticle: {
+  kailash: {
     character: 'austere open fifths, long air, and isolated summit tones', tempoBpm: 54,
     chords: [[146.83, 220], [130.81, 196], [110, 164.81], [98, 146.83]],
     roots: [73.42, 65.41, 55, 49], scale: [220, 293.66, 329.63, 392, 440, 587.33],
@@ -315,7 +315,7 @@ function tone(
 }
 
 function scheduleBar(ctx: AudioContext, bar: number) {
-  if (musicMode === 'canticle' && stillness) {
+  if (musicMode === 'kailash' && stillness) {
     scheduleKailashStillnessBar(ctx, bar)
     return
   }
@@ -379,8 +379,8 @@ function scheduleProfiledBar(ctx: AudioContext, bar: number, profile: RealmMusic
         type: profile.malletType,
         at: t0 + eighth * (beatSec / 2),
         attack: musicMode === 'clockwork' ? 0.003 : 0.012,
-        peak: musicMode === 'canticle' ? 0.028 : 0.045,
-        decayTo: musicMode === 'clockwork' ? 0.12 : musicMode === 'canticle' ? 1.4 : 0.62,
+        peak: musicMode === 'kailash' ? 0.028 : 0.045,
+        decayTo: musicMode === 'clockwork' ? 0.12 : musicMode === 'kailash' ? 1.4 : 0.62,
         filterHz: Math.max(900, profile.padFilterHz * 2.2),
       })
     }
@@ -392,9 +392,9 @@ function scheduleProfiledBar(ctx: AudioContext, bar: number, profile: RealmMusic
         freq: root,
         type: musicMode === 'clockwork' ? 'triangle' : 'sine',
         at: t0 + beat * beatSec,
-        attack: musicMode === 'canticle' ? 0.35 : 0.03,
+        attack: musicMode === 'kailash' ? 0.35 : 0.03,
         peak: 0.085,
-        decayTo: musicMode === 'canticle' ? 2.2 : 1.15,
+        decayTo: musicMode === 'kailash' ? 2.2 : 1.15,
         filterHz: musicMode === 'clockwork' ? 420 : undefined,
       })
     }
@@ -417,14 +417,14 @@ function scheduleProfiledBar(ctx: AudioContext, bar: number, profile: RealmMusic
   if (activeStems.choir) {
     for (const frequency of chord) {
       tone(ctx, {
-        freq: frequency * (musicMode === 'canticle' ? 2 : 4),
+        freq: frequency * (musicMode === 'kailash' ? 2 : 4),
         type: 'sine',
         at: t0,
         attack: Math.max(1.2, profile.padAttack),
-        peak: musicMode === 'canticle' ? 0.007 : 0.01,
+        peak: musicMode === 'kailash' ? 0.007 : 0.01,
         decayTo: barSec + 0.7,
         vibratoHz: musicMode === 'clockwork' ? 2.4 : 4.6,
-        vibratoDepth: musicMode === 'prismata' ? 2 : 4,
+        vibratoDepth: musicMode === 'brahmalok' ? 2 : 4,
       })
     }
   }

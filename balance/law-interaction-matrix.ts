@@ -24,7 +24,7 @@ export interface LawDominanceFinding {
 
 const CONTEXTS: readonly InteractionContext[] = ['active', 'idle', 'offline', 'challenge']
 const UNIVERSES: readonly UniverseId[] = [
-  'emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle',
+  'emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash',
 ]
 
 const WAYFINDER_SETS: readonly (readonly string[])[] = [

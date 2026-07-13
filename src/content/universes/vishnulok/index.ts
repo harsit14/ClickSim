@@ -16,10 +16,10 @@ export const VISHNULOK_STRAIN_LUMEN = {
   firstAnswer: 'The correction returned what it carried. A gold thread remains on the chart, but the refuge is still open.',
 } as const
 
-/** Vishnulok occupies the save-stable `tempest` / `u6` slot. */
+/** Canonical Vishnulok economy, presentation, and content identity. */
 export const VISHNULOK_SPEC: FutureUniverseSpec = {
-  id: 'tempest',
-  prefix: 'u6',
+  id: 'vishnulok',
+  prefix: 'vishnulok',
   name: 'Vishnulok',
   shortName: 'Vishnulok',
   epithet: 'The Sustaining Ocean',
@@ -51,9 +51,9 @@ export const VISHNULOK_SPEC: FutureUniverseSpec = {
     costMultiplier: 1.16,
   },
   signatureUpgrades: (generators) => [
-    { id: 'u6-capacitive-rain', name: 'Reciprocal Current', flavor: 'What one shelter receives, another route learns to carry.', cost: 3e7, glyph: '≋', hue: 218, unlock: { gen: generators[4].id, count: 10 }, effects: [{ kind: 'synergy', gen: generators[4].id, per: generators[1].id, value: 0.018 }] },
-    { id: 'u6-declared-grounding', name: 'Declared Correction', flavor: 'A restorative path is named before its power is welcomed.', cost: 9e10, glyph: '↶', hue: 172, unlock: { clicks: 1_200 }, effects: [{ kind: 'clickShare', value: 0.018 }, { kind: 'critMult', value: 1.5 }] },
-    { id: 'u6-auroral-return', name: 'Horizon Return', flavor: 'The completed circuit gives its strength back to the whole ocean.', cost: 6e16, glyph: '⌒', hue: 42, unlock: { gen: generators[15].id, count: 10 }, effects: [{ kind: 'globalMult', value: 1.7 }, { kind: 'critChance', value: 0.03 }] },
+    { id: 'vishnulok-capacitive-rain', name: 'Reciprocal Current', flavor: 'What one shelter receives, another route learns to carry.', cost: 3e7, glyph: '≋', hue: 218, unlock: { gen: generators[4].id, count: 10 }, effects: [{ kind: 'synergy', gen: generators[4].id, per: generators[1].id, value: 0.018 }] },
+    { id: 'vishnulok-declared-grounding', name: 'Declared Correction', flavor: 'A restorative path is named before its power is welcomed.', cost: 9e10, glyph: '↶', hue: 172, unlock: { clicks: 1_200 }, effects: [{ kind: 'clickShare', value: 0.018 }, { kind: 'critMult', value: 1.5 }] },
+    { id: 'vishnulok-auroral-return', name: 'Horizon Return', flavor: 'The completed circuit gives its strength back to the whole ocean.', cost: 6e16, glyph: '⌒', hue: 42, unlock: { gen: generators[15].id, count: 10 }, effects: [{ kind: 'globalMult', value: 1.7 }, { kind: 'critChance', value: 0.03 }] },
   ],
   kindlings: [
     kindling('Still Drop', 'One measure of continuity waits without being mistaken for inertia.', 'single drop held between two open current marks'),
@@ -148,19 +148,16 @@ export const VISHNULOK_SPEC: FutureUniverseSpec = {
   beaconSilhouette: 'calm cosmic-ocean horizon crossed by one complete gold return beneath an open refuge',
   beaconReward: 5,
   nonColorSignals: [
-    { id: 'u6-building', text: 'continuity gathering', shape: 'open segmented current', pattern: 'ascending numbered tide marks' },
-    { id: 'u6-ready', text: 'correction ready', shape: 'closed return line with open harbor', pattern: 'bold threshold mark' },
-    { id: 'u6-discharging', text: 'return in progress', shape: 'gold path crossing selected shelters', pattern: 'numbered route sequence' },
-    { id: 'u6-calm', text: 'still water', shape: 'unbroken horizon over moving depth line', pattern: 'one deep sounding mark' },
-    { id: 'u6-strain', text: 'ocean strain present', shape: 'labeled middle-water marker', pattern: 'strain-specific hatch beside its preferred route' },
-    { id: 'u6-strain-answered', text: 'matching correction ready', shape: 'open marker joined to a numbered return', pattern: 'one bridge line through the strain mark' },
-    { id: 'u6-confluence', text: 'two returns in confluence', shape: 'paired return lines', pattern: 'two numbered paths overlapping without merging' },
+    { id: 'vishnulok-building', text: 'continuity gathering', shape: 'open segmented current', pattern: 'ascending numbered tide marks' },
+    { id: 'vishnulok-ready', text: 'correction ready', shape: 'closed return line with open harbor', pattern: 'bold threshold mark' },
+    { id: 'vishnulok-discharging', text: 'return in progress', shape: 'gold path crossing selected shelters', pattern: 'numbered route sequence' },
+    { id: 'vishnulok-calm', text: 'still water', shape: 'unbroken horizon over moving depth line', pattern: 'one deep sounding mark' },
+    { id: 'vishnulok-strain', text: 'ocean strain present', shape: 'labeled middle-water marker', pattern: 'strain-specific hatch beside its preferred route' },
+    { id: 'vishnulok-strain-answered', text: 'matching correction ready', shape: 'open marker joined to a numbered return', pattern: 'one bridge line through the strain mark' },
+    { id: 'vishnulok-confluence', text: 'two returns in confluence', shape: 'paired return lines', pattern: 'two numbered paths overlapping without merging' },
   ],
 }
 
-/** @deprecated Save-slot compatibility name. */
-export const TEMPEST_SPEC = VISHNULOK_SPEC
-
 const packs = createFutureUniversePack(VISHNULOK_SPEC)
-export const TEMPEST = packs.legacy
-export const TEMPEST_V2_PACK = packs.v2
+export const VISHNULOK = packs.legacy
+export const VISHNULOK_V2_PACK = packs.v2

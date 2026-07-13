@@ -12,10 +12,10 @@ export interface TidefallMigration {
 }
 
 const MIGRATION_SOURCES = [
-  { id: 'wisp', kind: 'shoal', y: 43, restingX: 17, direction: 1 },
-  { id: 'forge', kind: 'lantern', y: 49, restingX: 78, direction: -1 },
-  { id: 'titan', kind: 'driftleaf', y: 55, restingX: 31, direction: 1 },
-  { id: 'constellation', kind: 'ray', y: 59, restingX: 68, direction: -1 },
+  { id: 'tidefall-ripple', kind: 'shoal', y: 43, restingX: 17, direction: 1 },
+  { id: 'tidefall-reef-light', kind: 'lantern', y: 49, restingX: 78, direction: -1 },
+  { id: 'tidefall-kelp-cathedral', kind: 'driftleaf', y: 55, restingX: 31, direction: 1 },
+  { id: 'tidefall-shoal-constellation', kind: 'ray', y: 59, restingX: 68, direction: -1 },
 ] as const
 
 export function tidefallMigrationForm(owned: number): 0 | 1 | 2 | 3 | 4 | 5 {

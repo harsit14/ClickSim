@@ -73,9 +73,9 @@ test('profile fixtures label all seven integrated packs as current projections',
   assert.equal(universeSimulationFixture('tidefall').source, 'current-pack-profile-projection')
   assert.equal(universeSimulationFixture('verdance').source, 'current-pack-profile-projection')
   assert.equal(universeSimulationFixture('clockwork').source, 'current-pack-profile-projection')
-  assert.equal(universeSimulationFixture('prismata').source, 'current-pack-profile-projection')
-  assert.equal(universeSimulationFixture('tempest').source, 'current-pack-profile-projection')
-  assert.equal(universeSimulationFixture('canticle').source, 'current-pack-profile-projection')
+  assert.equal(universeSimulationFixture('brahmalok').source, 'current-pack-profile-projection')
+  assert.equal(universeSimulationFixture('vishnulok').source, 'current-pack-profile-projection')
+  assert.equal(universeSimulationFixture('kailash').source, 'current-pack-profile-projection')
 })
 
 test('Beacon revisit and accessibility profile behavior match the recorded inputs', () => {

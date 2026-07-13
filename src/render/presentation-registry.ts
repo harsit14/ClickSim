@@ -5,9 +5,9 @@ import type { UniversePresentation, WorldStatePresentation } from './presentatio
 import { TIDEFALL_PRESENTATION } from './tidefall/presentation'
 import { VERDANCE_PRESENTATION } from './verdance/presentation'
 import { CLOCKWORK_PRESENTATION } from './clockwork/presentation'
-import { PRISMATA_PRESENTATION } from './prismata/presentation'
-import { TEMPEST_PRESENTATION } from './tempest/presentation'
-import { CANTICLE_PRESENTATION } from './canticle/presentation'
+import { BRAHMALOK_PRESENTATION } from './brahmalok/presentation'
+import { VISHNULOK_PRESENTATION } from './vishnulok/presentation'
+import { KAILASH_PRESENTATION } from './kailash/presentation'
 
 export interface ResolvedPresentationWorldState {
   readonly key: string
@@ -22,9 +22,9 @@ export const PRESENTATION_BY_UNIVERSE_ID: ReadonlyMap<UniverseId, UniversePresen
   ['tidefall', TIDEFALL_PRESENTATION],
   ['verdance', VERDANCE_PRESENTATION],
   ['clockwork', CLOCKWORK_PRESENTATION],
-  ['prismata', PRISMATA_PRESENTATION],
-  ['tempest', TEMPEST_PRESENTATION],
-  ['canticle', CANTICLE_PRESENTATION],
+  ['brahmalok', BRAHMALOK_PRESENTATION],
+  ['vishnulok', VISHNULOK_PRESENTATION],
+  ['kailash', KAILASH_PRESENTATION],
 ])
 
 const WORLD_STATE_RESOLVERS: Readonly<Partial<Record<UniverseId, WorldStateResolver>>> = {

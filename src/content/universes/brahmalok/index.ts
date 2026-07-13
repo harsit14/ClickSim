@@ -28,13 +28,10 @@ export const BRAHMALOK_COMMISSION_LUMEN = {
   firstAnswer: 'The page kept the revision instead of hiding it. A Folio Sketch has appeared behind the courts.',
 } as const
 
-/**
- * Brahmalok occupies the save-stable `prismata` / `u5` slot. Runtime IDs stay
- * frozen; every player-facing identity below belongs to the new realm.
- */
+/** Canonical Brahmalok economy, presentation, and content identity. */
 export const BRAHMALOK_SPEC: FutureUniverseSpec = {
-  id: 'prismata',
-  prefix: 'u5',
+  id: 'brahmalok',
+  prefix: 'brahmalok',
   name: 'Brahmalok',
   shortName: 'Brahmalok',
   epithet: 'The Unfolding Lotus',
@@ -66,9 +63,9 @@ export const BRAHMALOK_SPEC: FutureUniverseSpec = {
     costMultiplier: 1.145,
   },
   signatureUpgrades: (generators) => [
-    { id: 'u5-complementary-pairs', name: 'Fourfold Correspondence', flavor: 'A distant direction answers without becoming identical.', cost: 2e7, glyph: '⌘', hue: 38, unlock: { gen: generators[5].id, count: 10 }, effects: [{ kind: 'synergy', gen: generators[5].id, per: generators[0].id, value: 0.015 }] },
-    { id: 'u5-fluorescent-memory', name: 'Marginal Memory', flavor: 'A page keeps the revisions that its final copy could have erased.', cost: 5e10, glyph: '⌜', hue: 332, unlock: { gen: generators[7].id, count: 25 }, effects: [{ kind: 'globalMult', value: 1.35 }] },
-    { id: 'u5-labeled-white', name: 'Open Manuscript', flavor: 'The finished folio leaves one ruled space for an unforeseen hand.', cost: 3e16, glyph: '▤', hue: 206, unlock: { gen: generators[15].id, count: 10 }, effects: [{ kind: 'globalMult', value: 1.6 }, { kind: 'synergyMult', value: 1.25 }] },
+    { id: 'brahmalok-complementary-pairs', name: 'Fourfold Correspondence', flavor: 'A distant direction answers without becoming identical.', cost: 2e7, glyph: '⌘', hue: 38, unlock: { gen: generators[5].id, count: 10 }, effects: [{ kind: 'synergy', gen: generators[5].id, per: generators[0].id, value: 0.015 }] },
+    { id: 'brahmalok-fluorescent-memory', name: 'Marginal Memory', flavor: 'A page keeps the revisions that its final copy could have erased.', cost: 5e10, glyph: '⌜', hue: 332, unlock: { gen: generators[7].id, count: 25 }, effects: [{ kind: 'globalMult', value: 1.35 }] },
+    { id: 'brahmalok-labeled-white', name: 'Open Manuscript', flavor: 'The finished folio leaves one ruled space for an unforeseen hand.', cost: 3e16, glyph: '▤', hue: 206, unlock: { gen: generators[15].id, count: 10 }, effects: [{ kind: 'globalMult', value: 1.6 }, { kind: 'synergyMult', value: 1.25 }] },
   ],
   kindlings: [
     kindling('Seed Point', 'Possibility gathers at one point without being told what it must become.', 'single seed-dot held inside four unfinished compass strokes'),
@@ -145,7 +142,7 @@ export const BRAHMALOK_SPEC: FutureUniverseSpec = {
   physics: {
     randomAllowed: true,
     spectrum: {
-      bandIds: ['u5-seed', 'u5-measure', 'u5-name', 'u5-form'],
+      bandIds: ['brahmalok-seed', 'brahmalok-measure', 'brahmalok-name', 'brahmalok-form'],
       recipeIds: ['germination', 'mandala', 'memory', 'proliferation'],
       freeReconfiguration: true,
       nonColorLabelsRequired: true,
@@ -171,20 +168,17 @@ export const BRAHMALOK_SPEC: FutureUniverseSpec = {
   beaconSilhouette: 'thousand-petal abstract lotus surrounding one unoccupied manuscript square',
   beaconReward: 4,
   nonColorSignals: [
-    { id: 'u5-germination', text: 'germination', shape: 'one seed beneath a broad petal', pattern: 'solid center with rising contour' },
-    { id: 'u5-mandala', text: 'fourfold mandala', shape: 'four courts around an open square', pattern: 'dot, ruled line, diagonal hatch, clay blocks' },
-    { id: 'u5-memory', text: 'manuscript memory', shape: 'three offset folios', pattern: 'dotted earlier revisions' },
-    { id: 'u5-proliferation', text: 'proliferation', shape: 'many unequal petals', pattern: 'numbered outward whorls' },
-    { id: 'u5-commission', text: 'Folio Commission active', shape: 'ruled margin beside one asking court', pattern: 'direction pattern plus a sixty-second hold line' },
-    { id: 'u5-commission-answered', text: 'Commission answer held', shape: 'open folio with one retained sketch', pattern: 'broken outline joined to a numbered shelf mark' },
-    { id: 'u5-margin-mode', text: 'margin mode active', shape: 'second narrow folio beside the primary page', pattern: 'secondary mode pattern at reduced line weight' },
+    { id: 'brahmalok-germination', text: 'germination', shape: 'one seed beneath a broad petal', pattern: 'solid center with rising contour' },
+    { id: 'brahmalok-mandala', text: 'fourfold mandala', shape: 'four courts around an open square', pattern: 'dot, ruled line, diagonal hatch, clay blocks' },
+    { id: 'brahmalok-memory', text: 'manuscript memory', shape: 'three offset folios', pattern: 'dotted earlier revisions' },
+    { id: 'brahmalok-proliferation', text: 'proliferation', shape: 'many unequal petals', pattern: 'numbered outward whorls' },
+    { id: 'brahmalok-commission', text: 'Folio Commission active', shape: 'ruled margin beside one asking court', pattern: 'direction pattern plus a sixty-second hold line' },
+    { id: 'brahmalok-commission-answered', text: 'Commission answer held', shape: 'open folio with one retained sketch', pattern: 'broken outline joined to a numbered shelf mark' },
+    { id: 'brahmalok-margin-mode', text: 'margin mode active', shape: 'second narrow folio beside the primary page', pattern: 'secondary mode pattern at reduced line weight' },
   ],
 }
 
-/** @deprecated Save-slot compatibility name. Prefer BRAHMALOK_SPEC in new code. */
-export const PRISMATA_SPEC = BRAHMALOK_SPEC
-
 const packs = createFutureUniversePack(BRAHMALOK_SPEC)
 
-export const PRISMATA = packs.legacy
-export const PRISMATA_V2_PACK = packs.v2
+export const BRAHMALOK = packs.legacy
+export const BRAHMALOK_V2_PACK = packs.v2

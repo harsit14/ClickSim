@@ -90,23 +90,23 @@
       nearClassification: 'unexamined patent claim', emptyClassification: 'no claim filed', nearName: 'Pending mechanism', emptyName: 'Blank docket', nearFlavor: 'The diagram contains enough evidence to examine.', emptyFlavor: 'An empty patent frame promises nothing it cannot prove.',
       action: 'file', past: 'filed', heldLabel: 'ratified', sleepingLabel: 'unfiled', revealVerb: 'file', thresholdNoun: 'lifetime Ticks',
     },
-    prismata: {
+    brahmalok: {
       seal: '✤', fieldLabel: 'fourfold manuscript court', fieldTitle: 'Every first form keeps a margin', fieldDescription: 'First thought, given form, and open future remain revisable around an unoccupied lotus center.',
       countLabel: 'encountered', collectionLabel: 'folio', resonanceLabel: 'creative relation', completedLabel: 'folios open', hiddenShelfTitle: 'An Unwritten Folio', hiddenShelfCopy: 'Ruled margins wait without demanding an authorized first sentence.', unknownReward: 'unknown possibility',
       nearClassification: 'unread first-form record', emptyClassification: 'no folio encountered', nearName: 'Unread margin', emptyName: 'Unwritten leaf', nearFlavor: 'The record is ready to be encountered without becoming property.', emptyFlavor: 'A blank margin is protected possibility, not missing inventory.',
       action: 'encounter', past: 'encountered', heldLabel: 'read', sleepingLabel: 'unwritten', revealVerb: 'encounter', thresholdNoun: 'lifetime Possibility',
     },
-    tempest: {
+    vishnulok: {
       seal: '∞', fieldLabel: 'continuance sounding', fieldTitle: 'Every correction must come home', fieldDescription: 'Refuge, correction, and return remain legible as one responsive ocean relation.',
       countLabel: 'heard', collectionLabel: 'sounding', resonanceLabel: 'sustaining relation', completedLabel: 'returns complete', hiddenShelfTitle: 'An Open Harbor', hiddenShelfCopy: 'Still water keeps a threshold ready without demanding an arrival.', unknownReward: 'unknown continuity',
       nearClassification: 'unread ocean relation', emptyClassification: 'no sounding encountered', nearName: 'Unheard current', emptyName: 'Still sounding', nearFlavor: 'The route is legible enough to enter without becoming property.', emptyFlavor: 'Calm is a living condition, not an empty record.',
       action: 'hear', past: 'heard', heldLabel: 'returned', sleepingLabel: 'still', revealVerb: 'hear', thresholdNoun: 'lifetime Continuity',
     },
-    canticle: {
+    kailash: {
       seal: '△', fieldLabel: 'mountain witness', fieldTitle: 'Every ending leaves a path down', fieldDescription: 'Change, refuge, and return remain separate witnesses around one open summit.',
       countLabel: 'witnessed', collectionLabel: 'ascent', resonanceLabel: 'carried trace', completedLabel: 'paths returned', hiddenShelfTitle: 'An Unread Slope', hiddenShelfCopy: 'Snow and stone keep the next witness without demanding an ascent.', unknownReward: 'unknown trace',
       nearClassification: 'recoverable mountain witness', emptyClassification: 'no route witnessed', nearName: 'Unmarked passage', emptyName: 'Open summit', nearFlavor: 'The path is legible enough to follow without claiming it.', emptyFlavor: 'The still point remains unoccupied.',
-      action: 'witness', past: 'witnessed', heldLabel: 'carried', sleepingLabel: 'still', revealVerb: 'witness', thresholdNoun: 'lifetime Cadence',
+      action: 'witness', past: 'witnessed', heldLabel: 'carried', sleepingLabel: 'still', revealVerb: 'witness', thresholdNoun: 'lifetime Stillness',
     },
   }
   const language = $derived(CABINET_LANGUAGE[pack.id] ?? CABINET_LANGUAGE.emberlight)
@@ -193,9 +193,9 @@
   class:tidefall={pack.id === 'tidefall'}
   class:verdance={pack.id === 'verdance'}
   class:clockwork={pack.id === 'clockwork'}
-  class:prismata={pack.id === 'prismata'}
-  class:tempest={pack.id === 'tempest'}
-  class:canticle={pack.id === 'canticle'}
+  class:brahmalok={pack.id === 'brahmalok'}
+  class:vishnulok={pack.id === 'vishnulok'}
+  class:kailash={pack.id === 'kailash'}
   data-universe={pack.id}
   role="dialog"
   aria-modal="true"
@@ -320,7 +320,7 @@
                 {:else if owned && c.kind === 'letter'}
                   <div class="special letter">
                     <button class="small" aria-expanded={letterOpen} onclick={() => (letterOpen = !letterOpen)}>
-                      {letterOpen ? 'close archive record' : cabinet.id === 'tidefall' ? 'decode tide record' : cabinet.id === 'prismata' ? 'read first-form record' : cabinet.id === 'tempest' ? 'hear ocean record' : cabinet.id === 'canticle' ? 'witness mountain record' : 'decode archive record'}
+                      {letterOpen ? 'close archive record' : cabinet.id === 'tidefall' ? 'decode tide record' : cabinet.id === 'brahmalok' ? 'read first-form record' : cabinet.id === 'vishnulok' ? 'hear ocean record' : cabinet.id === 'kailash' ? 'witness mountain record' : 'decode archive record'}
                     </button>
                     {#if letterOpen}
                       <p>{cabinet.archiveRecord}</p>
@@ -603,19 +603,19 @@
     --archive-header: linear-gradient(180deg, rgba(32, 28, 18, 0.995), rgba(16, 17, 14, 0.98));
     background-size: 1.1rem 1.1rem, 1.1rem 1.1rem, auto;
   }
-  .cabinet.prismata {
+  .cabinet.brahmalok {
     --archive-accent: #e2b35f;
     --archive-surface: #171019;
     --archive-bg: repeating-linear-gradient(0deg, transparent 0 3.1rem, rgba(255,231,178,.025) 3.1rem 3.15rem), radial-gradient(circle at 50% 7%, rgba(215,163,76,.14), transparent 33%), linear-gradient(145deg, rgba(32, 23, 31, 0.99), rgba(7, 7, 15, 0.985));
     --archive-header: linear-gradient(180deg, rgba(37, 27, 34, 0.995), rgba(17, 13, 22, 0.98));
   }
-  .cabinet.tempest {
+  .cabinet.vishnulok {
     --archive-accent: #e7ce83;
     --archive-surface: #0a1530;
     --archive-bg: repeating-radial-gradient(ellipse at 50% 0, transparent 0 2.9rem, rgba(111, 145, 204, 0.035) 2.92rem 3rem), radial-gradient(ellipse at 65% 0%, rgba(231, 206, 131, 0.11), transparent 38%), linear-gradient(155deg, rgba(10, 22, 55, 0.99), rgba(3, 7, 19, 0.985));
     --archive-header: linear-gradient(180deg, rgba(15, 28, 62, 0.995), rgba(7, 14, 35, 0.98));
   }
-  .cabinet.canticle {
+  .cabinet.kailash {
     --archive-accent: #d39a70;
     --archive-surface: #101d29;
     --archive-bg: repeating-linear-gradient(145deg, transparent 0 4.2rem, rgba(99,169,191,0.025) 4.25rem 4.3rem), radial-gradient(circle at 72% 8%, rgba(232,237,242,.11), transparent 26%), linear-gradient(150deg, rgba(20, 35, 50, 0.99), rgba(5, 9, 16, 0.988));

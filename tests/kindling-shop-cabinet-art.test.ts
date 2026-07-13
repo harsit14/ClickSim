@@ -7,7 +7,7 @@ import { kindlingShopMark } from '../src/render/kindling-shop-marks'
 import { TIDEFALL_SET_PIECES } from '../src/render/tidefall/set-piece-registry'
 import type { UniverseId } from '../src/content/universes/types'
 
-const chamberWorlds: readonly UniverseId[] = ['verdance', 'clockwork', 'prismata', 'tempest', 'canticle']
+const chamberWorlds: readonly UniverseId[] = ['verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash']
 
 test('every universe has eighteen distinct Kindling shop silhouettes', () => {
   const emberlight = EMBERLIGHT_SET_PIECES.flatMap(({ stages }) => stages)
@@ -46,7 +46,7 @@ test('the Kindling shop carries distinct realm chrome without changing its contr
   assert.match(shop, /data-realm=\{pack\.id\}/)
   assert.match(shop, /--shop-etch/)
   assert.match(shop, /border-color: color-mix\(in srgb, var\(--amber\)/)
-  for (const realm of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']) {
+  for (const realm of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash']) {
     assert.match(shop, new RegExp(`\\.shop\\[data-realm='${realm}'\\]`))
   }
   assert.match(shop, /aria-label="bulk purchase amount"/)
@@ -70,7 +70,7 @@ test('Cabinet is a universe-specific archive field instead of one shared card st
   assert.match(cabinet, /\.inspection-backdrop\s*\{[^}]*z-index:\s*11;/s)
   assert.match(cabinet, /\.cabinet\s*\{[^}]*z-index:\s*12;/s)
   assert.match(cabinet, /width:\s*min\(56rem,/)
-  for (const theme of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle']) {
+  for (const theme of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash']) {
     assert.match(cabinet, new RegExp(`class:${theme}=\\{pack\\.id === '${theme}'\\}`))
   }
   for (const localName of ['relation field', 'pressure transect', 'specimen press', 'patent register', 'fourfold manuscript court', 'continuance sounding', 'mountain witness']) {

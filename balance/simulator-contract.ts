@@ -16,9 +16,9 @@ export const SIMULATOR_UNIVERSE_IDS = [
   'tidefall',
   'verdance',
   'clockwork',
-  'prismata',
-  'tempest',
-  'canticle',
+  'brahmalok',
+  'vishnulok',
+  'kailash',
 ] as const satisfies readonly UniverseId[]
 
 export type SimulatorProfileId =

@@ -5,7 +5,7 @@
     planVishnulokReturn,
     planVishnulokShelters,
     planVishnulokStrainMarker,
-  } from '../render/tempest/world-layer'
+  } from '../render/vishnulok/world-layer'
 
   let {
     objects,

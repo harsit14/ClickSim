@@ -480,7 +480,7 @@ function futureProgression(config: {
   }
 }
 
-const PRISMATA_PROGRESSION = futureProgression({
+const BRAHMALOK_PROGRESSION = futureProgression({
   overline: 'brahmalok · every first form keeps a margin',
   observatoryTitle: 'The Recomposition Court',
   mapTitle: 'The Fourfold Manuscript',
@@ -545,7 +545,7 @@ const PRISMATA_PROGRESSION = futureProgression({
   },
 })
 
-const TEMPEST_PROGRESSION = futureProgression({
+const VISHNULOK_PROGRESSION = futureProgression({
   overline: 'vishnulok · every correction must come home',
   observatoryTitle: 'The Renewal Harbor',
   mapTitle: 'The Endless Circuit',
@@ -610,18 +610,18 @@ const TEMPEST_PROGRESSION = futureProgression({
   },
 })
 
-const CANTICLE_PROGRESSION = futureProgression({
+const KAILASH_PROGRESSION = futureProgression({
   overline: 'kailash · every ending leaves a path down',
   observatoryTitle: 'The Open Summit',
   mapTitle: 'The Fivefold Ascent',
-  currency: 'Cadence',
+  currency: 'Stillness',
   epoch: 'Release',
   matter: 'Traces',
   epochCopy: {
     firstText: 'When shelter is open and the whole cycle can return, carry its surviving relations forward as Traces and release the present forms.',
     needsText: 'The mountain needs more {currency} before this ending can leave a responsible Trace.',
     readyText: 'The path downward is visible. Inspect what remains, then confirm Release when you are ready.',
-    warningText: 'Cadence, present forms, and ordinary refinements return. Traces, the chosen cycle, Mountain Witness, and deeper laws remain.',
+    warningText: 'Stillness, present forms, and ordinary refinements return. Traces, the chosen cycle, Mountain Witness, and deeper laws remain.',
     goText: 'Release this cycle',
   },
   deepTitle: 'The Open Ring',
@@ -653,7 +653,7 @@ const CANTICLE_PROGRESSION = futureProgression({
     'nova-engine': { name: 'Consent Threshold', flavor: 'Release becomes available only at the declared Trace threshold.', effect: 'automatically prepares Release at your Trace threshold; consent remains required' },
     'dawn-memory': { name: 'Snowline Memory', flavor: 'The next cycle remembers where the prior melt began.', effect: 'every new ascent begins with a measured head start' },
     'event-horizon': { name: 'Open Ring', flavor: 'The cycle is complete while one interval remains unenclosed.', effect: 'Trace gain ×2' },
-    'deep-resonance': { name: 'Carried Renewal', flavor: 'Every realm contributes a relation that can survive change.', effect: 'all Cadence ×2, forever, everywhere' },
+    'deep-resonance': { name: 'Carried Renewal', flavor: 'Every realm contributes a relation that can survive change.', effect: 'all Stillness ×2, forever, everywhere' },
   },
   deepWorks: {
     'worldseed-compression': { name: 'Mountain in a Trace', flavor: 'A whole cycle carried as one responsible relation.', effect: 'all production ×2 per layer until Remembrance' },
@@ -680,9 +680,9 @@ const PROGRESSION_BY_UNIVERSE: Record<string, UniverseProgressionIdentity> = {
   tidefall: TIDEFALL_PROGRESSION,
   verdance: VERDANCE_PROGRESSION,
   clockwork: CLOCKWORK_PROGRESSION,
-  prismata: PRISMATA_PROGRESSION,
-  tempest: TEMPEST_PROGRESSION,
-  canticle: CANTICLE_PROGRESSION,
+  brahmalok: BRAHMALOK_PROGRESSION,
+  vishnulok: VISHNULOK_PROGRESSION,
+  kailash: KAILASH_PROGRESSION,
 }
 
 export function progressionIdentity(universeId: string): UniverseProgressionIdentity {

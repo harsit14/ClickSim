@@ -10,7 +10,7 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('/node_modules/')) return 'vendor'
           if (id.includes('/src/endgame/') || id.endsWith('/src/ui/EndgameHub.svelte')) return 'endgame'
-          if (/\/src\/content\/universes\/(?:prismata|tempest|canticle|future-pack|f4-runtime)/.test(id)) return 'expansion'
+          if (/\/src\/content\/universes\/(?:brahmalok|vishnulok|kailash|future-pack|f4-runtime)/.test(id)) return 'expansion'
           return undefined
         },
       },

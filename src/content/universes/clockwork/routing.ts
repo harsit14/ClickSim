@@ -1,22 +1,22 @@
 export const CLOCKWORK_KINDLING_IDS = [
-  'u4-tooth',
-  'u4-cog',
-  'u4-ratchet',
-  'u4-escapement',
-  'u4-mainspring',
-  'u4-flywheel',
-  'u4-governor',
-  'u4-clockmaker-automaton',
-  'u4-orrery',
-  'u4-difference-engine',
-  'u4-relay-foundry',
-  'u4-meridian-clock',
-  'u4-prediction-mill',
-  'u4-city-of-hours',
-  'u4-causal-engine',
-  'u4-world-gear',
-  'u4-last-calendar',
-  'u4-great-regulator',
+  'clockwork-tooth',
+  'clockwork-cog',
+  'clockwork-ratchet',
+  'clockwork-escapement',
+  'clockwork-mainspring',
+  'clockwork-flywheel',
+  'clockwork-governor',
+  'clockwork-clockmaker-automaton',
+  'clockwork-orrery',
+  'clockwork-difference-engine',
+  'clockwork-relay-foundry',
+  'clockwork-meridian-clock',
+  'clockwork-prediction-mill',
+  'clockwork-city-of-hours',
+  'clockwork-causal-engine',
+  'clockwork-world-gear',
+  'clockwork-last-calendar',
+  'clockwork-great-regulator',
 ] as const
 
 export type ClockworkKindlingId = typeof CLOCKWORK_KINDLING_IDS[number]
@@ -295,10 +295,10 @@ export interface ClockworkRouteLoadout {
 }
 
 const DISTRIBUTED_ORDER: readonly ClockworkKindlingId[] = [
-  'u4-tooth', 'u4-difference-engine', 'u4-cog', 'u4-relay-foundry', 'u4-ratchet', 'u4-meridian-clock',
-  'u4-escapement', 'u4-prediction-mill', 'u4-mainspring', 'u4-city-of-hours', 'u4-flywheel',
-  'u4-causal-engine', 'u4-governor', 'u4-world-gear', 'u4-clockmaker-automaton', 'u4-last-calendar',
-  'u4-orrery', 'u4-great-regulator',
+  'clockwork-tooth', 'clockwork-difference-engine', 'clockwork-cog', 'clockwork-relay-foundry', 'clockwork-ratchet', 'clockwork-meridian-clock',
+  'clockwork-escapement', 'clockwork-prediction-mill', 'clockwork-mainspring', 'clockwork-city-of-hours', 'clockwork-flywheel',
+  'clockwork-causal-engine', 'clockwork-governor', 'clockwork-world-gear', 'clockwork-clockmaker-automaton', 'clockwork-last-calendar',
+  'clockwork-orrery', 'clockwork-great-regulator',
 ]
 
 export const CLOCKWORK_ROUTE_LOADOUTS: readonly [
@@ -307,22 +307,22 @@ export const CLOCKWORK_ROUTE_LOADOUTS: readonly [
   ClockworkRouteLoadout,
 ] = [
   {
-    id: 'u4-loadout-first-shift',
+    id: 'clockwork-loadout-first-shift',
     name: 'First Shift',
     description: 'A six-Kindling teaching route with one visible socket per machine.',
-    graph: pathGraph('u4-first-shift-edge', CLOCKWORK_KINDLING_IDS.slice(0, 6)),
+    graph: pathGraph('clockwork-first-shift-edge', CLOCKWORK_KINDLING_IDS.slice(0, 6)),
   },
   {
-    id: 'u4-loadout-civic-chain',
+    id: 'clockwork-loadout-civic-chain',
     name: 'Civic Chain',
     description: 'Every Kindling transmits work forward through one legible city-scale train.',
-    graph: pathGraph('u4-civic-edge', CLOCKWORK_KINDLING_IDS),
+    graph: pathGraph('clockwork-civic-edge', CLOCKWORK_KINDLING_IDS),
   },
   {
-    id: 'u4-loadout-distributed-works',
+    id: 'clockwork-loadout-distributed-works',
     name: 'Distributed Works',
     description: 'Early and late machines alternate so route inspection exposes every dependency.',
-    graph: pathGraph('u4-distributed-edge', DISTRIBUTED_ORDER),
+    graph: pathGraph('clockwork-distributed-edge', DISTRIBUTED_ORDER),
   },
 ]
 

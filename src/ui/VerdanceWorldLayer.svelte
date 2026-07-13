@@ -93,23 +93,23 @@
   .companion { bottom:.2rem;width:1.5rem;height:2rem;background:var(--forest);clip-path:polygon(44% 100%,45% 48%,5% 38%,42% 31%,48% 0,55% 31%,94% 38%,57% 49%,58% 100%);opacity:0; }
   .companion-a { left:.2rem; }.companion-b { right:.2rem;transform:scale(.72); }
 
-  [data-cohort-stage='u3-cohort-new'] .plant { height:2.5rem; }
-  [data-cohort-stage='u3-cohort-new'] .trunk { height:.75rem;width:.32rem; }
-  [data-cohort-stage='u3-cohort-new'] .branch,[data-cohort-stage='u3-cohort-new'] .crown-a,[data-cohort-stage='u3-cohort-new'] .crown-b { display:none; }
-  [data-cohort-stage='u3-cohort-new'] .crown-c { top:1rem;width:1.1rem;height:.75rem; }
-  [data-cohort-stage='u3-cohort-new'] .root-flare { width:1.2rem;height:.55rem;border-width:2px; }
-  [data-cohort-stage='u3-cohort-new'] .age-rings { width:.8rem; }
-  [data-cohort-stage='u3-cohort-rooted'] .plant { height:4.2rem; }
-  [data-cohort-stage='u3-cohort-rooted'] .trunk { height:1.55rem; }
-  [data-cohort-stage='u3-cohort-rooted'] .crown-a,[data-cohort-stage='u3-cohort-rooted'] .crown-b { top:1.8rem;width:1.65rem;height:1rem; }
-  [data-cohort-stage='u3-cohort-rooted'] .crown-c { top:.95rem;width:1.7rem;height:1.05rem; }
-  [data-cohort-stage='u3-cohort-rooted'] .age-rings { width:1.5rem;box-shadow:0 .22rem 0 color-mix(in srgb,var(--amber-growth) 50%,transparent); }
-  [data-cohort-stage='u3-cohort-mature'] .plant { transform:translateX(-50%) scale(1.04); }
-  [data-cohort-stage='u3-cohort-mature'] .age-rings { box-shadow:0 .22rem 0 color-mix(in srgb,var(--amber-growth) 60%,transparent),0 .44rem 0 color-mix(in srgb,var(--amber-growth) 34%,transparent); }
-  [data-cohort-stage='u3-cohort-ancient'] .plant { transform:translateX(-50%) scale(1.22);filter:drop-shadow(0 0 1.1rem color-mix(in srgb,var(--amber-growth) 22%,transparent)); }
-  [data-cohort-stage='u3-cohort-ancient'] .trunk { width:.7rem;height:2.7rem;background:linear-gradient(90deg,#172215,var(--amber-growth) 48%,#102016); }
-  [data-cohort-stage='u3-cohort-ancient'] .crown { background:linear-gradient(145deg,color-mix(in srgb,var(--amber-growth) 34%,var(--leaf)),var(--forest)); }
-  [data-cohort-stage='u3-cohort-ancient'] .age-rings { box-shadow:0 .2rem 0 var(--amber-growth),0 .4rem 0 color-mix(in srgb,var(--amber-growth) 72%,transparent),0 .6rem 0 color-mix(in srgb,var(--amber-growth) 42%,transparent); }
+  [data-cohort-stage='verdance-cohort-new'] .plant { height:2.5rem; }
+  [data-cohort-stage='verdance-cohort-new'] .trunk { height:.75rem;width:.32rem; }
+  [data-cohort-stage='verdance-cohort-new'] .branch,[data-cohort-stage='verdance-cohort-new'] .crown-a,[data-cohort-stage='verdance-cohort-new'] .crown-b { display:none; }
+  [data-cohort-stage='verdance-cohort-new'] .crown-c { top:1rem;width:1.1rem;height:.75rem; }
+  [data-cohort-stage='verdance-cohort-new'] .root-flare { width:1.2rem;height:.55rem;border-width:2px; }
+  [data-cohort-stage='verdance-cohort-new'] .age-rings { width:.8rem; }
+  [data-cohort-stage='verdance-cohort-rooted'] .plant { height:4.2rem; }
+  [data-cohort-stage='verdance-cohort-rooted'] .trunk { height:1.55rem; }
+  [data-cohort-stage='verdance-cohort-rooted'] .crown-a,[data-cohort-stage='verdance-cohort-rooted'] .crown-b { top:1.8rem;width:1.65rem;height:1rem; }
+  [data-cohort-stage='verdance-cohort-rooted'] .crown-c { top:.95rem;width:1.7rem;height:1.05rem; }
+  [data-cohort-stage='verdance-cohort-rooted'] .age-rings { width:1.5rem;box-shadow:0 .22rem 0 color-mix(in srgb,var(--amber-growth) 50%,transparent); }
+  [data-cohort-stage='verdance-cohort-mature'] .plant { transform:translateX(-50%) scale(1.04); }
+  [data-cohort-stage='verdance-cohort-mature'] .age-rings { box-shadow:0 .22rem 0 color-mix(in srgb,var(--amber-growth) 60%,transparent),0 .44rem 0 color-mix(in srgb,var(--amber-growth) 34%,transparent); }
+  [data-cohort-stage='verdance-cohort-ancient'] .plant { transform:translateX(-50%) scale(1.22);filter:drop-shadow(0 0 1.1rem color-mix(in srgb,var(--amber-growth) 22%,transparent)); }
+  [data-cohort-stage='verdance-cohort-ancient'] .trunk { width:.7rem;height:2.7rem;background:linear-gradient(90deg,#172215,var(--amber-growth) 48%,#102016); }
+  [data-cohort-stage='verdance-cohort-ancient'] .crown { background:linear-gradient(145deg,color-mix(in srgb,var(--amber-growth) 34%,var(--leaf)),var(--forest)); }
+  [data-cohort-stage='verdance-cohort-ancient'] .age-rings { box-shadow:0 .2rem 0 var(--amber-growth),0 .4rem 0 color-mix(in srgb,var(--amber-growth) 72%,transparent),0 .6rem 0 color-mix(in srgb,var(--amber-growth) 42%,transparent); }
   [data-ownership-threshold='10'] .companion-a,[data-ownership-threshold='25'] .companion-a,[data-ownership-threshold='50'] .companion-a,[data-ownership-threshold='100'] .companion { opacity:.78; }
   [data-ownership-threshold='25']::after,[data-ownership-threshold='50']::after,[data-ownership-threshold='100']::after { content:'';position:absolute;left:-1.5rem;right:-1.5rem;bottom:-.1rem;height:.65rem;border-top:2px solid color-mix(in srgb,var(--amber-growth) 46%,transparent);border-radius:50%; }
   [data-ownership-threshold='50'] .plant,[data-ownership-threshold='100'] .plant { filter:drop-shadow(0 0 1.25rem color-mix(in srgb,var(--growth) 30%,transparent)); }
