@@ -69,6 +69,11 @@ import {
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
 import { pushToast } from '../systems/toasts.svelte'
 import type { BeatVisual, MotionPreference, TextScale, VisualQuality } from '../core/preferences'
+import {
+  AUTO_KINDLER_FAMILIES,
+  type AutoKindlerFamily,
+  type AutoKindlerPriority,
+} from '../core/automation-preferences'
 import type { EconomyAmount } from '../content/universes/types'
 import {
   ONE_AMOUNT,
@@ -225,6 +230,8 @@ export interface GameState extends EcoState, Omit<EndgameState,
   singTotal: EconomyAmount
   collapses: number
   autoKindler: boolean
+  autoKindlerFamilies: AutoKindlerFamily[]
+  autoKindlerPriority: AutoKindlerPriority
   autoStoker: boolean
   autoNova: boolean
   autoNovaThreshold: EconomyAmount
@@ -350,6 +357,8 @@ export const game: GameState = $state({
   singTotal: ZERO_AMOUNT,
   collapses: 0,
   autoKindler: true,
+  autoKindlerFamilies: [...AUTO_KINDLER_FAMILIES],
+  autoKindlerPriority: 'efficiency',
   autoStoker: true,
   autoNova: false,
   autoNovaThreshold: ONE_AMOUNT,

@@ -99,6 +99,8 @@ function snapshot(): SaveDataV23 {
     challengeReturn: copyRunSnapshot(game.challengeReturn),
     challengesDone: [...game.challengesDone],
     autoKindler: game.autoKindler,
+    autoKindlerFamilies: [...game.autoKindlerFamilies],
+    autoKindlerPriority: game.autoKindlerPriority,
     autoStoker: game.autoStoker,
     autoNova: game.autoNova,
     autoNovaThreshold: game.autoNovaThreshold,
@@ -200,6 +202,8 @@ function apply(d: SaveDataV23) {
   )
   game.challengesDone = [...d.challengesDone]
   game.autoKindler = d.autoKindler
+  game.autoKindlerFamilies = [...d.autoKindlerFamilies]
+  game.autoKindlerPriority = d.autoKindlerPriority
   game.autoStoker = d.autoStoker
   game.autoNova = d.autoNova
   game.autoNovaThreshold = d.autoNovaThreshold

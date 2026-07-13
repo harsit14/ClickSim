@@ -188,7 +188,7 @@ const TIDEFALL_PROGRESSION: UniverseProgressionIdentity = {
     toastTitle: 'The Trench opens',
     toastBody: 'an ocean, pressed into one impossible pearl',
     upgrades: {
-      'auto-kindler': { name: 'Current Tender', flavor: 'A patient hand made from pressure and brass.', effect: 'automatically gathers the most efficient kindling, every 2s' },
+      'auto-kindler': { name: 'Current Tender', flavor: 'A patient hand made from pressure and brass.', effect: 'gathers from your chosen Kindling families and priority, every 2s' },
       'auto-stoker': { name: 'Reef Scribe', flavor: 'It reads the shoal and records the obvious next law.', effect: 'automatically inscribes the cheapest available upgrade, every 2s' },
       'nova-engine': { name: 'Ebb Engine', flavor: 'Every tide learns when to leave.', effect: 'automatically triggers Undertow when the Moon Salt gain reaches your threshold' },
       'dawn-memory': { name: 'Tide Memory', flavor: 'Some waters refuse to be emptied.', effect: 'every return to low tide begins with 40 {spark} and 5 {wisp}' },
@@ -286,7 +286,7 @@ const VERDANCE_PROGRESSION: UniverseProgressionIdentity = {
     toastTitle: 'The Root Below opens',
     toastBody: 'a forest, returned to possibility',
     upgrades: {
-      'auto-kindler': { name: 'Root Tender', flavor: 'A patient root finds the next viable seed.', effect: 'automatically plants the most efficient Kindling, every 2s' },
+      'auto-kindler': { name: 'Root Tender', flavor: 'A patient root finds the next viable seed.', effect: 'plants from your chosen Kindling families and priority, every 2s' },
       'auto-stoker': { name: 'Graft Scribe', flavor: 'Mycelium records the next useful living refinement.', effect: 'automatically inscribes the cheapest available graft, every 2s' },
       'nova-engine': { name: 'Pruning Hand', flavor: 'The grove learns to release growth at the chosen threshold.', effect: 'automatically triggers Pruning at your Memory Seed threshold' },
       'dawn-memory': { name: 'Seed Memory', flavor: 'The first soil remembers how the prior forest began.', effect: 'every new season begins with 40 {spark} and 5 {wisp}' },
@@ -376,7 +376,7 @@ const CLOCKWORK_PROGRESSION: UniverseProgressionIdentity = {
     toastTitle: 'The Zero Interval opens',
     toastBody: 'a city, held between two ticks',
     upgrades: {
-      'auto-kindler': { name: 'Automatic Oiler', flavor: 'A service arm attends the most efficient train.', effect: 'automatically installs the most efficient Kindling, every 2s' },
+      'auto-kindler': { name: 'Automatic Oiler', flavor: 'A service arm attends the selected trains.', effect: 'installs from your chosen Kindling families and priority, every 2s' },
       'auto-stoker': { name: 'Patent Clerk', flavor: 'It indexes the next affordable refinement without hiding the formula.', effect: 'automatically files the cheapest available upgrade, every 2s' },
       'nova-engine': { name: 'Rewinding Governor', flavor: 'The interval releases only at the declared Mainspring threshold.', effect: 'automatically triggers Rewinding at your Mainspring threshold' },
       'dawn-memory': { name: 'Start-State Register', flavor: 'The machine preserves an inspected beginning.', effect: 'every restart begins with 40 {spark} and 5 {wisp}' },
@@ -518,7 +518,7 @@ const PRISMATA_PROGRESSION = futureProgression({
     'parallax-engine': { name: 'Revision Engine', flavor: 'Each Recomposition gives the next mandala a more honest margin.', effect: 'Folio gain +15% per Recomposition this margin era' },
   },
   deepUpgrades: {
-    'auto-kindler': { name: 'Seed Tender', flavor: 'The court unfolds the most useful available Kindling.', effect: 'automatically unfolds the most efficient Kindling, every 2s' },
+    'auto-kindler': { name: 'Seed Tender', flavor: 'The court unfolds the selected available Kindlings.', effect: 'unfolds from your chosen Kindling families and priority, every 2s' },
     'auto-stoker': { name: 'Margin Scribe', flavor: 'The manuscript marks the next useful refinement.', effect: 'automatically inscribes the cheapest available law, every 2s' },
     'nova-engine': { name: 'Recomposition Engine', flavor: 'The folio binds only at the declared threshold.', effect: 'automatically triggers Recomposition at your Folio threshold' },
     'dawn-memory': { name: 'First-Page Memory', flavor: 'The new mandala remembers how the prior one began.', effect: 'every new manuscript begins with a measured head start' },
@@ -583,7 +583,7 @@ const TEMPEST_PROGRESSION = futureProgression({
     'parallax-engine': { name: 'Continuance Ledger', flavor: 'Each repair makes the next threshold easier to read.', effect: 'Return gain +15% per renewal this quiet era' },
   },
   deepUpgrades: {
-    'auto-kindler': { name: 'Current Tender', flavor: 'The circuit feeds the most useful connected refuge.', effect: 'automatically sustains the most efficient Kindling, every 2s' },
+    'auto-kindler': { name: 'Current Tender', flavor: 'The circuit feeds the selected connected refuges.', effect: 'sustains from your chosen Kindling families and priority, every 2s' },
     'auto-stoker': { name: 'Sounding Relay', flavor: 'The archive records the next useful sustaining refinement.', effect: 'automatically records the cheapest available law, every 2s' },
     'nova-engine': { name: 'Renewal Relay', flavor: 'The circuit closes only at the declared Return threshold.', effect: 'automatically triggers Renewal at your Return threshold' },
     'dawn-memory': { name: 'Harbor Memory', flavor: 'The new ocean remembers a stable opening refuge.', effect: 'every new ocean begins with a bounded head start' },
@@ -648,7 +648,7 @@ const CANTICLE_PROGRESSION = futureProgression({
     'parallax-engine': { name: 'Refuge Before Ending', flavor: 'Each Release prepares the next shelter sooner.', effect: 'Trace gain +15% per Release this mountain era' },
   },
   deepUpgrades: {
-    'auto-kindler': { name: 'Pass Keeper', flavor: 'The mountain tends the most useful available form.', effect: 'automatically unfolds the most efficient Kindling, every 2s' },
+    'auto-kindler': { name: 'Pass Keeper', flavor: 'The mountain tends the selected available forms.', effect: 'unfolds from your chosen Kindling families and priority, every 2s' },
     'auto-stoker': { name: 'Trace Keeper', flavor: 'The field marks the next useful refinement.', effect: 'automatically records the cheapest available law, every 2s' },
     'nova-engine': { name: 'Consent Threshold', flavor: 'Release becomes available only at the declared Trace threshold.', effect: 'automatically prepares Release at your Trace threshold; consent remains required' },
     'dawn-memory': { name: 'Snowline Memory', flavor: 'The next cycle remembers where the prior melt began.', effect: 'every new ascent begins with a measured head start' },

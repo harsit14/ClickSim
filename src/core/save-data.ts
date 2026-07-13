@@ -27,6 +27,12 @@ import {
 } from '../endgame/chronicle'
 import { emptyEndgameState, type EndgameState, type GardenEnding } from '../endgame/types'
 import type { BeatVisual, MotionPreference, TextScale, VisualQuality } from './preferences'
+import {
+  AUTO_KINDLER_FAMILIES,
+  AUTO_KINDLER_PRIORITIES,
+  type AutoKindlerFamily,
+  type AutoKindlerPriority,
+} from './automation-preferences'
 import type { Amount, SerializedAmount } from './numeric/amount'
 import {
   ONE_AMOUNT,
@@ -301,12 +307,16 @@ export interface SerializedSaveDataV22 extends Omit<SerializedSaveDataV13, 'vers
 export interface SaveDataV23 extends Omit<SaveDataV22, 'version'> {
   version: 23
   vesselPartsByUniverse: Record<string, string[]>
+  autoKindlerFamilies: AutoKindlerFamily[]
+  autoKindlerPriority: AutoKindlerPriority
   endgame: EndgameState
 }
 
 export interface SerializedSaveDataV23 extends Omit<SerializedSaveDataV22, 'version'> {
   version: 23
   vesselPartsByUniverse: Record<string, string[]>
+  autoKindlerFamilies: AutoKindlerFamily[]
+  autoKindlerPriority: AutoKindlerPriority
 }
 
 const MIGRATIONS: Record<number, (d: Record<string, unknown>) => Record<string, unknown>> = {
@@ -1216,7 +1226,23 @@ export function convertSaveV22ToV23(value: SaveDataV22): SaveDataV23 {
     ...value,
     version: 23,
     vesselPartsByUniverse: sanitizeVesselPartsByUniverse(undefined, value),
+    autoKindlerFamilies: [...AUTO_KINDLER_FAMILIES],
+    autoKindlerPriority: 'efficiency',
   }
+}
+
+function sanitizeAutoKindlerFamilies(value: unknown): AutoKindlerFamily[] {
+  if (!Array.isArray(value)) return [...AUTO_KINDLER_FAMILIES]
+  const result = [...new Set(value.filter((entry): entry is AutoKindlerFamily => (
+    typeof entry === 'number' && AUTO_KINDLER_FAMILIES.includes(entry as AutoKindlerFamily)
+  )))]
+  return result.length > 0 ? result.sort((left, right) => left - right) : [...AUTO_KINDLER_FAMILIES]
+}
+
+function sanitizeAutoKindlerPriority(value: unknown): AutoKindlerPriority {
+  return typeof value === 'string' && AUTO_KINDLER_PRIORITIES.includes(value as AutoKindlerPriority)
+    ? value as AutoKindlerPriority
+    : 'efficiency'
 }
 
 function sanitizeSaveV23(data: unknown): SaveDataV23 | null {
@@ -1229,6 +1255,8 @@ function sanitizeSaveV23(data: unknown): SaveDataV23 | null {
     ...prior,
     version: 23,
     vesselPartsByUniverse: sanitizeVesselPartsByUniverse(source.vesselPartsByUniverse, prior),
+    autoKindlerFamilies: sanitizeAutoKindlerFamilies(source.autoKindlerFamilies),
+    autoKindlerPriority: sanitizeAutoKindlerPriority(source.autoKindlerPriority),
   }
 }
 
@@ -1247,6 +1275,8 @@ export function serializeSaveDataV23(value: SaveDataV23): SerializedSaveDataV23 
     vesselPartsByUniverse: Object.fromEntries(
       Object.entries(value.vesselPartsByUniverse).map(([id, parts]) => [id, [...parts]]),
     ),
+    autoKindlerFamilies: [...value.autoKindlerFamilies],
+    autoKindlerPriority: value.autoKindlerPriority,
   }
 }
 

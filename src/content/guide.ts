@@ -239,7 +239,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Automation',
         paragraphs: [],
         bullets: [
-          'Auto-Kindler buys the generator with the strongest immediate efficiency.',
+          'Auto-Kindler buys every two seconds. In the Deep, choose any of six three-tier Kindling families and prioritize best payback, lowest cost, least owned, or highest tier. At least one family always remains eligible.',
           'Auto-Stoker buys the cheapest currently available normal upgrade.',
           'Nova Engine performs a Supernova when its displayed Stardust-gain threshold is reached.',
           'Automation is disabled inside trials so each rule set must be solved directly.',

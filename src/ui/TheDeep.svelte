@@ -41,6 +41,11 @@
     parseAmount,
     serializeAmount,
   } from '../core/numeric/amount'
+  import {
+    AUTO_KINDLER_FAMILIES,
+    autoKindlerFamilyForTier,
+    type AutoKindlerFamily,
+  } from '../core/automation-preferences'
 
   let { onclose, onrequestcollapse }: { onclose: () => void; onrequestcollapse: () => void } = $props()
   let closeButton: HTMLButtonElement
@@ -74,6 +79,20 @@
 
   function tryBuy(id: string) {
     if (buyDeepUpgrade(id)) playBuy()
+  }
+
+  function autoKindlerFamilyLabel(family: AutoKindlerFamily): string {
+    const members = pack.generators.filter(({ tier }) => autoKindlerFamilyForTier(tier) === family)
+    return `${members[0]?.tier ?? family * 3 + 1}–${members.at(-1)?.tier ?? family * 3 + 3} · ${members[0]?.name ?? 'Kindlings'}—${members.at(-1)?.name ?? ''}`
+  }
+
+  function toggleAutoKindlerFamily(family: AutoKindlerFamily) {
+    const selected = game.autoKindlerFamilies.includes(family)
+    if (selected && game.autoKindlerFamilies.length === 1) return
+    game.autoKindlerFamilies = selected
+      ? game.autoKindlerFamilies.filter((entry) => entry !== family)
+      : [...game.autoKindlerFamilies, family].sort((left, right) => left - right)
+    save()
   }
 
   function tryBuyWork(id: DeepWorkId) {
@@ -163,6 +182,33 @@
         </div>
         <em>{copy.flavor}</em>
         <span class="desc">{localize(copy.effect ?? u.desc)}</span>
+        {#if owned && u.id === 'auto-kindler'}
+          <div class="automation-routing">
+            <label>
+              <span>purchase priority</span>
+              <select bind:value={game.autoKindlerPriority} onchange={() => save()}>
+                <option value="efficiency">best payback</option>
+                <option value="cheapest">lowest cost</option>
+                <option value="least-owned">least owned</option>
+                <option value="highest-tier">highest tier</option>
+              </select>
+            </label>
+            <fieldset>
+              <legend>eligible Kindling families</legend>
+              {#each AUTO_KINDLER_FAMILIES as family}
+                <label title={autoKindlerFamilyLabel(family)}>
+                  <input
+                    type="checkbox"
+                    checked={game.autoKindlerFamilies.includes(family)}
+                    disabled={game.autoKindlerFamilies.length === 1 && game.autoKindlerFamilies.includes(family)}
+                    onchange={() => toggleAutoKindlerFamily(family)}
+                  />
+                  <span>{autoKindlerFamilyLabel(family)}</span>
+                </label>
+              {/each}
+            </fieldset>
+          </div>
+        {/if}
       </div>
     {/each}
   </div>
@@ -419,6 +465,13 @@
     font-size: 0.75rem;
     color: var(--dim);
   }
+  .automation-routing { display: grid; gap: 0.45rem; margin-top: 0.35rem; padding-top: 0.45rem; border-top: 1px solid rgba(140, 220, 255, 0.14); }
+  .automation-routing > label { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.64rem; color: var(--dim); }
+  .automation-routing select { min-width: 8rem; padding: 0.25rem 0.35rem; color: var(--text); background: #10131d; border: 1px solid rgba(140, 220, 255, 0.24); border-radius: 5px; font: inherit; font-size: 0.64rem; }
+  .automation-routing fieldset { display: grid; grid-template-columns: 1fr 1fr; gap: 0.24rem 0.45rem; min-width: 0; margin: 0; padding: 0.38rem 0.45rem 0.45rem; border: 1px solid rgba(140, 220, 255, 0.14); border-radius: 7px; }
+  .automation-routing legend { padding: 0 0.25rem; color: var(--dim); font-size: 0.58rem; }
+  .automation-routing fieldset label { display: flex; min-width: 0; align-items: center; gap: 0.25rem; color: #a9c9d8; font-size: 0.57rem; }
+  .automation-routing fieldset span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .desc { font-size: 0.74rem; color: #a9c9d8; }
   .reward { font-size: 0.74rem; color: var(--gold); }
   .buy {

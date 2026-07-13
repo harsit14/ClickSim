@@ -18,7 +18,7 @@ export const DEEP_UPGRADES: DeepUpgrade[] = [
     name: 'Auto-Kindler',
     flavor: 'Hands of the machine, warm as yours.',
     cost: 1,
-    desc: 'automatically buys the most efficient generator, every 2s',
+    desc: 'buys from your chosen Kindling families and priority, every 2s',
     toggle: true,
   },
   {
