@@ -16,6 +16,7 @@ import {
   simulateTenClicksPerSecondWithOmen,
   validateUniverseAudioDef,
 } from '../src/audio/semantic-contract'
+import { purchaseAudioProfile } from '../src/audio/sfx'
 
 const bus = (id: AudioBusId): AudioBusDef => ({
   id,
@@ -231,4 +232,19 @@ test('ten clicks per second plus an overlapping Omen remain below peak and voice
   assert.ok(first.maximumConcurrent <= 3)
   assert.ok(first.maximumEstimatedPeakDb <= MASTER_PEAK_CEILING_DB + 1e-9)
   assert.equal(first.ceilingRespected, true)
+})
+
+test('bulk purchase timbre scales without changing gain or voice count', () => {
+  const one = purchaseAudioProfile(1)
+  const ten = purchaseAudioProfile(10)
+  const max = purchaseAudioProfile(10_000)
+
+  assert.deepEqual(one, { pitchScale: 1, spacingScale: 1, decayScale: 1 })
+  assert.ok(ten.pitchScale > one.pitchScale)
+  assert.ok(ten.spacingScale < one.spacingScale)
+  assert.ok(ten.decayScale > one.decayScale)
+  assert.ok(max.pitchScale >= ten.pitchScale)
+  assert.ok(max.spacingScale <= ten.spacingScale)
+  assert.ok(max.decayScale >= ten.decayScale)
+  assert.deepEqual(purchaseAudioProfile(Number.NaN), one)
 })

@@ -16,6 +16,16 @@ export { aggregatePurchaseFeedback } from './purchase-aggregation'
 export type { PurchaseActionMode, PurchaseFeedbackInput } from './purchase-aggregation'
 
 export {
+  completedGeneratorPurchaseFeedback,
+  crossedOwnershipThreshold,
+} from './generator-purchase'
+export type {
+  CompletedGeneratorPurchaseFeedback,
+  CompletedGeneratorPurchaseInput,
+  OwnershipThreshold,
+} from './generator-purchase'
+
+export {
   INITIAL_PURCHASE_CEREMONY_TIMELINE,
   createPurchaseCeremony,
   economyAmountPresentationSignal,

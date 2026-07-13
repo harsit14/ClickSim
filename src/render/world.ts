@@ -60,6 +60,13 @@ interface FloatText {
   text: string
 }
 
+export interface PurchaseMoteOptions {
+  readonly quantity: number
+  readonly intensity: number
+  readonly reducedMotion: boolean
+  readonly milestoneThreshold?: 1 | 10 | 25 | 50 | 100 | null
+}
+
 interface QuasarTap {
   x: number
   y: number
@@ -457,29 +464,72 @@ export class World {
     }
   }
 
-  emitPurchaseMote(sourceId: string, rateDeltaText?: string) {
+  emitPurchaseMote(
+    sourceId: string,
+    rateDeltaText?: string,
+    options: PurchaseMoteOptions = {
+      quantity: 1,
+      intensity: 0.4,
+      reducedMotion: false,
+    },
+  ) {
     const generator = universeById(game.activeUniverse).generators.find(({ id }) => id === sourceId)
     if (!generator) return
     const destination = this.worldAddressForTier(generator.tier)
     const startX = this.width * 0.82
     const startY = this.height * 0.5
-    const duration = 0.4
     const recipe = particleRecipe('purchase')
-    this.addParticle({
-      x: startX,
-      y: startY,
-      vx: (destination.x - startX) / duration,
-      vy: (destination.y - startY) / duration,
-      life: 0,
-      maxLife: recipe.lifeMs[0] / 1_000,
-      size: 2.4,
-      hue: universeById(game.activeUniverse).palette.accentHue,
-      light: 82,
-      gravity: 0,
-      tail: recipe.tailLength,
-      additive: true,
-    })
-    if (rateDeltaText) this.addFloat(rateDeltaText, destination.x, destination.y)
+    const quantity = Math.max(1, Math.floor(options.quantity))
+    const intensity = Math.max(0, Math.min(1, options.intensity))
+    const moteCount = options.reducedMotion
+      ? 1
+      : Math.max(1, Math.min(5, Math.ceil(Math.log10(quantity + 1) * (1.4 + intensity))))
+    for (let index = 0; index < moteCount; index += 1) {
+      const spread = (index - (moteCount - 1) / 2) * 10
+      const duration = 0.36 + index * 0.025
+      this.addParticle({
+        x: startX,
+        y: startY + spread,
+        vx: (destination.x - startX) / duration,
+        vy: (destination.y - startY - spread) / duration,
+        life: 0,
+        maxLife: duration + 0.08,
+        size: 2.2 + intensity * 0.8,
+        hue: universeById(game.activeUniverse).palette.accentHue,
+        light: 80 + intensity * 10,
+        gravity: 0,
+        tail: recipe.tailLength,
+        additive: true,
+      })
+    }
+    if (options.milestoneThreshold !== null && options.milestoneThreshold !== undefined && !options.reducedMotion) {
+      const accent = universeById(game.activeUniverse).palette.accentHue
+      for (let index = 0; index < 8; index += 1) {
+        const angle = (index / 8) * Math.PI * 2
+        this.addParticle({
+          x: destination.x,
+          y: destination.y,
+          vx: Math.cos(angle) * (38 + intensity * 28),
+          vy: Math.sin(angle) * (38 + intensity * 28),
+          life: 0,
+          maxLife: 0.42,
+          size: 1.2 + intensity,
+          hue: accent,
+          light: 88,
+          gravity: 0,
+          additive: true,
+        })
+      }
+    }
+    const quantityText = `×${quantity.toLocaleString()}`
+    const milestoneText = options.milestoneThreshold
+      ? `threshold ${options.milestoneThreshold.toLocaleString()} · `
+      : ''
+    this.addFloat(
+      `${milestoneText}${quantityText}${rateDeltaText ? ` · ${rateDeltaText}` : ''}`,
+      destination.x,
+      destination.y,
+    )
   }
 
   private worldAddressForTier(tier: number): { readonly x: number; readonly y: number } {

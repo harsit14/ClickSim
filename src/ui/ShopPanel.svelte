@@ -18,7 +18,7 @@
   import type { EconomyAmount } from '../content/universes/types'
   import { amountFromNumber, gteAmount, ltAmount } from '../core/numeric/amount'
   import { subtractAmounts, ZERO_AMOUNT } from '../core/numeric/amount'
-  import { aggregatePurchaseFeedback } from '../feedback'
+  import { completedGeneratorPurchaseFeedback } from '../feedback'
   import { publishLivePurchase } from '../feedback/live-runtime.svelte'
   import {
     verdanceGeneratorCohortStatus,
@@ -72,7 +72,7 @@
     const bought = buyGenerator(g)
     if (bought <= 0) return
     if (!v2Pack) {
-      playBuy()
+      playBuy(1, game.activeUniverse, bought)
       return
     }
 
@@ -83,21 +83,16 @@
     const rateDelta = gteAmount(afterRate, beforeRate)
       ? subtractAmounts(afterRate, beforeRate)
       : ZERO_AMOUNT
-    const announcement = v2Pack.accessibility.announcements.find(
-      ({ messageKey }) => messageKey.endsWith('.announcement.purchase'),
-    )
-    const [event] = aggregatePurchaseFeedback({
-      eventId: `${v2Pack.id}-purchase-${g.id}-${Math.floor(occurredAtMs)}`,
-      occurredAtMs,
-      source: { universeId: v2Pack.id, kind: 'generator', id: g.id },
-      mode: bought === 1 ? 'one' : bought === 10 ? 'ten' : 'max',
+    const feedback = completedGeneratorPurchaseFeedback({
+      pack: v2Pack,
+      generator: g,
+      ownedBefore,
       quantity: bought,
       totalCost: exactCost,
-      totalRateDelta: rateDelta,
-      audioCue: v2Pack.audio.purchaseIntervalCue,
-      ...(announcement ? { announcement } : {}),
+      rateDelta,
+      occurredAtMs,
     })
-    publishLivePurchase(event, v2Pack, {
+    publishLivePurchase(feedback.event, v2Pack, {
       audio: { silence: game.sfxVolume <= 0 },
       visual: {
         reducedMotion: game.motionPreference === 'reduced',
@@ -106,6 +101,7 @@
           devicePixelRatio: window.devicePixelRatio || 1,
           hardwareConcurrency: navigator.hardwareConcurrency || 8,
         }),
+        milestoneThreshold: feedback.milestoneThreshold,
       },
     })
   }

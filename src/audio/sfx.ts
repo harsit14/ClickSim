@@ -211,13 +211,32 @@ function playTidefallClick() {
   pressure.stop(t + 0.26)
 }
 
+export interface PurchaseAudioProfile {
+  readonly pitchScale: number
+  readonly spacingScale: number
+  readonly decayScale: number
+}
+
+/** Bounded timbre profile: bulk buys read larger without adding gain or voices. */
+export function purchaseAudioProfile(quantity: number): PurchaseAudioProfile {
+  const safeQuantity = Number.isFinite(quantity) && quantity >= 1 ? Math.floor(quantity) : 1
+  const magnitude = Math.min(1, Math.log10(safeQuantity) / 2)
+  return {
+    pitchScale: 1 + magnitude * 0.16,
+    spacingScale: 1 - magnitude * 0.28,
+    decayScale: 1 + magnitude * 0.32,
+  }
+}
+
 /** Authored local purchase interval. Returns false when Web Audio is unavailable. */
 export function playBuy(
   gainScale = 1,
   mode: UniverseId = 'emberlight',
+  quantity = 1,
 ): boolean {
-  if (mode === 'tidefall') return playTidefallBuy(gainScale)
-  if (mode !== 'emberlight') return playFutureBuy(gainScale, mode)
+  const profile = purchaseAudioProfile(quantity)
+  if (mode === 'tidefall') return playTidefallBuy(gainScale, profile)
+  if (mode !== 'emberlight') return playFutureBuy(gainScale, mode, profile)
   const a = audio()
   if (!a) return false
   const t = a.ctx.currentTime
@@ -229,19 +248,23 @@ export function playBuy(
     const osc = a.ctx.createOscillator()
     const gain = a.ctx.createGain()
     osc.type = 'triangle'
-    osc.frequency.value = freq
-    const start = t + i * 0.07
+    osc.frequency.value = freq * profile.pitchScale
+    const start = t + i * 0.07 * profile.spacingScale
     gain.gain.setValueAtTime(0.0001, start)
     gain.gain.exponentialRampToValueAtTime(0.18, start + 0.015)
-    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35)
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35 * profile.decayScale)
     osc.connect(gain).connect(routedGain)
     osc.start(start)
-    osc.stop(start + 0.4)
+    osc.stop(start + 0.4 * profile.decayScale)
   })
   return true
 }
 
-function playFutureBuy(gainScale: number, mode: Exclude<UniverseId, 'emberlight' | 'tidefall'>): boolean {
+function playFutureBuy(
+  gainScale: number,
+  mode: Exclude<UniverseId, 'emberlight' | 'tidefall'>,
+  profile: PurchaseAudioProfile,
+): boolean {
   const a = audio()
   if (!a) return false
   const t = a.ctx.currentTime
@@ -259,20 +282,20 @@ function playFutureBuy(gainScale: number, mode: Exclude<UniverseId, 'emberlight'
     const oscillator = a.ctx.createOscillator()
     const gain = a.ctx.createGain()
     oscillator.type = 'sine'
-    oscillator.frequency.value = frequency
-    const start = t + index * 0.075
+    oscillator.frequency.value = frequency * profile.pitchScale
+    const start = t + index * 0.075 * profile.spacingScale
     gain.gain.setValueAtTime(0.0001, start)
     gain.gain.exponentialRampToValueAtTime(0.13, start + 0.014)
-    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.38)
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.38 * profile.decayScale)
     oscillator.connect(gain).connect(routedGain)
     oscillator.start(start)
-    oscillator.stop(start + 0.42)
+    oscillator.stop(start + 0.42 * profile.decayScale)
   })
   return true
 }
 
 /** A submerged minor-seventh rise with a short pressure return. */
-function playTidefallBuy(gainScale = 1): boolean {
+function playTidefallBuy(gainScale: number, profile: PurchaseAudioProfile): boolean {
   const a = audio()
   if (!a) return false
   const t = a.ctx.currentTime
@@ -285,17 +308,20 @@ function playTidefallBuy(gainScale = 1): boolean {
     const gain = a.ctx.createGain()
     const filter = a.ctx.createBiquadFilter()
     oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(frequency * 1.18, t + index * 0.09)
-    oscillator.frequency.exponentialRampToValueAtTime(frequency, t + 0.22 + index * 0.09)
+    const start = t + index * 0.09 * profile.spacingScale
+    oscillator.frequency.setValueAtTime(frequency * 1.18 * profile.pitchScale, start)
+    oscillator.frequency.exponentialRampToValueAtTime(
+      frequency * profile.pitchScale,
+      start + 0.22 * profile.decayScale,
+    )
     filter.type = 'lowpass'
     filter.frequency.value = 1_250
-    const start = t + index * 0.09
     gain.gain.setValueAtTime(0.0001, start)
     gain.gain.exponentialRampToValueAtTime(0.17, start + 0.018)
-    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.48)
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.48 * profile.decayScale)
     oscillator.connect(filter).connect(gain).connect(routedGain)
     oscillator.start(start)
-    oscillator.stop(start + 0.52)
+    oscillator.stop(start + 0.52 * profile.decayScale)
   })
   return true
 }

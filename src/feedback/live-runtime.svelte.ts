@@ -29,12 +29,14 @@ import {
   schedulePurchaseCeremony,
   type PurchaseCeremonyTimelineState,
 } from './purchase-ceremony'
+import type { OwnershipThreshold } from './generator-purchase'
 
 export interface LiveFeedbackPreferences {
   readonly audio: SemanticAudioRuntimePreferences
   readonly visual?: {
     readonly reducedMotion: boolean
     readonly quality: 'high' | 'balanced' | 'low'
+    readonly milestoneThreshold?: OwnershipThreshold | null
   }
 }
 
@@ -64,9 +66,10 @@ const audioSink: SemanticAudioSink = {
   play(request: AudioSinkPlayRequest): boolean {
     // The current synthesized interval is authored at the cue's target peak.
     const gainScale = 10 ** ((request.appliedPeakDb - request.cue.targetPeakDb) / 20)
-    if (request.cue.synthesisKey === 'ember-purchase-interval') return playBuy(gainScale, 'emberlight')
-    if (request.cue.synthesisKey === 'tide-purchase-minor-seventh-rise') return playBuy(gainScale, 'tidefall')
-    if (request.cue.bus === 'purchase') return playBuy(gainScale, request.event.source.universeId)
+    const quantity = request.event.kind === 'purchase' ? request.event.quantity : 1
+    if (request.cue.synthesisKey === 'ember-purchase-interval') return playBuy(gainScale, 'emberlight', quantity)
+    if (request.cue.synthesisKey === 'tide-purchase-minor-seventh-rise') return playBuy(gainScale, 'tidefall', quantity)
+    if (request.cue.bus === 'purchase') return playBuy(gainScale, request.event.source.universeId, quantity)
     return false
   },
   presentVisualFallback(request) {
@@ -147,7 +150,12 @@ export function publishLivePurchase(
     const delayMs = Math.max(0, scheduled.ceremony.startsAtMs - performance.now())
     const timer = window.setTimeout(() => {
       purchaseTimers.delete(timer)
-      worldRef()?.emitPurchaseMote(event.source.id, `+${format(event.rateDelta)}/s`)
+      worldRef()?.emitPurchaseMote(event.source.id, `+${format(event.rateDelta)}/s`, {
+        quantity: event.quantity,
+        intensity: scheduled.ceremony.intensity,
+        reducedMotion: preferences.visual?.reducedMotion ?? false,
+        milestoneThreshold: preferences.visual?.milestoneThreshold ?? null,
+      })
     }, delayMs)
     purchaseTimers.add(timer)
   }

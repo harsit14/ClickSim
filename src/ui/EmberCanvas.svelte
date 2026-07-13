@@ -12,7 +12,10 @@
   import { gamePaused } from '../core/pause.svelte'
   import { averagedRhythmReward } from '../accessibility/averaged-rhythm'
   import { resolveVisualQuality } from '../core/preferences'
-  import { amountFromNumber, gteAmount } from '../core/numeric/amount'
+  import { amountFromNumber, gteAmount, subtractAmounts, ZERO_AMOUNT } from '../core/numeric/amount'
+  import { totalRate } from '../engine/compute'
+  import { completedGeneratorPurchaseFeedback } from '../feedback'
+  import { publishLivePurchase } from '../feedback/live-runtime.svelte'
   import { kailashLongRestStatus } from '../content/universes/f4-runtime'
   import { consumeCrossingWrongClick } from '../experience/crossing-arrival.svelte'
   import {
@@ -119,7 +122,42 @@
     if (e.key >= '1' && e.key <= '9' && hasUi('shop')) {
       const shown = universeById(game.activeUniverse).generators.filter((g) => gteAmount(game.totalEarned, amountFromNumber(shownAt(g))))
       const def = shown[Number(e.key) - 1]
-      if (def && buyGenerator(def) > 0) playBuy()
+      if (!def) return
+      const ownedBefore = game.owned[def.id] ?? 0
+      const lightBefore = game.light
+      const beforeRate = totalRate(game)
+      const occurredAtMs = performance.now()
+      const bought = buyGenerator(def)
+      if (bought <= 0) return
+      const v2Pack = universeV2ById(game.activeUniverse)
+      if (!v2Pack) {
+        playBuy(1, game.activeUniverse, bought)
+        return
+      }
+      const afterRate = totalRate(game)
+      const feedback = completedGeneratorPurchaseFeedback({
+        pack: v2Pack,
+        generator: def,
+        ownedBefore,
+        quantity: bought,
+        totalCost: subtractAmounts(lightBefore, game.light),
+        rateDelta: gteAmount(afterRate, beforeRate)
+          ? subtractAmounts(afterRate, beforeRate)
+          : ZERO_AMOUNT,
+        occurredAtMs,
+      })
+      publishLivePurchase(feedback.event, v2Pack, {
+        audio: { silence: game.sfxVolume <= 0 },
+        visual: {
+          reducedMotion: game.motionPreference === 'reduced',
+          quality: resolveVisualQuality(game.visualQuality, {
+            width: window.innerWidth,
+            devicePixelRatio: window.devicePixelRatio || 1,
+            hardwareConcurrency: navigator.hardwareConcurrency || 8,
+          }),
+          milestoneThreshold: feedback.milestoneThreshold,
+        },
+      })
       return
     }
     if (e.code !== 'Space' && e.code !== 'Enter') return
