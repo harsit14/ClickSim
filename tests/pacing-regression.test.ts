@@ -21,6 +21,23 @@ test('Tidefall and Clockwork reach their first Epoch without a realm-breaking wa
   }
 })
 
+test('Verdance cannot light its Beacon before the first Pruning window', () => {
+  for (const profile of SIMULATOR_PROFILES.filter(({ id }) => (
+    id === 'casual-one-click-per-second'
+    || id === 'active-six-clicks-per-second'
+    || id === 'competent-universe-mechanic'
+  ))) {
+    const result = runCurrentPackAudit('verdance', profile, 8)
+    assert.notEqual(result.firstEpochAtMs, null, `${profile.id} never reached its first Pruning window`)
+    assert.notEqual(result.firstBeaconAtMs, null, `${profile.id} never reached the World-Tree Beacon`)
+    assert.ok(
+      result.firstBeaconAtMs! - result.firstEpochAtMs! >= 30 * 60_000,
+      `${profile.id} left less than thirty minutes for Pruning`,
+    )
+    assert.ok(result.longestPreEpochPurchaseGapMs <= 10 * 60_000, `${profile.id} has a pre-Pruning wall over 10m`)
+  }
+})
+
 test('minimal-ownership idle pacing keeps the pre-tuning passive floor', () => {
   const expected: Readonly<Record<'tidefall' | 'clockwork', number>> = {
     tidefall: 4_320,
