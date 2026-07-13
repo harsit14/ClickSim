@@ -78,6 +78,10 @@ function snapshot(): SaveDataV23 {
     beatVisual: game.beatVisual,
     textScale: game.textScale,
     highContrast: game.highContrast,
+    showAchievementPopups: game.showAchievementPopups,
+    showRoutineToasts: game.showRoutineToasts,
+    showWorldScenery: game.showWorldScenery,
+    showInteractionEffects: game.showInteractionEffects,
     buyAmount: game.buyAmount,
     starsCaught: game.starsCaught,
     bestCombo: game.bestCombo,
@@ -166,6 +170,10 @@ function apply(d: SaveDataV23) {
   game.beatVisual = d.beatVisual
   game.textScale = d.textScale
   game.highContrast = d.highContrast
+  game.showAchievementPopups = d.showAchievementPopups
+  game.showRoutineToasts = d.showRoutineToasts
+  game.showWorldScenery = d.showWorldScenery
+  game.showInteractionEffects = d.showInteractionEffects
   game.buyAmount = d.buyAmount
   game.starsCaught = d.starsCaught
   game.bestCombo = d.bestCombo

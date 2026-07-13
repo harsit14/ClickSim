@@ -55,6 +55,12 @@
   let backups = $state<SaveBackupSummary[]>([])
   let diagnosticCode = $state('')
   const activeUniverseId = $derived(universeById(game.activeUniverse).id)
+  const serenePlayEnabled = $derived(
+    !game.showAchievementPopups
+    && !game.showRoutineToasts
+    && !game.showWorldScenery
+    && !game.showInteractionEffects,
+  )
 
   const effectiveQuality = $derived(resolveVisualQuality(game.visualQuality, {
     width: window.innerWidth,
@@ -102,6 +108,22 @@
 
   function toggleContrast() {
     game.highContrast = !game.highContrast
+    save()
+  }
+
+  function togglePresentationPreference(
+    key: 'showAchievementPopups' | 'showRoutineToasts' | 'showWorldScenery' | 'showInteractionEffects',
+  ) {
+    game[key] = !game[key]
+    save()
+  }
+
+  function toggleSerenePlay() {
+    const showOptionalPresentation = serenePlayEnabled
+    game.showAchievementPopups = showOptionalPresentation
+    game.showRoutineToasts = showOptionalPresentation
+    game.showWorldScenery = showOptionalPresentation
+    game.showInteractionEffects = showOptionalPresentation
     save()
   }
 
@@ -253,6 +275,36 @@
       <span><i></i><strong>High contrast</strong></span>
       <small>Brightens secondary text and control boundaries.</small>
     </button>
+
+    <div class="preference-heading">
+      <strong>Scene and notifications</strong>
+      <small>Presentation only—gameplay, rewards, saving, and music never change.</small>
+    </div>
+
+    <button class="toggle-card serene-toggle" class:active={serenePlayEnabled} aria-pressed={serenePlayEnabled} onclick={toggleSerenePlay}>
+      <span><i></i><strong>Serene play</strong></span>
+      <small>Keep the Heart, interface, and music while clearing optional scenery and popups.</small>
+    </button>
+
+    <div class="presentation-grid">
+      <button class="toggle-card" class:active={game.showAchievementPopups} aria-pressed={game.showAchievementPopups} onclick={() => togglePresentationPreference('showAchievementPopups')}>
+        <span><i></i><strong>Achievement banners</strong></span>
+        <small>Show achievement unlocks at the top of the screen.</small>
+      </button>
+      <button class="toggle-card" class:active={game.showRoutineToasts} aria-pressed={game.showRoutineToasts} onclick={() => togglePresentationPreference('showRoutineToasts')}>
+        <span><i></i><strong>Routine notifications</strong></span>
+        <small>Show echo, automation, combo, and trial toast cards.</small>
+      </button>
+      <button class="toggle-card" class:active={game.showWorldScenery} aria-pressed={game.showWorldScenery} onclick={() => togglePresentationPreference('showWorldScenery')}>
+        <span><i></i><strong>Kindling &amp; Cabinet scenery</strong></span>
+        <small>Show owned Kindlings, archive objects, and decorative world landmarks.</small>
+      </button>
+      <button class="toggle-card" class:active={game.showInteractionEffects} aria-pressed={game.showInteractionEffects} onclick={() => togglePresentationPreference('showInteractionEffects')}>
+        <span><i></i><strong>Interaction effects</strong></span>
+        <small>Show click particles, floating gains, and purchase trails.</small>
+      </button>
+    </div>
+    <p class="presentation-note">Actionable power-ups, reset confirmations, and Lumen story lines stay available so a quiet scene never hides gameplay.</p>
 
     {#if !accessOnly}
     <button
@@ -449,6 +501,16 @@
   .toggle-card small { font-size: 0.52rem; color: var(--dim); }
   .toggle-card.active { border-color: rgba(255,217,138,0.35); }
   .toggle-card.active i { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .preference-heading { display: grid; gap: 0.12rem; margin-top: 0.85rem; padding-top: 0.7rem; border-top: 1px solid rgba(255,255,255,0.06); }
+  .preference-heading strong { color: var(--gold); font: 650 0.68rem/1.25 system-ui,sans-serif; }
+  .preference-heading small,
+  .presentation-note { color: var(--dim); font: 0.56rem/1.45 system-ui,sans-serif; }
+  .serene-toggle { min-height: 3.4rem; background: linear-gradient(105deg, color-mix(in srgb, var(--amber) 7%, transparent), rgba(255,255,255,0.02)); }
+  .serene-toggle.active { background: linear-gradient(105deg, color-mix(in srgb, var(--amber) 13%, transparent), rgba(255,255,255,0.025)); }
+  .presentation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-top: 0.4rem; }
+  .presentation-grid .toggle-card { min-height: 4.35rem; margin-top: 0; align-items: flex-start; flex-direction: column; gap: 0.34rem; }
+  .presentation-grid .toggle-card small { line-height: 1.35; }
+  .presentation-note { margin-top: 0.5rem; padding-left: 0.55rem; border-left: 2px solid color-mix(in srgb, var(--gold) 24%, transparent); }
   .quality-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
   .quality-grid button { display: flex; flex-direction: column; align-items: start; padding: 0.48rem 0.55rem; font: inherit; color: var(--text); background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; cursor: pointer; text-align: left; }
   .quality-grid button.active { border-color: rgba(255,217,138,0.38); background: rgba(255,179,92,0.07); }
@@ -493,5 +555,5 @@
   .danger-zone { border-color: rgba(255,100,100,0.12); }
   .danger { margin-top: 0.5rem; padding: 0.35rem 0.65rem; font: inherit; font-size: 0.6rem; color: #ffabab; background: rgba(255,80,80,0.055); border: 1px solid rgba(255,100,100,0.24); border-radius: 7px; cursor: pointer; }
   @media (max-width: 800px) { .panel { left: 0.55rem; right: 0.55rem; top: max(5.5rem, env(safe-area-inset-top, 0px)); bottom: calc(var(--mobile-dock-height, 4.35rem) + 0.5rem); width: auto; max-width: calc(100vw - 1.1rem); max-height: none; transform: none; z-index: 10; } @keyframes panel-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } }
-  @media (max-width: 420px) { .choice-field, .field, .shortcut-grid > div { grid-template-columns: 1fr; gap: 0.28rem; } .choice-note { grid-column: 1; } .toggle-card { align-items: start; flex-direction: column; } .quality-grid { grid-template-columns: 1fr; } .action-row { flex-wrap: wrap; } }
+  @media (max-width: 420px) { .choice-field, .field, .shortcut-grid > div { grid-template-columns: 1fr; gap: 0.28rem; } .choice-note { grid-column: 1; } .toggle-card { align-items: start; flex-direction: column; } .presentation-grid, .quality-grid { grid-template-columns: 1fr; } .presentation-grid .toggle-card { min-height: 0; } .action-row { flex-wrap: wrap; } }
 </style>

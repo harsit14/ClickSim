@@ -297,6 +297,7 @@ export class World {
   }
 
   quasarTap(text: string, crit = false, now = performance.now()) {
+    if (!game.showInteractionEffects) return
     const c = this.center
     const r = this.emberRadius(now)
     const angle = now / 1450
@@ -403,12 +404,14 @@ export class World {
   }
 
   burst(x: number, y: number, feedback: { readonly onBeat?: boolean; readonly crit?: boolean; readonly comboStreak?: number } = {}) {
+    if (!game.showInteractionEffects) return
     this.emitParticleRecipe(feedback.onBeat ? 'on-beat' : 'click', x, y, feedback.comboStreak ?? 0)
     if (feedback.crit) this.emitParticleRecipe('critical', x, y)
     if (feedback.onBeat) this.rings.push(performance.now())
   }
 
   emitParticleRecipe(kind: ParticleRecipeKind, x = this.center.x, y = this.center.y, comboStreak = 0) {
+    if (!game.showInteractionEffects) return
     const accent = universeById(game.activeUniverse).palette.accentHue
     const recipe = particleRecipe(kind)
     const [minimum, maximum] = recipe.count
@@ -473,6 +476,7 @@ export class World {
       reducedMotion: false,
     },
   ) {
+    if (!game.showInteractionEffects) return
     const generator = universeById(game.activeUniverse).generators.find(({ id }) => id === sourceId)
     if (!generator) return
     const destination = this.worldAddressForTier(generator.tier)
@@ -541,6 +545,7 @@ export class World {
   }
 
   addFloat(text: string, x: number, y: number) {
+    if (!game.showInteractionEffects) return
     const c = this.center
     let dx = x - c.x
     let dy = y - c.y
@@ -1139,14 +1144,23 @@ export class World {
   }
 
   private update(dt: number, now: number) {
+    const interactionEffects = game.showInteractionEffects
     const particlesPaused = document.documentElement.dataset.lumenImportance === 'important'
+    const optionalEffectsPaused = particlesPaused || !interactionEffects
+    if (!interactionEffects) {
+      this.particles = []
+      this.floats = []
+      this.quasarTaps = []
+      this.driftAcc = 0
+      this.idleMoteAcc = 0
+    }
     this.pulse = Math.max(0, this.pulse - dt * 6)
     const parallaxEase = 1 - Math.exp(-dt * 5)
     this.pointerDriftX += (this.targetPointerDriftX - this.pointerDriftX) * parallaxEase
     this.pointerDriftY += (this.targetPointerDriftY - this.pointerDriftY) * parallaxEase
 
     const sparkCount = game.owned.spark ?? 0
-    if (!particlesPaused && game.activeUniverse === 'emberlight' && sparkCount > 0 && this.motionScale() >= 1) {
+    if (!optionalEffectsPaused && game.activeUniverse === 'emberlight' && sparkCount > 0 && this.motionScale() >= 1) {
       // Sparks are a rate, not a landmark: more ownership means the Coal exhales
       // more frequently, while still respecting the global particle budget.
       const moteInterval = Math.max(0.16, 2 / (1 + Math.log2(sparkCount + 1) * 0.75))
@@ -1173,7 +1187,7 @@ export class World {
 
     // during collapse, everything streams into the ember
     const collapse = this.collapseProgress(now)
-    if (collapse > 0) {
+    if (!optionalEffectsPaused && collapse > 0) {
       const c = this.center
       for (const p of this.particles) {
         const dx = c.x - p.x
@@ -1212,7 +1226,7 @@ export class World {
 
     // gentle motes rising from the ember while generators work
     const rate = ratePerSec()
-    if (!particlesPaused && !isZeroAmount(rate)) {
+    if (!optionalEffectsPaused && !isZeroAmount(rate)) {
       const profile = this.currentRenderProfile()
       this.driftAcc += dt * Math.min(5, 0.6 + Math.sqrt(amountToBoundedNumber(rate)) * 0.35) * this.motionScale() * profile.moteScale
       while (this.driftAcc >= 1) {
@@ -1236,25 +1250,27 @@ export class World {
     }
 
     if (!particlesPaused) {
-      for (let i = this.particles.length - 1; i >= 0; i--) {
-        const p = this.particles[i]
-        p.life += dt
-        if (p.life >= p.maxLife) {
-          this.particles.splice(i, 1)
-          continue
-        }
-        p.x += p.vx * dt
-        p.y += p.vy * dt
-        p.vx *= 1 - dt * 1.2
-        const gravity = p.gravityAfterLife !== undefined && p.life >= p.gravityAfterLife
-          ? p.gravityAfter ?? p.gravity ?? 20
-          : p.gravity ?? 20
-        p.vy += gravity * dt
-        if (p.bounce && p.y >= this.height * 0.78 && p.vy > 0) {
-          p.y = this.height * 0.78
-          p.vy *= -0.34
-          p.vx *= 0.7
-          p.bounce = false
+      if (interactionEffects) {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i]
+          p.life += dt
+          if (p.life >= p.maxLife) {
+            this.particles.splice(i, 1)
+            continue
+          }
+          p.x += p.vx * dt
+          p.y += p.vy * dt
+          p.vx *= 1 - dt * 1.2
+          const gravity = p.gravityAfterLife !== undefined && p.life >= p.gravityAfterLife
+            ? p.gravityAfter ?? p.gravity ?? 20
+            : p.gravity ?? 20
+          p.vy += gravity * dt
+          if (p.bounce && p.y >= this.height * 0.78 && p.vy > 0) {
+            p.y = this.height * 0.78
+            p.vy *= -0.34
+            p.vx *= 0.7
+            p.bounce = false
+          }
         }
       }
     }
@@ -1590,31 +1606,33 @@ export class World {
     const collapseFade = 1 - this.collapseProgress(now)
     const reduced = this.motionScale() < 1
     const authoredManifestWorld = universeV2ById(game.activeUniverse) !== null
-    for (const g of universeById(game.activeUniverse).generators) {
-      const owned = game.owned[g.id] ?? 0
-      if (owned <= 0) continue
-      const ownedScale = 1 + Math.min(0.7, Math.log10(owned + 1) * 0.2)
-      const tierScale = 1 + Math.min(0.25, g.tier * 0.012)
-      const parallax = this.parallaxForTier(g.tier)
-      for (const gl of this.glimmersFor(g.id, owned, g.hue, g.tier)) {
-        const tw = reduced ? 0.72 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now / 700 + gl.phase))
-        const size = gl.size * ownedScale * tierScale
-        if (circleIntersectsHudClearance(
-          gl.x * width + this.pointerDriftX * parallax,
-          gl.y * height + this.pointerDriftY * parallax,
-          size + 2,
-          { width, height },
-        )) continue
-        ctx.beginPath()
-        ctx.fillStyle = `hsla(${gl.hue}, 90%, 70%, ${0.22 * tw * collapseFade})`
-        ctx.arc(
-          gl.x * width + this.pointerDriftX * parallax,
-          gl.y * height + this.pointerDriftY * parallax,
-          size * tw + 0.4,
-          0,
-          Math.PI * 2,
-        )
-        ctx.fill()
+    if (game.showWorldScenery) {
+      for (const g of universeById(game.activeUniverse).generators) {
+        const owned = game.owned[g.id] ?? 0
+        if (owned <= 0) continue
+        const ownedScale = 1 + Math.min(0.7, Math.log10(owned + 1) * 0.2)
+        const tierScale = 1 + Math.min(0.25, g.tier * 0.012)
+        const parallax = this.parallaxForTier(g.tier)
+        for (const gl of this.glimmersFor(g.id, owned, g.hue, g.tier)) {
+          const tw = reduced ? 0.72 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now / 700 + gl.phase))
+          const size = gl.size * ownedScale * tierScale
+          if (circleIntersectsHudClearance(
+            gl.x * width + this.pointerDriftX * parallax,
+            gl.y * height + this.pointerDriftY * parallax,
+            size + 2,
+            { width, height },
+          )) continue
+          ctx.beginPath()
+          ctx.fillStyle = `hsla(${gl.hue}, 90%, 70%, ${0.22 * tw * collapseFade})`
+          ctx.arc(
+            gl.x * width + this.pointerDriftX * parallax,
+            gl.y * height + this.pointerDriftY * parallax,
+            size * tw + 0.4,
+            0,
+            Math.PI * 2,
+          )
+          ctx.fill()
+        }
       }
     }
 

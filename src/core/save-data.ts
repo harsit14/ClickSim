@@ -309,6 +309,10 @@ export interface SaveDataV23 extends Omit<SaveDataV22, 'version'> {
   vesselPartsByUniverse: Record<string, string[]>
   autoKindlerFamilies: AutoKindlerFamily[]
   autoKindlerPriority: AutoKindlerPriority
+  showAchievementPopups: boolean
+  showRoutineToasts: boolean
+  showWorldScenery: boolean
+  showInteractionEffects: boolean
   endgame: EndgameState
 }
 
@@ -317,6 +321,10 @@ export interface SerializedSaveDataV23 extends Omit<SerializedSaveDataV22, 'vers
   vesselPartsByUniverse: Record<string, string[]>
   autoKindlerFamilies: AutoKindlerFamily[]
   autoKindlerPriority: AutoKindlerPriority
+  showAchievementPopups: boolean
+  showRoutineToasts: boolean
+  showWorldScenery: boolean
+  showInteractionEffects: boolean
 }
 
 const MIGRATIONS: Record<number, (d: Record<string, unknown>) => Record<string, unknown>> = {
@@ -1230,6 +1238,10 @@ export function convertSaveV22ToV23(value: SaveDataV22): SaveDataV23 {
     vesselPartsByUniverse: sanitizeVesselPartsByUniverse(undefined, value),
     autoKindlerFamilies: [...AUTO_KINDLER_FAMILIES],
     autoKindlerPriority: 'efficiency',
+    showAchievementPopups: true,
+    showRoutineToasts: true,
+    showWorldScenery: true,
+    showInteractionEffects: true,
   }
 }
 
@@ -1259,6 +1271,10 @@ function sanitizeSaveV23(data: unknown): SaveDataV23 | null {
     vesselPartsByUniverse: sanitizeVesselPartsByUniverse(source.vesselPartsByUniverse, prior),
     autoKindlerFamilies: sanitizeAutoKindlerFamilies(source.autoKindlerFamilies),
     autoKindlerPriority: sanitizeAutoKindlerPriority(source.autoKindlerPriority),
+    showAchievementPopups: booleanValue(source.showAchievementPopups, true),
+    showRoutineToasts: booleanValue(source.showRoutineToasts, true),
+    showWorldScenery: booleanValue(source.showWorldScenery, true),
+    showInteractionEffects: booleanValue(source.showInteractionEffects, true),
   }
 }
 
@@ -1279,6 +1295,10 @@ export function serializeSaveDataV23(value: SaveDataV23): SerializedSaveDataV23 
     ),
     autoKindlerFamilies: [...value.autoKindlerFamilies],
     autoKindlerPriority: value.autoKindlerPriority,
+    showAchievementPopups: value.showAchievementPopups,
+    showRoutineToasts: value.showRoutineToasts,
+    showWorldScenery: value.showWorldScenery,
+    showInteractionEffects: value.showInteractionEffects,
   }
 }
 

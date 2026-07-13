@@ -13,6 +13,8 @@ if (!index.includes('./assets/')) issues.push('index.html does not contain relat
 for (const asset of assets) if (!worker.includes(`./assets/${asset}`)) issues.push(`service worker does not precache assets/${asset}`)
 if (!worker.includes('./index.html')) issues.push('service worker does not precache index.html')
 if (!worker.includes('./i18n/en.json')) issues.push('service worker does not precache the English catalog')
+if (!worker.includes("event.request.mode === 'navigate'")) issues.push('service worker does not update navigations from the network')
+if (!worker.includes("cache.put('./index.html', response.clone())")) issues.push('service worker does not retain the latest navigation for offline fallback')
 if (!catalog.messages || Object.keys(catalog.messages).length < 900) issues.push('localization catalog is missing or incomplete')
 if (issues.length > 0) {
   console.error(issues.join('\n'))

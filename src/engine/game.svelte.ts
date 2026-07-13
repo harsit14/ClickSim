@@ -222,6 +222,10 @@ export interface GameState extends EcoState, Omit<EndgameState,
   beatVisual: BeatVisual
   textScale: TextScale
   highContrast: boolean
+  showAchievementPopups: boolean
+  showRoutineToasts: boolean
+  showWorldScenery: boolean
+  showInteractionEffects: boolean
   buyAmount: BuyAmount
   starsCaught: number
   bestCombo: number
@@ -353,6 +357,10 @@ export const game: GameState = $state({
   beatVisual: 'heart',
   textScale: 'normal',
   highContrast: false,
+  showAchievementPopups: true,
+  showRoutineToasts: true,
+  showWorldScenery: true,
+  showInteractionEffects: true,
   buyAmount: 1,
   starsCaught: 0,
   bestCombo: 0,

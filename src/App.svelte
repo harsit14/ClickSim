@@ -65,7 +65,7 @@
   import { kailashLongRestStatus } from './content/universes/f4-runtime'
   import { acquireGamePause } from './core/pause.svelte'
   import { worldRef } from './render/world-ref'
-  import { clearToasts } from './systems/toasts.svelte'
+  import { clearToasts, setToastPreferences } from './systems/toasts.svelte'
   import { resetSessionFeedback } from './feedback/reset-session'
   import type { EconomyAmount } from './content/universes/types'
   import { ZERO_AMOUNT, addAmounts, amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
@@ -621,6 +621,8 @@
     document.documentElement.dataset.contrast = game.highContrast ? 'high' : 'standard'
     document.documentElement.dataset.beatVisual = game.beatVisual
     document.documentElement.dataset.visualQuality = game.visualQuality
+    document.documentElement.dataset.worldScenery = game.showWorldScenery ? 'shown' : 'hidden'
+    document.documentElement.dataset.interactionEffects = game.showInteractionEffects ? 'shown' : 'hidden'
     const theme = THEME_BY_ID.get(game.theme) ?? THEME_BY_ID.get('ember')!
     for (const [key, value] of Object.entries(activePack.palette.vars)) {
       document.documentElement.style.setProperty(key, value)
@@ -628,6 +630,13 @@
     for (const [key, value] of Object.entries(themeVarsForUniverse(theme, activePack.id))) {
       document.documentElement.style.setProperty(key, value)
     }
+  })
+
+  $effect(() => {
+    setToastPreferences({
+      achievementPopups: game.showAchievementPopups,
+      routineToasts: game.showRoutineToasts,
+    })
   })
 
   $effect(() => {
@@ -684,7 +693,7 @@
   aria-hidden={modalActive}
 >
   <EmberCanvas {averagedRhythm} {comparativeBlind} />
-  {#if activeV2Pack}
+  {#if activeV2Pack && game.showWorldScenery}
     <ManifestWorldLayer
       pack={activeV2Pack}
       owned={game.owned}
@@ -705,7 +714,7 @@
       }}
     />
   {/if}
-  <PurchaseCeremonyLayer />
+  {#if game.showInteractionEffects}<PurchaseCeremonyLayer />{/if}
   <section class="top-stack" class:future-law={activePack.id === 'brahmalok' || activePack.id === 'vishnulok' || activePack.id === 'kailash'} aria-label="Run status and upgrades">
     {#if activePack.id !== 'brahmalok' && activePack.id !== 'vishnulok' && activePack.id !== 'kailash'}
       <Hud />
