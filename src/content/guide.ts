@@ -144,7 +144,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'The farther realms',
         paragraphs: [
           'Verdance ages each Kindling through new, rooted, mature, and ancient growth; old cohorts produce more and contribute Memory Seeds during Pruning. Clockwork removes random economics and asks you to inspect deterministic transmission routes and scheduled Maintenance Signals.',
-          'Brahmalok is the first loka beyond the restored worlds. Its Lotus of Becoming routes Kindlings through seed, measure, name, and form, then rewards focused germination, balanced mandalas, manuscript memory, or proliferation. Vishnulok gathers Continuity, then carries a declared correction through a Daily Return, Refuge Circuit, Measured Correction, or Ocean Balance route until it comes home.',
+          'At Clockwork’s Unscheduled Interval, its forecast models resolve into shadows cast by pre-existing places. Lumen uncovers older archive traces and a passage, but neither Lumen nor the machine authored the lokas they reveal. Brahmalok is the first loka beyond the restored worlds. Its Lotus of Becoming routes Kindlings through seed, measure, name, and form, then rewards focused germination, balanced mandalas, manuscript memory, or proliferation. Vishnulok gathers Continuity, then carries a declared correction through a Daily Return, Refuge Circuit, Measured Correction, or Ocean Balance route until it comes home.',
           'Kailash arranges emergence, shelter, release, veil, grace, and deliberate rests around the Still Point, then reveals an incomplete copper ring and a path down. These are game-fiction labels, not a claim of exhaustive doctrine. Every state remains complete when muted.',
         ],
       },

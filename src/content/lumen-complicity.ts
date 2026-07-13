@@ -27,7 +27,7 @@ export const LUMEN_COMPLICITY_LINES: readonly LumenComplicityLine[] = [
     id: 'act3-lumen-unwoken',
     universeIds: ['emberlight'],
     act: 'III',
-    text: 'I told you one ember remained. That was true in the way an archivist can make truth narrow. I had other worlds. I chose not to wake them.',
+    text: 'I told you one ember remained. That was true in the way an archivist can make truth narrow. I had evidence that other sleeping worlds remained. I chose not to wake them.',
     when: (game) => saw(game, 'act3-lumen-kept-column')
       && game.echoes.includes('shape-in-dark')
       && (game.owned.ember2 ?? 0) >= 1,
@@ -57,21 +57,21 @@ export const LUMEN_COMPLICITY_LINES: readonly LumenComplicityLine[] = [
     id: 'act7-lumen-storm-beacon',
     universeIds: ['tempest'],
     act: 'VII',
-    text: 'Vishnulok continues without us. I kept its archive because I believed preservation could be made into a system. I left other refuges unentered. Belief is not permission.',
+    text: 'Vishnulok continues without us. I kept the traces by which we found it because I believed preservation could be made into a system. I left other refuges unentered. Belief is not permission.',
     when: (game) => saw(game, 'act7-lumen-inevitable') && game.beacons.includes('tempest'),
   },
   {
     id: 'act7-lumen-curation-rest',
     universeIds: ['canticle'],
     act: 'VII',
-    text: 'At the Still Point, I called an archived ending complete because I had chosen what would carry through it. I kept the summit and ignored the path down.',
+    text: 'At the Still Point, I called my record of an ending complete because I had chosen what the record would carry through it. I kept the summit and ignored the path down.',
     when: (game) => game.ending !== null && game.supernovae >= 1,
   },
   {
     id: 'act7-lumen-seven',
     universeIds: ['canticle'],
     act: 'VII',
-    text: 'Four restored worlds and three lokas. I chose their order before you woke and called the sequence discovery. The Garden must include that debt without pretending I chose the whole of what they mean.',
+    text: 'Four restored worlds and three lokas. I discovered the loka traces in strata older than my archive, then chose the order in which I showed them to you and called that sequence inevitable. The Garden must include that curatorial debt without pretending I authored the places the traces revealed.',
     when: (game) => saw(game, 'act7-lumen-curation-rest') && game.beacons.includes('canticle'),
   },
 ]

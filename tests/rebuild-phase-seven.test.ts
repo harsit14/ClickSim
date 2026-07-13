@@ -222,6 +222,10 @@ test('Phase 7.4 adds eight complicity admissions across Act III and Act VII', ()
     assert.match(line.text, /\bI\b|\bmine\b|\bmy\b/i, `${line.id} shifted agency away from Lumen`)
     assert.match(line.text, /decided|chose|selected|arranged|kept|left|called|wrote/i, `${line.id} lacks an authored choice`)
   }
+  const finalAdmission = LUMEN_COMPLICITY_LINES.find(({ id }) => id === 'act7-lumen-seven')?.text ?? ''
+  assert.match(finalAdmission, /discovered the loka traces.*older than my archive/i)
+  assert.match(finalAdmission, /without pretending I authored the places/i)
+  assert.doesNotMatch(finalAdmission, /I (?:made|created|authored|ordered) (?:the )?(?:three )?lokas/i)
 })
 
 test('the complicity arc orders itself within each parked universe run', () => {

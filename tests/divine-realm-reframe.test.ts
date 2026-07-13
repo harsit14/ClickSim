@@ -76,8 +76,16 @@ test('the Unscheduled Interval is one contiguous, deterministic, accessible reve
   }
 
   const seals = CLOCKWORK_REVELATION_BEATS.find(({ id }) => id === 'three-loka-seals')
+  const forecasts = CLOCKWORK_REVELATION_BEATS.find(({ id }) => id === 'forecasts-reclassified')
+  const passage = CLOCKWORK_REVELATION_BEATS.find(({ id }) => id === 'passage-remains')
   assert.deepEqual(seals?.revealsRealms, ['brahmalok', 'vishnulok', 'kailash'])
   assert.match(seals?.accessibleDescription ?? '', /Brahmalok, Vishnulok, and Kailash/)
+  const bridge = [forecasts, seals, passage]
+    .flatMap((beat) => beat ? [beat.prose, beat.visualIntent, beat.accessibleDescription] : [])
+    .join(' ')
+  assert.match(bridge, /pre-existing|already exist|existed before/i)
+  assert.match(bridge, /older archive traces|archive discovered|helped us find/i)
+  assert.doesNotMatch(bridge, /Lumen (?:made|created|authored|ordered) (?:the )?(?:three )?lokas/i)
   assert.ok(CLOCKWORK_STORY_SCENES.some(({ id, kind }) => id === CLOCKWORK_REVELATION_TRIGGER.sceneId && kind === 'beacon'))
   assert.equal(clockworkRevelationBeatAt(0).id, 'schedule-fault')
   assert.equal(clockworkRevelationBeatAt(16_999).id, 'blank-date')
