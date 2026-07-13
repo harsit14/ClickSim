@@ -14,6 +14,8 @@ import {
 import { totalRate, universeRateMult, type EcoState } from '../src/engine/compute'
 import {
   beatDurationSec,
+  MUSIC_PROFILES,
+  musicProfileFingerprint,
   musicStillnessActive,
   setMusicMode,
   setMusicStillness,
@@ -129,6 +131,21 @@ test('universe music modes carry different rhythm grids', () => {
   setMusicMode('tidefall')
   assert.equal(beatDurationSec(), 1)
   setMusicMode('emberlight')
+})
+
+test('every realm owns a distinct harmonic and synthesized music profile', () => {
+  const ids = ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle'] as const
+  assert.equal(new Set(ids.map(musicProfileFingerprint)).size, ids.length)
+  assert.equal(new Set(ids.map((id) => MUSIC_PROFILES[id].chords.flat().join(','))).size, ids.length)
+  for (const id of ids) {
+    const profile = MUSIC_PROFILES[id]
+    assert.ok(profile.tempoBpm >= 48 && profile.tempoBpm <= 110)
+    assert.ok(profile.chords.length >= 4)
+    assert.ok(profile.chords.every((chord) => chord.length >= 2))
+    assert.ok(profile.padPeak <= 0.04)
+    assert.ok(profile.pulsePeak <= 0.14)
+    assert.ok(profile.malletDensity >= 0 && profile.malletDensity <= 1)
+  }
 })
 
 test('Kailash Long Rest switches to a reversible sparse stillness score', () => {
