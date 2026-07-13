@@ -21,6 +21,7 @@ import {
   multiplyAmountByNumber,
 } from './numeric/amount'
 import { commitV13Migration, V12_ROLLBACK_KEY } from './numeric/save-transaction'
+import { planOfflineProgress } from './offline-pacing'
 
 const KEY = 'ember.save'
 const RECENT_BACKUP_KEYS = ['ember.save.backup.1', 'ember.save.backup.2', 'ember.save.backup.3'] as const
@@ -29,8 +30,6 @@ const BACKUP_AT_KEY = 'ember.save.backup.at'
 const BACKUP_DAY_KEY = 'ember.save.backup.day'
 const SESSION_KEY = 'ember.session'
 const PRESENCE_KEY = 'ember.presence'
-const BASE_OFFLINE_EFFICIENCY = 0.5
-const BASE_OFFLINE_CAP_HOURS = 2
 const ACTIVE_SESSION_GRACE_MS = 90_000
 const MIN_OFFLINE_MS = 60_000
 const PRESENCE_INTERVAL_MS = 5_000
@@ -432,26 +431,28 @@ export function load(): EconomyAmount {
     save()
     return ZERO_AMOUNT
   }
-  const efficiency = BASE_OFFLINE_EFFICIENCY + perkBonus(game.constellation, 'offline')
-  const capSeconds = (BASE_OFFLINE_CAP_HOURS + perkBonus(game.constellation, 'offlineCap')) * 3600
   const lastMeaningfulActivity = Math.max(data.savedAt ?? now, lastActiveAt)
   const elapsedMs = Math.max(0, now - lastMeaningfulActivity)
   if (elapsedMs < MIN_OFFLINE_MS) return ZERO_AMOUNT
-  const elapsed = elapsedMs / 1000
-  const counted = Math.min(elapsed, capSeconds)
+  const offlinePlan = planOfflineProgress(
+    elapsedMs / 1000,
+    perkBonus(game.constellation, 'offline'),
+    perkBonus(game.constellation, 'offlineCap'),
+  )
+  const counted = offlinePlan.countedSeconds
   if (game.activeUniverse === 'verdance') {
     const generatorIds = universeById('verdance').generators.map(({ id }) => id)
     advanceVerdanceCohortLawState(game.numericLawState, game.owned, generatorIds, counted * 500)
     const midpointRate = ratePerSec()
     advanceVerdanceCohortLawState(game.numericLawState, game.owned, generatorIds, counted * 500)
-    return multiplyAmountByNumber(midpointRate, counted * Math.min(1, efficiency))
+    return multiplyAmountByNumber(midpointRate, offlinePlan.equivalentActiveSeconds)
   }
   if (game.activeUniverse === 'prismata' || game.activeUniverse === 'tempest') {
     const context = { upgrades: game.upgrades, archiveCount: game.curiosities.length, promptsPaused: game.challenge !== null }
     applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5, context))
     const midpointRate = ratePerSec()
     applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5, context))
-    return multiplyAmountByNumber(midpointRate, counted * Math.min(1, efficiency))
+    return multiplyAmountByNumber(midpointRate, offlinePlan.equivalentActiveSeconds)
   }
   if (game.activeUniverse === 'canticle') {
     applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted, {
@@ -460,7 +461,7 @@ export function load(): EconomyAmount {
       promptsPaused: game.challenge !== null,
     }))
   }
-  return multiplyAmountByNumber(ratePerSec(), counted * Math.min(1, efficiency))
+  return multiplyAmountByNumber(ratePerSec(), offlinePlan.equivalentActiveSeconds)
 }
 
 export function exportSave(): string {

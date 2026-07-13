@@ -391,7 +391,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Saving and offline progress',
         paragraphs: [
-          'The game autosaves locally and saves around major state changes. Returning after time away presents a collect screen for capped offline production. Constellation perks improve both offline efficiency and the maximum time counted.',
+          'The game autosaves locally and saves around major state changes. Returning after time away presents a collect screen at 50% production for up to six hours away; an eight-hour return is worth three hours of passive production. Constellation perks raise efficiency to 75% and the cap to twelve hours.',
           'Options can copy or download the entire save as a text code and import a validated code later. Export before changing browsers or clearing site data. Import replaces the current game and reloads only after the data passes migration and content validation.',
           'Three rolling recovery checkpoints are captured during play, plus one daily checkpoint. If the primary snapshot becomes unreadable, EMBER automatically tries those checkpoints from newest to oldest. They can also be restored manually from Save Safety in Options.',
         ],

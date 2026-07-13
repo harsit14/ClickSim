@@ -13,15 +13,23 @@ import {
   detectLawDominance,
   validateLawInteractionMatrix,
 } from './law-interaction-matrix'
+import { buildMeaningfulPacingStudy } from './pacing-targets'
 
 const suite = runSimulationSuite()
 const currentPackAudits = runAllCurrentPackAudits()
 const lawMatrix = buildLawInteractionMatrix()
 const lawMatrixIssues = validateLawInteractionMatrix(lawMatrix)
+const pacingStudy = buildMeaningfulPacingStudy(currentPackAudits)
 
 if (process.argv.includes('--json')) {
-  console.log(JSON.stringify({ currentPackAudits, profileSuite: suite, lawMatrix, lawMatrixIssues }, null, 2))
+  console.log(JSON.stringify({ pacingStudy, currentPackAudits, profileSuite: suite, lawMatrix, lawMatrixIssues }, null, 2))
 } else {
+  console.log(`PLAYER PACING ${pacingStudy.contract}`)
+  console.log(`  offline: 1h=${pacingStudy.offline.oneHourEquivalentHours}h equivalent · overnight=${pacingStudy.offline.overnightEquivalentHours}h · upgraded overnight=${pacingStudy.offline.upgradedOvernightEquivalentHours}h`)
+  for (const realm of pacingStudy.realms) {
+    console.log(`  ${realm.universeId}: Epoch=${realm.firstEpochHours?.toFixed(2) ?? 'unreached'}h Beacon=${realm.beaconHours?.toFixed(2) ?? 'unreached'}h post-Epoch=${realm.postEpochHours?.toFixed(2) ?? 'unreached'}h issues=${realm.issues.length}`)
+  }
+  console.log('')
   console.log(`CURRENT PACK CURVE AUDIT · ${currentPackAudits.length} actual compute profiles`)
   for (const audit of currentPackAudits) {
     console.log(
@@ -38,7 +46,7 @@ if (process.argv.includes('--json')) {
 
   for (const universeId of ['emberlight', 'tidefall', 'verdance', 'clockwork', 'prismata', 'tempest', 'canticle'] as const) {
     const fixture = universeSimulationFixture(universeId)
-    console.log(`\n${universeId} (${fixture.source}, base ${fixture.basePassiveRate}/s)`)
+    console.log(`\n${universeId} numeric stress only (${fixture.source}, base ${fixture.basePassiveRate}/s)`)
     const cases = suite.cases.filter((result) =>
       result.caseId.startsWith(`${universeId}/`)
       && result.caseId.endsWith('/first-visit/no-archive'))

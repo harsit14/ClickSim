@@ -5,7 +5,7 @@ export type PerkKind =
   | 'starDuration' // star buffs last longer (fraction)
   | 'starPair' // chance a caught star calls another
   | 'offline' // added offline efficiency (fraction, base 0.5)
-  | 'offlineCap' // added offline cap (hours, base 2)
+  | 'offlineCap' // added offline cap (hours, base 6)
   | 'comboWindow' // added beat window (seconds)
   | 'headStart' // sparks granted at each rebirth
 
@@ -76,7 +76,7 @@ export const CONSTELLATION: StarNode[] = [
     [{ kind: 'offline', value: 0.25, desc: 'offline light: 50% → 75% of full rate' }]),
   N('root', 'root-2', 'Patient Fire', 'It can wait much longer than you.', 3, 42, 64, ['root-1'],
     [],
-    [{ kind: 'offlineCap', value: 6, desc: 'offline cap: 2h → 8h' }]),
+    [{ kind: 'offlineCap', value: 6, desc: 'offline cap: 6h → 12h' }]),
   N('root', 'root-3', 'Ember Memory', 'Some sparks refuse to be unmade.', 5, 58, 66, ['root-1'],
     [],
     [{ kind: 'headStart', value: 25, desc: 'begin each rebirth with 25 Sparks' }]),
