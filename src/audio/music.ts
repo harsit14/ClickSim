@@ -55,6 +55,11 @@ let timer: ReturnType<typeof setInterval> | undefined
 let volume = 0.6
 let stems: StemFlags = { mallets: false, bass: false, strings: false, choir: false }
 let musicMode: MusicMode = 'emberlight'
+let stillness = false
+
+function musicGainTarget(): number {
+  return volume * (stillness ? 0.11 : 0.9)
+}
 
 export function beatDurationSec(): number {
   return 60 / MUSIC_BPM[musicMode]
@@ -74,7 +79,25 @@ export function setMusicMode(mode: MusicMode) {
 
 export function setMusicVolume(v: number) {
   volume = Math.max(0, Math.min(1, v))
-  if (musicGain) musicGain.gain.value = volume * 0.9
+  if (musicGain) musicGain.gain.value = musicGainTarget()
+}
+
+export function musicStillnessActive(): boolean {
+  return stillness
+}
+
+/** Fades the ordinary score down while Long Rest keeps only its sparse summit tone. */
+export function setMusicStillness(active: boolean): void {
+  if (stillness === active) return
+  stillness = active
+  if (!musicGain) return
+  const a = getAudio()
+  if (!a) return
+  const now = a.ctx.currentTime
+  const current = Math.max(0.0001, musicGain.gain.value)
+  musicGain.gain.cancelScheduledValues(now)
+  musicGain.gain.setValueAtTime(current, now)
+  musicGain.gain.linearRampToValueAtTime(Math.max(0.0001, musicGainTarget()), now + (active ? 1.8 : 2.4))
 }
 
 export function setStems(f: StemFlags) {
@@ -97,7 +120,7 @@ export function startMusic() {
     musicGain = a.ctx.createGain()
     musicGain.connect(a.ctx.destination)
   }
-  musicGain.gain.value = volume * 0.9
+  musicGain.gain.value = musicGainTarget()
   startAt = a.ctx.currentTime + 0.2
   nextBar = 0
   playing = true
@@ -198,6 +221,10 @@ function tone(
 }
 
 function scheduleBar(ctx: AudioContext, bar: number) {
+  if (musicMode === 'canticle' && stillness) {
+    scheduleKailashStillnessBar(ctx, bar)
+    return
+  }
   if (musicMode === 'tidefall' || musicMode === 'tempest') {
     scheduleTidefallBar(ctx, bar)
     return
@@ -277,6 +304,20 @@ function scheduleBar(ctx: AudioContext, bar: number) {
       })
     }
   }
+}
+
+function scheduleKailashStillnessBar(ctx: AudioContext, bar: number) {
+  if (bar % 4 !== 0) return
+  const barSec = beatDurationSec() * 4
+  tone(ctx, {
+    freq: 392,
+    type: 'sine',
+    at: startAt + bar * barSec,
+    attack: 0.035,
+    peak: 0.045,
+    decayTo: Math.min(3.2, barSec),
+    filterHz: 1_400,
+  })
 }
 
 function scheduleTidefallBar(ctx: AudioContext, bar: number) {

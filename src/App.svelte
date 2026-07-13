@@ -55,12 +55,14 @@
   import {
     isPlaying,
     setMusicMode,
+    setMusicStillness,
     setStems,
     startMusic,
   } from './audio/music'
   import { THEME_BY_ID, themeVarsForUniverse } from './content/themes'
   import { progressionIdentity } from './content/universe-progression'
   import { universeById, universeV2ById } from './content/universes'
+  import { kailashLongRestStatus } from './content/universes/f4-runtime'
   import { acquireGamePause } from './core/pause.svelte'
   import { worldRef } from './render/world-ref'
   import { clearToasts } from './systems/toasts.svelte'
@@ -524,6 +526,10 @@
   // vestments: apply the chosen accent theme to the document root
   $effect(() => {
     setMusicMode(activePack.audio.music)
+    setMusicStillness(
+      activePack.id === 'canticle'
+      && kailashLongRestStatus(game.numericLawState).resting,
+    )
     document.documentElement.dataset.motion = game.motionPreference
     document.documentElement.dataset.textScale = game.textScale
     document.documentElement.dataset.contrast = game.highContrast ? 'high' : 'standard'

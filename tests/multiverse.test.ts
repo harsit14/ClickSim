@@ -12,7 +12,12 @@ import {
   WAYFINDER_NODES,
 } from '../src/content/wayfinder'
 import { totalRate, universeRateMult, type EcoState } from '../src/engine/compute'
-import { beatDurationSec, setMusicMode } from '../src/audio/music'
+import {
+  beatDurationSec,
+  musicStillnessActive,
+  setMusicMode,
+  setMusicStillness,
+} from '../src/audio/music'
 import { CONSTELLATION } from '../src/content/constellation'
 import { DEEP_UPGRADES } from '../src/content/deep'
 import { VESSEL_PARTS } from '../src/content/vessel'
@@ -123,6 +128,15 @@ test('universe music modes carry different rhythm grids', () => {
   assert.ok(Math.abs(beatDurationSec() - 60 / 72) < 1e-12)
   setMusicMode('tidefall')
   assert.equal(beatDurationSec(), 1)
+  setMusicMode('emberlight')
+})
+
+test('Kailash Long Rest switches to a reversible sparse stillness score', () => {
+  setMusicMode('canticle')
+  setMusicStillness(true)
+  assert.equal(musicStillnessActive(), true)
+  setMusicStillness(false)
+  assert.equal(musicStillnessActive(), false)
   setMusicMode('emberlight')
 })
 
