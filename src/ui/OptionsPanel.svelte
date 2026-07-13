@@ -293,8 +293,20 @@
       <p><kbd>F1</kbd> reopens this access menu. <kbd>Esc</kbd> closes it. No accessibility choice changes rewards or reveals a locked system.</p>
     </section>
   {:else}
+  <section class="settings-section controls-reference" aria-labelledby="keyboard-controls-title">
+    <div class="section-title"><span>03</span><div><h3 id="keyboard-controls-title">Keyboard controls</h3><p>Shortcuts work when focus is not inside a control.</p></div></div>
+    <dl class="shortcut-grid">
+      <div><dt><kbd>Space</kbd> <kbd>Enter</kbd></dt><dd>Kindle the Heart</dd></div>
+      <div><dt><kbd>1</kbd>–<kbd>9</kbd></dt><dd>Buy visible Kindling</dd></div>
+      <div><dt><kbd>B</kbd></dt><dd>Cycle bulk amount</dd></div>
+      <div><dt><kbd>G</kbd> <kbd>I</kbd> <kbd>O</kbd></dt><dd>Guide, records, options</dd></div>
+      <div><dt><kbd>C</kbd> <kbd>V</kbd> <kbd>S</kbd> <kbd>D</kbd></dt><dd>Cabinet, Vessel, Epoch, Deep</dd></div>
+      <div><dt><kbd>E</kbd> <kbd>L</kbd> <kbd>Esc</kbd></dt><dd>Story, Legacy, close panel</dd></div>
+    </dl>
+  </section>
+
   <section class="settings-section">
-    <div class="section-title"><span>03</span><div><h3>Performance</h3><p>Auto currently resolves to <strong>{effectiveQuality}</strong>.</p></div></div>
+    <div class="section-title"><span>04</span><div><h3>Performance</h3><p>Auto currently resolves to <strong>{effectiveQuality}</strong>.</p></div></div>
     <div class="quality-grid" role="group" aria-label="visual quality">
       {#each [
         ['auto', 'Auto', 'Adapts to screen and CPU'],
@@ -310,7 +322,7 @@
   </section>
 
   <section class="settings-section vestments">
-    <div class="section-title"><span>04</span><div><h3>Vestment</h3><p>Cosmetic only. Universe identity remains intact.</p></div></div>
+    <div class="section-title"><span>05</span><div><h3>Vestment</h3><p>Cosmetic only. Universe identity remains intact.</p></div></div>
     <div class="swatches">
       {#each THEMES as t (t.id)}
         {@const open = t.unlocked(game)}
@@ -332,7 +344,7 @@
   {/if}
 
   <section class="settings-section save-section">
-    <div class="section-title"><span>{accessOnly ? '04' : '05'}</span><div><h3>Save safety</h3><p>Autosaves include three rolling checkpoints and one daily backup.</p></div></div>
+    <div class="section-title"><span>{accessOnly ? '04' : '06'}</span><div><h3>Save safety</h3><p>Autosaves include three rolling checkpoints and one daily backup.</p></div></div>
     <div class="action-row">
       <button class="action" onclick={doExport}>Copy export</button>
       <button class="action" onclick={doDownload}>Download file</button>
@@ -374,7 +386,7 @@
 
   {#if !accessOnly}
   <section class="settings-section playtest-section">
-    <div class="section-title"><span>06</span><div><h3>Playtest report</h3><p>{renderHealth.fps > 0 ? `${renderHealth.fps.toFixed(0)} FPS · ${renderHealth.profile}${renderHealth.degraded ? ' · auto-protected' : ''}` : 'Measuring render performance…'}</p></div></div>
+    <div class="section-title"><span>07</span><div><h3>Playtest report</h3><p>{renderHealth.fps > 0 ? `${renderHealth.fps.toFixed(0)} FPS · ${renderHealth.profile}${renderHealth.degraded ? ' · auto-protected' : ''}` : 'Measuring render performance…'}</p></div></div>
     <p class="privacy-note">Copies a compact diagnostic snapshot of settings, rendering, and progression totals. It never includes the save code.</p>
     <button class="action" onclick={copyDiagnostics}>Copy playtest report</button>
     {#if diagnosticCode}
@@ -465,6 +477,11 @@
   .message { margin: 0.55rem 0; padding: 0.48rem 0.55rem; font: italic 0.65rem/1.45 Georgia,serif; color: var(--gold); background: rgba(255,179,92,0.045); border-left: 2px solid var(--amber); }
   .privacy-note { margin: -0.15rem 0 0.55rem; font: 0.56rem/1.45 Georgia,serif; color: var(--dim); }
   .first-light > p { margin: 0.42rem 0; color: var(--dim); font: 0.6875rem/1.5 system-ui, sans-serif; }
+  .shortcut-grid { display: grid; gap: 0.3rem; margin: 0; }
+  .shortcut-grid > div { display: grid; grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1.2fr); align-items: center; gap: 0.55rem; padding: 0.36rem 0.45rem; background: rgba(255,255,255,0.022); border: 1px solid rgba(255,255,255,0.055); border-radius: 0.45rem; }
+  .shortcut-grid dt, .shortcut-grid dd { min-width: 0; margin: 0; }
+  .shortcut-grid dt { display: flex; flex-wrap: wrap; gap: 0.2rem; }
+  .shortcut-grid dd { color: var(--dim); font: 0.6rem/1.35 system-ui, sans-serif; }
   kbd { padding: 0.08rem 0.28rem; color: var(--gold); background: color-mix(in srgb, var(--panel) 82%, black); border: 1px solid color-mix(in srgb, var(--gold) 24%, transparent); border-radius: 0.25rem; font: 650 0.6875rem/1.2 ui-monospace, monospace; }
   .credits, .danger-zone { margin-top: 0.55rem; padding: 0.58rem 0.65rem; border: 1px solid rgba(255,255,255,0.065); border-radius: 9px; background: rgba(0,0,0,0.16); }
   .credits > strong { display: block; margin-top: 0.55rem; font: 0.72rem Georgia,serif; color: var(--gold); }
@@ -474,5 +491,5 @@
   .danger-zone { border-color: rgba(255,100,100,0.12); }
   .danger { margin-top: 0.5rem; padding: 0.35rem 0.65rem; font: inherit; font-size: 0.6rem; color: #ffabab; background: rgba(255,80,80,0.055); border: 1px solid rgba(255,100,100,0.24); border-radius: 7px; cursor: pointer; }
   @media (max-width: 720px) { .panel { left: 0.55rem; right: 0.55rem; top: 7rem; bottom: 0.55rem; width: auto; max-width: calc(100vw - 1.1rem); max-height: none; transform: none; z-index: 10; } @keyframes panel-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } }
-  @media (max-width: 420px) { .choice-field, .field { grid-template-columns: 1fr; gap: 0.28rem; } .toggle-card { align-items: start; flex-direction: column; } .quality-grid { grid-template-columns: 1fr; } .action-row { flex-wrap: wrap; } }
+  @media (max-width: 420px) { .choice-field, .field, .shortcut-grid > div { grid-template-columns: 1fr; gap: 0.28rem; } .toggle-card { align-items: start; flex-direction: column; } .quality-grid { grid-template-columns: 1fr; } .action-row { flex-wrap: wrap; } }
 </style>

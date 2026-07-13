@@ -32,6 +32,7 @@
   let world: World | undefined
   let hovering = $state(false)
   let firstKindleResponse = $state('')
+  let keyboardKindleUsed = $state(false)
   let quasarRaf = 0
   let lastQuasarBeat = -1
 
@@ -163,6 +164,7 @@
     if (e.code !== 'Space' && e.code !== 'Enter') return
     if (!world) return
     e.preventDefault()
+    keyboardKindleUsed = true
     const c = world.center
     handleClick(c.x, c.y)
   }
@@ -204,6 +206,11 @@
 ></canvas>
 <div class="keyboard-focus" aria-hidden="true"></div>
 <p class="first-kindle-response" aria-live="polite">{firstKindleResponse}</p>
+{#if !comparativeBlind && game.activeUniverse === 'emberlight' && game.clicks >= 5 && game.clicks < 25 && !keyboardKindleUsed && !hasUi('shop')}
+  <p class="keyboard-kindle-hint" role="status">
+    <kbd>Space</kbd> or <kbd>Enter</kbd> kindles without repeated pointer clicks.
+  </p>
+{/if}
 
 <style>
   canvas {
@@ -219,4 +226,7 @@
   .keyboard-focus { position: fixed; top: 48%; left: 50%; width: clamp(9rem, 20vw, 13rem); aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; border: 2px solid transparent; border-radius: 50%; opacity: 0; z-index: 1; }
   canvas:focus-visible + .keyboard-focus { opacity: 1; border-color: #fff; box-shadow: 0 0 0 4px rgba(5,7,14,0.88), 0 0 0 6px var(--gold), 0 0 24px color-mix(in srgb, var(--gold) 55%, transparent); }
   .first-kindle-response { position: fixed; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  .keyboard-kindle-hint { position: fixed; left: 50%; bottom: clamp(5.5rem, 12vh, 8rem); z-index: 3; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 2rem); margin: 0; padding: 0.42rem 0.65rem; color: var(--text); background: color-mix(in srgb, var(--panel) 90%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 24%, transparent); border-radius: 0.55rem; box-shadow: 0 0.8rem 2rem rgba(0,0,0,0.3); font: 0.72rem/1.4 system-ui, sans-serif; text-align: center; pointer-events: none; }
+  .keyboard-kindle-hint kbd { padding: 0.08rem 0.26rem; color: var(--gold); background: rgba(0,0,0,0.28); border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent); border-radius: 0.25rem; font: 650 0.68rem/1.2 ui-monospace, monospace; }
+  @media (prefers-reduced-motion: reduce) { .keyboard-kindle-hint { transition: none; animation: none; } }
 </style>
