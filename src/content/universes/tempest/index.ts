@@ -46,7 +46,7 @@ export const VISHNULOK_SPEC: FutureUniverseSpec = {
   visualMaterials: ['indigo water', 'milk-white foam', 'weathered harbor stone', 'lotus-leaf green', 'hammered gold current', 'pearl shell', 'moonlit salt'],
   primarySilhouettes: ['a calm ocean crossed by one declared returning current', 'three broad sheltering loops around an unoccupied refuge', 'a horizon-scale circuit that closes without enclosing the sea'],
   economy: {
-    baseCosts: [15, 166, 2_288, 22_880, 358_400, 5_120_000, 55_080_000, 884_000_000, 9_000_000_000, 38_000_000_000, 1_700_000_000_000, 14_000_000_000_000, 120_000_000_000_000, 1_000_000_000_000_000, 8_500_000_000_000_000, 73_000_000_000_000_000, 630_000_000_000_000_000, 5_500_000_000_000_000_000],
+    baseCosts: [15, 166, 2_288, 22_880, 358_400, 5_120_000, 55_080_000, 884_000_000, 9_000_000_000, 38_000_000_000, 1_700_000_000_000, 14_000_000_000_000, 120_000_000_000_000, 1_000_000_000_000_000, 8_500_000_000_000_000, 73_000_000_000_000_000, 630_000_000_000_000_000, 500_000_000_000_000_000_000],
     baseRates: [0.336, 2.565, 25.3, 276.75, 1_837.5, 22_785, 178_350, 1_236_000, 16_280_000, 118_400_000, 1_281_250_000, 9_275_000_000, 101_250_000_000, 974_100_000_000, 7_360_000_000_000, 77_000_000_000_000, 740_250_000_000_000, 7_790_000_000_000_000],
     costMultiplier: 1.16,
   },

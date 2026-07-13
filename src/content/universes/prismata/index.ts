@@ -61,7 +61,7 @@ export const BRAHMALOK_SPEC: FutureUniverseSpec = {
   visualMaterials: ['palm-leaf paper', 'lotus-fiber vellum', 'river ink', 'unfired clay', 'sandalwood geometry', 'hammered gold line', 'dawn-blue enamel'],
   primarySilhouettes: ['a four-direction writing court around an open lotus', 'an inhabited mandala of libraries, gardens, measures, and workshops', 'a thousand-petal horizon whose center remains unclaimed'],
   economy: {
-    baseCosts: [13, 162, 2_090, 26_000, 345_600, 4_640_000, 63_750_000, 877_500_000, 12_300_000_000, 173_250_000_000, 700_000_000_000, 22_000_000_000_000, 162_000_000_000_000, 1_740_000_000_000_000, 12_700_000_000_000_000, 138_000_000_000_000_000, 1_020_000_000_000_000_000, 11_800_000_000_000_000_000],
+    baseCosts: [13, 162, 2_090, 26_000, 345_600, 4_640_000, 63_750_000, 877_500_000, 12_300_000_000, 173_250_000_000, 700_000_000_000, 22_000_000_000_000, 162_000_000_000_000, 1_740_000_000_000_000, 12_700_000_000_000_000, 138_000_000_000_000_000, 1_020_000_000_000_000_000, 300_000_000_000_000_000_000],
     baseRates: [0.252, 2.835, 27.6, 194.75, 2_187.5, 19_845, 135_300, 1_493_500, 10_560_000, 114_700_000, 843_750_000, 9_275_000_000, 67_500_000_000, 725_800_000_000, 5_280_000_000_000, 57_750_000_000_000, 423_000_000_000_000, 4_920_000_000_000_000],
     costMultiplier: 1.145,
   },

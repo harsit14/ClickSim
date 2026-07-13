@@ -111,5 +111,5 @@ test('Phase 6.5 gives every chamber its own 3–6 hour competent Beacon curve', 
   beaconHours.forEach((hours, index) => {
     assert.ok(hours >= 3 && hours <= 6, `${CHAMBER_IDS[index]} reached its Beacon in ${hours.toFixed(2)}h`)
   })
-  assert.deepEqual(beaconHours, [4.5, 3.1, 4.1, 5.55])
+  assert.deepEqual(beaconHours, [4.5, 3.8, 5.083333333333333, 5.55])
 })

@@ -38,6 +38,25 @@ test('Verdance cannot light its Beacon before the first Pruning window', () => {
   }
 })
 
+test('Brahmalok and Vishnulok preserve an hour of signature play after the first Epoch', () => {
+  for (const universeId of ['prismata', 'tempest'] as const) {
+    for (const profile of SIMULATOR_PROFILES.filter(({ id }) => (
+      id === 'casual-one-click-per-second'
+      || id === 'active-six-clicks-per-second'
+      || id === 'competent-universe-mechanic'
+    ))) {
+      const result = runCurrentPackAudit(universeId, profile, 8)
+      assert.notEqual(result.firstEpochAtMs, null, `${universeId}/${profile.id} never reached its first Epoch`)
+      assert.notEqual(result.firstBeaconAtMs, null, `${universeId}/${profile.id} never reached its Beacon`)
+      assert.ok(
+        result.firstBeaconAtMs! - result.firstEpochAtMs! >= 60 * 60_000,
+        `${universeId}/${profile.id} left less than an hour for its signature mechanic`,
+      )
+      assert.ok(result.longestPreEpochPurchaseGapMs <= 10 * 60_000, `${universeId}/${profile.id} has a pre-Epoch wall over 10m`)
+    }
+  }
+})
+
 test('minimal-ownership idle pacing keeps the pre-tuning passive floor', () => {
   const expected: Readonly<Record<'tidefall' | 'clockwork', number>> = {
     tidefall: 4_320,
