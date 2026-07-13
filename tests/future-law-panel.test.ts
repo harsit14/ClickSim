@@ -90,7 +90,7 @@ test('late-universe score and instrument share one compact surface', () => {
   assert.match(panelSource, /markInstrumentExperienced\(\)/)
   assert.match(panelSource, /\.instrument-compact \{[^}]*width: min\(38rem/)
   assert.match(panelSource, /class="effect-slot"[\s\S]*<BuffBar integrated reserve \/>/)
-  assert.match(buffSource, /active\.slice\(0, 1\)/)
+  assert.match(buffSource, /active\.slice\(0, maxVisible\)/)
   assert.match(buffSource, /class:empty={active\.length === 0}/)
   assert.deepEqual(compile(buffSource, { filename: buffUrl.pathname, generate: 'client' }).warnings, [])
 })

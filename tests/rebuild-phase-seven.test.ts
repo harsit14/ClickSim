@@ -261,10 +261,11 @@ test('the complicity arc orders itself within each parked universe run', () => {
   assert.equal(kailash[1].when(state({ seen: [kailash[0].id] })), true)
 })
 
-test('complicity lines take story priority without replacing ten-line universe arcs', () => {
+test('the Act III gate takes priority, then complicity lines, without replacing universe arcs', () => {
   const ticker = read('../src/ui/LumenTicker.svelte')
+  assert.match(ticker, /const storyGate = universeLines[\s\S]*candidate\.id === 'act3-hook'/)
   assert.match(ticker, /const metaLine = lumenComplicityLinesFor\(universeId\)/)
-  assert.match(ticker, /const line = metaLine\s*\?\? universeById\(universeId\)\.lumen\.find/)
+  assert.match(ticker, /const line = storyGate\s*\?\? metaLine\s*\?\? universeLines\.find/)
   assert.match(ticker, /act\[237\]/)
 
   const catalog = buildEnglishCatalog()

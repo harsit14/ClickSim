@@ -3,7 +3,7 @@
   import { buffState } from '../systems/buffs.svelte'
   import { gameTime } from '../core/pause.svelte'
 
-  let { integrated = false, reserve = false }: { integrated?: boolean; reserve?: boolean } = $props()
+  let { integrated = false, reserve = false, maxVisible = 1 }: { integrated?: boolean; reserve?: boolean; maxVisible?: number } = $props()
   let now = $state(gameTime())
 
   onMount(() => {
@@ -19,13 +19,13 @@
     {#if active.length === 0 && integrated}
       <span class="empty-label">none</span>
     {/if}
-    {#each (integrated ? active.slice(0, 1) : active) as b (b.id)}
+    {#each (integrated ? active.slice(0, maxVisible) : active) as b (b.id)}
       <span class="pill">
         {b.label}
         <em>{Math.ceil((b.until - now) / 1000)}s</em>
       </span>
     {/each}
-    {#if integrated && active.length > 1}<span class="more">+{active.length - 1}</span>{/if}
+    {#if integrated && active.length > maxVisible}<span class="more">+{active.length - maxVisible}</span>{/if}
   </div>
 {/if}
 
@@ -57,7 +57,7 @@
     font-variant-numeric: tabular-nums;
   }
   .buffs.integrated { width: 100%; height: 1.45rem; min-width: 0; flex-wrap: nowrap; justify-content: flex-start; align-items: center; overflow: hidden; }
-  .buffs.integrated .pill { min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; padding: 0.24rem 0.46rem; font-size: 0.56rem; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+  .buffs.integrated .pill { flex: 0 1 auto; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; padding: 0.24rem 0.46rem; font-size: 0.56rem; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
   .buffs.integrated .pill em { margin-left: 0.22rem; }
   .empty-label { color: color-mix(in srgb, var(--dim) 62%, transparent); font: 650 0.43rem/1 system-ui, sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }
   .more { flex: 0 0 auto; color: var(--amber); font: 720 0.48rem/1 system-ui, sans-serif; }

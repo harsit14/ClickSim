@@ -103,10 +103,14 @@
       present(crossingLine)
       return
     }
+    const universeLines = universeById(universeId).lumen
+    const storyGate = universeLines
+      .find((candidate) => candidate.id === 'act3-hook' && !game.seen.includes(candidate.id) && candidate.when(game))
     const metaLine = lumenComplicityLinesFor(universeId)
       .find((candidate) => !game.seen.includes(candidate.id) && candidate.when(game))
-    const line = metaLine
-      ?? universeById(universeId).lumen.find((candidate) => !game.seen.includes(candidate.id) && candidate.when(game))
+    const line = storyGate
+      ?? metaLine
+      ?? universeLines.find((candidate) => !game.seen.includes(candidate.id) && candidate.when(game))
     if (!line) return
     game.seen.push(line.id)
     present(line)

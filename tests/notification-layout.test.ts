@@ -27,6 +27,8 @@ test('desktop notifications reserve a lane clear of the Kindling shop and top me
   assert.match(toastSource, /toastState\.queue\.length/)
   assert.match(achievementSource, /pushAchievementToast\(copy\.name/)
   assert.match(appSource, /<aside class="notification-lane"[\s\S]*<NumberSuffixHint[\s\S]*<Toasts governed=\{transientGoverned\}/)
+  assert.match(appSource, /<Hud \/>\s*<BuffBar integrated maxVisible=\{2\} \/>/)
+  assert.doesNotMatch(appSource, /<Hud \/>\s*<BuffBar \/>/)
   assert.match(toastSource, /class:governed/)
   assert.match(toastSource, /visibleToasts = \$derived\(toastState\.list\.slice\(0, 1\)\)/)
 })

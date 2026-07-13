@@ -614,7 +614,7 @@
   <section class="top-stack" class:future-law={activePack.id === 'brahmalok' || activePack.id === 'vishnulok' || activePack.id === 'kailash'} aria-label="Run status and upgrades">
     {#if activePack.id !== 'brahmalok' && activePack.id !== 'vishnulok' && activePack.id !== 'kailash'}
       <Hud />
-      <BuffBar />
+      <BuffBar integrated maxVisible={2} />
     {/if}
     <ChallengeBanner />
     {#if !utilityPanelOpen}
