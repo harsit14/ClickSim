@@ -14,7 +14,7 @@
   } from '../engine/game.svelte'
   import { save } from '../core/save'
   import { stopMusic } from '../audio/music'
-  import { playBuy } from '../audio/sfx'
+  import { playBuy, setDepthLowPass } from '../audio/sfx'
   import { universeById } from '../content/universes'
   import { format } from '../core/format'
   import {
@@ -50,7 +50,11 @@
   let { onclose, onrequestcollapse }: { onclose: () => void; onrequestcollapse: () => void } = $props()
   let closeButton: HTMLButtonElement
 
-  onMount(() => closeButton.focus())
+  onMount(() => {
+    closeButton.focus()
+    setDepthLowPass(true)
+    return () => setDepthLowPass(false)
+  })
 
   const gain = $derived(deepCollapseGain())
   const pack = $derived(universeById(game.activeUniverse))

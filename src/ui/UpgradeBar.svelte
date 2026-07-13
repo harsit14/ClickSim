@@ -64,7 +64,9 @@
         <button
           class="up"
           class:previewing={previewId === u.id}
+          class:affordable={!ltAmount(game.light, amountFromNumber(u.cost))}
           class:unaffordable={ltAmount(game.light, amountFromNumber(u.cost))}
+          aria-disabled={ltAmount(game.light, amountFromNumber(u.cost))}
           style:--hue={u.hue}
           aria-label={`${u.name}: ${u.effects.map((effect) => describeEffect(effect, pack.generatorById, pack.currency.toLowerCase())).join(', ')}`}
           aria-describedby={previewId === u.id ? 'upgrade-preview' : undefined}
@@ -137,6 +139,25 @@
     box-shadow: 0 0 20px hsla(var(--hue), 90%, 60%, 0.5);
     transform: translateY(1px);
   }
+  .up.affordable {
+    border-color: color-mix(in srgb, hsl(var(--hue), 90%, 72%) 76%, white);
+    box-shadow: inset 0 -2px color-mix(in srgb, var(--amber) 60%, transparent), inset 0 0 1rem color-mix(in srgb, var(--amber) 14%, transparent), 0 0 14px hsla(var(--hue), 90%, 60%, 0.22);
+  }
+  .up.affordable::after {
+    content: '';
+    position: absolute;
+    top: 0.28rem;
+    right: 0.3rem;
+    width: 0.28rem;
+    height: 0.28rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    opacity: 0.66;
+  }
+  .up:not(.unaffordable):active {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: inset 0 0.24rem 0.55rem rgba(0, 0, 0, 0.4);
+  }
   .up.previewing {
     border-color: hsl(var(--hue), 90%, 74%);
     box-shadow: 0 0 20px hsla(var(--hue), 90%, 60%, 0.45);
@@ -151,6 +172,8 @@
     box-shadow: inset 0 0 0.9rem rgba(0, 0, 0, 0.28);
     cursor: default;
   }
+  :global(html[data-motion='reduced']) .up { transition: none; }
+  :global(html[data-motion='reduced']) .up:not(.unaffordable):active { transform: none; }
   .up.unaffordable .artifact-icon,
   .up.unaffordable .glyph { color: color-mix(in srgb, var(--dim) 45%, var(--bg)); filter: none; }
   .glyph {

@@ -2,7 +2,26 @@ import type { UniverseId } from '../content/universes/types'
 
 let ctx: AudioContext | null = null
 let master: GainNode | null = null
+let output: BiquadFilterNode | null = null
 let volume = 0.5
+let deepLowPassActive = false
+
+export const DEEP_LOW_PASS_HZ = 3_400
+export const OPEN_LOW_PASS_HZ = 20_000
+
+export function depthLowPassFrequency(active: boolean): number {
+  return active ? DEEP_LOW_PASS_HZ : OPEN_LOW_PASS_HZ
+}
+
+/** Reversible shared-output treatment; does not initialize audio by itself. */
+export function setDepthLowPass(active: boolean): void {
+  deepLowPassActive = active
+  if (!ctx || !output) return
+  const now = ctx.currentTime
+  output.frequency.cancelScheduledValues(now)
+  output.frequency.setValueAtTime(Math.max(20, output.frequency.value), now)
+  output.frequency.exponentialRampToValueAtTime(depthLowPassFrequency(active), now + (active ? 0.7 : 0.45))
+}
 
 export function setMasterVolume(v: number) {
   volume = Math.max(0, Math.min(1, v))
@@ -10,20 +29,25 @@ export function setMasterVolume(v: number) {
 }
 
 /** Shared context for other audio modules (music engine). */
-export function getAudio(): { ctx: AudioContext; master: GainNode } | null {
+export function getAudio(): { ctx: AudioContext; master: GainNode; output: BiquadFilterNode } | null {
   return audio()
 }
 
-function audio(): { ctx: AudioContext; master: GainNode } | null {
+function audio(): { ctx: AudioContext; master: GainNode; output: BiquadFilterNode } | null {
   try {
     if (!ctx) {
       ctx = new AudioContext()
       master = ctx.createGain()
+      output = ctx.createBiquadFilter()
       master.gain.value = volume
-      master.connect(ctx.destination)
+      output.type = 'lowpass'
+      output.frequency.value = depthLowPassFrequency(deepLowPassActive)
+      output.Q.value = 0.35
+      master.connect(output)
+      output.connect(ctx.destination)
     }
     if (ctx.state === 'suspended') void ctx.resume()
-    return { ctx, master: master! }
+    return { ctx, master: master!, output: output! }
   } catch {
     return null
   }

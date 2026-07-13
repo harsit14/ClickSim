@@ -22,7 +22,14 @@
 
 {#if next}
   {#key next.id}
-    <button type="button" class="chip" class:unaffordable={ltAmount(game.light, amountFromNumber(next.cost))} onclick={tryBuy}>
+    <button
+      type="button"
+      class="chip"
+      class:affordable={gteAmount(game.light, amountFromNumber(next.cost))}
+      class:unaffordable={ltAmount(game.light, amountFromNumber(next.cost))}
+      aria-disabled={ltAmount(game.light, amountFromNumber(next.cost))}
+      onclick={tryBuy}
+    >
       <span class="label">{next.label}</span>
       <span class="cost">{currencyGlyph} {format(next.cost)}</span>
     </button>
@@ -54,6 +61,10 @@
     border-color: rgba(255, 179, 92, 0.7);
     box-shadow: 0 0 30px rgba(255, 179, 92, 0.25);
   }
+  .chip.affordable {
+    border-color: color-mix(in srgb, var(--gold) 68%, white);
+    box-shadow: inset 0 -2px color-mix(in srgb, var(--amber) 42%, transparent), 0 0 26px color-mix(in srgb, var(--amber) 22%, transparent);
+  }
   .chip:not(.unaffordable):active {
     transform: translateX(-50%) scale(0.96);
   }
@@ -81,4 +92,5 @@
       bottom: 48vh;
     }
   }
+  @media (prefers-reduced-motion: reduce) { .chip { transition: none; animation: none; } .chip:not(.unaffordable):active { transform: translateX(-50%); } }
 </style>

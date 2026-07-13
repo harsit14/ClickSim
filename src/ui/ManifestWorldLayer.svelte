@@ -449,6 +449,7 @@
                   universeId={pack.id}
                 />
               {/if}
+              <span class="landmark-interior"><i></i><i></i><i></i></span>
             </span>
             {#if pack.id === 'verdance' || pack.id === 'prismata' || pack.id === 'tempest' || pack.id === 'canticle'}
               <span class="landmark-name">{record.name}</span>
@@ -662,6 +663,31 @@
     border-radius: 50%;
   }
   .archive-sigil.world-material { border-radius:0; }
+  .landmark-interior {
+    position: absolute;
+    inset: 22%;
+    display: grid;
+    align-content: center;
+    gap: 0.22rem;
+    opacity: 0;
+    transform: scale(0.82);
+    transition: opacity 140ms ease, transform 140ms ease;
+    pointer-events: none;
+  }
+  .landmark-interior i {
+    height: 1px;
+    background: color-mix(in srgb, var(--gold) 72%, white);
+    box-shadow: 0 0 0.28rem color-mix(in srgb, var(--amber) 36%, transparent);
+  }
+  .landmark-interior i:nth-child(1) { width: 64%; justify-self: start; }
+  .landmark-interior i:nth-child(2) { width: 88%; justify-self: end; }
+  .landmark-interior i:nth-child(3) { width: 52%; justify-self: center; }
+  .archive-landmark:hover .landmark-interior,
+  .archive-landmark:focus-visible .landmark-interior { opacity: 0.58; transform: scale(1); }
+  .low-quality .landmark-interior { display: none; }
+  .motion-paused .landmark-interior { transition: none; transform: none; }
+  :global(html[data-contrast='high']) .archive-landmark:hover .landmark-interior,
+  :global(html[data-contrast='high']) .archive-landmark:focus-visible .landmark-interior { opacity: 0.9; }
   .landmark-name { position:absolute;left:50%;top:calc(100% + .2rem);width:8rem;transform:translateX(-50%);color:color-mix(in srgb,var(--gold) 76%,white);font:680 .54rem/1.15 system-ui,sans-serif;letter-spacing:.035em;text-align:center;text-shadow:0 1px .25rem var(--bg),0 0 .5rem var(--bg);white-space:normal;pointer-events:none; }
   [data-side='left-edge'] .landmark-name { left:calc(100% + .15rem);top:50%;transform:translateY(-50%);text-align:left; }
   [data-side='right'] .landmark-name { right:calc(100% + .15rem);left:auto;top:50%;transform:translateY(-50%);text-align:right; }

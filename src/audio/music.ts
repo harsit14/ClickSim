@@ -212,7 +212,7 @@ export function startMusic() {
   if (!a) return
   if (!musicGain) {
     musicGain = a.ctx.createGain()
-    musicGain.connect(a.ctx.destination)
+    musicGain.connect(a.output)
   }
   musicGain.gain.value = musicGainTarget()
   startAt = a.ctx.currentTime + 0.2

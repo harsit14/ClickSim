@@ -177,7 +177,9 @@
           class="row"
           data-generator-id={g.id}
           data-ownership-threshold={artThreshold}
+          class:affordable={!ltAmount(game.light, p.cost) && !genPurchaseDisabled(game, g)}
           class:unaffordable={ltAmount(game.light, p.cost) || genPurchaseDisabled(game, g)}
+          aria-disabled={ltAmount(game.light, p.cost) || genPurchaseDisabled(game, g)}
           onclick={() => tryBuy(g)}
           title={genDisabled(game, g)
             ? 'silenced by the trial'
@@ -383,13 +385,32 @@
     background: color-mix(in srgb, var(--amber) 5%, rgba(255, 255, 255, 0.025));
     box-shadow: inset 0 0 1.1rem color-mix(in srgb, var(--amber) 12%, transparent);
   }
+  .row.affordable {
+    border-color: color-mix(in srgb, var(--amber) 34%, rgba(255, 255, 255, 0.08));
+    box-shadow: inset 3px 0 color-mix(in srgb, var(--amber) 58%, transparent), inset 0 0 1.1rem color-mix(in srgb, var(--amber) 12%, transparent);
+  }
+  .row.affordable::after {
+    content: '';
+    position: absolute;
+    top: 0.38rem;
+    right: 0.42rem;
+    width: 0.32rem;
+    height: 0.32rem;
+    border: 1px solid color-mix(in srgb, var(--amber) 78%, white);
+    transform: rotate(45deg);
+    opacity: 0.72;
+  }
   .row:not(.teased):not(.unaffordable):hover {
     background: rgba(255, 179, 92, 0.09);
     border-color: rgba(255, 179, 92, 0.3);
   }
   .row:not(.teased):not(.unaffordable):active {
-    transform: scale(0.97);
+    transform: translateY(1px) scale(0.985);
+    background: color-mix(in srgb, var(--amber) 14%, rgba(255, 255, 255, 0.025));
+    box-shadow: inset 0 0.24rem 0.55rem rgba(0, 0, 0, 0.34), inset 3px 0 color-mix(in srgb, var(--amber) 72%, transparent);
   }
+  .kindling-icon { transition: transform 70ms ease, filter 120ms ease; }
+  .row:not(.teased):not(.unaffordable):active .kindling-icon { transform: translateY(1px) scale(0.94); filter: brightness(1.18); }
   .row.unaffordable {
     opacity: 1;
     color: color-mix(in srgb, var(--text) 45%, var(--bg));
@@ -407,6 +428,9 @@
     opacity: 0.35;
     cursor: default;
   }
+  :global(html[data-motion='reduced']) .row,
+  :global(html[data-motion='reduced']) .kindling-icon { transition: none; }
+  :global(html[data-motion='reduced']) .row:not(.teased):not(.unaffordable):active { transform: none; }
   .dot {
     flex: none;
     width: 10px;
