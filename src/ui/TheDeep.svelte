@@ -13,6 +13,8 @@
     startChallenge,
   } from '../engine/game.svelte'
   import { save } from '../core/save'
+  import { clearBuffs } from '../systems/buffs.svelte'
+  import { combo } from '../systems/combo.svelte'
   import { stopMusic } from '../audio/music'
   import { playBuy, setDepthLowPass } from '../audio/sfx'
   import { universeById } from '../content/universes'
@@ -151,7 +153,7 @@
       </p>
     {:else}
       <p class="fold-text">{identity.readyText}</p>
-      <button class="fold-btn" aria-describedby="deep-collapse-warning" onclick={onrequestcollapse}>Review {identity.collapseName} &nbsp;·&nbsp; gain ◉{format(gain)}</button>
+      <button class="fold-btn" aria-describedby="deep-collapse-warning" onclick={onrequestcollapse}>{identity.collapseName} &nbsp;·&nbsp; gain ◉{format(gain)}</button>
       <p id="deep-collapse-warning" class="fold-text warn">{warningText()}</p>
     {/if}
   </div>
