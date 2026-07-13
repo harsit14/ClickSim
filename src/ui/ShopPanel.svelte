@@ -32,7 +32,16 @@
   let {
     suppressed = false,
     collapsed = $bindable(false),
-  }: { suppressed?: boolean; collapsed?: boolean } = $props()
+    mobile = false,
+    onmobileclose,
+  }: {
+    suppressed?: boolean
+    collapsed?: boolean
+    mobile?: boolean
+    onmobileclose?: () => void
+  } = $props()
+
+  let shopElement = $state<HTMLElement | null>(null)
 
   const visible = $derived(hasUi('shop'))
   const pack = $derived(universeById(game.activeUniverse))
@@ -122,54 +131,102 @@
     if (count >= 1) return 1
     return 0
   }
+
+  function toggleCollapsed() {
+    if (collapsed) {
+      collapsed = false
+      return
+    }
+    collapsed = true
+    onmobileclose?.()
+  }
+
+  function closeShop() {
+    collapsed = true
+    onmobileclose?.()
+  }
+
+  function trapMobileShopFocus(event: KeyboardEvent) {
+    if (event.key !== 'Tab' || !mobile || collapsed || suppressed || !shopElement) return
+    const focusable = Array.from(shopElement.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )).filter((element) => element.offsetParent !== null)
+    const first = focusable[0]
+    const last = focusable.at(-1)
+    if (!first || !last) return
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
+  }
 </script>
 
+<svelte:window onkeydown={trapMobileShopFocus} />
+
 {#if visible && !suppressed}
-  <aside class="shop instrument-panel" class:collapsed data-realm={pack.id} aria-label="Kindling shop">
+  {#if !collapsed}
+    <button class="shop-scrim" type="button" onclick={closeShop} aria-hidden="true" tabindex="-1"></button>
+  {/if}
+  <aside
+    bind:this={shopElement}
+    id="kindling-shop"
+    class="shop instrument-panel"
+    class:collapsed
+    data-realm={pack.id}
+    role={mobile ? 'dialog' : undefined}
+    aria-modal={mobile && !collapsed ? 'true' : undefined}
+    aria-label="Kindling shop"
+  >
     <button
+      type="button"
       class="retract"
       class:collapsed
-      onclick={() => (collapsed = !collapsed)}
+      onclick={toggleCollapsed}
       aria-expanded={!collapsed}
       aria-label={collapsed ? 'open kindling shop' : 'hide kindling shop'}
       title={collapsed ? 'Open kindling' : 'Hide kindling'}
     >
       <span class="retract-glyph" aria-hidden="true">{collapsed ? '‹' : '›'}</span>
+      <span class="mobile-close-glyph" aria-hidden="true">×</span>
       <span class="retract-label">{collapsed ? 'Kindling' : 'Close'}</span>
     </button>
-    <header>
-      <h2>Kindling</h2>
-      {#if hasUi('bulk')}
-        <div class="amounts" role="group" aria-label="bulk purchase amount" aria-keyshortcuts="B">
-          {#each AMOUNTS as a (a)}
-            <button
-              class="amt"
-              data-buy-mode={a}
-              class:active={game.buyAmount === a}
-              aria-label={a === 'max' ? 'maximum' : `buy ${a}`}
-              aria-pressed={game.buyAmount === a}
-              onclick={() => (game.buyAmount = a)}
-            >
-              {a === 'max' ? 'max' : '×' + a}
-            </button>
-          {/each}
+    <div class="shop-content" inert={collapsed} aria-hidden={collapsed}>
+      <header>
+        <h2>Kindling</h2>
+        {#if hasUi('bulk')}
+          <div class="amounts" role="group" aria-label="bulk purchase amount" aria-keyshortcuts="B">
+            {#each AMOUNTS as a (a)}
+              <button
+                class="amt"
+                data-buy-mode={a}
+                class:active={game.buyAmount === a}
+                aria-label={a === 'max' ? 'maximum' : `buy ${a}`}
+                aria-pressed={game.buyAmount === a}
+                onclick={() => (game.buyAmount = a)}
+              >
+                {a === 'max' ? 'max' : '×' + a}
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </header>
+      {#if zeroAffordable}
+        <div class="shop-state" role="status">
+          <strong>No Kindling is affordable yet.</strong>
+          {#if game.challenge !== null && nextKindlingCost === null}
+            <span>This trial currently pauses or limits every purchase. Follow the trial rule shown above.</span>
+          {:else if nextKindlingCost}
+            <span>Use the Heart to build toward {pack.currencyGlyph} {format(nextKindlingCost)}.</span>
+          {:else}
+            <span>Use the Heart to earn more {pack.currency}.</span>
+          {/if}
         </div>
       {/if}
-    </header>
-    {#if zeroAffordable}
-      <div class="shop-state" role="status">
-        <strong>No Kindling is affordable yet.</strong>
-        {#if game.challenge !== null && nextKindlingCost === null}
-          <span>This trial currently pauses or limits every purchase. Follow the trial rule shown above.</span>
-        {:else if nextKindlingCost}
-          <span>Use the Heart to build toward {pack.currencyGlyph} {format(nextKindlingCost)}.</span>
-        {:else}
-          <span>Use the Heart to earn more {pack.currency}.</span>
-        {/if}
-      </div>
-    {/if}
-    <div class="rows">
-      {#each shown as g (g.id)}
+      <div class="rows">
+        {#each shown as g (g.id)}
         {@const p = purchase(g)}
         {@const owned = game.owned[g.id] ?? 0}
         {@const artThreshold = ownershipThreshold(owned)}
@@ -207,13 +264,14 @@
           </span>
           <span class="owned">{owned || ''}</span>
         </button>
-      {/each}
-      {#if teased}
-        <div class="row teased">
-          <span class="dot mystery"></span>
-          <span class="info"><span class="name"><span class="name-label">???</span></span></span>
-        </div>
-      {/if}
+        {/each}
+        {#if teased}
+          <div class="row teased">
+            <span class="dot mystery"></span>
+            <span class="info"><span class="name"><span class="name-label">???</span></span></span>
+          </div>
+        {/if}
+      </div>
     </div>
   </aside>
 {/if}
@@ -243,6 +301,14 @@
     transition: transform 0.32s ease, opacity 0.2s ease, border-color 0.2s ease;
     z-index: 6;
   }
+  .shop-content {
+    min-height: 0;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+  .shop-scrim,
+  .mobile-close-glyph { display: none; }
   .shop::before {
     content: '';
     position: absolute;
@@ -363,6 +429,8 @@
     border-color: var(--amber);
   }
   .rows {
+    min-height: 0;
+    flex: 1;
     overflow-y: auto;
     scrollbar-width: thin;
   }
@@ -509,49 +577,72 @@
   }
 
   @media (max-width: 800px) {
+    .shop-scrim {
+      position: fixed;
+      inset: 0 0 var(--mobile-dock-height, calc(4.35rem + env(safe-area-inset-bottom, 0px))) 0;
+      z-index: 8;
+      display: block;
+      padding: 0;
+      background: rgba(2, 3, 9, 0.56);
+      border: 0;
+      backdrop-filter: blur(2px);
+      animation: scrim-in 180ms ease both;
+    }
     .shop {
-      top: auto;
+      top: max(0.45rem, env(safe-area-inset-top, 0px));
       right: max(0.4rem, env(safe-area-inset-right, 0px));
-      bottom: var(--mobile-dock-height, calc(4.35rem + env(safe-area-inset-bottom, 0px)));
-      left: max(0.4rem, env(safe-area-inset-left, 0px));
-      width: auto;
+      bottom: calc(var(--mobile-dock-height, calc(4.35rem + env(safe-area-inset-bottom, 0px))) + 0.4rem);
+      left: auto;
+      width: min(27rem, calc(100vw - 0.8rem - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
       transform: none;
-      max-height: var(--mobile-sheet-height, min(38dvh, 24rem));
+      max-height: none;
       padding: 1rem 0.75rem 0.65rem;
       border-radius: 18px;
-      box-shadow: inset 0 3px color-mix(in srgb, var(--amber) 26%, transparent), 0 -1.2rem 3rem rgba(0, 0, 0, 0.34);
-      transition: transform 0.32s ease, opacity 0.2s ease;
+      box-shadow: inset 3px 0 color-mix(in srgb, var(--amber) 26%, transparent), -1rem 0 3rem rgba(0, 0, 0, 0.4);
+      transition: transform 0.28s ease, opacity 0.2s ease, visibility 0s;
+      z-index: 9;
     }
     .shop.collapsed {
-      transform: translateY(calc(100% - 2.5rem));
-      opacity: 0.96;
+      transform: translateX(calc(100% + 1rem));
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: transform 0.28s ease, opacity 0.2s ease, visibility 0s 0.28s;
     }
     .retract {
-      top: -2.65rem;
-      left: 50%;
-      width: 8.4rem;
+      top: 0.55rem;
+      right: 0.55rem;
+      left: auto;
+      width: 5.8rem;
       min-height: 2.75rem;
       height: 2.75rem;
-      transform: translateX(-50%);
-      grid-template-columns: auto auto;
+      transform: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       gap: 0.4rem;
       color: color-mix(in srgb, var(--gold) 86%, white);
       background: color-mix(in srgb, var(--glass) 96%, var(--panel));
       border: 1px solid color-mix(in srgb, var(--amber) 34%, transparent);
-      border-bottom-color: color-mix(in srgb, var(--amber) 18%, transparent);
-      border-radius: 14px 14px 0 0;
-      box-shadow: 0 -0.65rem 1.5rem rgba(0, 0, 0, 0.22);
+      border-radius: 12px;
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
       font-size: 0.78rem;
       letter-spacing: 0.04em;
     }
-    .retract:not(.collapsed),
-    .retract.collapsed { transform: translateX(-50%); }
-    .retract-glyph { font-size: 1rem; transform: rotate(-90deg); }
-    .retract.collapsed .retract-glyph { transform: rotate(90deg); }
+    .retract.collapsed { display: none; }
+    .retract-glyph { display: none; }
+    .mobile-close-glyph { display: inline; font-size: 1.1rem; line-height: 1; }
     .retract-label { display: inline; }
-    header { min-height: 2.35rem; margin-bottom: 0.55rem; }
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.55rem;
+      min-height: 2.75rem;
+      margin-bottom: 0.65rem;
+      padding-right: 6.25rem;
+    }
     h2 { font-size: 0.75rem; }
-    .amounts { gap: 0.3rem; }
+    .amounts { gap: 0.3rem; padding-right: 0; }
     .amt {
       min-width: 2.75rem;
       min-height: 2.75rem;
@@ -574,8 +665,9 @@
     .name { font-size: 0.96rem; }
     .meta { margin-top: 0.12rem; font-size: 0.76rem; }
     .owned { font-size: 1.25rem; }
+    @keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
     @keyframes shop-in {
-      from { opacity: 0; translate: 0 20px; }
+      from { opacity: 0; translate: 20px 0; }
       to { opacity: 1; translate: 0 0; }
     }
   }

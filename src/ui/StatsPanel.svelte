@@ -385,16 +385,24 @@
     font-weight: 650;
     font-variant-numeric: tabular-nums;
   }
-  @media (max-width: 720px) {
+  @media (max-width: 800px) {
     .panel {
       left: 0.6rem;
       right: 0.6rem;
       width: auto;
-      top: 8.2rem;
-      bottom: 0.6rem;
+      top: max(5.5rem, env(safe-area-inset-top, 0px));
+      bottom: calc(var(--mobile-dock-height, 4.35rem) + 0.5rem);
       transform: none;
       max-height: none;
       z-index: 10;
+      /* The shared panel-in keyframes hold translateY(-50%) for the desktop
+         centered position; on mobile that would shove the panel (and its
+         header/close) off the top of the screen. Use a plain fade instead. */
+      animation: panel-in-mobile 0.2s ease both;
+    }
+    @keyframes panel-in-mobile {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   }
 </style>

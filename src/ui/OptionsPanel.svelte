@@ -492,6 +492,6 @@
   .credits a { font-size: 0.58rem; color: var(--gold); }
   .danger-zone { border-color: rgba(255,100,100,0.12); }
   .danger { margin-top: 0.5rem; padding: 0.35rem 0.65rem; font: inherit; font-size: 0.6rem; color: #ffabab; background: rgba(255,80,80,0.055); border: 1px solid rgba(255,100,100,0.24); border-radius: 7px; cursor: pointer; }
-  @media (max-width: 720px) { .panel { left: 0.55rem; right: 0.55rem; top: 7rem; bottom: 0.55rem; width: auto; max-width: calc(100vw - 1.1rem); max-height: none; transform: none; z-index: 10; } @keyframes panel-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } }
+  @media (max-width: 800px) { .panel { left: 0.55rem; right: 0.55rem; top: max(5.5rem, env(safe-area-inset-top, 0px)); bottom: calc(var(--mobile-dock-height, 4.35rem) + 0.5rem); width: auto; max-width: calc(100vw - 1.1rem); max-height: none; transform: none; z-index: 10; } @keyframes panel-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } }
   @media (max-width: 420px) { .choice-field, .field, .shortcut-grid > div { grid-template-columns: 1fr; gap: 0.28rem; } .choice-note { grid-column: 1; } .toggle-card { align-items: start; flex-direction: column; } .quality-grid { grid-template-columns: 1fr; } .action-row { flex-wrap: wrap; } }
 </style>
