@@ -150,10 +150,10 @@
   const observatoryVisible = $derived(
     !isZeroAmount(game.stardustTotal) || game.supernovae > 0 || novaReady || gteAmount(game.allTimeEarned, amountFromNumber(1e11)),
   )
+  const deepReady = $derived(!isZeroAmount(deepCollapseGain()))
   const deepVisible = $derived(
-    !isZeroAmount(game.singTotal) || game.collapses > 0 || gteAmount(game.stardustTotal, amountFromNumber(15)) || game.challenge !== null,
+    !isZeroAmount(game.singTotal) || game.collapses > 0 || deepReady || game.challenge !== null,
   )
-  const deepReady = $derived(game.challenge === null && gteAmount(game.stardustTotal, amountFromNumber(20)))
   const curiositiesVisible = $derived(game.curiosities.length > 0 || gteAmount(game.totalEarned, amountFromNumber(250_000)))
   const activePack = $derived(universeById(game.activeUniverse))
   const activeV2Pack = $derived(universeV2ById(game.activeUniverse))

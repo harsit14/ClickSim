@@ -1,12 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { DEEP_UPGRADES, SINGULARITY_COST } from '../content/deep'
+  import { DEEP_UPGRADES } from '../content/deep'
   import { CHALLENGES, challengeUnlocked } from '../content/challenges'
   import ResonanceAtlas from './ResonanceAtlas.svelte'
   import LumenDistillery from './LumenDistillery.svelte'
   import {
     game,
     deepCollapseGain,
+    deepCollapseCost,
     buyDeepUpgrade,
     buyDeepWork,
     deepMarketComplete,
@@ -149,7 +150,7 @@
     {:else if isZeroAmount(gain)}
       <p class="fold-text">
         {identity.gatherText}
-        <em>◉1 per ✧{SINGULARITY_COST} gathered this era — ✧{format(game.stardustTotal)} so far</em>
+        <em>◉1 per ✧{deepCollapseCost()} gathered this era — ✧{format(game.stardustTotal)} so far</em>
       </p>
     {:else}
       <p class="fold-text">{identity.readyText}</p>

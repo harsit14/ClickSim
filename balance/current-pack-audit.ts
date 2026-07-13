@@ -21,6 +21,7 @@ import {
   toAmount,
 } from '../src/core/numeric/amount'
 import { SIMULATOR_PROFILES, type SimulatorProfile } from './simulator-contract'
+import { STARDUST_PIVOT } from '../src/content/economy-balance'
 import {
   advanceF4LawState,
   completeVishnulokReturn,
@@ -157,6 +158,7 @@ export function runCurrentPackAudit(
   const firstBought = new Set<string>()
   const purchasedGeneratorIds: string[] = []
   const milestones = ['1e3', '1e6', '1e9', '1e12', '1e15', '1e18', '1e21'].map((value) => toAmount(value as `${number}e${number}`))
+  const epochTarget = amountFromNumber(STARDUST_PIVOT)
   let nextMilestone = 0
   let purchaseCount = 0
   let lastPurchaseAtMs = 0
@@ -171,6 +173,10 @@ export function runCurrentPackAudit(
     state.light = addAmounts(state.light, gain)
     state.totalEarned = addAmounts(state.totalEarned, gain)
     state.clicks += profile.clicksPerSecond * AUDIT_STEP_SECONDS
+    if (firstEpochAtMs === null && gteAmount(state.totalEarned, epochTarget)) {
+      firstEpochAtMs = atMs
+      events.push({ atMs, kind: 'milestone', id: 'epoch-ready', amount: serializeAmount(epochTarget) })
+    }
 
     for (let guard = 0; guard < 16; guard++) {
       let bestPayback = Number.POSITIVE_INFINITY
@@ -239,7 +245,6 @@ export function runCurrentPackAudit(
     while (nextMilestone < milestones.length && gteAmount(state.totalEarned, milestones[nextMilestone])) {
       const target = serializeAmount(milestones[nextMilestone])
       events.push({ atMs, kind: 'milestone', id: target, amount: target })
-      if (target === '1e18' && firstEpochAtMs === null) firstEpochAtMs = atMs
       nextMilestone += 1
     }
   }

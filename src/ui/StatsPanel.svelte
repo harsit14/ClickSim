@@ -24,8 +24,16 @@
   } from '../content/repeatables'
   import { renderHealth } from '../core/render-health.svelte'
   import { clickBuffMult, productionBuffMult } from '../systems/buffs.svelte'
+  import {
+    LIFETIME_SINGULARITY_PRODUCTION_BONUS,
+    LIFETIME_SINGULARITY_STARDUST_BONUS,
+    STARDUST_PRODUCTION_BONUS_PER_POINT,
+    achievementPowerPercent,
+  } from '../content/economy-balance'
   import FormulaInspector from './FormulaInspector.svelte'
   import {
+    ONE_AMOUNT,
+    addAmounts,
     amountToNumber,
     divideAmounts,
     isZeroAmount,
@@ -63,6 +71,7 @@
   )
   const stardustRanks = $derived(Object.values(game.stardustWorks).reduce((sum, rank) => sum + rank, 0))
   const deepRanks = $derived(Object.values(game.deepWorks).reduce((sum, rank) => sum + rank, 0))
+  const achievementPercent = $derived(achievementPowerPercent(game.achievements.length))
   const rows = $derived(
     pack.generators.filter((g) => (game.owned[g.id] ?? 0) > 0).map((g) => ({
       g,
@@ -115,7 +124,7 @@
       <dt>clicks</dt><dd>{format(game.clicks)}</dd>
       <dt>upgrades found</dt><dd>{game.upgrades.length}</dd>
       <dt>objects catalogued</dt><dd>{game.curiosities.length}</dd>
-      <dt>{pack.achievementPower.toLowerCase()}</dt><dd>+{game.achievements.length}%</dd>
+      <dt>{pack.achievementPower.toLowerCase()}</dt><dd>+{achievementPercent}%</dd>
       <dt>stars caught</dt><dd>{game.starsCaught}</dd>
       <dt>best combo</dt><dd>{game.bestCombo}</dd>
       <dt>time kindling</dt><dd>{fmtTime(game.playtime)}</dd>
@@ -137,7 +146,7 @@
       {/if}
       {#if game.supernovae > 0}
         <dt>supernovae</dt><dd>{game.supernovae}</dd>
-        <dt>stardust glow</dt><dd>+{format(multiplyAmountByNumber(game.stardustTotal, 2))}%</dd>
+        <dt>stardust glow</dt><dd>+{format(multiplyAmountByNumber(game.stardustTotal, STARDUST_PRODUCTION_BONUS_PER_POINT * 100))}%</dd>
         <dt>{pack.currency.toLowerCase()}, all lifetimes</dt><dd>{pack.currencyGlyph} {format(game.allTimeEarned)}</dd>
       {/if}
       {#if stardustRanks > 0}
@@ -147,6 +156,8 @@
       {#if game.collapses > 0}
         <dt>deep collapses</dt><dd>{game.collapses}</dd>
         <dt>singularities</dt><dd>◉ {format(game.singTotal)}</dd>
+        <dt>singularity afterglow</dt><dd>×{format(addAmounts(ONE_AMOUNT, multiplyAmountByNumber(game.singTotal, LIFETIME_SINGULARITY_PRODUCTION_BONUS)))}</dd>
+        <dt>stardust depth scale</dt><dd>×{format(addAmounts(ONE_AMOUNT, multiplyAmountByNumber(game.singTotal, LIFETIME_SINGULARITY_STARDUST_BONUS)))}</dd>
       {/if}
       {#if deepRanks > 0}
         <dt>worldseed compression</dt><dd>rank {workRank(game.deepWorks, 'worldseed-compression')} · ×{format(deepProductionMult(game.deepWorks))}</dd>
@@ -177,7 +188,7 @@
   {:else}
     <div class="achievement-summary">
       <strong>{game.achievements.length} / {ACHIEVEMENTS.length}</strong>
-      <span>{pack.achievementPower} +{game.achievements.length}%</span>
+      <span>{pack.achievementPower} +{achievementPercent}%</span>
     </div>
     <div class="achievement-list">
       {#each achievementRows as a (a.id)}
@@ -187,7 +198,7 @@
             <strong>{a.concealed ? 'Hidden achievement' : a.name}</strong>
             <em>{a.concealed ? 'The dark is keeping this one.' : a.flavor}</em>
           </span>
-          <span class="reward">+1%</span>
+          <span class="reward">world power point</span>
         </article>
       {/each}
     </div>

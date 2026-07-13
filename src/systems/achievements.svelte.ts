@@ -8,6 +8,7 @@ import { pushAchievementToast, pushToast } from './toasts.svelte'
 import { playAchievement, playSupernova } from '../audio/sfx'
 import { gamePaused } from '../core/pause.svelte'
 import { worldRef } from '../render/world-ref'
+import { achievementPointPercent } from '../content/economy-balance'
 
 function checkChallenge() {
   if (!game.challenge) return
@@ -30,7 +31,10 @@ function check() {
     game.achievements.push(def.id)
     const pack = universeById(game.activeUniverse)
     const copy = achievementDisplay(def, pack.id)
-    pushAchievementToast(copy.name, copy.flavor, `${pack.achievementPower.toLowerCase()} +1%`)
+    pushAchievementToast(copy.name,
+      copy.flavor,
+      `${pack.achievementPower.toLowerCase()} +${achievementPointPercent(game.achievements.length)}%`,
+    )
     worldRef()?.emitParticleRecipe('achievement')
     playAchievement()
   }

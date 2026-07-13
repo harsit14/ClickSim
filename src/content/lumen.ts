@@ -1,5 +1,6 @@
 import type { GameState } from '../engine/game.svelte'
 import { amountFromNumber, gteAmount } from '../core/numeric/amount'
+import { SINGULARITY_COST } from './deep'
 import { vesselComplete, vesselPartIdsFor } from './vessel'
 
 export interface LumenLine {
@@ -210,7 +211,7 @@ export const LUMEN_LINES: LumenLine[] = [
   {
     id: 'deep-tease',
     text: 'All that stardust, pressing on the same point... do you feel it? Something beneath the sky.',
-    when: (g) => gteAmount(g.stardustTotal, amountFromNumber(15)) && g.collapses === 0,
+    when: (g) => gteAmount(g.stardustTotal, amountFromNumber(SINGULARITY_COST)) && g.collapses === 0,
   },
   {
     id: 'deep-first',

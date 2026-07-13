@@ -6,6 +6,7 @@ import type { LumenLine } from '../../lumen'
 import type { UpgradeDef } from '../../upgrades'
 import type { UniversePack } from '../types'
 import { amountFromNumber, gteAmount } from '../../../core/numeric/amount'
+import { balancedKindlingBaseCost, CABINET_COSTS } from '../../economy-balance'
 
 const KINDLING_NAMES = [
   'Memory Seed', 'Root Hair', 'Pale Sprout', 'Moss Cradle', 'Mycelium Thread', 'Young Grove',
@@ -54,7 +55,7 @@ const generator = (index: number, name: string, flavor: string): GeneratorDef =>
   id: `verdance-kindling-${String(index + 1).padStart(2, '0')}`,
   name,
   flavor,
-  baseCost: VERDANCE_BASE_COSTS[index],
+  baseCost: balancedKindlingBaseCost(VERDANCE_BASE_COSTS[index], VERDANCE_BASE_RATES[index], index + 1),
   baseRate: VERDANCE_BASE_RATES[index],
   costMult: 1.15,
   tier: index + 1,
@@ -147,12 +148,12 @@ export const VERDANCE_CURIOSITIES: CuriosityDef[] = ARCHIVE_NAMES.map((name, ind
     'stores mature production', 'amplifies graft signals', 'guides Omen routes', 'preserves pruning value',
     'attracts rare pollination', 'improves return growth', 'strengthens Memory Seeds', 'reveals the Garden route',
   ][index],
-  cost: 1e6 * 5 ** index,
+  cost: CABINET_COSTS[index],
   hue: 78 + (index * 11) % 78,
 }))
 
 const shelves: CuriosityShelfDef[] = [
-  { id: 'hearthside', index: 'I', name: 'Survival', lore: 'Lives that endured by changing their relationship to time.', ids: VERDANCE_CURIOSITIES.slice(0, 4).map(({ id }) => id), rewardKind: 'production', rewardName: 'Dormant Wisdom', reward: 'all production ×1.12', rewardValue: 1.12 },
+  { id: 'hearthside', index: 'I', name: 'Survival', lore: 'Lives that endured by changing their relationship to time.', ids: VERDANCE_CURIOSITIES.slice(0, 4).map(({ id }) => id), rewardKind: 'production', rewardName: 'Dormant Wisdom', reward: 'all production ×1.10', rewardValue: 1.1 },
   { id: 'pilgrims', index: 'II', name: 'Communication', lore: 'Networks that made distant danger into shared knowledge.', ids: VERDANCE_CURIOSITIES.slice(4, 8).map(({ id }) => id), rewardKind: 'clicks', rewardName: 'Living Signal', reward: 'click power ×1.28', rewardValue: 1.28 },
   { id: 'portents', index: 'III', name: 'Inheritance', lore: 'Ways a world can give the future more than a copy of itself.', ids: VERDANCE_CURIOSITIES.slice(8, 12).map(({ id }) => id), rewardKind: 'stars', rewardName: 'Pollen Road', reward: 'Omen frequency +12%', rewardValue: 0.12 },
 ]

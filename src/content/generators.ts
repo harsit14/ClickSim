@@ -1,3 +1,5 @@
+import { balancedKindlingBaseCost } from './economy-balance'
+
 export interface GeneratorDef {
   id: string
   name: string
@@ -17,7 +19,16 @@ const G = (
   baseRate: number,
   hue: number,
   flavor: string,
-): GeneratorDef => ({ id, name, flavor, baseCost, baseRate, costMult: 1.15, tier, hue })
+): GeneratorDef => ({
+  id,
+  name,
+  flavor,
+  baseCost: balancedKindlingBaseCost(baseCost, baseRate, tier),
+  baseRate,
+  costMult: 1.15,
+  tier,
+  hue,
+})
 
 export const GENERATORS: GeneratorDef[] = [
   G(1, 'spark', 'Spark', 15, 0.3, 38, 'A fleck of you, set loose.'),

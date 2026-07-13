@@ -27,7 +27,7 @@ test('Verdance cannot light its Beacon before the first Pruning window', () => {
     || id === 'active-six-clicks-per-second'
     || id === 'competent-universe-mechanic'
   ))) {
-    const result = runCurrentPackAudit('verdance', profile, 8)
+    const result = runCurrentPackAudit('verdance', profile, 10)
     assert.notEqual(result.firstEpochAtMs, null, `${profile.id} never reached its first Pruning window`)
     assert.notEqual(result.firstBeaconAtMs, null, `${profile.id} never reached the World-Tree Beacon`)
     assert.ok(
@@ -45,7 +45,7 @@ test('Brahmalok and Vishnulok preserve an hour of signature play after the first
       || id === 'active-six-clicks-per-second'
       || id === 'competent-universe-mechanic'
     ))) {
-      const result = runCurrentPackAudit(universeId, profile, 8)
+      const result = runCurrentPackAudit(universeId, profile, 20)
       assert.notEqual(result.firstEpochAtMs, null, `${universeId}/${profile.id} never reached its first Epoch`)
       assert.notEqual(result.firstBeaconAtMs, null, `${universeId}/${profile.id} never reached its Beacon`)
       assert.ok(

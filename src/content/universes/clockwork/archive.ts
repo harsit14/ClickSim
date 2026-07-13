@@ -4,6 +4,7 @@ import type {
   CuriosityShelfDef,
 } from '../../curiosities'
 import { CABINET_RESONANCE_PER_ITEM } from '../../curiosities'
+import { CABINET_COSTS } from '../../economy-balance'
 
 export const CLOCKWORK_PATENT_ITEMS: CuriosityDef[] = [
   {
@@ -11,84 +12,84 @@ export const CLOCKWORK_PATENT_ITEMS: CuriosityDef[] = [
     classification: 'transmission patent · plate 01',
     flavor: 'The smallest machine that can still prove work moved from one place to another.',
     record: 'The patent rejects ornamental rotation. Its only claim is that a tooth must transmit force or remain still.',
-    desc: 'makes the first power route legible from source to destination', cost: 1e6, hue: 42,
+    desc: 'makes the first power route legible from source to destination', cost: CABINET_COSTS[0], hue: 42,
   },
   {
     id: 'clockwork-patent-self-oiling-bearing', name: 'Self-Oiling Bearing', glyph: '◎',
     classification: 'transmission patent · plate 02',
     flavor: 'A ceramic race carrying one sealed drop through an endless civic shift.',
     record: 'The bearing was approved only after its inventors proved maintenance could be scheduled without surprise failure.',
-    desc: 'reduces visible friction along completed trains', cost: 5e6, hue: 36,
+    desc: 'reduces visible friction along completed trains', cost: CABINET_COSTS[1], hue: 36,
   },
   {
     id: 'clockwork-patent-impossible-escapement', name: 'Impossible Escapement', glyph: '⊳',
     classification: 'transmission patent · plate 03',
     flavor: 'A pallet releases time without receiving the force that should move it.',
     record: 'One drawing labels the missing input THE HAND OUTSIDE THE PLAN. Every later copy removes the phrase.',
-    desc: 'marks exact cadence transmission without relying on sound', cost: 25e6, hue: 48,
+    desc: 'marks exact cadence transmission without relying on sound', cost: CABINET_COSTS[2], hue: 48,
   },
   {
     id: 'clockwork-patent-moonless-orrery', name: 'Moonless Orrery', glyph: '⌖',
     classification: 'transmission patent · plate 04',
     flavor: 'Every gear describes an orbit except the empty axle that moves them all.',
     record: 'The absent body has Tidefall mass readings. The Clockmakers knew another world before the city stopped.',
-    desc: 'adds a fixed meridian alignment to the route forecast', cost: 1e8, hue: 212,
+    desc: 'adds a fixed meridian alignment to the route forecast', cost: CABINET_COSTS[3], hue: 212,
   },
   {
     id: 'clockwork-patent-memory-cam', name: 'Memory Cam', glyph: '◒',
     classification: 'prediction patent · plate 01',
     flavor: 'Its uneven profile stores the shape of one completed ten-second shift.',
     record: 'The cam cannot improvise. It can, however, repeat the best thing the city has already chosen to do.',
-    desc: 'makes Recall Notice history visible as a fixed profile', cost: 5e8, hue: 198,
+    desc: 'makes Recall Notice history visible as a fixed profile', cost: CABINET_COSTS[4], hue: 198,
   },
   {
     id: 'clockwork-patent-compassion-governor', name: 'Compassion Governor', glyph: '⚖',
     classification: 'prediction patent · plate 02',
     flavor: 'A regulator that treats excessive efficiency as a civic emergency.',
     record: 'The city could predict every cost except what perfection would do to the people required to maintain it.',
-    desc: 'labels overload before a route becomes a single brittle dependency', cost: 2e9, hue: 204,
+    desc: 'labels overload before a route becomes a single brittle dependency', cost: CABINET_COSTS[5], hue: 204,
   },
   {
     id: 'clockwork-patent-punched-prophecy', name: 'Punched Prophecy', glyph: '◫',
     classification: 'prediction patent · plate 03',
     flavor: 'A paper future encoded as holes through which tomorrow can be inspected.',
     record: 'Every aperture is correct. The blank margin is where the Clockmakers recorded whether they obeyed it.',
-    desc: 'extends the deterministic Maintenance Signal forecast', cost: 1e10, hue: 176,
+    desc: 'extends the deterministic Maintenance Signal forecast', cost: CABINET_COSTS[6], hue: 176,
   },
   {
     id: 'clockwork-patent-perpetual-warranty', name: 'Perpetual Warranty', glyph: '∞',
     classification: 'prediction patent · plate 04',
     flavor: 'A maintenance promise valid after the manufacturer, owner, and calendar have ended.',
     record: 'The final clause appoints the restored Heart as guarantor, dated before the Heart arrived.',
-    desc: 'retains Patent Ledger evidence across every Rewinding', cost: 1e11, hue: 44,
+    desc: 'retains Patent Ledger evidence across every Rewinding', cost: CABINET_COSTS[7], hue: 44,
   },
   {
     id: 'clockwork-patent-broken-hourglass', name: 'Broken Hourglass', glyph: '⧖',
     classification: 'exception patent · plate 01',
     flavor: 'The sand is numbered, but one grain remains outside every count.',
     record: 'The bureau classified the grain as controlled unpredictability: visible, bounded, and never required.',
-    desc: 'introduces bounded exception as philosophy rather than a random reward', cost: 1e12, hue: 14,
+    desc: 'introduces bounded exception as philosophy rather than a random reward', cost: CABINET_COSTS[8], hue: 14,
   },
   {
     id: 'clockwork-patent-clockmakers-hand', name: 'Clockmaker’s Hand', glyph: '✋',
     classification: 'exception patent · plate 02',
     flavor: 'An articulated tool worn smooth where a human thumb once rested.',
     record: 'Its last repair introduced a harmless asymmetry. Production improved because someone chose care over specification.',
-    desc: 'shows manual route changes as authored decisions', cost: 1e13, hue: 30,
+    desc: 'shows manual route changes as authored decisions', cost: CABINET_COSTS[9], hue: 30,
   },
   {
     id: 'clockwork-patent-city-shift-bell', name: 'City Shift Bell', glyph: '◓',
     classification: 'exception patent · plate 03',
     flavor: 'A tuned bell whose schedule belongs to workers rather than the machine.',
     record: 'The bell introduced the city’s first unscheduled holiday. The Great Regulator preserved the discrepancy.',
-    desc: 'adds a visual and captioned equivalent to every scheduled chime', cost: 1e14, hue: 52,
+    desc: 'adds a visual and captioned equivalent to every scheduled chime', cost: CABINET_COSTS[10], hue: 52,
   },
   {
     id: 'clockwork-patent-blueprint-tomorrow', name: 'Blueprint for Tomorrow', glyph: '⌑',
     classification: 'exception patent · plate 04',
     flavor: 'A complete plan whose final route is deliberately left for another hand.',
     record: 'The city predicted the Devourer, stopped every clock, and survived unnoticed. The blank route asks whether survival without choice was freedom at all.',
-    desc: 'reveals why the Unwound City stopped and what restoration risks', cost: 1e15, hue: 214,
+    desc: 'reveals why the Unwound City stopped and what restoration risks', cost: CABINET_COSTS[11], hue: 214,
   },
 ]
 

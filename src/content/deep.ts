@@ -41,21 +41,21 @@ export const DEEP_UPGRADES: DeepUpgrade[] = [
     id: 'dawn-memory',
     name: 'Dawn Memory',
     flavor: 'Some mornings refuse to be unmade.',
-    cost: 2,
-    desc: 'every rebirth begins with 40 {spark} and 5 {wisp}',
+    cost: 1,
+    desc: 'every rebirth begins with 30 {spark} and 3 {wisp}',
   },
   {
     id: 'event-horizon',
     name: 'Event Horizon',
     flavor: 'Nothing escapes. Especially not value.',
-    cost: 4,
-    desc: 'stardust gain ×2',
+    cost: 3,
+    desc: 'stardust gain ×1.75',
   },
   {
     id: 'deep-resonance',
     name: 'Deep Resonance',
     flavor: 'The void hums along now.',
-    cost: 3,
+    cost: 1,
     desc: 'all light ×2, forever, everywhere',
   },
 ]
@@ -67,4 +67,11 @@ export const DEEP_EFFECTS: Record<string, Effect[]> = {
   'deep-resonance': [{ kind: 'globalMult', value: 2 }],
 }
 
-export const SINGULARITY_COST = 20 // stardust gathered per singularity
+export const SINGULARITY_COST = 12 // stardust gathered per singularity
+export const SINGULARITY_COST_STEPS = [12, 8, 6] as const
+
+/** Deep recovery accelerates after the first two lifetime Singularities. */
+export function singularityCostForCount(lifetimeSingularities: number): number {
+  const count = Number.isFinite(lifetimeSingularities) ? Math.max(0, Math.floor(lifetimeSingularities)) : 0
+  return SINGULARITY_COST_STEPS[Math.min(count, SINGULARITY_COST_STEPS.length - 1)]
+}

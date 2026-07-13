@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { planKindledSky } from '../render/emberlight/kindled-sky'
+  import { achievementPowerPercent } from '../content/economy-balance'
 
   let {
     achievementIds,
@@ -14,6 +15,7 @@
   let previousIds = new Set<string>()
   let newestId = $state<string | null>(null)
   const plan = $derived(planKindledSky(achievementIds))
+  const powerPercent = $derived(achievementPowerPercent(plan.stars.length))
 
   onMount(() => {
     previousIds = new Set(achievementIds)
@@ -57,7 +59,7 @@
         <span role="tooltip">{star.name}</span>
       </button>
     {/each}
-    <p><strong>Kindled Sky</strong><span>{plan.stars.length}% Radiance</span></p>
+    <p><strong>Kindled Sky</strong><span>{powerPercent}% Radiance</span></p>
   </section>
 {/if}
 

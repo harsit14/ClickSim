@@ -1,5 +1,6 @@
 import { amountFromNumber, gteAmount } from '../../core/numeric/amount'
 import { CABINET_RESONANCE_PER_ITEM } from '../curiosities'
+import { balancedKindlingBaseCost, CABINET_COSTS, universeKindlingFloorMultiplier } from '../economy-balance'
 import type { CuriosityCabinetDef, CuriosityDef, CuriosityShelfDef } from '../curiosities'
 import type { EchoDef } from '../echoes'
 import type { GeneratorDef } from '../generators'
@@ -153,7 +154,6 @@ export interface FutureUniverseSpec {
   }[]
 }
 
-const ARCHIVE_COSTS = [1e6, 5e6, 25e6, 1e8, 5e8, 2e9, 1e10, 1e11, 1e12, 1e13, 1e14, 1e15] as const
 const OWNERSHIP_THRESHOLDS = [1, 10, 25, 50, 100] as const
 const OWNERSHIP_LABELS = ['single specimen', 'organized array', 'interacting network', 'world-shaping system', 'named infrastructure'] as const
 
@@ -176,7 +176,12 @@ function makeGenerator(spec: FutureUniverseSpec, seed: FutureKindlingSeed, index
     id: `${spec.prefix}-kindling-${String(index + 1).padStart(2, '0')}`,
     name: seed.name,
     flavor: seed.flavor,
-    baseCost: spec.economy.baseCosts[index],
+    baseCost: balancedKindlingBaseCost(
+      spec.economy.baseCosts[index],
+      spec.economy.baseRates[index],
+      index + 1,
+      universeKindlingFloorMultiplier(spec.id),
+    ),
     baseRate: spec.economy.baseRates[index],
     costMult: spec.economy.costMultiplier,
     tier: index + 1,
@@ -358,7 +363,7 @@ function makeCabinet(spec: FutureUniverseSpec): { cabinet: CuriosityCabinetDef; 
     flavor: seed.observation,
     record: seed.implication,
     desc: seed.effect,
-    cost: ARCHIVE_COSTS[index],
+    cost: CABINET_COSTS[index],
     hue: (spec.palette.accentHue + index * 17) % 360,
     ...(index === 2 ? { kind: 'hearthkeeper' as const } : {}),
   }))
@@ -371,7 +376,7 @@ function makeCabinet(spec: FutureUniverseSpec): { cabinet: CuriosityCabinetDef; 
     rewardKind: (['production', 'clicks', 'production'] as const)[index],
     rewardName: `${name} Accord`,
     reward: spec.shelfRewards[index],
-    rewardValue: index === 0 ? 1.1 : index === 1 ? 1.25 : 1.18,
+    rewardValue: index === 1 ? 1.25 : 1.08,
   }))
   return {
     items,

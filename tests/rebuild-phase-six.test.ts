@@ -95,7 +95,7 @@ test('Phase 6.4 gives every chamber doctrine, trial, and Omen reward a strategic
   assert.equal(new Set(fingerprints).size, CHAMBER_IDS.length, 'chamber doctrine strategies became interchangeable')
 })
 
-test('Phase 6.5 gives every chamber its own 3–6 hour competent Beacon curve', () => {
+test('the mature-efficiency pass preserves a distinct 6–18 hour competent Beacon curve', () => {
   const competent = SIMULATOR_PROFILES.find(({ id }) => id === 'competent-universe-mechanic')!
   const costCurves = CHAMBER_IDS.map((universeId) => (
     universeById(universeId).generators.map(({ baseCost }) => baseCost).join(',')
@@ -103,13 +103,13 @@ test('Phase 6.5 gives every chamber its own 3–6 hour competent Beacon curve', 
   assert.equal(new Set(costCurves).size, CHAMBER_IDS.length, 'chamber worlds share one base-cost ladder')
 
   const beaconHours = CHAMBER_IDS.map((universeId) => {
-    const result = runCurrentPackAudit(universeId, competent, 6.1)
-    assert.notEqual(result.firstBeaconAtMs, null, `${universeId} missed its six-hour Beacon window`)
+    const result = runCurrentPackAudit(universeId, competent, 18.1)
+    assert.notEqual(result.firstBeaconAtMs, null, `${universeId} missed its eighteen-hour Beacon window`)
     assert.ok(result.longestPreEpochPurchaseGapMs <= 10 * 60_000, `${universeId} has a pre-Epoch wall over ten minutes`)
     return result.firstBeaconAtMs! / 3_600_000
   })
   beaconHours.forEach((hours, index) => {
-    assert.ok(hours >= 3 && hours <= 6, `${CHAMBER_IDS[index]} reached its Beacon in ${hours.toFixed(2)}h`)
+    assert.ok(hours >= 6 && hours <= 18, `${CHAMBER_IDS[index]} reached its Beacon in ${hours.toFixed(2)}h`)
   })
-  assert.deepEqual(beaconHours, [4.5, 3.8, 5.083333333333333, 5.55])
+  assert.deepEqual(beaconHours, [7.916666666666667, 17.2, 12.116666666666667, 8.366666666666667])
 })

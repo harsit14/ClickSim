@@ -191,8 +191,8 @@ const TIDEFALL_PROGRESSION: UniverseProgressionIdentity = {
       'auto-kindler': { name: 'Current Tender', flavor: 'A patient hand made from pressure and brass.', effect: 'gathers from your chosen Kindling families and priority, every 2s' },
       'auto-stoker': { name: 'Reef Scribe', flavor: 'It reads the shoal and records the obvious next law.', effect: 'automatically inscribes the cheapest available upgrade, every 2s' },
       'nova-engine': { name: 'Ebb Engine', flavor: 'Every tide learns when to leave.', effect: 'automatically triggers Undertow when the Moon Salt gain reaches your threshold' },
-      'dawn-memory': { name: 'Tide Memory', flavor: 'Some waters refuse to be emptied.', effect: 'every return to low tide begins with 40 {spark} and 5 {wisp}' },
-      'event-horizon': { name: 'The Black Mouth', flavor: 'Nothing escapes. Value returns as pressure.', effect: 'Moon Salt gain ×2' },
+      'dawn-memory': { name: 'Tide Memory', flavor: 'Some waters refuse to be emptied.', effect: 'every return to low tide begins with 30 {spark} and 3 {wisp}' },
+      'event-horizon': { name: 'The Black Mouth', flavor: 'Nothing escapes. Value returns as pressure.', effect: 'Moon Salt gain ×1.75' },
       'deep-resonance': { name: 'Hadal Resonance', flavor: 'The ocean floor has begun humming back.', effect: 'all glow ×2, forever, everywhere' },
     },
     works: {
@@ -289,8 +289,8 @@ const VERDANCE_PROGRESSION: UniverseProgressionIdentity = {
       'auto-kindler': { name: 'Root Tender', flavor: 'A patient root finds the next viable seed.', effect: 'plants from your chosen Kindling families and priority, every 2s' },
       'auto-stoker': { name: 'Graft Scribe', flavor: 'Mycelium records the next useful living refinement.', effect: 'automatically inscribes the cheapest available graft, every 2s' },
       'nova-engine': { name: 'Pruning Hand', flavor: 'The grove learns to release growth at the chosen threshold.', effect: 'automatically triggers Pruning at your Memory Seed threshold' },
-      'dawn-memory': { name: 'Seed Memory', flavor: 'The first soil remembers how the prior forest began.', effect: 'every new season begins with 40 {spark} and 5 {wisp}' },
-      'event-horizon': { name: 'Root Mouth', flavor: 'What enters the deepest soil returns as possibility.', effect: 'Memory Seed gain ×2' },
+      'dawn-memory': { name: 'Seed Memory', flavor: 'The first soil remembers how the prior forest began.', effect: 'every new season begins with 30 {spark} and 3 {wisp}' },
+      'event-horizon': { name: 'Root Mouth', flavor: 'What enters the deepest soil returns as possibility.', effect: 'Memory Seed gain ×1.75' },
       'deep-resonance': { name: 'Rhizome Resonance', flavor: 'Every world-root has begun answering the others.', effect: 'all sap ×2, forever, everywhere' },
     },
     works: {
@@ -379,8 +379,8 @@ const CLOCKWORK_PROGRESSION: UniverseProgressionIdentity = {
       'auto-kindler': { name: 'Automatic Oiler', flavor: 'A service arm attends the selected trains.', effect: 'installs from your chosen Kindling families and priority, every 2s' },
       'auto-stoker': { name: 'Patent Clerk', flavor: 'It indexes the next affordable refinement without hiding the formula.', effect: 'automatically files the cheapest available upgrade, every 2s' },
       'nova-engine': { name: 'Rewinding Governor', flavor: 'The interval releases only at the declared Mainspring threshold.', effect: 'automatically triggers Rewinding at your Mainspring threshold' },
-      'dawn-memory': { name: 'Start-State Register', flavor: 'The machine preserves an inspected beginning.', effect: 'every restart begins with 40 {spark} and 5 {wisp}' },
-      'event-horizon': { name: 'Zero Escapement', flavor: 'No useful interval escapes uncounted.', effect: 'Mainspring gain ×2' },
+      'dawn-memory': { name: 'Start-State Register', flavor: 'The machine preserves an inspected beginning.', effect: 'every restart begins with 30 {spark} and 3 {wisp}' },
+      'event-horizon': { name: 'Zero Escapement', flavor: 'No useful interval escapes uncounted.', effect: 'Mainspring gain ×1.75' },
       'deep-resonance': { name: 'Causal Resonance', flavor: 'Every world-machine transmits through the same silent bearing.', effect: 'all ticks ×2, forever, everywhere' },
     },
     works: {
@@ -522,7 +522,7 @@ const BRAHMALOK_PROGRESSION = futureProgression({
     'auto-stoker': { name: 'Margin Scribe', flavor: 'The manuscript marks the next useful refinement.', effect: 'automatically inscribes the cheapest available law, every 2s' },
     'nova-engine': { name: 'Recomposition Engine', flavor: 'The folio binds only at the declared threshold.', effect: 'automatically triggers Recomposition at your Folio threshold' },
     'dawn-memory': { name: 'First-Page Memory', flavor: 'The new mandala remembers how the prior one began.', effect: 'every new manuscript begins with a measured head start' },
-    'event-horizon': { name: 'Unwritten Margin', flavor: 'Open space returns as possibility rather than capacity.', effect: 'Folio gain ×2' },
+    'event-horizon': { name: 'Unwritten Margin', flavor: 'Open space returns as possibility rather than capacity.', effect: 'Folio gain ×1.75' },
     'deep-resonance': { name: 'Creative Relation', flavor: 'Every realm answers without becoming raw material.', effect: 'all Possibility ×2, forever, everywhere' },
   },
   deepWorks: {
@@ -587,7 +587,7 @@ const VISHNULOK_PROGRESSION = futureProgression({
     'auto-stoker': { name: 'Sounding Relay', flavor: 'The archive records the next useful sustaining refinement.', effect: 'automatically records the cheapest available law, every 2s' },
     'nova-engine': { name: 'Renewal Relay', flavor: 'The circuit closes only at the declared Return threshold.', effect: 'automatically triggers Renewal at your Return threshold' },
     'dawn-memory': { name: 'Harbor Memory', flavor: 'The new ocean remembers a stable opening refuge.', effect: 'every new ocean begins with a bounded head start' },
-    'event-horizon': { name: 'Quiet Horizon', flavor: 'No useful burden crosses the refuge unacknowledged.', effect: 'Return gain ×2' },
+    'event-horizon': { name: 'Quiet Horizon', flavor: 'No useful burden crosses the refuge unacknowledged.', effect: 'Return gain ×1.75' },
     'deep-resonance': { name: 'Cosmic Continuity', flavor: 'Every realm contributes to a larger sustaining relation.', effect: 'all Continuity ×2, forever, everywhere' },
   },
   deepWorks: {
@@ -652,7 +652,7 @@ const KAILASH_PROGRESSION = futureProgression({
     'auto-stoker': { name: 'Trace Keeper', flavor: 'The field marks the next useful refinement.', effect: 'automatically records the cheapest available law, every 2s' },
     'nova-engine': { name: 'Consent Threshold', flavor: 'Release becomes available only at the declared Trace threshold.', effect: 'automatically prepares Release at your Trace threshold; consent remains required' },
     'dawn-memory': { name: 'Snowline Memory', flavor: 'The next cycle remembers where the prior melt began.', effect: 'every new ascent begins with a measured head start' },
-    'event-horizon': { name: 'Open Ring', flavor: 'The cycle is complete while one interval remains unenclosed.', effect: 'Trace gain ×2' },
+    'event-horizon': { name: 'Open Ring', flavor: 'The cycle is complete while one interval remains unenclosed.', effect: 'Trace gain ×1.75' },
     'deep-resonance': { name: 'Carried Renewal', flavor: 'Every realm contributes a relation that can survive change.', effect: 'all Stillness ×2, forever, everywhere' },
   },
   deepWorks: {

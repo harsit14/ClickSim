@@ -1,5 +1,6 @@
 import type { GeneratorDef } from '../../generators'
 import type { Effect, UpgradeDef } from '../../upgrades'
+import { balancedKindlingBaseCost } from '../../economy-balance'
 
 const kindling = (
   tier: number,
@@ -9,7 +10,7 @@ const kindling = (
   baseRate: number,
   hue: number,
   flavor: string,
-): GeneratorDef => ({ id, name, flavor, baseCost, baseRate, costMult: 1.15, tier, hue })
+): GeneratorDef => ({ id, name, flavor, baseCost: balancedKindlingBaseCost(baseCost, baseRate, tier), baseRate, costMult: 1.15, tier, hue })
 
 export const CLOCKWORK_GENERATORS: GeneratorDef[] = [
   kindling(1, 'clockwork-tooth', 'Tooth', 15, 0.25, 42, 'One brass tooth waiting for a force worth transmitting.'),

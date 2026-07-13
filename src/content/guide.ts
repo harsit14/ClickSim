@@ -231,7 +231,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Deep Collapse',
         paragraphs: [
-          'Every twenty Stardust gathered in the current era produces one base Singularity, modified by later repeatable works. A Deep Collapse resets the run, Stardust, constellation, and temporary Stardust works. Singularities and everything purchased with them persist through future Deep Collapses.',
+          'The first Singularity costs twelve Stardust gathered in the current era; after one lifetime Singularity the exchange falls to eight, and after two it settles at six. Later repeatable works modify the yield. Each lifetime Singularity also adds +100% all production and +200% Stardust scale, helping the new era rebuild after its Constellation is erased. A Deep Collapse resets the run, Stardust, constellation, and temporary Stardust works. Singularities and everything purchased with them persist through future Deep Collapses.',
           'Emberlight presents this layer as the cold abstract Deep. Tidefall descends into the Hadal Archive, where the same permanent mechanics become Pressure Laws, Hadal Descents, a Current Atlas, and Pressure Trials with their own names and lore.',
         ],
       },
@@ -367,7 +367,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Achievements and world power',
         paragraphs: [
-          'Every achievement grants one point of the current realm’s achievement power: Radiance in Emberlight and Resonance in Tidefall. Each point adds one percent to global production. The Stats panel localizes the record to the current realm and conceals hidden names until discovered.',
+          'Every achievement grants one point of the current realm’s achievement power: Radiance in Emberlight and Resonance in Tidefall. The first twenty points add one percent each, points twenty-one through fifty add half a percent each, and later points add a quarter percent each. The Stats panel shows the actual combined power, localizes the record to the current realm, and conceals hidden names until discovered.',
           'Achievement categories cover earnings, generators, clicking, criticals, rhythm, prestige, trials, cabinets, time, endings, and unusual behavior. Hidden achievements reward experimentation; they are never required to make the economy function.',
         ],
       },

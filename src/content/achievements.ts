@@ -181,7 +181,7 @@ A('ten-hours-kindled', 'Ten Hours Kindled', 'Lumen made you a mug of something w
 
 // ── Hidden ──────────────────────────────────────────────────────────────
 H('impatience', 'Impatience', '100 clicks before buying a single thing. The ember admires commitment to the bit.', (g) =>
-  g.challenge === null && g.clicks >= 100 && Object.keys(g.owned).length === 0)
+  g.challenge === null && g.supernovae === 0 && g.collapses === 0 && g.clicks >= 100 && Object.keys(g.owned).length === 0)
 H('night-reader', 'Night Reader', 'It’s 3 AM. The ember doesn’t judge. Lumen does, a little.', () =>
   new Date().getHours() === 3)
 H('the-quiet-kind', 'The Quiet Kind', 'All sound off. The light doesn’t mind silence.', (g) =>

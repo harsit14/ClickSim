@@ -4,6 +4,11 @@ import { NODE_BY_ID } from '../content/constellation'
 import { CHALLENGE_BY_ID, type ChallengeMods } from '../content/challenges'
 import { DEEP_EFFECTS, DEEP_UPGRADE_BY_ID } from '../content/deep'
 import {
+  LIFETIME_SINGULARITY_PRODUCTION_BONUS,
+  STARDUST_PRODUCTION_BONUS_PER_POINT,
+  achievementProductionMult,
+} from '../content/economy-balance'
+import {
   curiosityClickMult,
   curiosityProductionMult,
 } from '../content/curiosities'
@@ -65,9 +70,9 @@ export interface EcoState {
   clicks: number
   owned: Record<string, number>
   upgrades: string[]
-  /** unlocked achievement ids — each grants +1% Radiance to all production */
+  /** unlocked achievement ids — world power follows the bounded tier curve */
   achievements: string[]
-  /** stardust earned this deep-era — each grants +2% to all production */
+  /** stardust earned this deep-era — each grants +3% to all production */
   stardustTotal: EconomyAmount
   /** owned constellation node ids — their effects join the modifier pipeline */
   constellation: string[]
@@ -75,6 +80,8 @@ export interface EcoState {
   stardustWorks: Record<string, number>
   /** owned singularity upgrades (layer 2) */
   singUpgrades: string[]
+  /** lifetime Singularities; absent only in older headless fixtures */
+  singTotal?: EconomyAmount
   /** repeatable Singularity works; persist through Deep Collapses */
   deepWorks: Record<string, number>
   /** active challenge trial, if any */
@@ -238,10 +245,14 @@ export function unitRate(s: EcoState, def: GeneratorDef): EconomyAmount {
 
 export function globalMult(s: EcoState, now = Date.now()): EconomyAmount {
   const universe = universeById(s.activeUniverse)
-  let multiplier = amountFromNumber(1 + 0.01 * s.achievements.length) // Radiance
+  let multiplier = amountFromNumber(achievementProductionMult(s.achievements.length))
   multiplier = multiplyAmounts(
     multiplier,
-    addAmounts(ONE_AMOUNT, multiplyAmountByNumber(s.stardustTotal, 0.02)),
+    addAmounts(ONE_AMOUNT, multiplyAmountByNumber(s.stardustTotal, STARDUST_PRODUCTION_BONUS_PER_POINT)),
+  )
+  multiplier = multiplyAmounts(
+    multiplier,
+    addAmounts(ONE_AMOUNT, multiplyAmountByNumber(s.singTotal ?? ZERO_AMOUNT, LIFETIME_SINGULARITY_PRODUCTION_BONUS)),
   )
   multiplier = multiplyAmounts(multiplier, powAmount(amountFromNumber(2), s.remembrances))
   multiplier = multiplyAmounts(multiplier, powAmount(amountFromNumber(3), s.beacons.length))
@@ -362,7 +373,7 @@ function globalFormulaTerms(s: EcoState, now: number, prefix: string): FormulaNo
       'system',
       'achievement-radiance',
       'Achievement radiance',
-      formulaAmount(amountFromNumber(1 + 0.01 * s.achievements.length)),
+      formulaAmount(amountFromNumber(achievementProductionMult(s.achievements.length))),
       universe.id,
       `${s.achievements.length} achievements`,
     ),
@@ -371,7 +382,15 @@ function globalFormulaTerms(s: EcoState, now: number, prefix: string): FormulaNo
       'epoch',
       'stardust-glow',
       'Stardust glow',
-      formulaAmount(addAmounts(ONE_AMOUNT, multiplyAmountByNumber(s.stardustTotal, 0.02))),
+      formulaAmount(addAmounts(ONE_AMOUNT, multiplyAmountByNumber(s.stardustTotal, STARDUST_PRODUCTION_BONUS_PER_POINT))),
+      universe.id,
+    ),
+    formulaTerm(
+      `${prefix}:singularity-afterglow`,
+      'deep',
+      'lifetime-singularity-afterglow',
+      'Lifetime Singularity afterglow',
+      formulaAmount(addAmounts(ONE_AMOUNT, multiplyAmountByNumber(s.singTotal ?? ZERO_AMOUNT, LIFETIME_SINGULARITY_PRODUCTION_BONUS))),
       universe.id,
     ),
     formulaTerm(

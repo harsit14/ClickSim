@@ -14,10 +14,10 @@ const LONG_RESTORED: RealmPacingTarget = {
   firstEpochHours: [1.5, 5], beaconHours: [8, 20], minimumPostEpochHours: 4,
 }
 const REGENERATIVE: RealmPacingTarget = {
-  firstEpochHours: [1.5, 5], beaconHours: [4, 8], minimumPostEpochHours: 0.5,
+  firstEpochHours: [1.5, 5], beaconHours: [6, 10], minimumPostEpochHours: 0.5,
 }
 const LOKA: RealmPacingTarget = {
-  firstEpochHours: [1.5, 5], beaconHours: [4, 8], minimumPostEpochHours: 1,
+  firstEpochHours: [1.5, 5], beaconHours: [8, 20], minimumPostEpochHours: 1,
 }
 
 /** Player-facing targets; the synthetic 1e309 horizon is numeric stress only. */

@@ -2,7 +2,14 @@ import type { GeneratorDef } from '../content/generators'
 import { UI_UNLOCK_BY_ID } from '../content/ui-unlocks'
 import { CONSTELLATION, NODE_BY_ID, nodeAvailable, perkBonus } from '../content/constellation'
 import { CHALLENGE_BY_ID, challengeUnlocked } from '../content/challenges'
-import { DEEP_UPGRADES, DEEP_UPGRADE_BY_ID, SINGULARITY_COST } from '../content/deep'
+import { DEEP_UPGRADES, DEEP_UPGRADE_BY_ID, singularityCostForCount } from '../content/deep'
+import {
+  DAWN_MEMORY_FIRST_KINDLINGS,
+  DAWN_MEMORY_SECOND_KINDLINGS,
+  EVENT_HORIZON_STARDUST_MULTIPLIER,
+  LIFETIME_SINGULARITY_STARDUST_BONUS,
+  STARDUST_PIVOT,
+} from '../content/economy-balance'
 import {
   cometGift,
   protostarFuelCost,
@@ -80,6 +87,7 @@ import {
   ZERO_AMOUNT,
   addAmounts,
   amountFromNumber,
+  amountToNumber,
   divideAmountByNumber,
   divideAmounts,
   floorAmount,
@@ -794,11 +802,11 @@ export function earn(value: AmountInput) {
 }
 
 // ── Supernova (prestige layer 1) ─────────────────────────────────────────
-export const STARDUST_PIVOT = 1e18
+export { STARDUST_PIVOT } from '../content/economy-balance'
 
 function stardustScale(): EconomyAmount {
-  const horizon = game.singUpgrades.includes('event-horizon') ? 2 : 1
-  const deepGlow = addAmounts(ONE_AMOUNT, multiplyAmountByNumber(game.singTotal, 0.5))
+  const horizon = game.singUpgrades.includes('event-horizon') ? EVENT_HORIZON_STARDUST_MULTIPLIER : 1
+  const deepGlow = addAmounts(ONE_AMOUNT, multiplyAmountByNumber(game.singTotal, LIFETIME_SINGULARITY_STARDUST_BONUS))
   return multiplyAmountByNumber(deepGlow, horizon * stardustYieldMult(game.stardustWorks))
 }
 
@@ -839,10 +847,10 @@ function resetRun(withHeadStart: boolean) {
   if (!withHeadStart) return
   const sparks =
     perkBonus(game.constellation, 'headStart') +
-    (game.singUpgrades.includes('dawn-memory') ? 40 : 0)
+    (game.singUpgrades.includes('dawn-memory') ? DAWN_MEMORY_FIRST_KINDLINGS : 0)
   const [firstKindling, secondKindling] = universeById(game.activeUniverse).generators
   if (sparks > 0 && firstKindling) game.owned[firstKindling.id] = sparks
-  if (game.singUpgrades.includes('dawn-memory') && secondKindling) game.owned[secondKindling.id] = 5
+  if (game.singUpgrades.includes('dawn-memory') && secondKindling) game.owned[secondKindling.id] = DAWN_MEMORY_SECOND_KINDLINGS
 }
 
 function snapshotRun(): RunSnapshot {
@@ -886,9 +894,13 @@ export function performSupernova(): EconomyAmount {
 export function deepCollapseGain(): EconomyAmount {
   if (game.challenge) return ZERO_AMOUNT
   return floorAmount(multiplyAmountByNumber(
-    divideAmountByNumber(game.stardustTotal, SINGULARITY_COST),
+    divideAmountByNumber(game.stardustTotal, deepCollapseCost()),
     singularityYieldMult(game.deepWorks),
   ))
+}
+
+export function deepCollapseCost(): number {
+  return singularityCostForCount(amountToNumber(game.singTotal))
 }
 
 /** Collapse the era: stardust, constellation, and era-light all return to the dark. */
