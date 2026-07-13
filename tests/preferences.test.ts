@@ -6,6 +6,7 @@ import {
   resolveEffectiveVisualQuality,
   resolveVisualQuality,
 } from '../src/core/preferences'
+import { migrateAndSanitizeSave } from '../src/core/save-data'
 
 test('automatic quality protects constrained mobile devices', () => {
   assert.equal(resolveVisualQuality('auto', {
@@ -56,4 +57,10 @@ test('motion follows the operating system unless reduced motion is forced', () =
   assert.equal(motionReduced('system', false), false)
   assert.equal(motionReduced('system', true), true)
   assert.equal(motionReduced('reduced', false), true)
+})
+
+test('legacy beat intensity choices migrate to explicit signal locations', () => {
+  assert.equal(migrateAndSanitizeSave({ version: 12, beatVisual: 'subtle' })?.beatVisual, 'heart')
+  assert.equal(migrateAndSanitizeSave({ version: 12, beatVisual: 'strong' })?.beatVisual, 'edge')
+  assert.equal(migrateAndSanitizeSave({ version: 12, beatVisual: 'off' })?.beatVisual, 'off')
 })

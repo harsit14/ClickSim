@@ -1726,16 +1726,49 @@ export class World {
       }
     }
 
-    // beat rings — the click window made visible
-    for (const born of this.rings) {
-      const age = (now - born) / 650
-      const accent = universeById(game.activeUniverse).palette.accentHue
-      const strong = game.beatVisual === 'strong'
-      ctx.beginPath()
-      ctx.strokeStyle = `hsla(${accent}, ${strong ? 100 : 88}%, ${strong ? 82 : 72}%, ${(1 - age) * (strong ? 0.68 : 0.3)})`
-      ctx.lineWidth = strong ? 3 : 1.5
-      ctx.arc(c.x, c.y, r * (1.18 + age * (strong ? 1.25 : 1.5)), 0, Math.PI * 2)
-      ctx.stroke()
+    // The click window made visible. Reduced motion keeps one continuously
+    // present stepped marker rather than creating an appearing/disappearing flash.
+    const reducedBeatMotion = this.motionScale() < 1
+    const accent = universeById(game.activeUniverse).palette.accentHue
+    if (game.beatVisual !== 'off' && reducedBeatMotion && this.lastBeat >= 0) {
+      const step = ((this.lastBeat % 4) + 4) % 4
+      ctx.save()
+      ctx.strokeStyle = `hsla(${accent}, 96%, 84%, 0.72)`
+      ctx.fillStyle = `hsla(${accent}, 96%, 84%, 0.82)`
+      ctx.lineWidth = 2
+      if (game.beatVisual === 'heart') {
+        const angle = -Math.PI / 2 + step * Math.PI / 2
+        ctx.beginPath()
+        ctx.arc(c.x, c.y, r * 1.34, angle - 0.28, angle + 0.28)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.arc(c.x + Math.cos(angle) * r * 1.34, c.y + Math.sin(angle) * r * 1.34, 3.2, 0, Math.PI * 2)
+        ctx.fill()
+      } else {
+        const inset = 10
+        const length = Math.max(54, Math.min(width, height) * 0.12)
+        ctx.beginPath()
+        if (step === 0) { ctx.moveTo((width - length) / 2, inset); ctx.lineTo((width + length) / 2, inset) }
+        if (step === 1) { ctx.moveTo(width - inset, (height - length) / 2); ctx.lineTo(width - inset, (height + length) / 2) }
+        if (step === 2) { ctx.moveTo((width + length) / 2, height - inset); ctx.lineTo((width - length) / 2, height - inset) }
+        if (step === 3) { ctx.moveTo(inset, (height + length) / 2); ctx.lineTo(inset, (height - length) / 2) }
+        ctx.stroke()
+      }
+      ctx.restore()
+    } else if (!reducedBeatMotion) {
+      for (const born of this.rings) {
+        const age = (now - born) / 650
+        ctx.beginPath()
+        ctx.strokeStyle = `hsla(${accent}, 92%, 78%, ${(1 - age) * 0.42})`
+        ctx.lineWidth = 2
+        if (game.beatVisual === 'heart') {
+          ctx.arc(c.x, c.y, r * (1.18 + age * 1.35), 0, Math.PI * 2)
+        } else if (game.beatVisual === 'edge') {
+          const inset = 8 + age * 18
+          ctx.roundRect(inset, inset, width - inset * 2, height - inset * 2, 12)
+        }
+        ctx.stroke()
+      }
     }
     this.drawQuasarTaps(now, collapseFade)
 

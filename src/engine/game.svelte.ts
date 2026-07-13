@@ -335,7 +335,7 @@ export const game: GameState = $state({
   musicVolume: 0.6,
   motionPreference: 'system',
   visualQuality: 'auto',
-  beatVisual: 'subtle',
+  beatVisual: 'heart',
   textScale: 'normal',
   highContrast: false,
   buyAmount: 1,

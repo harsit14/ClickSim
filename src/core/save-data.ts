@@ -391,7 +391,7 @@ const MIGRATIONS: Record<number, (d: Record<string, unknown>) => Record<string, 
     version: 12,
     motionPreference: d.motionPreference ?? 'system',
     visualQuality: d.visualQuality ?? 'auto',
-    beatVisual: d.beatVisual ?? 'subtle',
+    beatVisual: d.beatVisual ?? 'heart',
     textScale: d.textScale ?? 'normal',
     highContrast: d.highContrast ?? false,
   }),
@@ -402,7 +402,7 @@ const ENDINGS = new Set<string>(['warden', 'hunger', 'companion'])
 const SAFE_ID = /^[a-z0-9][a-z0-9-]{0,63}$/
 const MOTION_PREFERENCES = new Set<MotionPreference>(['system', 'reduced'])
 const VISUAL_QUALITIES = new Set<VisualQuality>(['auto', 'high', 'balanced', 'low'])
-const BEAT_VISUALS = new Set<BeatVisual>(['subtle', 'strong', 'off'])
+const BEAT_VISUALS = new Set<BeatVisual>(['heart', 'edge', 'off'])
 const TEXT_SCALES = new Set<TextScale>(['normal', 'large'])
 
 const achievementIds = new Set(ACHIEVEMENTS.map((item) => item.id))
@@ -428,6 +428,14 @@ const lumenShardClaimIds = new Set(lumenClaimIds())
 function numberValue(value: unknown, fallback: number, min = 0, max = Number.MAX_VALUE): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
   return Math.min(max, Math.max(min, value))
+}
+
+function beatVisualValue(value: unknown): BeatVisual {
+  // v12-v23 used intensity names for the same persisted field. Keep those
+  // saves meaningful while replacing intensity with the more useful target.
+  if (value === 'subtle') return 'heart'
+  if (value === 'strong') return 'edge'
+  return enumValue(value, BEAT_VISUALS, 'heart')
 }
 
 function integerValue(value: unknown, fallback = 0, min = 0, max = Number.MAX_SAFE_INTEGER): number {
@@ -760,7 +768,7 @@ export function migrateAndSanitizeSaveV12(data: unknown): SaveDataV12 | null {
     musicVolume: numberValue(source.musicVolume, 0.6, 0, 1),
     motionPreference: enumValue(source.motionPreference, MOTION_PREFERENCES, 'system'),
     visualQuality: enumValue(source.visualQuality, VISUAL_QUALITIES, 'auto'),
-    beatVisual: enumValue(source.beatVisual, BEAT_VISUALS, 'subtle'),
+    beatVisual: beatVisualValue(source.beatVisual),
     textScale: enumValue(source.textScale, TEXT_SCALES, 'normal'),
     highContrast: booleanValue(source.highContrast, false),
     buyAmount: buyAmountValue(source.buyAmount),

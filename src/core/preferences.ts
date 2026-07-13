@@ -1,7 +1,7 @@
 export type MotionPreference = 'system' | 'reduced'
 export type VisualQuality = 'auto' | 'high' | 'balanced' | 'low'
 export type RenderQuality = Exclude<VisualQuality, 'auto'>
-export type BeatVisual = 'subtle' | 'strong' | 'off'
+export type BeatVisual = 'heart' | 'edge' | 'off'
 export type TextScale = 'normal' | 'large'
 
 export interface RenderEnvironment {

@@ -234,10 +234,11 @@
     <div class="choice-field">
       <span>visual beat guide</span>
       <div class="segments three" role="group" aria-label="visual beat guide">
-        <button class:active={game.beatVisual === 'subtle'} aria-pressed={game.beatVisual === 'subtle'} onclick={() => setBeatVisual('subtle')}>subtle</button>
-        <button class:active={game.beatVisual === 'strong'} aria-pressed={game.beatVisual === 'strong'} onclick={() => setBeatVisual('strong')}>strong</button>
+        <button class:active={game.beatVisual === 'heart'} aria-pressed={game.beatVisual === 'heart'} onclick={() => setBeatVisual('heart')}>Heart</button>
+        <button class:active={game.beatVisual === 'edge'} aria-pressed={game.beatVisual === 'edge'} onclick={() => setBeatVisual('edge')}>screen edge</button>
         <button class:active={game.beatVisual === 'off'} aria-pressed={game.beatVisual === 'off'} onclick={() => setBeatVisual('off')}>off</button>
       </div>
+      <small class="choice-note">Keeps the rhythm readable with sound muted. Reduced motion uses a steady stepped marker, never a flash.</small>
     </div>
 
     <div class="choice-field">
@@ -437,6 +438,7 @@
   input[type='range'] { min-width: 0; width: 100%; accent-color: var(--amber); }
   .choice-field { display: grid; grid-template-columns: 7.5rem minmax(0,1fr); align-items: center; gap: 0.55rem; margin: 0.42rem 0; }
   .choice-field > span { font-size: 0.63rem; color: var(--dim); }
+  .choice-note { grid-column: 2; color: var(--dim); font-size: 0.58rem; line-height: 1.4; }
   .segments { min-width: 0; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 0.16rem; background: rgba(0,0,0,0.24); border: 1px solid rgba(255,255,255,0.065); border-radius: 8px; }
   .segments.three { grid-template-columns: repeat(3,minmax(0,1fr)); }
   .segments button { min-width: 0; padding: 0.3rem 0.15rem; overflow: hidden; font: inherit; font-size: 0.57rem; color: var(--dim); background: transparent; border: 0; border-radius: 6px; cursor: pointer; text-overflow: ellipsis; }
@@ -491,5 +493,5 @@
   .danger-zone { border-color: rgba(255,100,100,0.12); }
   .danger { margin-top: 0.5rem; padding: 0.35rem 0.65rem; font: inherit; font-size: 0.6rem; color: #ffabab; background: rgba(255,80,80,0.055); border: 1px solid rgba(255,100,100,0.24); border-radius: 7px; cursor: pointer; }
   @media (max-width: 720px) { .panel { left: 0.55rem; right: 0.55rem; top: 7rem; bottom: 0.55rem; width: auto; max-width: calc(100vw - 1.1rem); max-height: none; transform: none; z-index: 10; } @keyframes panel-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } }
-  @media (max-width: 420px) { .choice-field, .field, .shortcut-grid > div { grid-template-columns: 1fr; gap: 0.28rem; } .toggle-card { align-items: start; flex-direction: column; } .quality-grid { grid-template-columns: 1fr; } .action-row { flex-wrap: wrap; } }
+  @media (max-width: 420px) { .choice-field, .field, .shortcut-grid > div { grid-template-columns: 1fr; gap: 0.28rem; } .choice-note { grid-column: 1; } .toggle-card { align-items: start; flex-direction: column; } .quality-grid { grid-template-columns: 1fr; } .action-row { flex-wrap: wrap; } }
 </style>
