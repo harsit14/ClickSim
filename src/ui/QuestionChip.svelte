@@ -38,6 +38,6 @@
     50% { box-shadow: 0 0 34px rgba(160, 150, 255, 0.5); }
   }
   @media (max-width: 720px) {
-    .ask { bottom: 48vh; }
+    .ask { bottom: var(--mobile-transient-bottom, 48vh); min-height: 2.75rem; max-width: calc(100vw - 1rem); }
   }
 </style>

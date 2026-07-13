@@ -134,7 +134,8 @@
       aria-label={collapsed ? 'open kindling shop' : 'hide kindling shop'}
       title={collapsed ? 'Open kindling' : 'Hide kindling'}
     >
-      {collapsed ? '‹' : '›'}
+      <span class="retract-glyph" aria-hidden="true">{collapsed ? '‹' : '›'}</span>
+      <span class="retract-label">{collapsed ? 'Kindling' : 'Close'}</span>
     </button>
     <header>
       <h2>Kindling</h2>
@@ -318,6 +319,7 @@
   .retract.collapsed {
     box-shadow: 0 0 26px rgba(255, 179, 92, 0.14);
   }
+  .retract-label { display: none; }
   h2 {
     margin: 0;
     font-size: 0.72rem;
@@ -509,35 +511,69 @@
   @media (max-width: 800px) {
     .shop {
       top: auto;
-      right: 0;
-      bottom: 0;
-      left: 0;
+      right: max(0.4rem, env(safe-area-inset-right, 0px));
+      bottom: var(--mobile-dock-height, calc(4.35rem + env(safe-area-inset-bottom, 0px)));
+      left: max(0.4rem, env(safe-area-inset-left, 0px));
       width: auto;
       transform: none;
-      border-radius: 16px 16px 0 0;
-      max-height: 38vh;
+      max-height: var(--mobile-sheet-height, min(38dvh, 24rem));
+      padding: 1rem 0.75rem 0.65rem;
+      border-radius: 18px;
+      box-shadow: inset 0 3px color-mix(in srgb, var(--amber) 26%, transparent), 0 -1.2rem 3rem rgba(0, 0, 0, 0.34);
       transition: transform 0.32s ease, opacity 0.2s ease;
     }
     .shop.collapsed {
-      transform: translateY(calc(100% - 2.4rem));
-      opacity: 0.9;
+      transform: translateY(calc(100% - 2.5rem));
+      opacity: 0.96;
     }
     .retract {
-      top: -1.95rem;
+      top: -2.65rem;
       left: 50%;
-      width: 5.2rem;
-      height: 1.95rem;
+      width: 8.4rem;
+      min-height: 2.75rem;
+      height: 2.75rem;
       transform: translateX(-50%);
-      border: 1px solid rgba(255, 179, 92, 0.18);
-      border-bottom: none;
-      border-radius: 10px 10px 0 0;
+      grid-template-columns: auto auto;
+      gap: 0.4rem;
+      color: color-mix(in srgb, var(--gold) 86%, white);
+      background: color-mix(in srgb, var(--glass) 96%, var(--panel));
+      border: 1px solid color-mix(in srgb, var(--amber) 34%, transparent);
+      border-bottom-color: color-mix(in srgb, var(--amber) 18%, transparent);
+      border-radius: 14px 14px 0 0;
+      box-shadow: 0 -0.65rem 1.5rem rgba(0, 0, 0, 0.22);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
     }
-    .retract:not(.collapsed) {
-      transform: translateX(-50%) rotate(90deg);
+    .retract:not(.collapsed),
+    .retract.collapsed { transform: translateX(-50%); }
+    .retract-glyph { font-size: 1rem; transform: rotate(-90deg); }
+    .retract.collapsed .retract-glyph { transform: rotate(90deg); }
+    .retract-label { display: inline; }
+    header { min-height: 2.35rem; margin-bottom: 0.55rem; }
+    h2 { font-size: 0.75rem; }
+    .amounts { gap: 0.3rem; }
+    .amt {
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+      padding: 0.25rem 0.45rem;
+      font-size: 0.72rem;
+      border-radius: 9px;
     }
-    .retract.collapsed {
-      transform: translateX(-50%) rotate(-90deg);
+    .rows {
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
     }
+    .row {
+      min-height: 3.75rem;
+      margin-bottom: 0.48rem;
+      padding: 0.65rem 0.7rem;
+      gap: 0.72rem;
+      border-radius: 12px;
+    }
+    .kindling-icon { width: 1.25rem; height: 1.25rem; }
+    .name { font-size: 0.96rem; }
+    .meta { margin-top: 0.12rem; font-size: 0.76rem; }
+    .owned { font-size: 1.25rem; }
     @keyframes shop-in {
       from { opacity: 0; translate: 0 20px; }
       to { opacity: 1; translate: 0 0; }

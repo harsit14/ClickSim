@@ -587,7 +587,15 @@
 
 <svelte:window onkeydown={onGlobalKeydown} />
 
-<div class="game-shell" class:comparative-blind={comparativeBlind} inert={modalActive} aria-hidden={modalActive}>
+<div
+  class="game-shell"
+  class:comparative-blind={comparativeBlind}
+  class:shop-collapsed={shopCollapsed}
+  class:shop-absent={!hasUi('shop')}
+  class:lumen-active={lumenActive}
+  inert={modalActive}
+  aria-hidden={modalActive}
+>
   <EmberCanvas {averagedRhythm} {comparativeBlind} />
   {#if activeV2Pack}
     <ManifestWorldLayer
@@ -674,7 +682,7 @@
       aria-label="Access and recovery"
       aria-keyshortcuts="F1"
       title="Access and recovery settings · F1"
-    ><span aria-hidden="true">⚙</span> access &amp; recovery <kbd>F1</kbd></button>
+    ><span aria-hidden="true">⚙</span><span class="access-label">access &amp; recovery</span><kbd>F1</kbd></button>
   {/if}
 
   <nav class="dock" aria-label="Game sections">
@@ -971,27 +979,95 @@
     to { opacity: 1; transform: translateY(0); }
   }
   @media (max-width: 800px) {
-    .notification-lane { top: 14.5rem; right: 0.6rem; left: auto; width: min(13rem, calc(100vw - 1.2rem)); min-width: 0; }
+    .game-shell {
+      --mobile-dock-height: calc(4.35rem + env(safe-area-inset-bottom, 0px));
+      --mobile-sheet-height: min(38dvh, 24rem);
+      --mobile-transient-bottom: calc(var(--mobile-dock-height) + var(--mobile-sheet-height) + 3.25rem);
+      --mobile-history-bottom: calc(var(--mobile-dock-height) + var(--mobile-sheet-height) + 3rem);
+    }
+    .game-shell.shop-collapsed {
+      --mobile-transient-bottom: calc(var(--mobile-dock-height) + 5.5rem);
+      --mobile-history-bottom: calc(var(--mobile-dock-height) + 5.5rem);
+    }
+    .game-shell.shop-absent {
+      --mobile-transient-bottom: calc(var(--mobile-dock-height) + 1rem);
+      --mobile-history-bottom: calc(var(--mobile-dock-height) + 0.5rem);
+    }
+    .top-stack {
+      top: max(0.45rem, env(safe-area-inset-top, 0px));
+    }
+    .notification-lane {
+      top: 13.75rem;
+      right: max(0.5rem, env(safe-area-inset-right, 0px));
+      left: auto;
+      width: min(14rem, calc(100vw - 1rem));
+      min-width: 0;
+    }
     .top-stack.future-law { width: calc(100vw - 1rem); }
     .cohesion-stack {
       top: 21.5rem;
-      left: 4rem;
+      left: max(0.5rem, env(safe-area-inset-left, 0px));
       right: 0.5rem;
       width: auto;
-      max-height: 11vh;
+      max-height: min(7rem, 13dvh);
       overflow-y: auto;
       transform: none;
     }
+    .game-shell.lumen-active .cohesion-stack,
+    .game-shell:not(.shop-collapsed):not(.shop-absent) .cohesion-stack {
+      opacity: 0;
+      pointer-events: none;
+    }
     .dock {
-      bottom: auto;
-      top: 11.5rem;
-      left: 0.5rem;
-      right: auto;
-      max-height: calc(62vh - 10.5rem);
-      flex-direction: column;
-      overflow-y: auto;
-      padding-right: 0.2rem;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--mobile-dock-height);
+      align-items: flex-start;
+      gap: 0.25rem;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding:
+        0.42rem
+        max(0.5rem, env(safe-area-inset-right, 0px))
+        calc(0.35rem + env(safe-area-inset-bottom, 0px))
+        max(0.5rem, env(safe-area-inset-left, 0px));
+      background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 58%, transparent), color-mix(in srgb, var(--bg) 96%, #02030a));
+      border-top: 1px solid color-mix(in srgb, var(--gold) 13%, transparent);
+      box-shadow: 0 -0.75rem 2rem rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(16px);
+      scroll-snap-type: x proximity;
+      overscroll-behavior-x: contain;
       scrollbar-width: none;
+      z-index: 8;
+    }
+    .dock::-webkit-scrollbar { display: none; }
+    .dock-btn {
+      flex: 0 0 4.25rem;
+      min-width: 4.25rem;
+      min-height: 3.35rem;
+      scroll-snap-align: start;
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--panel) 84%, transparent);
+    }
+    .dock-btn > span { font-size: 1.08rem; }
+    .dock-btn > small { font-size: 0.65rem; }
+    .dock-btn::after { display: none; }
+    .access-hatch {
+      top: max(0.5rem, env(safe-area-inset-top, 0px));
+      left: max(0.5rem, env(safe-area-inset-left, 0px));
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+      width: 2.75rem;
+      padding: 0;
+    }
+    .access-hatch > span:first-child { font-size: 1rem; }
+    .access-hatch .access-label,
+    .access-hatch kbd { display: none; }
+    :global(.game-shell .lumen-shell),
+    :global(.game-shell .chip),
+    :global(.game-shell .ask) {
+      bottom: var(--mobile-transient-bottom);
     }
   }
   :global(html[data-lumen-history='open']) .cohesion-stack { opacity: 0; pointer-events: none; }
@@ -1000,10 +1076,15 @@
     .top-stack.future-law { width: calc(100vw - 1rem); }
     .cohesion-stack { right: 0.45rem; max-height: 11vh; }
   }
+  @media (max-width: 800px) and (max-height: 700px) {
+    .game-shell:not(.shop-collapsed) .notification-lane {
+      opacity: 0;
+    }
+  }
   @media (max-width: 380px) {
     .top-stack { top: 0.4rem; gap: 0.35rem; }
-    .cohesion-stack { left: 3.2rem; right: 0.4rem; top: 21.25rem; }
-    .dock { left: 0.35rem; top: 11.25rem; }
+    .cohesion-stack { left: 0.4rem; right: 0.4rem; top: 21.25rem; }
+    .dock-btn { flex-basis: 4rem; min-width: 4rem; }
   }
   .game-shell.comparative-blind > :global(.keyboard-focus),
   .game-shell.comparative-blind > :global(.feedback-layer),

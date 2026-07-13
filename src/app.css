@@ -122,6 +122,20 @@ html[data-text-scale='large'] {
   font-size: 112.5%;
 }
 
+@media (max-width: 800px) {
+  html,
+  body,
+  #app {
+    height: 100dvh;
+    min-height: 100dvh;
+    overscroll-behavior: none;
+  }
+
+  :where(button, [role='button']) {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 @media (max-width: 720px) {
   html[data-text-scale='large'] {
     font-size: 106.25%;

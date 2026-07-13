@@ -89,7 +89,9 @@
   }
   @media (max-width: 720px) {
     .chip {
-      bottom: 48vh;
+      bottom: var(--mobile-transient-bottom, 48vh);
+      min-height: 2.75rem;
+      max-width: calc(100vw - 1rem);
     }
   }
   @media (prefers-reduced-motion: reduce) { .chip { transition: none; animation: none; } .chip:not(.unaffordable):active { transform: translateX(-50%); } }

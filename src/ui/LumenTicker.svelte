@@ -255,13 +255,20 @@
   @keyframes vignette-in { from { opacity: 0; } to { opacity: 1; } }
   @keyframes history-in { from { opacity: 0; transform: translateY(0.35rem); } to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 800px) {
-    .lumen-shell { bottom: 41vh; width: calc(100vw - 1rem); }
+    .lumen-shell { bottom: var(--mobile-transient-bottom, 41vh); width: calc(100vw - 1rem); transition: bottom 0.32s ease; }
     .lumen { max-width: calc(100vw - 3rem); padding-inline: 0.4rem; font-size: 0.92rem; }
     .history-quill { right: 0.1rem; }
-    .lumen-history { position: fixed; left: 3.2rem; right: 0.4rem; top: 11.5rem; bottom: 50vh; width: auto; overflow-y: auto; }
+    .lumen-history {
+      position: fixed;
+      left: max(0.5rem, env(safe-area-inset-left, 0px));
+      right: max(0.5rem, env(safe-area-inset-right, 0px));
+      top: max(11.5rem, calc(env(safe-area-inset-top, 0px) + 10.75rem));
+      bottom: var(--mobile-history-bottom, calc(var(--mobile-dock-height, 4.35rem) + 0.5rem));
+      width: auto;
+      overflow-y: auto;
+    }
   }
   @media (max-width: 380px) {
-    .lumen-shell { bottom: 40.5vh; }
     .lumen-history { top: 11.25rem; }
   }
   @media (prefers-reduced-motion: reduce) {

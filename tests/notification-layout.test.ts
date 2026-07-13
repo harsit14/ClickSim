@@ -33,7 +33,7 @@ test('desktop notifications reserve a lane clear of the Kindling shop and top me
   assert.match(toastSource, /visibleToasts = \$derived\(toastState\.list\.slice\(0, 1\)\)/)
 })
 
-test('Phase 4 narrow chrome has collision-free lanes at 380, 650, and 800px', () => {
+test('mobile chrome has collision-free lanes at 380, 650, and 800px', () => {
   const viewports = [
     { width: 380, height: 844 },
     { width: 650, height: 900 },
@@ -42,8 +42,11 @@ test('Phase 4 narrow chrome has collision-free lanes at 380, 650, and 800px', ()
   for (const viewport of viewports) {
     assert.deepEqual(narrowChromeCollisions(viewport), [], `${viewport.width}px default chrome`)
     assert.deepEqual(narrowChromeCollisions(viewport, true), [], `${viewport.width}px Lumen history`)
+    assert.deepEqual(narrowChromeCollisions(viewport, false, true), [], `${viewport.width}px active Lumen`)
     assert.ok(planNarrowChrome(viewport).some(({ id }) => id === 'shop'))
     assert.ok(planNarrowChrome(viewport, true).some(({ id }) => id === 'lumen-history'))
+    assert.ok(planNarrowChrome(viewport, false, true).some(({ id }) => id === 'lumen'))
+    assert.ok(!planNarrowChrome(viewport, false, true).some(({ id }) => id === 'guidance'))
     assert.ok(!planNarrowChrome(viewport, true).some(({ id }) => id === 'guidance' || id === 'notifications'))
   }
 })
@@ -56,13 +59,21 @@ test('narrow CSS uses the same single stacking order as the collision planner', 
   assert.match(app, /@media \(max-width: 800px\)/)
   assert.match(app, /\.cohesion-stack \{[\s\S]*top: 21\.5rem;/)
   assert.match(shop, /@media \(max-width: 800px\)/)
-  assert.match(app, /\.notification-lane \{ top: 14\.5rem; right: 0\.6rem; left: auto;/)
+  assert.match(app, /--mobile-dock-height: calc\(4\.35rem \+ env\(safe-area-inset-bottom, 0px\)\)/)
+  assert.match(app, /\.notification-lane \{[\s\S]*top: 13\.75rem;[\s\S]*right: max\(0\.5rem, env\(safe-area-inset-right, 0px\)\);[\s\S]*left: auto;/)
+  assert.match(app, /\.dock \{[\s\S]*bottom: 0;[\s\S]*overflow-x: auto;[\s\S]*scroll-snap-type: x proximity;/)
+  assert.match(app, /\.dock-btn \{[\s\S]*min-height: 3\.35rem;/)
+  assert.match(app, /class:shop-collapsed=\{shopCollapsed\}/)
+  assert.match(app, /class:shop-absent=\{!hasUi\('shop'\)\}/)
+  assert.match(shop, /bottom: var\(--mobile-dock-height/)
+  assert.match(shop, /min-height: 2\.75rem;/)
   assert.match(toasts, /\.achievement-banner \{ width: 100%; animation: none;/)
   assert.match(toasts, /\.toasts,\s*\.toasts\.shop-clear \{ width: 100%; \}/)
   const buffs = readFileSync(new URL('../src/ui/BuffBar.svelte', import.meta.url), 'utf8')
   assert.match(buffs, /\.buffs:not\(\.integrated\) \{ top:11\.5rem;right:\.6rem;/)
   assert.match(toasts, /@media \(max-width: 380px\) \{[\s\S]*\.toasts,\s*\.toasts\.shop-clear \{ width:/)
-  assert.match(lumen, /\.lumen-history \{ position: fixed;[\s\S]*top: 11\.5rem;[\s\S]*bottom: 50vh;/)
+  assert.match(lumen, /\.lumen-shell \{ bottom: var\(--mobile-transient-bottom, 41vh\);/)
+  assert.match(lumen, /\.lumen-history \{[\s\S]*position: fixed;[\s\S]*bottom: var\(--mobile-history-bottom/)
   assert.match(app, /data-lumen-history='open'/)
   assert.match(toasts, /data-lumen-history='open'/)
 })

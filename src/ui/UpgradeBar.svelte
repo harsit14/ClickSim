@@ -238,14 +238,28 @@
     color: var(--dim);
   }
   @media (max-width: 800px) {
+    .upgrade-stack { width: calc(100vw - 1rem); gap: 0.35rem; }
     .bar {
       overflow-x: auto;
       justify-content: flex-start;
       width: 100%;
-      padding-bottom: 0.2rem;
+      gap: 0.4rem;
+      padding: 0.15rem 0.25rem 0.3rem;
+      scroll-padding-inline: 0.25rem;
+      scroll-snap-type: x proximity;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+    }
+    .bar::-webkit-scrollbar { display: none; }
+    .up {
+      flex: 0 0 3.25rem;
+      min-height: 3.25rem;
+      scroll-snap-align: start;
     }
     .detail {
       width: min(25rem, 96vw);
+      max-height: 6.5rem;
+      overflow-y: auto;
     }
   }
 </style>
