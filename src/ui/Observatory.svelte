@@ -97,7 +97,10 @@
   }
 
   function tryBuy(n: StarNode) {
-    if (buyNode(n.id)) playBuy()
+    if (!buyNode(n.id)) return
+    selectedId = n.id
+    playBuy()
+    save()
   }
 
   function tryBuyWork(id: StardustWorkId) {
@@ -224,16 +227,27 @@
           <span class="grown">{tidefall ? 'charted' : 'grown'}</span><span class="available">available</span><span class="waiting">{tidefall ? 'submerged' : 'waiting'}</span>
         </div>
       </div>
-      <button
-        type="button"
+      <article
         class="growth-node crown {crownState}"
         class:selected={selectedId === crown.id}
-        onclick={() => (selectedId = crown.id)}
       >
-        <span class="ring-mark" aria-hidden="true"><i></i></span>
-        <span class="growth-node-copy"><small>{tidefall ? 'chart capstone' : 'canopy capstone'}</small><strong>{crownCopy.name}</strong><em>{crownCopy.flavor}</em></span>
-        <span class="growth-node-state">{chartNodeStatus(crown)}</span>
-      </button>
+        <button type="button" class="growth-node-info" aria-label={`Show ${crownCopy.name} details`} onclick={() => (selectedId = crown.id)}>
+          <span class="ring-mark" aria-hidden="true"><i></i></span>
+          <span class="growth-node-copy"><small>{tidefall ? 'chart capstone' : 'canopy capstone'}</small><strong>{crownCopy.name}</strong><em>{crownCopy.flavor}</em></span>
+        </button>
+        {#if crownState === 'ready' || crownState === 'reachable'}
+          <button
+            type="button"
+            class="growth-node-buy"
+            class:unaffordable={crownState !== 'ready'}
+            disabled={crownState !== 'ready'}
+            aria-label={`Buy ${crownCopy.name} for ${crown.cost} ${epochMatterName}`}
+            onclick={() => tryBuy(crown)}
+          ><span>{epochMatterGlyph}{crown.cost}</span><strong>{crownState === 'ready' ? 'buy' : 'need'}</strong></button>
+        {:else}
+          <span class="growth-node-state">{chartNodeStatus(crown)}</span>
+        {/if}
+      </article>
 
       <div class="growth-paths">
         {#each chartBranches as branch (branch.id)}
@@ -246,16 +260,27 @@
               {#each CONSTELLATION.filter((node) => node.branch === branch.id) as n (n.id)}
                 {@const copy = constellationNodeCopy(n, pack.id)}
                 {@const state = nodeState(n)}
-                <button
-                  type="button"
+                <article
                   class="growth-node {state}"
                   class:selected={selectedId === n.id}
-                  onclick={() => (selectedId = n.id)}
                 >
-                  <span class="ring-mark" aria-hidden="true"><i></i></span>
-                  <span class="growth-node-copy"><strong>{copy.name}</strong><em>{copy.flavor}</em></span>
-                  <span class="growth-node-state">{chartNodeStatus(n)}</span>
-                </button>
+                  <button type="button" class="growth-node-info" aria-label={`Show ${copy.name} details`} onclick={() => (selectedId = n.id)}>
+                    <span class="ring-mark" aria-hidden="true"><i></i></span>
+                    <span class="growth-node-copy"><strong>{copy.name}</strong><em>{copy.flavor}</em></span>
+                  </button>
+                  {#if state === 'ready' || state === 'reachable'}
+                    <button
+                      type="button"
+                      class="growth-node-buy"
+                      class:unaffordable={state !== 'ready'}
+                      disabled={state !== 'ready'}
+                      aria-label={`Buy ${copy.name} for ${n.cost} ${epochMatterName}`}
+                      onclick={() => tryBuy(n)}
+                    ><span>{epochMatterGlyph}{n.cost}</span><strong>{state === 'ready' ? 'buy' : 'need'}</strong></button>
+                  {:else}
+                    <span class="growth-node-state">{chartNodeStatus(n)}</span>
+                  {/if}
+                </article>
               {/each}
             </div>
           </section>
@@ -669,26 +694,41 @@
     position: relative;
     z-index: 1;
     width: 100%;
+    min-height: 4.2rem;
     min-width: 0;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 0.55rem;
-    padding: 0.55rem 0.62rem;
+    gap: 0.7rem;
+    padding: 0.72rem 0.78rem;
     color: var(--text);
     font: inherit;
     text-align: left;
     background: color-mix(in srgb, var(--amber) 3%, rgba(0, 0, 0, 0.2));
     border: 1px solid color-mix(in srgb, var(--gold) 10%, transparent);
     border-radius: 0.72rem 0.42rem 0.72rem 0.42rem;
-    cursor: pointer;
     transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
   }
   .growth-node:hover { border-color: color-mix(in srgb, var(--gold) 34%, transparent); background: color-mix(in srgb, var(--amber) 7%, rgba(0, 0, 0, 0.2)); }
-  .growth-node:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   .growth-node.selected { border-color: color-mix(in srgb, var(--gold) 62%, transparent); background: color-mix(in srgb, var(--amber) 10%, rgba(0, 0, 0, 0.2)); }
+  .growth-node-info {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .growth-node-info:focus-visible,
+  .growth-node-buy:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
   .ring-mark {
-    width: 1.75rem;
+    width: 2.15rem;
     aspect-ratio: 1;
     display: grid;
     place-items: center;
@@ -717,7 +757,7 @@
   .growth-node-copy strong {
     display: block;
     color: color-mix(in srgb, var(--gold) 76%, white);
-    font-size: 0.68rem;
+    font-size: 0.82rem;
     line-height: 1.2;
     overflow-wrap: anywhere;
   }
@@ -725,16 +765,41 @@
     display: block;
     margin-top: 0.1rem;
     color: color-mix(in srgb, var(--gold) 42%, var(--dim));
-    font: italic 0.55rem/1.28 Georgia, serif;
+    font: italic 0.68rem/1.32 Georgia, serif;
   }
   .growth-node-state {
-    max-width: 5.6rem;
+    max-width: 6.8rem;
     color: color-mix(in srgb, var(--gold) 58%, var(--dim));
-    font-size: 0.5rem;
+    font-size: 0.62rem;
     font-weight: 650;
     line-height: 1.25;
     text-align: right;
     text-transform: uppercase;
+  }
+  .growth-node-buy {
+    min-width: 5.2rem;
+    min-height: 2.8rem;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.12rem;
+    padding: 0.48rem 0.72rem;
+    color: var(--bg);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 92%, white), var(--amber));
+    border: 0;
+    border-radius: 999px;
+    box-shadow: 0 0 1rem color-mix(in srgb, var(--amber) 16%, transparent);
+    cursor: pointer;
+  }
+  .growth-node-buy span { font-size: 0.72rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .growth-node-buy strong { font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .growth-node-buy:disabled,
+  .growth-node-buy.unaffordable {
+    color: color-mix(in srgb, var(--text) 43%, var(--bg));
+    background: color-mix(in srgb, var(--bg) 82%, var(--panel));
+    border: 1px solid color-mix(in srgb, var(--dim) 13%, transparent);
+    box-shadow: none;
+    cursor: default;
   }
   .growth-node.owned { border-color: color-mix(in srgb, var(--gold) 28%, transparent); }
   .growth-node.owned .ring-mark { border-color: color-mix(in srgb, var(--gold) 58%, transparent); }
@@ -749,14 +814,14 @@
   .growth-node.crown {
     width: min(31rem, 100%);
     margin: 0 auto 0.78rem;
-    padding: 0.72rem 0.78rem;
+    padding: 0.82rem 0.9rem;
     border-radius: 50% / 1rem;
     background:
       radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--amber) 13%, transparent), transparent 62%),
       color-mix(in srgb, var(--amber) 4%, rgba(0, 0, 0, 0.22));
   }
-  .growth-node.crown .ring-mark { width: 2.15rem; box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--amber) 4%, transparent); }
-  .growth-node.crown .growth-node-copy strong { font-size: 0.78rem; }
+  .growth-node.crown .ring-mark { width: 2.45rem; box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--amber) 4%, transparent); }
+  .growth-node.crown .growth-node-copy strong { font-size: 0.9rem; }
 
   .growth-paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr)); gap: 0.64rem; }
   .growth-path {
@@ -783,8 +848,8 @@
     border-radius: 60% 40% 60% 40%;
   }
   .growth-path > header div { min-width: 0; }
-  .growth-path > header strong { display: block; color: color-mix(in srgb, var(--gold) 76%, white); font-size: 0.64rem; }
-  .growth-path > header small { display: block; margin-top: 0.06rem; color: color-mix(in srgb, var(--gold) 40%, var(--dim)); font-size: 0.49rem; line-height: 1.2; }
+  .growth-path > header strong { display: block; color: color-mix(in srgb, var(--gold) 76%, white); font-size: 0.76rem; }
+  .growth-path > header small { display: block; margin-top: 0.08rem; color: color-mix(in srgb, var(--gold) 40%, var(--dim)); font-size: 0.58rem; line-height: 1.3; }
   .growth-path-nodes { position: relative; display: grid; gap: 0.38rem; }
   .growth-path-nodes::before {
     content: '';
@@ -792,7 +857,7 @@
     z-index: 0;
     top: 1rem;
     bottom: 1rem;
-    left: 1.47rem;
+    left: 1.84rem;
     width: 1px;
     background: linear-gradient(color-mix(in srgb, var(--amber) 8%, transparent), color-mix(in srgb, var(--gold) 22%, transparent), color-mix(in srgb, var(--amber) 8%, transparent));
   }

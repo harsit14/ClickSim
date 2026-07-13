@@ -68,6 +68,11 @@
   let againButton = $state<HTMLButtonElement>()
 
   const currentPhase = $derived(phaseSpec(phase))
+  const currentCaption = $derived(
+    currentPhase.caption
+      .replaceAll('Supernova', ritualName)
+      .replaceAll('Stardust', rewardName),
+  )
   const phaseIndex = $derived(phaseOrder.findIndex(({ id }) => id === phase))
   const rebuilding = $derived(phase === 'rebuild')
   const returning = $derived(phase === 'return')
@@ -179,12 +184,12 @@
 
   <div class="phase-caption" role="status" aria-live="polite">
     <span>{String(phaseIndex + 1).padStart(2, '0')} / {phaseOrder.length}</span>
-    <p>{currentPhase.caption}</p>
+    <p>{currentCaption}</p>
   </div>
 
   {#if phase === 'stardust-rain'}
     <div class="landing-count" aria-live="polite">
-      <small>Stardust returning</small>
+      <small>{rewardName} returning</small>
       <strong>{rewardGlyph} +{landedMotes}</strong>
     </div>
   {/if}
@@ -195,7 +200,7 @@
       <button bind:this={againButton} class="again" onclick={finish}>begin again</button>
     </div>
   {:else if canSkip}
-    <button class="skip" onclick={finish}>Skip remembered Supernova</button>
+    <button class="skip" onclick={finish}>Skip remembered {ritualName}</button>
   {/if}
 </div>
 

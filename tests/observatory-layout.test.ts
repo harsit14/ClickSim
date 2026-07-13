@@ -18,6 +18,11 @@ test('Verdance Growth Rings and Tidefall Current Chart use a contained card map 
   assert.match(observatorySource, /Four currents, one crown/)
   assert.match(observatorySource, /class="growth-node crown \{crownState\}"/)
   assert.match(observatorySource, /class="growth-node \{state\}"/)
+  assert.match(observatorySource, /class="growth-node-buy"[\s\S]*onclick=\{\(\) => tryBuy\(crown\)\}/)
+  assert.match(observatorySource, /class="growth-node-buy"[\s\S]*onclick=\{\(\) => tryBuy\(n\)\}/)
+  assert.match(observatorySource, /\.growth-node \{[\s\S]*min-height: 4\.2rem;/)
+  assert.match(observatorySource, /\.growth-node-copy strong \{[\s\S]*font-size: 0\.82rem;/)
+  assert.match(observatorySource, /\.growth-node-buy \{[\s\S]*min-height: 2\.8rem;/)
 })
 
 test('the four contained paths and capstone cover every persistent node exactly once', () => {
