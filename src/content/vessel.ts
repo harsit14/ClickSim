@@ -1,4 +1,5 @@
 import type { GameState } from '../engine/game.svelte'
+import { STORY_ROUTE } from './divine-realms'
 import type { EconomyAmount, UniverseId } from './universes/types'
 import { kailashStatus, brahmalokStatus, vishnulokCircuitStatus } from './universes/f4-runtime'
 import { verdanceCohortRuntimeSummary } from './universes/verdance/runtime'
@@ -332,6 +333,11 @@ export const VESSEL_PART_BY_ID = new Map(VESSEL_PARTS.map((part) => [part.id, pa
 export const VESSEL_PART_IDS = VESSEL_PARTS.map(({ id }) => id)
 export const VESSEL_REVEAL_AT = amountFromNumber(1e21)
 
+type VesselRouteState = Pick<
+  GameState,
+  'activeUniverse' | 'beacons' | 'universeRuns' | 'vesselParts' | 'vesselPartsByUniverse'
+>
+
 export function vesselBlueprint(universeId: string): VesselBlueprint {
   return VESSEL_BLUEPRINT_BY_UNIVERSE.get(universeId as UniverseId) ?? EMBERLIGHT_VESSEL
 }
@@ -354,7 +360,46 @@ export function vesselPartIdsFor(
 }
 
 export function vesselRevealed(g: GameState): boolean {
-  return vesselPartIdsFor(g).length > 0 || gteAmount(g.allTimeEarned, VESSEL_REVEAL_AT) || g.ending !== null
+  return g.beacons.length > 0
+    || Object.keys(g.universeRuns).length > 0
+    || vesselPartIdsFor(g).length > 0
+    || gteAmount(g.allTimeEarned, VESSEL_REVEAL_AT)
+    || g.ending !== null
+}
+
+/** A reached realm remains available even if its Beacon is not yet lit. */
+export function vesselRouteVisited(g: VesselRouteState, universeId: string): boolean {
+  return STORY_ROUTE.includes(universeId as UniverseId)
+    && (
+      universeId === g.activeUniverse
+      || g.universeRuns[universeId] !== undefined
+      || g.beacons.includes(universeId)
+    )
+}
+
+function vesselRouteIsNext(g: VesselRouteState, universeId: string): boolean {
+  const activeIndex = STORY_ROUTE.indexOf(g.activeUniverse as UniverseId)
+  return activeIndex >= 0 && STORY_ROUTE[activeIndex + 1] === universeId
+}
+
+/**
+ * Route cards reveal reached realms plus the immediate next realm, but the next
+ * realm remains entirely private until the active realm's Beacon is lit.
+ */
+export function vesselRouteVisible(g: VesselRouteState, universeId: string): boolean {
+  if (!STORY_ROUTE.includes(universeId as UniverseId)) return false
+  if (vesselRouteVisited(g, universeId)) return true
+  return g.beacons.includes(g.activeUniverse) && vesselRouteIsNext(g, universeId)
+}
+
+/** Returning never depends on the active realm's local Vessel. New crossings do. */
+export function vesselRouteUnlocked(g: VesselRouteState, universeId: string): boolean {
+  if (!STORY_ROUTE.includes(universeId as UniverseId)) return false
+  if (vesselRouteVisited(g, universeId)) return true
+  const activeVesselComplete = VESSEL_PART_IDS.every((id) => vesselPartIdsFor(g).includes(id))
+  return activeVesselComplete
+    && g.beacons.includes(g.activeUniverse)
+    && vesselRouteIsNext(g, universeId)
 }
 
 export function vesselPartComplete(g: GameState, id: VesselPartId, universeId = g.activeUniverse): boolean {

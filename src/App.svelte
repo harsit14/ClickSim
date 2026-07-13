@@ -44,6 +44,7 @@
     supernovaGain,
     vesselHasReadyPart,
     vesselRevealed,
+    universeVisited,
     atlasRouteReady,
     deepCollapseGain,
     performDeepCollapse,
@@ -563,7 +564,7 @@
       destinationId: target.id,
       destinationName: target.shortName,
       destinationVerb: universeV2ById(target.id)?.identity.primaryVerb ?? 'kindle',
-      firstArrival: game.universeRuns[universeId] === undefined,
+      firstArrival: !universeVisited(universeId),
     })
     crossingTarget = universeId
     crossingPrelude = true

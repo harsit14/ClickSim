@@ -7,6 +7,9 @@ import {
   VESSEL_PART_IDS,
   vesselComplete,
   vesselPartIdsFor,
+  vesselRevealed,
+  vesselRouteUnlocked,
+  vesselRouteVisible,
 } from '../src/content/vessel'
 import {
   migrateAndSanitizeSave,
@@ -33,11 +36,14 @@ test('all seven universes own a distinct five-part crossing vessel', () => {
 test('the Vessel panel compiles cleanly with local motifs and an explicit crossing gate', () => {
   const panelPath = new URL('../src/ui/VesselPanel.svelte', import.meta.url)
   const source = readFileSync(panelPath, 'utf8')
+  const app = readFileSync(new URL('../src/App.svelte', import.meta.url), 'utf8')
   const compiled = compile(source, { filename: panelPath.pathname, generate: 'client' })
 
   assert.deepEqual(compiled.warnings, [])
   assert.match(source, /data-motif=\{activeBlueprint\.motif\}/)
-  assert.match(source, /Complete \{activeBlueprint\.name\} before leaving \{activePack\.shortName\}/)
+  assert.match(source, /Complete \{activeBlueprint\.name\} before entering an unseen realm from \{activePack\.shortName\}/)
+  assert.match(source, /visibleRoutes as universe/)
+  assert.match(app, /firstArrival: !universeVisited\(universeId\)/)
   for (const motif of VESSEL_BLUEPRINTS.map(({ motif }) => motif)) {
     assert.match(source, new RegExp(`data-motif='${motif}'`))
   }
@@ -60,7 +66,58 @@ test('a completed Emberlight Vessel does not activate Tidefall routes or its Bea
 
   const engine = readFileSync(new URL('../src/engine/game.svelte.ts', import.meta.url), 'utf8')
   assert.match(engine, /igniteCurrentBeacon\(\)[\s\S]*?computeVesselComplete\(game, game\.activeUniverse\)/)
-  assert.match(engine, /universeRouteUnlocked\(id: string\)[\s\S]*?computeVesselComplete\(game, game\.activeUniverse\)/)
+  assert.match(engine, /universeRouteUnlocked\(id: string\)[\s\S]*?computeVesselRouteUnlocked\(game, id\)/)
+})
+
+test('previously reached universes stay available before the local Vessel is built', () => {
+  const state = migrateAndSanitizeSave({
+    version: 12,
+    activeUniverse: 'tidefall',
+    beacons: ['emberlight'],
+  }) as unknown as GameState
+  assert.ok(state)
+
+  state.vesselPartsByUniverse.tidefall = []
+  assert.equal(vesselRevealed(state), true)
+  assert.equal(vesselRouteVisible(state, 'emberlight'), true)
+  assert.equal(vesselRouteUnlocked(state, 'emberlight'), true)
+  assert.equal(vesselRouteVisible(state, 'verdance'), false)
+  assert.equal(vesselRouteUnlocked(state, 'verdance'), false)
+})
+
+test('an unseen route stays private until the active Beacon is lit', () => {
+  const state = migrateAndSanitizeSave({
+    version: 12,
+    activeUniverse: 'tidefall',
+    beacons: ['emberlight'],
+  }) as unknown as GameState
+  assert.ok(state)
+
+  state.vesselPartsByUniverse.tidefall = [...COMPLETE_PARTS]
+  assert.equal(vesselRouteVisible(state, 'verdance'), false)
+  assert.equal(vesselRouteUnlocked(state, 'verdance'), false)
+
+  state.beacons.push('tidefall')
+  assert.equal(vesselRouteVisible(state, 'verdance'), true)
+  assert.equal(vesselRouteUnlocked(state, 'verdance'), true)
+  assert.equal(vesselRouteVisible(state, 'clockwork'), false)
+  assert.equal(vesselRouteUnlocked(state, 'clockwork'), false)
+})
+
+test('an unfinished visited realm remains reachable after returning to an older realm', () => {
+  const state = migrateAndSanitizeSave({
+    version: 12,
+    activeUniverse: 'tidefall',
+    beacons: ['emberlight'],
+  }) as unknown as GameState
+  assert.ok(state)
+
+  state.universeRuns.tidefall = {} as GameState['universeRuns'][string]
+  state.activeUniverse = 'emberlight'
+  state.vesselPartsByUniverse.emberlight = []
+
+  assert.equal(vesselRouteVisible(state, 'tidefall'), true)
+  assert.equal(vesselRouteUnlocked(state, 'tidefall'), true)
 })
 
 test('historical global Vessels migrate only to completed worlds, not the current unlit universe', () => {

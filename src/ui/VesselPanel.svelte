@@ -21,6 +21,7 @@
     igniteCurrentBeacon,
     universeBeaconReady,
     universeRouteUnlocked,
+    universeRouteVisible,
     universeVisited,
     vesselComplete,
   } from '../engine/game.svelte'
@@ -41,6 +42,11 @@
   const activeBlueprint = $derived(vesselBlueprint(game.activeUniverse))
   const activeParts = $derived(vesselPartsForUniverse(game.activeUniverse))
   const activePartIds = $derived(vesselPartIdsFor(game))
+  const activeVesselComplete = $derived(vesselComplete())
+  const visibleRoutes = $derived(UNIVERSES.filter(({ id }) => universeRouteVisible(id)))
+  const hasReturnRoute = $derived(
+    visibleRoutes.some(({ id }) => id !== game.activeUniverse && universeVisited(id)),
+  )
 
   function progressText(part: VesselPartDef): string {
     if (part.id === 'archive') return game.ending === null ? 'unanswered' : 'answered'
@@ -142,7 +148,7 @@
     {/each}
   </div>
 
-  {#if vesselComplete()}
+  {#if activeVesselComplete || hasReturnRoute}
     <section class="wayfinder" aria-labelledby="wayfinder-title">
       <header class="wayfinder-head">
         <div>
@@ -153,7 +159,7 @@
       </header>
 
       <div class="routes">
-        {#each UNIVERSES as universe (universe.id)}
+        {#each visibleRoutes as universe (universe.id)}
           {@const active = universe.id === game.activeUniverse}
           {@const visited = universeVisited(universe.id)}
           {@const unlocked = universeRouteUnlocked(universe.id)}
@@ -190,31 +196,38 @@
         {/each}
       </div>
 
-      <div class="wayfinder-tree">
-        <span class="overline">what the vessel learns between worlds</span>
-        {#each WAYFINDER_NODES as node (node.id)}
-          {@const owned = game.wayfinder.includes(node.id)}
-          {@const available = wayfinderNodeAvailable(game.wayfinder, node)}
-          <article class="way-node" class:owned class:available>
-            <span class="node-glyph">{node.glyph}</span>
-            <div><strong>{node.name}</strong><em>{node.flavor}</em><span>{node.effect}</span></div>
-            {#if owned}
-              <span class="learned">learned</span>
-            {:else}
-              <button disabled={!available || !gteAmount(game.darkBetween, amountFromNumber(node.cost))} onclick={() => tryBuyWayfinder(node.id)}>◆ {node.cost}</button>
-            {/if}
-          </article>
-        {/each}
-      </div>
+      {#if activeVesselComplete}
+        <div class="wayfinder-tree">
+          <span class="overline">what the vessel learns between worlds</span>
+          {#each WAYFINDER_NODES as node (node.id)}
+            {@const owned = game.wayfinder.includes(node.id)}
+            {@const available = wayfinderNodeAvailable(game.wayfinder, node)}
+            <article class="way-node" class:owned class:available>
+              <span class="node-glyph">{node.glyph}</span>
+              <div><strong>{node.name}</strong><em>{node.flavor}</em><span>{node.effect}</span></div>
+              {#if owned}
+                <span class="learned">learned</span>
+              {:else}
+                <button disabled={!available || !gteAmount(game.darkBetween, amountFromNumber(node.cost))} onclick={() => tryBuyWayfinder(node.id)}>◆ {node.cost}</button>
+              {/if}
+            </article>
+          {/each}
+        </div>
 
-      <SuccessionRelayHome />
-      <LumenVaultShelf home="vessel-wayfinder" />
+        <SuccessionRelayHome />
+        <LumenVaultShelf home="vessel-wayfinder" />
+      {/if}
     </section>
-  {:else}
-    <section class="crossing-gate" aria-label="Wayfinder locked">
-      <span>Wayfinder sealed</span>
-      <strong>Complete {activeBlueprint.name} before leaving {activePack.shortName}.</strong>
-      <p>Each realm must build and activate its own crossing vessel. A Vessel completed elsewhere cannot carry this realm’s laws.</p>
+  {/if}
+
+  {#if !activeVesselComplete}
+    <section class="crossing-gate" aria-label="New universe routes locked">
+      <span>{hasReturnRoute ? 'New routes sealed' : 'Wayfinder sealed'}</span>
+      <strong>Complete {activeBlueprint.name} before entering an unseen realm from {activePack.shortName}.</strong>
+      <p>
+        Each realm must build and activate its own crossing vessel before entering an unseen realm.
+        {hasReturnRoute ? ' Previously reached realms remain available above.' : ''}
+      </p>
     </section>
   {/if}
 </section>

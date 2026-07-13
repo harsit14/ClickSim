@@ -71,6 +71,9 @@ import {
   vesselPartIdsFor,
   vesselPartReady,
   vesselRevealed as computeVesselRevealed,
+  vesselRouteUnlocked as computeVesselRouteUnlocked,
+  vesselRouteVisible as computeVesselRouteVisible,
+  vesselRouteVisited as computeVesselRouteVisited,
   type VesselPartId,
 } from '../content/vessel'
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
@@ -552,7 +555,7 @@ function restoreUniverseRun(run: UniverseRunState) {
 }
 
 export function universeVisited(id: string): boolean {
-  return id === game.activeUniverse || game.universeRuns[id] !== undefined
+  return computeVesselRouteVisited(game, id)
 }
 
 export function universeBeaconReady(id = game.activeUniverse): boolean {
@@ -576,15 +579,11 @@ export function igniteCurrentBeacon(): EconomyAmount {
 }
 
 export function universeRouteUnlocked(id: string): boolean {
-  if (!UNIVERSE_BY_ID.has(id) || !computeVesselComplete(game, game.activeUniverse)) return false
-  if (id === DEFAULT_UNIVERSE_ID || universeVisited(id)) return true
-  if (id === 'tidefall') return game.beacons.includes(DEFAULT_UNIVERSE_ID)
-  if (id === 'verdance') return game.beacons.includes('tidefall')
-  if (id === 'clockwork') return game.beacons.includes('verdance')
-  if (id === 'brahmalok') return game.beacons.includes('clockwork')
-  if (id === 'vishnulok') return game.beacons.includes('brahmalok')
-  if (id === 'kailash') return game.beacons.includes('vishnulok')
-  return false
+  return computeVesselRouteUnlocked(game, id)
+}
+
+export function universeRouteVisible(id: string): boolean {
+  return computeVesselRouteVisible(game, id)
 }
 
 export function buyWayfinder(id: WayfinderId): boolean {
