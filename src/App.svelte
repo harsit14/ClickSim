@@ -97,21 +97,13 @@
     CLOCKWORK_REVELATION_TRIGGER,
     clockworkRevelationAvailable,
   } from './content/universes/clockwork/revelation'
+  import { createShellState } from './app/shell-state.svelte'
 
   let { offlineGain }: { offlineGain: EconomyAmount } = $props()
 
   const MOBILE_BREAKPOINT = 800
+  const shell = createShellState(window.innerWidth, MOBILE_BREAKPOINT)
 
-  let statsOpen = $state(false)
-  let openingAccessOpen = $state(false)
-  let optionsOpen = $state(false)
-  let curiositiesOpen = $state(false)
-  let vesselOpen = $state(false)
-  let observatoryOpen = $state(false)
-  let codexOpen = $state(false)
-  let deepOpen = $state(false)
-  let guideOpen = $state(false)
-  let endgameOpen = $state(false)
   let cutsceneActive = $state(false)
   let questionOpen = $state(false)
   let remembering = $state(false)
@@ -122,8 +114,6 @@
   let clockworkRevelationActive = $state(false)
   let clockworkRevelationReplay = $state(false)
   let deepCollapseActive = $state(false)
-  let sectionsOpen = $state(false)
-  let modalReturnFocus: HTMLElement | null = null
   let universeInstrumentActive = $state(false)
   let transientResetToken = $state(0)
   let offlineGainDismissed = $state(false)
@@ -136,9 +126,6 @@
   let goalRateDirection = $state<FiveMinuteRateDirection>('measuring')
   let averagedRhythm = $state(false)
   let promptState = $state<ContextualPromptState>({ enabled: false, dismissedIds: [] })
-  const initialMobileLayout = window.innerWidth <= MOBILE_BREAKPOINT
-  let mobileLayout = $state(initialMobileLayout)
-  let shopCollapsed = $state(initialMobileLayout)
   let lumenActive = $state(false)
   let resumeMusicAfterNova = false
   const comparativeBlind = import.meta.env.DEV
@@ -188,13 +175,11 @@
     || game.ending !== null
     || Object.values(game.universeRuns).some((run) => run.seen.length > 0 || run.echoes.length > 0 || run.ending !== null),
   )
-  const utilityPanelOpen = $derived(
-    openingAccessOpen || statsOpen || optionsOpen || curiositiesOpen || vesselOpen || observatoryOpen || codexOpen || deepOpen || guideOpen || endgameOpen,
-  )
+  const utilityPanelOpen = $derived(shell.utilityPanelOpen)
   const storyModalActive = $derived(
     cutsceneActive || deepCollapseActive || questionOpen || remembering || crossingPrelude || clockworkRevelationActive,
   )
-  const modalActive = $derived(storyModalActive || guideOpen || resetPreviewOpen || curiositiesOpen || endgameOpen)
+  const modalActive = $derived(storyModalActive || shell.panels.guide || resetPreviewOpen || shell.panels.curiosities || shell.panels.endgame)
   const transientGoverned = $derived(universeInstrumentActive || utilityPanelOpen || storyModalActive || resetPreviewOpen || lumenActive)
   const visibleOfflineGain = $derived(offlineGainDismissed ? ZERO_AMOUNT : offlineGain)
   const goalCandidates = $derived(buildEmberGoalCandidates(game, novaReady, Date.now()))
@@ -261,14 +246,12 @@
   })
 
   function closeAll() {
-    openingAccessOpen = statsOpen = optionsOpen = curiositiesOpen = vesselOpen = observatoryOpen = codexOpen = deepOpen = guideOpen = endgameOpen = false
-    sectionsOpen = false
-    if (mobileLayout) shopCollapsed = true
+    shell.closeUtilityPanels()
   }
   async function toggleSections() {
-    const next = !sectionsOpen
+    const next = !shell.sectionsOpen
     closeAll()
-    sectionsOpen = next
+    shell.sectionsOpen = next
     if (next) {
       // Wait for the DOM to flush so the sheet is no longer inert before focus.
       await tick()
@@ -276,21 +259,21 @@
     }
   }
   function closeSections() {
-    sectionsOpen = false
+    shell.sectionsOpen = false
     requestAnimationFrame(() => {
       document.getElementById('mobile-more-button')?.focus({ preventScroll: true })
     })
   }
   function focusMobileKindlingButton() {
-    if (!mobileLayout) return
+    if (!shell.mobileLayout) return
     requestAnimationFrame(() => {
       document.getElementById('mobile-kindling-button')?.focus({ preventScroll: true })
     })
   }
   function toggleShop() {
-    const nextCollapsed = !shopCollapsed
+    const nextCollapsed = !shell.shopCollapsed
     closeAll()
-    shopCollapsed = nextCollapsed
+    shell.shopCollapsed = nextCollapsed
     if (!nextCollapsed) {
       requestAnimationFrame(() => {
         document.querySelector<HTMLElement>('#kindling-shop .retract')?.focus({ preventScroll: true })
@@ -298,70 +281,66 @@
     }
   }
   function handleViewportResize() {
-    const nextMobileLayout = window.innerWidth <= MOBILE_BREAKPOINT
-    if (nextMobileLayout === mobileLayout) return
-    mobileLayout = nextMobileLayout
-    shopCollapsed = nextMobileLayout
-    sectionsOpen = false
+    shell.resize(window.innerWidth, MOBILE_BREAKPOINT)
   }
   function toggleStats() {
-    const next = !statsOpen
+    const next = !shell.panels.stats
     closeAll()
-    statsOpen = next
+    shell.panels.stats = next
   }
   function toggleOptions() {
-    const next = !optionsOpen
+    const next = !shell.panels.options
     closeAll()
-    optionsOpen = next
+    shell.panels.options = next
   }
   function toggleOpeningAccess() {
-    const next = !openingAccessOpen
+    const next = !shell.panels.openingAccess
     closeAll()
-    openingAccessOpen = next
+    shell.panels.openingAccess = next
   }
   function toggleCuriosities() {
-    const next = !curiositiesOpen
-    if (next) modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const next = !shell.panels.curiosities
+    if (next) shell.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
     closeAll()
-    curiositiesOpen = next
+    shell.panels.curiosities = next
   }
   function toggleVessel() {
-    const next = !vesselOpen
+    const next = !shell.panels.vessel
     closeAll()
-    vesselOpen = next
+    shell.panels.vessel = next
   }
   function toggleObservatory() {
-    const next = !observatoryOpen
+    const next = !shell.panels.observatory
     closeAll()
-    observatoryOpen = next
+    shell.panels.observatory = next
   }
   function toggleCodex() {
-    const next = !codexOpen
+    const next = !shell.panels.codex
     closeAll()
-    codexOpen = next
+    shell.panels.codex = next
   }
   function toggleDeep() {
-    const next = !deepOpen
+    const next = !shell.panels.deep
     closeAll()
-    deepOpen = next
+    shell.panels.deep = next
   }
   function toggleGuide() {
-    const next = !guideOpen
+    const next = !shell.panels.guide
     closeAll()
-    guideOpen = next
+    shell.panels.guide = next
   }
   function toggleEndgame() {
-    const next = !endgameOpen
-    if (next) modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const next = !shell.panels.endgame
+    if (next) shell.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
     closeAll()
-    endgameOpen = next
+    shell.panels.endgame = next
   }
 
   function closeModalPanel(panel: 'curiosities' | 'endgame') {
-    if (panel === 'curiosities') curiositiesOpen = false
-    else endgameOpen = false
-    const target = modalReturnFocus
-    modalReturnFocus = null
+    if (panel === 'curiosities') shell.panels.curiosities = false
+    else shell.panels.endgame = false
+    const target = shell.modalReturnFocus
+    shell.modalReturnFocus = null
     requestAnimationFrame(() => target?.focus({ preventScroll: true }))
   }
 
@@ -379,7 +358,7 @@
   }
 
   function trapSectionsFocus(event: KeyboardEvent) {
-    if (event.key !== 'Tab' || !sectionsOpen) return
+    if (event.key !== 'Tab' || !shell.sectionsOpen) return
     const container = document.getElementById('dock-sections')
     if (!container) return
     const focusable = Array.from(container.querySelectorAll<HTMLElement>('button:not([disabled])'))
@@ -397,18 +376,18 @@
   }
 
   function onGlobalKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape' && sectionsOpen) {
+    if (event.key === 'Escape' && shell.sectionsOpen) {
       event.preventDefault()
       closeSections()
       return
     }
-    if (sectionsOpen && event.key === 'Tab') {
+    if (shell.sectionsOpen && event.key === 'Tab') {
       trapSectionsFocus(event)
       return
     }
-    if (event.key === 'Escape' && mobileLayout && !shopCollapsed && hasUi('shop')) {
+    if (event.key === 'Escape' && shell.mobileLayout && !shell.shopCollapsed && hasUi('shop')) {
       event.preventDefault()
-      shopCollapsed = true
+      shell.shopCollapsed = true
       focusMobileKindlingButton()
       return
     }
@@ -417,7 +396,7 @@
       closeAll()
       return
     }
-    if (guideOpen || storyModalActive || event.metaKey || event.ctrlKey || event.altKey) return
+    if (shell.panels.guide || storyModalActive || event.metaKey || event.ctrlKey || event.altKey) return
     const target = event.target as HTMLElement | null
     if (target?.matches('input, textarea, select, [contenteditable="true"]')) return
 
@@ -641,7 +620,7 @@
   })
 
   $effect(() => {
-    const governed = (!shopCollapsed && hasUi('shop')) || transientGoverned
+    const governed = (!shell.shopCollapsed && hasUi('shop')) || transientGoverned
     if (governed) document.documentElement.dataset.attention = 'governed'
     else delete document.documentElement.dataset.attention
     return () => delete document.documentElement.dataset.attention
@@ -686,9 +665,9 @@
 <div
   class="game-shell"
   class:comparative-blind={comparativeBlind}
-  class:shop-collapsed={shopCollapsed}
+  class:shop-collapsed={shell.shopCollapsed}
   class:shop-absent={!hasUi('shop')}
-  class:sections-open={sectionsOpen}
+  class:sections-open={shell.sectionsOpen}
   class:lumen-active={lumenActive}
   inert={modalActive}
   aria-hidden={modalActive}
@@ -711,7 +690,7 @@
         reducedMotion: game.motionPreference === 'reduced',
         quality: effectiveQuality,
         minimal: false,
-        panelOpen: utilityPanelOpen || (!shopCollapsed && hasUi('shop')) || lumenActive,
+        panelOpen: utilityPanelOpen || (!shell.shopCollapsed && hasUi('shop')) || lumenActive,
       }}
     />
   {/if}
@@ -724,7 +703,7 @@
     <ChallengeBanner />
     {#if !utilityPanelOpen}
       <UniverseLawPanel onactivitychange={(active) => (universeInstrumentActive = active)} />
-      <UpgradeBar dense={(!shopCollapsed && hasUi('shop')) || lumenActive} />
+      <UpgradeBar dense={(!shell.shopCollapsed && hasUi('shop')) || lumenActive} />
     {/if}
   </section>
   {#if activeV2Pack && !utilityPanelOpen && (goalLensEnabled || promptState.enabled)}
@@ -758,28 +737,28 @@
   {/if}
   <ShopPanel
     suppressed={utilityPanelOpen}
-    bind:collapsed={shopCollapsed}
-    mobile={mobileLayout}
+    bind:collapsed={shell.shopCollapsed}
+    mobile={shell.mobileLayout}
     onmobileclose={focusMobileKindlingButton}
   />
   <UiChips />
   <ComboMeter {averagedRhythm} />
   <LumenTicker resetToken={transientResetToken} onactivitychange={(active) => (lumenActive = active)} />
-  <FallingStar resetToken={transientResetToken} reserveShop={hasUi('shop') && !utilityPanelOpen && !shopCollapsed} />
+  <FallingStar resetToken={transientResetToken} reserveShop={hasUi('shop') && !utilityPanelOpen && !shell.shopCollapsed} />
   <aside class="notification-lane" aria-label="Notifications">
     <NumberSuffixHint
       amount={game.light}
       currencyName={activePack.currency}
       suppressed={utilityPanelOpen || storyModalActive || resetPreviewOpen || universeInstrumentActive}
     />
-    <Toasts governed={transientGoverned} clearOfShop={hasUi('shop') && !utilityPanelOpen && !shopCollapsed} />
+    <Toasts governed={transientGoverned} clearOfShop={hasUi('shop') && !utilityPanelOpen && !shell.shopCollapsed} />
   </aside>
   <WelcomeBack amount={visibleOfflineGain} />
 
   {#if !hasUi('options')}
     <button
       class="access-hatch"
-      class:open={openingAccessOpen}
+      class:open={shell.panels.openingAccess}
       onclick={toggleOpeningAccess}
       aria-label="Access and recovery"
       aria-keyshortcuts="F1"
@@ -787,81 +766,81 @@
     ><span aria-hidden="true">⚙</span><span class="access-label">access &amp; recovery</span><kbd>F1</kbd></button>
   {/if}
 
-  {#if sectionsOpen}
+  {#if shell.sectionsOpen}
     <button class="sections-scrim" type="button" onclick={closeSections} aria-hidden="true" tabindex="-1"></button>
   {/if}
-  <nav class="dock" class:sections-open={sectionsOpen} aria-label="Game sections">
+  <nav class="dock" class:sections-open={shell.sectionsOpen} aria-label="Game sections">
     {#if hasUi('shop')}
       <button
         id="mobile-kindling-button"
         class="dock-btn mobile-kindling"
-        class:open={!shopCollapsed}
+        class:open={!shell.shopCollapsed}
         onclick={toggleShop}
         title="Kindling shop"
         aria-label="Kindling shop"
         aria-controls="kindling-shop"
-        aria-expanded={!shopCollapsed}
+        aria-expanded={!shell.shopCollapsed}
       ><span aria-hidden="true">✦</span><small>Kindling</small></button>
     {/if}
     <div
       id="dock-sections"
       class="dock-sections"
-      role={sectionsOpen ? 'dialog' : undefined}
-      aria-modal={sectionsOpen ? 'true' : undefined}
+      role={shell.sectionsOpen ? 'dialog' : undefined}
+      aria-modal={shell.sectionsOpen ? 'true' : undefined}
       aria-label="Game sections"
-      inert={mobileLayout && !sectionsOpen}
+      inert={shell.mobileLayout && !shell.sectionsOpen}
     >
       <div class="sections-head">
         <span>Sections</span>
         <button class="sections-close" type="button" onclick={closeSections} aria-label="Close sections">Done</button>
       </div>
       {#if hasUi('counter')}
-        <button class="dock-btn guide-button" class:open={guideOpen} onclick={toggleGuide} title="The Field Guide · G" data-hint="Field Guide · G" aria-label="The Field Guide" aria-keyshortcuts="G"><span aria-hidden="true">?</span><small>Guide</small></button>
+        <button class="dock-btn guide-button" class:open={shell.panels.guide} onclick={toggleGuide} title="The Field Guide · G" data-hint="Field Guide · G" aria-label="The Field Guide" aria-keyshortcuts="G"><span aria-hidden="true">?</span><small>Guide</small></button>
       {/if}
       {#if hasUi('stats')}
-        <button class="dock-btn" class:open={statsOpen} onclick={toggleStats} title="Run records · I" data-hint="Run records · I" aria-label="Run records" aria-keyshortcuts="I"><span aria-hidden="true">▤</span><small>Records</small></button>
+        <button class="dock-btn" class:open={shell.panels.stats} onclick={toggleStats} title="Run records · I" data-hint="Run records · I" aria-label="Run records" aria-keyshortcuts="I"><span aria-hidden="true">▤</span><small>Records</small></button>
       {/if}
       {#if hasUi('options')}
-        <button class="dock-btn" class:open={optionsOpen} onclick={toggleOptions} title="Options · O" data-hint="Options · O" aria-label="Options" aria-keyshortcuts="O"><span aria-hidden="true">⚙</span><small>Options</small></button>
+        <button class="dock-btn" class:open={shell.panels.options} onclick={toggleOptions} title="Options · O" data-hint="Options · O" aria-label="Options" aria-keyshortcuts="O"><span aria-hidden="true">⚙</span><small>Options</small></button>
       {/if}
       {#if curiositiesVisible}
-        <button class="dock-btn curiosity" class:open={curiositiesOpen} onclick={toggleCuriosities} title={`${activePack.cabinet.dockTitle} · C`} data-hint={`${activePack.cabinet.dockTitle} · C`} aria-label={activePack.cabinet.dockTitle} aria-keyshortcuts="C"><span aria-hidden="true">{activePack.cabinet.dockGlyph}</span><small>Cabinet</small></button>
+        <button class="dock-btn curiosity" class:open={shell.panels.curiosities} onclick={toggleCuriosities} title={`${activePack.cabinet.dockTitle} · C`} data-hint={`${activePack.cabinet.dockTitle} · C`} aria-label={activePack.cabinet.dockTitle} aria-keyshortcuts="C"><span aria-hidden="true">{activePack.cabinet.dockGlyph}</span><small>Cabinet</small></button>
       {/if}
       {#if vesselVisible}
-        <button class="dock-btn vessel" class:open={vesselOpen} class:ready={vesselReady} onclick={toggleVessel} title="The Vessel · V" data-hint="The Vessel · V" aria-label="The Vessel" aria-keyshortcuts="V"><span aria-hidden="true">⌁</span><small>Vessel</small></button>
+        <button class="dock-btn vessel" class:open={shell.panels.vessel} class:ready={vesselReady} onclick={toggleVessel} title="The Vessel · V" data-hint="The Vessel · V" aria-label="The Vessel" aria-keyshortcuts="V"><span aria-hidden="true">⌁</span><small>Vessel</small></button>
       {/if}
       {#if observatoryVisible}
-        <button class="dock-btn stardust" class:open={observatoryOpen} class:ready={novaReady} onclick={toggleObservatory} title={`${observatoryIdentity.title} · S`} data-hint={`${observatoryIdentity.title} · S`} aria-label={observatoryIdentity.title} aria-keyshortcuts="S"><span aria-hidden="true">{observatoryDockGlyph}</span><small>Epoch reset</small></button>
+        <button class="dock-btn stardust" class:open={shell.panels.observatory} class:ready={novaReady} onclick={toggleObservatory} title={`${observatoryIdentity.title} · S`} data-hint={`${observatoryIdentity.title} · S`} aria-label={observatoryIdentity.title} aria-keyshortcuts="S"><span aria-hidden="true">{observatoryDockGlyph}</span><small>Epoch reset</small></button>
       {/if}
       {#if deepVisible}
-        <button class="dock-btn deep" class:open={deepOpen} class:ready={deepReady} onclick={toggleDeep} title="The Deep · D" data-hint="The Deep · D" aria-label="The Deep" aria-keyshortcuts="D"><span aria-hidden="true">◉</span><small>Deep reset</small></button>
+        <button class="dock-btn deep" class:open={shell.panels.deep} class:ready={deepReady} onclick={toggleDeep} title="The Deep · D" data-hint="The Deep · D" aria-label="The Deep" aria-keyshortcuts="D"><span aria-hidden="true">◉</span><small>Deep reset</small></button>
       {/if}
       {#if storyArchiveVisible}
-        <button class="dock-btn" class:open={codexOpen} onclick={toggleCodex} title="Story Archive · E" data-hint="Story Archive · E" aria-label="Story Archive" aria-keyshortcuts="E"><span aria-hidden="true">❖</span><small>Story</small></button>
+        <button class="dock-btn" class:open={shell.panels.codex} onclick={toggleCodex} title="Story Archive · E" data-hint="Story Archive · E" aria-label="Story Archive" aria-keyshortcuts="E"><span aria-hidden="true">❖</span><small>Story</small></button>
       {/if}
       {#if endgameVisible}
-        <button class="dock-btn legacy" class:open={endgameOpen} class:ready={endgameReady} onclick={toggleEndgame} title="The Legacy of Light · L" data-hint="Legacy · L" aria-label="The Legacy of Light" aria-keyshortcuts="L"><span aria-hidden="true">⌘</span><small>Legacy</small></button>
+        <button class="dock-btn legacy" class:open={shell.panels.endgame} class:ready={endgameReady} onclick={toggleEndgame} title="The Legacy of Light · L" data-hint="Legacy · L" aria-label="The Legacy of Light" aria-keyshortcuts="L"><span aria-hidden="true">⌘</span><small>Legacy</small></button>
       {/if}
     </div>
     <button
       id="mobile-more-button"
       class="dock-btn mobile-more"
-      class:open={sectionsOpen}
+      class:open={shell.sectionsOpen}
       class:ready={anySectionReady}
       onclick={toggleSections}
       title="More sections"
       aria-label="More game sections"
       aria-controls="dock-sections"
-      aria-expanded={sectionsOpen}
+      aria-expanded={shell.sectionsOpen}
     ><span aria-hidden="true">☰</span><small>More</small></button>
   </nav>
 
-  {#if statsOpen}
-    <StatsPanel onclose={() => (statsOpen = false)} />
+  {#if shell.panels.stats}
+    <StatsPanel onclose={() => (shell.panels.stats = false)} />
   {/if}
-  {#if optionsOpen}
+  {#if shell.panels.options}
     <OptionsPanel
-      onclose={() => (optionsOpen = false)}
+      onclose={() => (shell.panels.options = false)}
       {averagedRhythm}
       {goalLensEnabled}
       promptsEnabled={promptState.enabled}
@@ -871,31 +850,31 @@
       onhardreset={clearAllTransientUi}
     />
   {/if}
-  {#if openingAccessOpen}
-    <OptionsPanel accessOnly onhardreset={clearAllTransientUi} onclose={() => (openingAccessOpen = false)} />
+  {#if shell.panels.openingAccess}
+    <OptionsPanel accessOnly onhardreset={clearAllTransientUi} onclose={() => (shell.panels.openingAccess = false)} />
   {/if}
-  {#if vesselOpen}
-    <VesselPanel onclose={() => (vesselOpen = false)} oncross={beginCrossingPrelude} />
+  {#if shell.panels.vessel}
+    <VesselPanel onclose={() => (shell.panels.vessel = false)} oncross={beginCrossingPrelude} />
   {/if}
-  {#if observatoryOpen}
-    <Observatory onclose={() => (observatoryOpen = false)} onsupernova={beginSupernova} />
+  {#if shell.panels.observatory}
+    <Observatory onclose={() => (shell.panels.observatory = false)} onsupernova={beginSupernova} />
   {/if}
-  {#if codexOpen}
+  {#if shell.panels.codex}
     <Codex
-      onclose={() => (codexOpen = false)}
+      onclose={() => (shell.panels.codex = false)}
       onremember={beginRemembranceReview}
       onreplayclockwork={replayClockworkRevelation}
     />
   {/if}
-  {#if deepOpen}
-    <TheDeep onrequestcollapse={beginDeepCollapse} onclose={() => (deepOpen = false)} />
+  {#if shell.panels.deep}
+    <TheDeep onrequestcollapse={beginDeepCollapse} onclose={() => (shell.panels.deep = false)} />
   {/if}
   <QuestionChip onopen={() => { closeAll(); questionOpen = true }} />
 </div>
-{#if curiositiesOpen}
+{#if shell.panels.curiosities}
   <CuriosityCabinet onclose={() => closeModalPanel('curiosities')} />
 {/if}
-{#if endgameOpen}
+{#if shell.panels.endgame}
   <EndgameHub onclose={() => closeModalPanel('endgame')} />
 {/if}
 {#if resetPreviewOpen && resetComparison}
@@ -910,8 +889,8 @@
     ondecision={handleResetDecision}
   />
 {/if}
-{#if guideOpen}
-  <GameGuide onclose={() => (guideOpen = false)} />
+{#if shell.panels.guide}
+  <GameGuide onclose={() => (shell.panels.guide = false)} />
 {/if}
 {#if cutsceneActive}
   <SupernovaCutscene doReset={resetForSupernova} onfinished={afterSupernova} timeScale={supernovaTimeScale} />

@@ -2,8 +2,6 @@
 
 > A story-driven incremental game about rebuilding a dead universe—and deciding what the next one should become.
 
-![Emberlight rebuilt into a living sky of constellations, celestial machines, and Kindlings](docs/screenshots/emberlight.webp)
-
 This README is the single canonical project document. It describes the game as it exists now; older design proposals, rebuild plans, audits, and phase reports have been retired. The implementation, manifests, and automated tests remain the final authority when this overview and code ever disagree.
 
 ## Status at a glance
@@ -178,5 +176,3 @@ npm run sim      # Headless balance simulation
 ```
 
 Every presentation change should be exercised in the running game, tested at both supported desktop viewports, and checked in the combined accessibility mode. Economy, balance, mechanics, and content meaning must not change during visual-only work. World-manifest changes go through their validators rather than bypassing them.
-
-Current endgame reference captures live in [`docs/screenshots/endgame/`](docs/screenshots/endgame/), with one settled capture for every realm. Detailed QA images may remain in `docs/qa/`, but this README is the only maintained Markdown description of the project.

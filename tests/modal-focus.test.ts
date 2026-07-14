@@ -16,5 +16,5 @@ test('Cabinet and Legacy use the shared modal focus contract', () => {
     assert.match(source, /tabindex="-1"/)
     assert.deepEqual(compile(source, { filename, generate: 'client' }).warnings, [])
   }
-  assert.match(app, /modalActive = \$derived\([\s\S]*curiositiesOpen[\s\S]*endgameOpen/)
+  assert.match(app, /modalActive = \$derived\([\s\S]*shell\.panels\.curiosities[\s\S]*shell\.panels\.endgame/)
 })

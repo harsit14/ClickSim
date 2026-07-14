@@ -78,12 +78,6 @@ import {
 } from '../content/vessel'
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
 import { pushToast } from '../systems/toasts.svelte'
-import type { BeatVisual, MotionPreference, TextScale, VisualQuality } from '../core/preferences'
-import {
-  AUTO_KINDLER_FAMILIES,
-  type AutoKindlerFamily,
-  type AutoKindlerPriority,
-} from '../core/automation-preferences'
 import type { EconomyAmount } from '../content/universes/types'
 import {
   ONE_AMOUNT,
@@ -107,7 +101,6 @@ import {
   type AmountInput,
 } from '../core/numeric/amount'
 import {
-  type EcoState,
   totalRate,
   clickPower as computeClickPower,
   critChance as computeCritChance,
@@ -146,143 +139,20 @@ import { availableGardenClosures } from '../endgame/garden'
 import {
   emptyEndgameState,
   type EndgameState,
-  type ActiveAtlasRoute,
   type GardenEnding,
   type LawLoadout,
 } from '../endgame/types'
+import { game } from './state/game-state.svelte'
+import type {
+  BuyAmount,
+  ClickResult,
+  GameState,
+  RunSnapshot,
+  UniverseRunState,
+} from './state/game-state.svelte'
 
-export type BuyAmount = 1 | 10 | 100 | 'max'
-
-export interface RunSnapshot {
-  light: EconomyAmount
-  totalEarned: EconomyAmount
-  owned: Record<string, number>
-  upgrades: string[]
-  buyAmount: BuyAmount
-  numericLawState: Record<string, EconomyAmount>
-}
-
-/** The progression that stays anchored to one universe when the Vessel leaves. */
-export interface UniverseRunState {
-  light: EconomyAmount
-  totalEarned: EconomyAmount
-  clicks: number
-  owned: Record<string, number>
-  upgrades: string[]
-  buyAmount: BuyAmount
-  seen: string[]
-  stardust: EconomyAmount
-  stardustTotal: EconomyAmount
-  supernovae: number
-  constellation: string[]
-  stardustWorks: Record<string, number>
-  echoes: string[]
-  eraEarned: EconomyAmount
-  singularities: EconomyAmount
-  singTotal: EconomyAmount
-  collapses: number
-  singUpgrades: string[]
-  deepWorks: Record<string, number>
-  challenge: string | null
-  challengeReturn: RunSnapshot | null
-  challengesDone: string[]
-  autoKindler: boolean
-  autoStoker: boolean
-  autoNova: boolean
-  autoNovaThreshold: EconomyAmount
-  ending: 'warden' | 'hunger' | 'companion' | null
-  curiosities: string[]
-  keeperFedUntil: number
-  snailLastGiftAt: number
-  crits: number
-  bestCrit: EconomyAmount
-  numericLawState: Record<string, EconomyAmount>
-  /** Save-stable lifetime loka traces; survives local Epoch and Deep resets. */
-  lokaProgress: Record<string, number>
-}
-
-export interface ClickResult {
-  amount: EconomyAmount
-  crit: boolean
-  critMult: number
-}
-
-export interface GameState extends EcoState, Omit<EndgameState,
-  'activeAtlasRoute' | 'lawLoadouts' | 'activeLawLoadoutId' | 'successionRelays' | 'lumenPurchases'
-> {
-  successionRelays: Record<string, number>
-  lumenPurchases: string[]
-  activeAtlasRoute: ActiveAtlasRoute | null
-  lawLoadouts: LawLoadout[]
-  activeLawLoadoutId: string | null
-  ui: string[]
-  seen: string[]
-  playtime: number
-  sfxVolume: number
-  musicVolume: number
-  motionPreference: MotionPreference
-  visualQuality: VisualQuality
-  beatVisual: BeatVisual
-  textScale: TextScale
-  highContrast: boolean
-  showAchievementPopups: boolean
-  showRoutineToasts: boolean
-  showWorldScenery: boolean
-  showInteractionEffects: boolean
-  buyAmount: BuyAmount
-  starsCaught: number
-  bestCombo: number
-  /** light earned across ALL rebirths — never resets, for the record books */
-  allTimeEarned: EconomyAmount
-  /** light earned this deep-era — drives stardust math, resets at deep collapse */
-  eraEarned: EconomyAmount
-  /** unspent stardust */
-  stardust: EconomyAmount
-  supernovae: number
-  echoes: string[]
-  /** unspent singularities (layer 2) */
-  singularities: EconomyAmount
-  singTotal: EconomyAmount
-  collapses: number
-  autoKindler: boolean
-  autoKindlerFamilies: AutoKindlerFamily[]
-  autoKindlerPriority: AutoKindlerPriority
-  autoStoker: boolean
-  autoNova: boolean
-  autoNovaThreshold: EconomyAmount
-  /** Main-run state to restore after a temporary trial. */
-  challengeReturn: RunSnapshot | null
-  /** vestment (cosmetic accent theme) id */
-  theme: string
-  /** every answer ever given, oldest first */
-  pastEndings: Array<'warden' | 'hunger' | 'companion'>
-  /** catalogued celestial phenomena (legacy ids are save-stable) */
-  curiosities: string[]
-  /** Protostar fueled-until wall-clock time, ms */
-  keeperFedUntil: number
-  /** last long-period comet return payout wall-clock time, ms */
-  snailLastGiftAt: number
-  /** critical click count */
-  crits: number
-  /** largest single critical click */
-  bestCrit: EconomyAmount
-  /** universes finished strongly enough to shine across worlds */
-  beacons: string[]
-  /** layer-3 meta-currency, earned between universes */
-  darkBetween: EconomyAmount
-  /** multiverse-level perks */
-  wayfinder: string[]
-  /** completed visible Vessel construction parts */
-  vesselParts: string[]
-  /** completed construction parts for each universe's local crossing vessel */
-  vesselPartsByUniverse: Record<string, string[]>
-  /** parked progression for every visited universe, including the current one at save time */
-  universeRuns: Record<string, UniverseRunState>
-  /** Amount-valued law state reserved for pure universe hooks. */
-  numericLawState: Record<string, EconomyAmount>
-  /** Save-stable lifetime loka traces for the active universe. */
-  lokaProgress: Record<string, number>
-}
+export { game }
+export type { BuyAmount, ClickResult, GameState, RunSnapshot, UniverseRunState }
 
 /** The Question becomes available once its moment has been witnessed. */
 export function questionReady(): boolean {
@@ -334,73 +204,6 @@ export function performRemembrance(): boolean {
   game.numericLawState = {}
   return true
 }
-
-export const game: GameState = $state({
-  activeUniverse: DEFAULT_UNIVERSE_ID,
-  light: ZERO_AMOUNT,
-  totalEarned: ZERO_AMOUNT,
-  clicks: 0,
-  owned: {},
-  upgrades: [],
-  achievements: [],
-  stardustTotal: ZERO_AMOUNT,
-  constellation: [],
-  stardustWorks: {},
-  singUpgrades: [],
-  deepWorks: {},
-  challenge: null,
-  challengesDone: [],
-  ui: [],
-  seen: [],
-  playtime: 0,
-  sfxVolume: 0.5,
-  musicVolume: 0.6,
-  motionPreference: 'system',
-  visualQuality: 'auto',
-  beatVisual: 'heart',
-  textScale: 'normal',
-  highContrast: false,
-  showAchievementPopups: true,
-  showRoutineToasts: true,
-  showWorldScenery: true,
-  showInteractionEffects: true,
-  buyAmount: 1,
-  starsCaught: 0,
-  bestCombo: 0,
-  allTimeEarned: ZERO_AMOUNT,
-  eraEarned: ZERO_AMOUNT,
-  stardust: ZERO_AMOUNT,
-  supernovae: 0,
-  echoes: [],
-  singularities: ZERO_AMOUNT,
-  singTotal: ZERO_AMOUNT,
-  collapses: 0,
-  autoKindler: true,
-  autoKindlerFamilies: [...AUTO_KINDLER_FAMILIES],
-  autoKindlerPriority: 'efficiency',
-  autoStoker: true,
-  autoNova: false,
-  autoNovaThreshold: ONE_AMOUNT,
-  challengeReturn: null,
-  ending: null,
-  theme: 'ember',
-  remembrances: 0,
-  pastEndings: [],
-  curiosities: [],
-  keeperFedUntil: 0,
-  snailLastGiftAt: 0,
-  crits: 0,
-  bestCrit: ZERO_AMOUNT,
-  beacons: [],
-  darkBetween: ZERO_AMOUNT,
-  wayfinder: [],
-  vesselParts: [],
-  vesselPartsByUniverse: {},
-  universeRuns: {},
-  numericLawState: {},
-  lokaProgress: {},
-  ...emptyEndgameState(),
-})
 
 function addChronicleMilestone(
   milestone: EndgameState['chronicleEvents'][number]['milestone'],
