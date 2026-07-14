@@ -42,6 +42,7 @@
   import type { AutomationProfile, LawLoadout } from '../endgame/types'
   import { gardenKeepsake, gardenKeepsakeFilename, gardenKeepsakeSvg } from '../endgame/garden-keepsake'
   import { quietGoalProgress } from '../endgame/quiet-goals'
+  import { visitedUniverseIds } from '../content/vessel'
   import GardenScene from './GardenScene.svelte'
   import { containModalKeydown } from '../accessibility/modal-focus'
 
@@ -83,6 +84,9 @@
   const daily = $derived(dailyAtlasRoute(openedAt, game.activeUniverse as UniverseId))
   const dailyComplete = $derived(game.atlasCompletions.some((completion) => completion.routeCode === daily.route.code))
   const quietGoals = $derived(quietGoalProgress(game))
+  const knownUniverseIds = $derived(new Set(visitedUniverseIds(game)))
+  const knownUniverses = $derived(UNIVERSES.filter(({ id }) => knownUniverseIds.has(id)))
+  const visibleChronicleEvents = $derived(game.chronicleEvents.filter((event) => knownUniverseIds.has(event.universeId)))
 
   function selectTab(next: Tab) {
     tab = next
@@ -207,7 +211,7 @@
   {#if tab !== 'garden'}
   <header>
     <div>
-      <span>seven worlds · one record · possible futures</span>
+      <span>{knownUniverses.length} known {knownUniverses.length === 1 ? 'realm' : 'realms'} · one record · possible futures</span>
       <h2 id="legacy-title">The Legacy of Light</h2>
     </div>
     <button class="close" aria-label="close the Legacy of Light" onclick={onclose}>✕</button>
@@ -226,11 +230,11 @@
       <section class="page chronicle" aria-labelledby="chronicle-title">
         <div class="section-head">
           <div><span>permanent record</span><h3 id="chronicle-title">The Chronicle</h3></div>
-          <strong>{game.chronicleEvents.length} dated events</strong>
+          <strong>{visibleChronicleEvents.length} dated events</strong>
         </div>
 
         <div class="world-records">
-          {#each UNIVERSES as universe (universe.id)}
+          {#each knownUniverses as universe (universe.id)}
             {@const events = game.chronicleEvents.filter((event) => event.universeId === universe.id)}
             <article class:lit={game.beacons.includes(universe.id)}>
               <i>{universe.currencyGlyph}</i>
@@ -254,7 +258,7 @@
         </div>
 
         <ol class="timeline" aria-label="Chronicle timeline">
-          {#each [...game.chronicleEvents].sort((a, b) => b.at - a.at).slice(0, 18) as event (event.id)}
+          {#each [...visibleChronicleEvents].sort((a, b) => b.at - a.at).slice(0, 18) as event (event.id)}
             <li>
               <span>{event.milestone.replace('-', ' ')}</span>
               <strong>{UNIVERSES.find((universe) => universe.id === event.universeId)?.name}</strong>
@@ -470,7 +474,7 @@
   .body.garden-body { width: 100%; height: 100%; overflow: hidden; }
   .garden-status { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   .section-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 1rem; } .section-head strong { color: color-mix(in srgb, var(--amber) 76%, white); font-size: .75rem; }
-  .world-records { display: grid; grid-template-columns: repeat(7, minmax(8rem,1fr)); gap: .45rem; } .world-records article { min-height: 8.3rem; padding: .7rem; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.06); border-radius: .8rem; } .world-records article.lit { border-color: color-mix(in srgb, var(--amber) 30%, transparent); } .world-records i { font-size: 1.2rem; font-style: normal; } .world-records strong { display: block; min-height: 2.5rem; margin-top: .28rem; color: var(--dim); font-size: .64rem; font-weight: 500; line-height: 1.35; } .world-records label { display: block; margin-top: .55rem; } label span, label { color: var(--dim); font-size: .68rem; } input, select { width: 100%; box-sizing: border-box; margin-top: .25rem; padding: .5rem; color: var(--gold); background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.09); border-radius: .45rem; }
+  .world-records { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem,1fr)); gap: .45rem; } .world-records article { min-height: 8.3rem; padding: .7rem; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.06); border-radius: .8rem; } .world-records article.lit { border-color: color-mix(in srgb, var(--amber) 30%, transparent); } .world-records i { font-size: 1.2rem; font-style: normal; } .world-records strong { display: block; min-height: 2.5rem; margin-top: .28rem; color: var(--dim); font-size: .64rem; font-weight: 500; line-height: 1.35; } .world-records label { display: block; margin-top: .55rem; } label span, label { color: var(--dim); font-size: .68rem; } input, select { width: 100%; box-sizing: border-box; margin-top: .25rem; padding: .5rem; color: var(--gold); background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.09); border-radius: .45rem; }
   .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; padding: 0; margin: 1rem 0 0; list-style: none; } .timeline li { padding: .75rem; background: rgba(255,255,255,.025); border-left: 2px solid color-mix(in srgb, var(--amber) 42%, transparent); } .timeline li > span { color: var(--amber); font-size: .6rem; text-transform: uppercase; letter-spacing: .12em; } .timeline p { margin: .25rem 0; color: var(--dim); font: italic .78rem Georgia,serif; } time { color: color-mix(in srgb, var(--dim) 68%, transparent); font-size: .58rem; }
   .bests, .convergences { margin-top: 1.2rem; } .bests > div { display: flex; justify-content: space-between; padding: .45rem; border-bottom: 1px solid rgba(255,255,255,.05); } code { color: color-mix(in srgb, var(--amber) 78%, white); font-size: .7rem; }
   .quiet-goals { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.07); }

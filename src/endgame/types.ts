@@ -76,6 +76,8 @@ export interface EndgameState {
   lumenPurchases: string[]
   /** Expensive local Deep-currency conversions, capped per universe. */
   lumenDistillations: Record<string, number>
+  /** Permanent, presentation-only objects found at authored world milestones. */
+  mementos: string[]
 }
 
 export function emptyEndgameState(): EndgameState {
@@ -95,5 +97,6 @@ export function emptyEndgameState(): EndgameState {
     lumenShardClaims: [],
     lumenPurchases: [],
     lumenDistillations: {},
+    mementos: [],
   }
 }

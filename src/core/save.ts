@@ -150,6 +150,7 @@ function snapshot(): SaveDataV23 {
       lumenShardClaims: [...game.lumenShardClaims],
       lumenPurchases: [...game.lumenPurchases],
       lumenDistillations: { ...game.lumenDistillations },
+      mementos: [...game.mementos],
     },
   }
 }
@@ -257,6 +258,7 @@ function apply(d: SaveDataV23) {
   game.lumenShardClaims = [...d.endgame.lumenShardClaims]
   game.lumenPurchases = [...d.endgame.lumenPurchases]
   game.lumenDistillations = { ...d.endgame.lumenDistillations }
+  game.mementos = [...d.endgame.mementos]
 }
 
 function parseStored(raw: string | null): SaveDataV23 | null {

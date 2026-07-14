@@ -28,6 +28,14 @@ test('Options exposes the complete keyboard shortcut reference without relying o
   }
 })
 
+test('Options keeps the public save surface simple', () => {
+  assert.match(optionsSource, /<h3>Save<\/h3>/)
+  assert.match(optionsSource, />Copy export<\/button>/)
+  assert.match(optionsSource, />Download file<\/button>/)
+  assert.match(optionsSource, />Import<\/button>/)
+  assert.doesNotMatch(optionsSource, /Save safety|Copy pre-v13 rollback|exportV12Rollback/)
+})
+
 test('adaptive canvas degradation governs the DOM world layer too', () => {
   assert.match(appSource, /resolveEffectiveVisualQuality/)
   assert.match(appSource, /renderHealth\.profile/)

@@ -9,6 +9,9 @@
   --font-story: 'Fraunces Variable', Fraunces, Georgia, serif;
   --glass: rgba(10, 8, 18, 0.82);
   --glass-border: rgba(242, 216, 167, 0.14);
+  --disabled-text: #cbc8d6;
+  --disabled-surface: #24232d;
+  --disabled-border: #5d596a;
   --label-size: 0.75rem;
   --label-tracking: 0.14em;
 }
@@ -118,6 +121,18 @@ body {
   outline-offset: 3px;
 }
 
+/* Unavailable actions remain legible without borrowing the warm active treatment. */
+button:disabled {
+  opacity: 1 !important;
+  color: var(--disabled-text) !important;
+  -webkit-text-fill-color: var(--disabled-text);
+  background: var(--disabled-surface) !important;
+  border-color: var(--disabled-border) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.035) !important;
+  filter: none !important;
+  cursor: not-allowed !important;
+}
+
 html[data-text-scale='large'] {
   font-size: 112.5%;
 }
@@ -145,6 +160,9 @@ html[data-text-scale='large'] {
 html[data-contrast='high'] {
   --text: #ffffff !important;
   --dim: #c9c7d6 !important;
+  --disabled-text: #ffffff;
+  --disabled-surface: #11131a;
+  --disabled-border: #b8b8c3;
 }
 
 html[data-contrast='high'] button,

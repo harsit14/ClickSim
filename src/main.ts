@@ -11,6 +11,7 @@ import { game } from './engine/game.svelte'
 import { setMasterVolume } from './audio/sfx'
 import { setMusicFocusMode, setMusicVolume } from './audio/music'
 import { startAchievementWatcher } from './systems/achievements.svelte'
+import { startMementoWatcher } from './systems/mementos.svelte'
 import { startAutomation } from './systems/automation.svelte'
 import { registerOfflineWorker } from './core/offline'
 
@@ -48,6 +49,7 @@ setMusicFocusMode(game.audioFocusMode)
 startLoop()
 startAutosave()
 startAchievementWatcher()
+startMementoWatcher()
 startAutomation()
 registerOfflineWorker()
 

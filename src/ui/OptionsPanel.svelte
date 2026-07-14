@@ -5,7 +5,6 @@
   import { universeById } from '../content/universes'
   import {
     exportSave,
-    exportV12Rollback,
     describeSaveImportFailure,
     importSaveDetailed,
     hardReset,
@@ -149,21 +148,6 @@
       message = 'Copied to clipboard.'
     } catch {
       message = 'Copy the code below.'
-    }
-  }
-
-  async function doRollbackExport() {
-    const rollback = exportV12Rollback()
-    if (!rollback) {
-      message = 'No pre-v13 rollback snapshot is available.'
-      return
-    }
-    exportCode = rollback
-    try {
-      await navigator.clipboard.writeText(rollback)
-      message = 'Original v12 rollback copied. It does not include progress made after migration.'
-    } catch {
-      message = 'Copy the original v12 rollback code below. It does not include later progress.'
     }
   }
 
@@ -416,11 +400,10 @@
   {/if}
 
   <section class="settings-section save-section">
-    <div class="section-title"><span>{accessOnly ? '04' : '06'}</span><div><h3>Save safety</h3><p>Autosaves include three rolling checkpoints and one daily backup.</p></div></div>
+    <div class="section-title"><span>{accessOnly ? '04' : '06'}</span><div><h3>Save</h3><p>Autosaves include three rolling checkpoints and one daily backup.</p></div></div>
     <div class="action-row">
       <button class="action" onclick={doExport}>Copy export</button>
       <button class="action" onclick={doDownload}>Download file</button>
-      <button class="action" onclick={doRollbackExport}>Copy pre-v13 rollback</button>
     </div>
     {#if exportCode}
       <textarea aria-label="exported save code" readonly rows="3" value={exportCode} onclick={(e) => (e.target as HTMLTextAreaElement).select()}></textarea>

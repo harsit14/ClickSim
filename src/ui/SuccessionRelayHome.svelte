@@ -5,6 +5,7 @@
     successionRelayMultiplier,
     successionRelayRank,
   } from '../content/legacy-exchange'
+  import { visitedUniverseIds } from '../content/vessel'
   import { UNIVERSES } from '../content/universes'
   import { buySuccessionRelay, game } from '../engine/game.svelte'
   import { format } from '../core/format'
@@ -14,7 +15,12 @@
   import { pushToast } from '../systems/toasts.svelte'
 
   let message = $state('')
-  const revealed = $derived(game.beacons.length > 0 || Object.keys(game.successionRelays).length > 0)
+  const knownUniverseIds = $derived(new Set(visitedUniverseIds(game)))
+  const knownUniverses = $derived(UNIVERSES.filter(({ id }) => knownUniverseIds.has(id)))
+  const visibleRelays = $derived(SUCCESSION_RELAYS.filter((relay) => (
+    knownUniverseIds.has(relay.sourceUniverseId) && knownUniverseIds.has(relay.targetUniverseId)
+  )))
+  const revealed = $derived(visibleRelays.length > 0)
 
   function invest(id: string) {
     const relay = SUCCESSION_RELAYS.find((entry) => entry.id === id)
@@ -33,13 +39,13 @@
   <section class="relay-home" aria-labelledby="relay-home-title">
     <header><div><span>succession instruments</span><h3 id="relay-home-title">One world reaches only its immediate successor.</h3></div><p>Spend a completed source world’s local Singularities here. Relay ranks persist across pruning and crossing.</p></header>
     <div class="chain" aria-label="Universe succession chain">
-      {#each UNIVERSES as universe, index (universe.id)}
+      {#each knownUniverses as universe, index (universe.id)}
         <span class:current={universe.id === game.activeUniverse} class:complete={game.beacons.includes(universe.id)}>{universe.currencyGlyph}<small>{universe.shortName}</small></span>
-        {#if index < UNIVERSES.length - 1}<b aria-hidden="true">→</b>{/if}
+        {#if index < knownUniverses.length - 1}<b aria-hidden="true">→</b>{/if}
       {/each}
     </div>
     <div class="relays">
-      {#each SUCCESSION_RELAYS as relay (relay.id)}
+      {#each visibleRelays as relay (relay.id)}
         {@const source = UNIVERSES.find((world) => world.id === relay.sourceUniverseId)}
         {@const target = UNIVERSES.find((world) => world.id === relay.targetUniverseId)}
         {@const rank = successionRelayRank(game.successionRelays, relay.id)}

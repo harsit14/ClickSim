@@ -8,6 +8,7 @@
   import StatsPanel from './ui/StatsPanel.svelte'
   import OptionsPanel from './ui/OptionsPanel.svelte'
   import CuriosityCabinet from './ui/CuriosityCabinet.svelte'
+  import MementoGallery from './ui/MementoGallery.svelte'
   import VesselPanel from './ui/VesselPanel.svelte'
   import LumenTicker from './ui/LumenTicker.svelte'
   import WelcomeBack from './ui/WelcomeBack.svelte'
@@ -188,6 +189,7 @@
     game.curiosities.length,
   ))
   const curiositiesVisible = $derived(game.curiosities.length > 0 || gteAmount(game.totalEarned, amountFromNumber(250_000)))
+  const mementosVisible = $derived(game.mementos.length > 0)
   const activePack = $derived(universeById(game.activeUniverse))
   const activeV2Pack = $derived(universeV2ById(game.activeUniverse))
   const observatoryIdentity = $derived(progressionIdentity(activePack.id).observatory)
@@ -225,7 +227,7 @@
     ? { ...offlineReturn, gain: ZERO_AMOUNT }
     : offlineReturn)
   const offlineReturnOpen = $derived(welcomeBackEligible(visibleOfflineReturn.gain))
-  const modalActive = $derived(storyModalActive || firstEpochHandoffOpen || offlineReturnOpen || shell.panels.guide || resetPreviewOpen || shell.panels.curiosities || shell.panels.endgame)
+  const modalActive = $derived(storyModalActive || firstEpochHandoffOpen || offlineReturnOpen || shell.panels.guide || resetPreviewOpen || shell.panels.curiosities || shell.panels.mementos || shell.panels.endgame)
   const transientGoverned = $derived(universeInstrumentActive || utilityPanelOpen || storyModalActive || resetPreviewOpen || lumenActive)
   const goalCandidates = $derived(buildEmberGoalCandidates(game, novaReady, Date.now()))
   const goalLensInput = $derived({
@@ -390,6 +392,12 @@
     closeAll()
     shell.panels.curiosities = next
   }
+  function toggleMementos() {
+    const next = !shell.panels.mementos
+    if (next) shell.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    closeAll()
+    shell.panels.mementos = next
+  }
   function toggleVessel() {
     const next = !shell.panels.vessel
     closeAll()
@@ -434,8 +442,9 @@
     shell.panels.endgame = next
   }
 
-  function closeModalPanel(panel: 'curiosities' | 'endgame') {
+  function closeModalPanel(panel: 'curiosities' | 'mementos' | 'endgame') {
     if (panel === 'curiosities') shell.panels.curiosities = false
+    else if (panel === 'mementos') shell.panels.mementos = false
     else shell.panels.endgame = false
     const target = shell.modalReturnFocus
     shell.modalReturnFocus = null
@@ -515,6 +524,7 @@
     else if (key === 'i' && hasUi('stats')) toggleStats()
     else if (key === 'o' && hasUi('options')) toggleOptions()
     else if (key === 'c' && curiositiesVisible) toggleCuriosities()
+    else if (key === 'm' && mementosVisible) toggleMementos()
     else if (key === 'v' && vesselVisible) toggleVessel()
     else if (key === 's' && observatoryVisible) toggleObservatory()
     else if (key === 'd' && deepVisible) toggleDeep()
@@ -766,7 +776,7 @@
     setAudioSpace(
       shell.panels.deep
         ? 'deep'
-        : shell.panels.codex || shell.panels.curiosities
+        : shell.panels.codex || shell.panels.curiosities || shell.panels.mementos
           ? 'archive'
           : 'world',
     )
@@ -967,6 +977,9 @@
       {#if curiositiesVisible}
         <button class="dock-btn curiosity" class:open={shell.panels.curiosities} onclick={toggleCuriosities} title={`${activePack.cabinet.dockTitle} · C`} data-hint={`${activePack.cabinet.dockTitle} · C`} aria-label={activePack.cabinet.dockTitle} aria-keyshortcuts="C"><span aria-hidden="true">{activePack.cabinet.dockGlyph}</span><small>Cabinet</small></button>
       {/if}
+      {#if mementosVisible}
+        <button class="dock-btn mementos" class:open={shell.panels.mementos} onclick={toggleMementos} title="Memento gallery · M" data-hint="Memento gallery · M" aria-label="Memento gallery" aria-keyshortcuts="M"><span aria-hidden="true">◇</span><small>Mementos</small></button>
+      {/if}
       {#if vesselVisible}
         <button class="dock-btn vessel" class:open={shell.panels.vessel} class:ready={vesselReady} onclick={toggleVessel} title="The Vessel · V" data-hint="The Vessel · V" aria-label="The Vessel" aria-keyshortcuts="V"><span aria-hidden="true">⌁</span><small>Vessel</small></button>
       {/if}
@@ -1059,6 +1072,9 @@
 {/if}
 {#if shell.panels.curiosities}
   <CuriosityCabinet onclose={() => closeModalPanel('curiosities')} />
+{/if}
+{#if shell.panels.mementos}
+  <MementoGallery onclose={() => closeModalPanel('mementos')} />
 {/if}
 {#if shell.panels.endgame}
   <EndgameHub onclose={() => closeModalPanel('endgame')} />

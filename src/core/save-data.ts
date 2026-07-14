@@ -10,6 +10,7 @@ import {
   lumenClaimIds,
 } from '../content/legacy-exchange'
 import { THEMES } from '../content/themes'
+import { MEMENTO_IDS } from '../content/mementos'
 import { EXPERIENCE_SEEN_IDS } from '../content/experience-markers'
 import { UI_UNLOCKS } from '../content/ui-unlocks'
 import { DEFAULT_UNIVERSE_ID, UNIVERSES, universeById } from '../content/universes'
@@ -630,6 +631,7 @@ function sanitizeEndgameState(value: unknown): EndgameState {
     lumenShardClaims: knownStrings(source.lumenShardClaims, lumenShardClaimIds, lumenShardClaimIds.size),
     lumenPurchases: knownStrings(source.lumenPurchases, lumenVaultItemIds, lumenVaultItemIds.size),
     lumenDistillations,
+    mementos: knownStrings(source.mementos, MEMENTO_IDS, MEMENTO_IDS.size),
   }
 }
 

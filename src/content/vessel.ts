@@ -377,6 +377,11 @@ export function vesselRouteVisited(g: VesselRouteState, universeId: string): boo
     )
 }
 
+/** Ordered realm history for permanent UI. Unseen successors never enter this list. */
+export function visitedUniverseIds(g: VesselRouteState): readonly UniverseId[] {
+  return STORY_ROUTE.filter((universeId) => vesselRouteVisited(g, universeId))
+}
+
 function vesselRouteIsNext(g: VesselRouteState, universeId: string): boolean {
   const activeIndex = STORY_ROUTE.indexOf(g.activeUniverse as UniverseId)
   return activeIndex >= 0 && STORY_ROUTE[activeIndex + 1] === universeId
