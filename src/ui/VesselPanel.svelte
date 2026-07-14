@@ -32,6 +32,7 @@
   import { amountFromNumber, gteAmount, isZeroAmount } from '../core/numeric/amount'
   import LumenVaultShelf from './LumenVaultShelf.svelte'
   import SuccessionRelayHome from './SuccessionRelayHome.svelte'
+  import RealmDoctrineAtlas from './RealmDoctrineAtlas.svelte'
 
   let { onclose, oncross }: { onclose: () => void; oncross: (universeId: string) => void } = $props()
   let closeButton: HTMLButtonElement
@@ -46,6 +47,9 @@
   const visibleRoutes = $derived(UNIVERSES.filter(({ id }) => universeRouteVisible(id)))
   const hasReturnRoute = $derived(
     visibleRoutes.some(({ id }) => id !== game.activeUniverse && universeVisited(id)),
+  )
+  const rememberedRealmIds = $derived(
+    UNIVERSES.filter(({ id }) => id === game.activeUniverse || universeVisited(id)).map(({ id }) => id),
   )
 
   function progressText(part: VesselPartDef): string {
@@ -195,6 +199,8 @@
           </article>
         {/each}
       </div>
+
+      <RealmDoctrineAtlas universeIds={rememberedRealmIds} />
 
       {#if activeVesselComplete}
         <div class="wayfinder-tree">

@@ -279,7 +279,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     eyebrow: 'prestige layer three',
     title: 'Local Vessels, Beacons, and the Dark Between',
     summary: 'Each realm turns its own mastered laws into a crossing vessel before its Beacon can open the next route.',
-    keywords: ['vessel', 'multiverse', 'crossing', 'beacon', 'dark between', 'wayfinder', 'route', 'parts'],
+    keywords: ['vessel', 'multiverse', 'crossing', 'beacon', 'dark between', 'wayfinder', 'route', 'parts', 'doctrine', 'compare'],
     blocks: [
       {
         heading: 'Building each realm’s Vessel',
@@ -292,8 +292,10 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Crossings and Beacons',
         paragraphs: [
           'Only the active realm’s completed Vessel can open the Wayfinder. Crossing parks the current realm, restores it if previously visited, and seals the Wayfinder again until that destination builds and activates its own Vessel.',
+          'On a first arrival, the Crossing restates the destination law in player verbs and names up to two real effects that crossed with you. A completed source Beacon contributes its existing global ×3, while an owned relay, Remembered Kindling, or Wayfinder Cargo is shown only when that permanent effect actually applies.',
           'After the local Vessel is active, reaching the realm’s Beacon requirement can light it across the Between and unlock the next route. Beacons multiply production globally and award Dark Between, which is spent on permanent Wayfinder laws.',
           'Succession Relays and the Relay Lens live in the Wayfinder. Each completed source world may strengthen only its immediate successor; moving the controls here does not change ranks, costs, or effects.',
+          'After the first Crossing, the Wayfinder gains an optional comparison Atlas. It places every visited realm’s four doctrines, favored playstyles, and direct effects side by side without waiting for the endgame.',
         ],
       },
     ],
@@ -350,7 +352,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Seeded Atlas routes and Convergences',
         paragraphs: [
-          'The Atlas unlocks after three Beacons. Each route combines one restored world or loka with compatible, hand-authored environment, economy, and interaction laws, one narrative fragment, and an optional mastery constraint. The seed reproduces the same route and replay log exactly.',
+          'The seeded route Atlas unlocks after three Beacons; it is separate from the earlier read-only doctrine comparison in the Wayfinder. Each route combines one restored world or loka with compatible, hand-authored environment, economy, and interaction laws, one narrative fragment, and an optional mastery constraint. The seed reproduces the same route and replay log exactly.',
           'Beginning a route parks the source realm intact and creates a temporary route run. Completion archives the replay and personal time; abandonment restores the source without loss. Convergences are permanent route and story collections. They never expire and have no paid or seasonal reward track.',
         ],
       },

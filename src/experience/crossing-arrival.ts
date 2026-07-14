@@ -48,6 +48,7 @@ export interface CrossingCeremonyCopyInput {
   readonly targetArrival: string
   readonly sourceVerb: string
   readonly targetVerb: string
+  readonly targetLaw?: string
 }
 
 export function crossingCeremonyLine(
@@ -59,8 +60,8 @@ export function crossingCeremonyLine(
     case 'between': return 'between universes, no number rises; no clock is willing to count'
     case 'wrong-foot': return `${input.sourceVerb}— the old verb follows us one beat too far`
     case 'translation': return input.targetArrival
-    case 'arrival': return `${input.targetVerb}; the Wayfinder learns the new law before it names ${input.targetName}`
-    case 'ready': return `the Wayfinder answers: ${input.targetName}`
+    case 'arrival': return input.targetLaw ?? `${input.targetVerb}; the Wayfinder learns the new law before it names ${input.targetName}`
+    case 'ready': return input.targetLaw ?? `the Wayfinder answers: ${input.targetName}`
   }
 }
 

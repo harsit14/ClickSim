@@ -3,7 +3,7 @@
   import { game } from '../engine/game.svelte'
   import { isPlaying, startMusic, stopMusic } from '../audio/music'
   import { playCollect } from '../audio/sfx'
-  import { universeById, universeV2ById } from '../content/universes'
+  import { universeById, universeV2ById, type UniverseId } from '../content/universes'
   import {
     crossingCeremonyDuration,
     crossingCeremonyLine,
@@ -11,6 +11,10 @@
     crossingCeremonyPhases,
   } from '../experience/crossing-arrival'
   import { crossingArrivalState } from '../experience/crossing-arrival.svelte'
+  import {
+    crossingMemoryTransfers,
+    realmLawStatement,
+  } from '../experience/cross-realm-continuity'
 
   let { destination, onfinished }: { destination: string; onfinished: (universeId: string) => void } = $props()
 
@@ -18,6 +22,7 @@
   const target = $derived(universeById(destination))
   const sourceV2 = $derived(universeV2ById(source.id))
   const targetV2 = $derived(universeV2ById(target.id))
+  const targetLaw = $derived(realmLawStatement(target.id as UniverseId))
   const firstArrival = $derived(crossingArrivalState.active?.destinationId === destination
     ? crossingArrivalState.active.firstArrival
     : game.universeRuns[destination] === undefined)
@@ -31,6 +36,16 @@
     targetArrival: target.route.arrival,
     sourceVerb: sourceV2?.identity.primaryVerb ?? 'kindle',
     targetVerb: targetV2?.identity.primaryVerb ?? 'kindle',
+    targetLaw: targetLaw.sentence,
+  }))
+  const memories = $derived(crossingMemoryTransfers({
+    sourceId: source.id as UniverseId,
+    targetId: target.id as UniverseId,
+    firstArrival,
+    beacons: game.beacons,
+    wayfinder: game.wayfinder,
+    successionRelays: game.successionRelays,
+    lumenPurchases: game.lumenPurchases,
   }))
 
   let elapsedMs = $state(0)
@@ -123,9 +138,28 @@
     <div class="wrong-foot-mark"><span>{sourceV2?.identity.primaryVerb ?? 'kindle'}</span><b>{targetV2?.identity.primaryVerb ?? 'kindle'}</b></div>
   </div>
 
-  {#key phase.id}
-    <p class="crossing-line story-type" role="status" aria-live="polite">{line}</p>
-  {/key}
+  <div class="crossing-copy" class:with-memory={ready && memories.length > 0}>
+    {#if phase.id === 'arrival' || phase.id === 'ready'}
+      <small class="law-label">the new law · in player verbs</small>
+    {/if}
+    {#key phase.id}
+      <p class="crossing-line story-type" role="status" aria-live="polite">{line}</p>
+    {/key}
+
+    {#if ready && memories.length > 0}
+      <section class="memory-ledger" aria-labelledby="crossing-memory-title">
+        <header><small>what crossed with you</small><strong id="crossing-memory-title">{source.shortName} remains present here.</strong></header>
+        <div>
+          {#each memories as memory (memory.id)}
+            <article>
+              <span aria-hidden="true">{memory.glyph}</span>
+              <div><small>{memory.source}</small><strong>{memory.name}</strong><p>{memory.description}</p><b>{memory.effect}</b></div>
+            </article>
+          {/each}
+        </div>
+      </section>
+    {/if}
+  </div>
 
   <div class="progress-track" aria-hidden="true"><i></i></div>
 
@@ -194,10 +228,23 @@
   [data-crossing-phase='translation'] .vessel-mark,
   [data-crossing-phase='arrival'] .vessel-mark,
   [data-crossing-phase='ready'] .vessel-mark { color: hsla(var(--cross-hue), 84%, 76%, 0.8); filter: drop-shadow(0 0 25px hsla(var(--cross-hue), 82%, 68%, 0.38)); }
-  .crossing-line { position: relative; max-width: min(80vw, 38rem); margin: 15rem 0 0; padding: 0.45rem 1rem; font-size: 1.08rem; font-style: italic; line-height: 1.5; text-align: center; color: rgba(214, 230, 255, 0.78); background: radial-gradient(ellipse, rgba(3, 4, 12, 0.72), transparent 72%); animation: line-in 0.8s ease both; }
-  .progress-track { position: absolute; left: 50%; bottom: 9%; width: min(34rem, 76vw); height: 1px; transform: translateX(-50%); background: rgba(255,255,255,.08); }
+  .crossing-copy { position:absolute;left:50%;top:62%;width:min(42rem,88vw);display:grid;gap:.42rem;transform:translateX(-50%);text-align:center; }
+  .crossing-copy.with-memory { top:58%; }
+  .law-label { color:hsla(var(--cross-hue),82%,78%,.8);font:720 .56rem/1.2 var(--font-interface,ui-sans-serif,system-ui);letter-spacing:.14em;text-transform:uppercase; }
+  .crossing-line { position: relative; max-width: min(80vw, 38rem); margin: 0 auto; padding: 0.45rem 1rem; font-size: 1.08rem; font-style: italic; line-height: 1.5; text-align: center; color: rgba(214, 230, 255, 0.86); background: radial-gradient(ellipse, rgba(3, 4, 12, 0.82), transparent 72%); animation: line-in 0.8s ease both; }
+  .memory-ledger { display:grid;gap:.38rem;margin-top:.1rem;padding:.58rem .65rem;border:1px solid hsla(var(--cross-hue),72%,72%,.2);border-radius:.8rem;background:rgba(2,5,13,.78);box-shadow:0 .8rem 2rem rgba(0,0,0,.25);text-align:left;animation:line-in .65s ease both; }
+  .memory-ledger > header { display:flex;align-items:baseline;justify-content:space-between;gap:.8rem; }
+  .memory-ledger > header small,.memory-ledger article small { color:hsla(var(--cross-hue),75%,78%,.68);font:720 .48rem/1.2 var(--font-interface,ui-sans-serif,system-ui);letter-spacing:.12em;text-transform:uppercase; }
+  .memory-ledger > header strong { color:rgba(226,242,248,.86);font:560 .68rem/1.2 var(--font-story,Georgia,serif); }
+  .memory-ledger > div { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem; }
+  .memory-ledger article { display:grid;grid-template-columns:auto minmax(0,1fr);gap:.48rem;padding:.45rem .5rem;border:1px solid rgba(255,255,255,.06);border-radius:.55rem;background:hsla(var(--cross-hue),55%,40%,.045); }
+  .memory-ledger article > span { color:hsla(var(--cross-hue),88%,82%,.9);font-size:.9rem;filter:drop-shadow(0 0 .45rem hsla(var(--cross-hue),80%,70%,.4)); }
+  .memory-ledger article strong { display:block;margin:.08rem 0;color:rgba(231,245,250,.92);font-size:.65rem; }
+  .memory-ledger article p { margin:0;color:rgba(184,207,218,.68);font:italic .55rem/1.3 var(--font-story,Georgia,serif); }
+  .memory-ledger article b { display:block;margin-top:.2rem;color:#f4d99b;font-size:.54rem;font-weight:700; }
+  .progress-track { position: absolute; left: 50%; bottom: 10%; width: min(34rem, 76vw); height: 1px; transform: translateX(-50%); background: rgba(255,255,255,.08); }
   .progress-track i { display: block; width: calc(var(--cross-progress) * 100%); height: 100%; background: hsla(var(--cross-hue), 82%, 72%, 0.72); box-shadow: 0 0 0.7rem hsla(var(--cross-hue), 82%, 62%, 0.42); }
-  button { position: absolute; left: 50%; bottom: 13%; transform: translateX(-50%); padding: 0.55rem 1.5rem; color: #071018; background: linear-gradient(180deg, #d7f3ff, hsla(var(--cross-hue), 82%, 70%, 1)); border: none; border-radius: 999px; cursor: pointer; font: 700 0.82rem/1 var(--font-interface, ui-sans-serif, system-ui); animation: line-in 0.8s ease both; }
+  button { position: absolute; left: 50%; bottom: 3.5%; transform: translateX(-50%); padding: 0.55rem 1.5rem; color: #071018; background: linear-gradient(180deg, #d7f3ff, hsla(var(--cross-hue), 82%, 70%, 1)); border: none; border-radius: 999px; cursor: pointer; font: 700 0.82rem/1 var(--font-interface, ui-sans-serif, system-ui); animation: line-in 0.8s ease both; }
   @keyframes crossing-arrive { from { opacity: 0; } to { opacity: 1; } }
   @keyframes between-drift { from { transform: translateX(-3vw) scale(1.03); opacity: 0.55; } to { transform: translateX(3vw) scale(1.08); opacity: 0.9; } }
   @keyframes vessel-uncounted { 50% { transform: translate(-50%, -50%) translateY(-0.4rem); opacity: 0.32; } }
@@ -210,8 +257,13 @@
     .phase-rail { top: 13%; grid-template-columns: repeat(3, 1fr); row-gap: 0.5rem; }
     .crossing-stage { top: 45%; transform: translate(-50%, -50%) scale(0.78); }
     .source-law { left: -1rem; } .destination-law { right: -1rem; }
-    .crossing-line { margin-top: 14rem; font-size: 0.94rem; }
-    .progress-track { bottom: 7%; }
+    .crossing-copy { top:63%; }
+    .crossing-copy.with-memory { top:57%; }
+    .crossing-line { font-size: 0.9rem; }
+    .memory-ledger > header { align-items:flex-start;flex-direction:column;gap:.12rem; }
+    .memory-ledger > div { grid-template-columns:1fr; }
+    .memory-ledger article p { display:none; }
+    .progress-track { bottom:9%; }
   }
   @media (prefers-reduced-motion: reduce) { .crossing * { animation: none !important; transition: none !important; } }
 </style>
