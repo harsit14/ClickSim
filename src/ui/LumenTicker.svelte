@@ -8,6 +8,7 @@
     consumeCrossingLumenStumble,
   } from '../experience/crossing-arrival.svelte'
   import { lumenComplicityLinesFor } from '../content/lumen-complicity'
+  import { lumenLineText } from '../content/lumen'
 
   type LumenImportance = 'ambient' | 'reflective' | 'important'
   type LumenTemperature = 'ember' | 'afterglow' | 'deep'
@@ -113,7 +114,7 @@
       ?? universeLines.find((candidate) => !game.seen.includes(candidate.id) && candidate.when(game))
     if (!line) return
     game.seen.push(line.id)
-    present(line)
+    present({ ...line, text: lumenLineText(line, game.remembrances) })
   })
 
   onMount(() => {

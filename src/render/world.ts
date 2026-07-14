@@ -157,6 +157,7 @@ export class World {
   private clickAxisX = 0
   private clickAxisY = -1
   private idleMoteAcc = 0
+  private photoPaused = false
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -184,6 +185,15 @@ export class World {
 
   get center() {
     return heartTargetCenter({ width: this.width, height: this.height })
+  }
+
+  /** Session-only photo mode freezes the rendered sky without changing world state. */
+  setPhotoPaused(active: boolean) {
+    this.photoPaused = active
+  }
+
+  exportPng(): Promise<Blob | null> {
+    return new Promise((resolve) => this.canvas.toBlob(resolve, 'image/png'))
   }
 
   private currentRenderProfile(): RenderProfile {
@@ -1122,6 +1132,11 @@ export class World {
   start() {
     let last = performance.now()
     const frame = (now: number) => {
+      if (this.photoPaused) {
+        last = now
+        this.raf = requestAnimationFrame(frame)
+        return
+      }
       const profile = this.currentRenderProfile()
       if (profile.id !== this.profileId) this.resize()
       const frameBudget = 1000 / profile.fps

@@ -94,6 +94,8 @@ export const KAILASH_SPEC: FutureUniverseSpec = {
     { name: 'Grace', description: 'Favor rests, Archives, recovery, and the path back to ordinary life.', favoredMotivations: ['restorer', 'archivist'], visualSignature: 'an incomplete ring opening toward a descending silver path', effects: [{ kind: 'globalMult', value: 1.08 }, { kind: 'clickShare', value: 0.006 }] },
   ],
   lumen: {
+    awakeRemembered: 'We are below the summit again. I remember the way up—and, more importantly, the shelters on the way down.',
+    firstRemembered: 'The snowmelt takes another path this time. Memory can guide a return without ordering it.',
     awake: 'The mountain is not waiting to be conquered. Read the routes of snow, shelter, ash, cloud, and return.',
     first: 'Snowmelt is an ending with a recipient. There is a lamp at the lowest shelter and a warm cup beside it. Someone expected us to remember the way down.',
     law: 'Five acts and one rest surround the Still Point. These labels are our working map, not a claim that one tradition has only one account.',

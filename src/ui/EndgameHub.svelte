@@ -22,6 +22,7 @@
     ATLAS_LAWS,
     ATLAS_MASTERIES,
     CONVERGENCES,
+    dailyAtlasRoute,
     decodeAtlasRoute,
     generateAtlasRoute,
   } from '../endgame/atlas'
@@ -39,6 +40,8 @@
     livedAnswers,
   } from '../endgame/garden'
   import type { AutomationProfile, LawLoadout } from '../endgame/types'
+  import { gardenKeepsake, gardenKeepsakeFilename, gardenKeepsakeSvg } from '../endgame/garden-keepsake'
+  import { quietGoalProgress } from '../endgame/quiet-goals'
   import GardenScene from './GardenScene.svelte'
   import { containModalKeydown } from '../accessibility/modal-focus'
 
@@ -56,6 +59,9 @@
   let importCode = $state('')
   let loadoutMessage = $state('')
   let beaconDrafts = $state<Record<string, string>>({ ...game.beaconNames })
+  let gardenFrozen = $state(false)
+  let keepsakeMessage = $state('')
+  const openedAt = Date.now()
   let dialog: HTMLDivElement
 
   onMount(() => queueMicrotask(() => dialog?.focus()))
@@ -74,9 +80,13 @@
   const closures = $derived(availableGardenClosures(game.beacons, game.pastEndings, game.ending))
   const credits = $derived(game.gardenEnding ? gardenCredits(game.gardenEnding) : [])
   const answers = $derived(livedAnswers(game.pastEndings, game.ending))
+  const daily = $derived(dailyAtlasRoute(openedAt, game.activeUniverse as UniverseId))
+  const dailyComplete = $derived(game.atlasCompletions.some((completion) => completion.routeCode === daily.route.code))
+  const quietGoals = $derived(quietGoalProgress(game))
 
   function selectTab(next: Tab) {
     tab = next
+    if (next !== 'garden') gardenFrozen = false
   }
 
   function commitBeaconName(universeId: string) {
@@ -153,6 +163,10 @@
     onclose()
   }
 
+  function previewDailyRoute() {
+    seed = daily.route.seed
+  }
+
   function finishRoute() {
     if (!completeAtlasRoute()) return
     save()
@@ -167,6 +181,18 @@
     if (!chooseGardenEnding(id)) return
     markGardenSceneSeen()
     save()
+  }
+
+  function exportGardenKeepsake() {
+    if (!game.gardenEnding) return
+    const svg = gardenKeepsakeSvg(gardenKeepsake(game.gardenEnding, game.beaconNames))
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = gardenKeepsakeFilename(game.gardenEnding)
+    anchor.click()
+    URL.revokeObjectURL(url)
+    keepsakeMessage = 'Garden keepsake prepared.'
   }
 
   function formatDuration(milliseconds: number): string {
@@ -248,6 +274,27 @@
             {/each}
           </section>
         {/if}
+
+        <section class="quiet-goals" aria-labelledby="quiet-goals-title">
+          <div class="quiet-goals-heading">
+            <div>
+              <span>optional · permanent · no story gates</span>
+              <h4 id="quiet-goals-title">Quiet goals</h4>
+            </div>
+            <strong>{quietGoals.filter((goal) => goal.complete).length}/{quietGoals.length} noted</strong>
+          </div>
+          <p>Completion notes for archivists. They grant no power, expire never, and do not hold the story closed.</p>
+          <div class="quiet-goal-grid">
+            {#each quietGoals as goal (goal.id)}
+              <article class:complete={goal.complete}>
+                <span>{goal.complete ? 'noted in the margin' : `${goal.current} / ${goal.target}`}</span>
+                <h5>{goal.name}</h5>
+                <p>{goal.description}</p>
+                <progress value={goal.current} max={goal.target} aria-label={`${goal.name}: ${goal.current} of ${goal.target}`}></progress>
+              </article>
+            {/each}
+          </div>
+        </section>
       </section>
 
     {:else if tab === 'loadouts'}
@@ -344,6 +391,17 @@
             </div>
           </article>
         {:else}
+          <article class="daily-route" class:complete={dailyComplete}>
+            <div>
+              <span>optional shared route · {daily.utcDay} UTC</span>
+              <h4>{daily.route.title}</h4>
+              <p>{dailyComplete ? 'Already archived today. Its code remains replayable.' : 'One common point of departure, with no streak and no expiry penalty.'}</p>
+            </div>
+            <div>
+              <code>{daily.route.code}</code>
+              <button onclick={previewDailyRoute}>{dailyComplete ? 'Preview again' : 'Preview route'}</button>
+            </div>
+          </article>
           <div class="seed-control">
             <label>Route seed<input type="number" min="0" max="2147483647" bind:value={seed} /></label>
             <button onclick={() => (seed = (seed + 7919) % 2147483647)}>Next seeded route</button>
@@ -386,10 +444,14 @@
         ending={game.gardenEnding}
         {credits}
         reducedMotion={game.motionPreference === 'reduced'}
+        frozen={gardenFrozen}
+        exportMessage={keepsakeMessage}
         {onclose}
         onreturn={() => selectTab('chronicle')}
         onchoose={chooseClosure}
         oncontinueatlas={() => selectTab('atlas')}
+        onfreeze={() => (gardenFrozen = !gardenFrozen)}
+        onexport={exportGardenKeepsake}
       />
     {/if}
   </div>
@@ -411,12 +473,38 @@
   .world-records { display: grid; grid-template-columns: repeat(7, minmax(8rem,1fr)); gap: .45rem; } .world-records article { min-height: 8.3rem; padding: .7rem; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.06); border-radius: .8rem; } .world-records article.lit { border-color: color-mix(in srgb, var(--amber) 30%, transparent); } .world-records i { font-size: 1.2rem; font-style: normal; } .world-records strong { display: block; min-height: 2.5rem; margin-top: .28rem; color: var(--dim); font-size: .64rem; font-weight: 500; line-height: 1.35; } .world-records label { display: block; margin-top: .55rem; } label span, label { color: var(--dim); font-size: .68rem; } input, select { width: 100%; box-sizing: border-box; margin-top: .25rem; padding: .5rem; color: var(--gold); background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.09); border-radius: .45rem; }
   .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; padding: 0; margin: 1rem 0 0; list-style: none; } .timeline li { padding: .75rem; background: rgba(255,255,255,.025); border-left: 2px solid color-mix(in srgb, var(--amber) 42%, transparent); } .timeline li > span { color: var(--amber); font-size: .6rem; text-transform: uppercase; letter-spacing: .12em; } .timeline p { margin: .25rem 0; color: var(--dim); font: italic .78rem Georgia,serif; } time { color: color-mix(in srgb, var(--dim) 68%, transparent); font-size: .58rem; }
   .bests, .convergences { margin-top: 1.2rem; } .bests > div { display: flex; justify-content: space-between; padding: .45rem; border-bottom: 1px solid rgba(255,255,255,.05); } code { color: color-mix(in srgb, var(--amber) 78%, white); font-size: .7rem; }
+  .quiet-goals { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.07); }
+  .quiet-goals-heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
+  .quiet-goals-heading > div > span { display: block; color: var(--dim); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; }
+  .quiet-goals-heading > strong { color: var(--dim); font-size: .68rem; }
+  .quiet-goals > p { margin-top: .35rem; color: var(--dim); font: italic .75rem/1.45 Georgia, serif; }
+  .quiet-goal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; margin-top: .8rem; }
+  .quiet-goal-grid article { padding: .75rem; background: rgba(255,255,255,.022); border: 1px solid rgba(255,255,255,.065); border-radius: .7rem; }
+  .quiet-goal-grid article.complete { border-color: color-mix(in srgb, var(--amber) 30%, transparent); background: color-mix(in srgb, var(--amber) 5%, transparent); }
+  .quiet-goal-grid article > span { color: var(--dim); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; }
+  .quiet-goal-grid h5 { margin-top: .25rem; }
+  .quiet-goal-grid p { min-height: 2.1rem; margin-top: .25rem; color: var(--dim); font-size: .68rem; line-height: 1.4; }
+  .quiet-goal-grid progress { width: 100%; height: .2rem; margin-top: .55rem; accent-color: var(--amber); }
   .builder { display: grid; grid-template-columns: repeat(5, 1fr); gap: .7rem; align-items: end; padding: 1rem; background: rgba(0,0,0,.2); border: 1px solid rgba(255,255,255,.06); border-radius: .8rem; } fieldset { grid-column: 1 / -1; display: flex; gap: .45rem; padding: .75rem; border: 1px solid rgba(255,255,255,.07); border-radius: .6rem; } legend { color: var(--dim); font-size: .65rem; } fieldset button.selected { color: var(--gold); border-color: var(--amber); } .primary { color: #080711; background: linear-gradient(110deg, color-mix(in srgb,var(--amber) 75%,white), color-mix(in srgb,var(--gold) 80%,white)); border-color: transparent; font-weight: 750; }
   .importer { display: grid; grid-template-columns: 1fr auto; gap: .6rem; align-items: end; margin-top: .8rem; } .message { margin-top: .55rem; color: var(--amber); font-size: .75rem; }
   .saved-loadouts { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; margin-top: 1rem; } .saved-loadouts article { display: grid; gap: .5rem; padding: .75rem; border: 1px solid rgba(255,255,255,.07); border-radius: .7rem; } .saved-loadouts article.active { border-color: var(--amber); box-shadow: inset 3px 0 var(--amber); } .empty-copy { color: var(--dim); font: italic .85rem Georgia,serif; }
+  .daily-route { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: .85rem; padding: .8rem; background: color-mix(in srgb, var(--amber) 4%, transparent); border: 1px solid color-mix(in srgb, var(--amber) 18%, transparent); border-radius: .75rem; }
+  .daily-route.complete { border-style: dotted; }
+  .daily-route h4 { margin: .2rem 0; font: italic 1rem Georgia, serif; }
+  .daily-route p { color: var(--dim); font-size: .7rem; }
+  .daily-route > div:last-child { display: flex; align-items: center; gap: .5rem; }
   .seed-control { display: flex; align-items: end; gap: .6rem; } .seed-control label { width: 16rem; } .route-card, .active-route { margin-top: .8rem; padding: 1.1rem; background: radial-gradient(circle at 50% 0%, color-mix(in srgb,var(--amber) 10%,transparent), transparent 45%), rgba(0,0,0,.2); border: 1px solid color-mix(in srgb,var(--amber) 25%,transparent); border-radius: 1rem; } .route-card h4, .active-route h4 { margin: .3rem 0; font: italic 1.25rem Georgia,serif; } .route-laws { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; margin: 1rem 0; } .route-laws div { padding: .7rem; background: rgba(255,255,255,.025); border-top: 2px solid color-mix(in srgb,var(--amber) 36%,transparent); } .route-laws div > span { display: block; margin-bottom: .18rem; } .route-laws div > strong { display: block; } .route-laws p, blockquote, .mastery, .active-route p { margin: .3rem 0; color: var(--dim); font-size: .75rem; line-height: 1.45; } blockquote { padding: .8rem; border-left: 2px solid var(--amber); } blockquote strong { display: block; color: var(--gold); }
   .route-laws div { display: grid; align-content: start; gap: .2rem; min-width: 0; }
   .route-laws div > span { margin: 0; line-height: 1.2; overflow-wrap: anywhere; }
   .route-laws div > strong { line-height: 1.25; overflow-wrap: anywhere; }
   .convergences { display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; } .convergences > h4 { grid-column: 1/-1; } .convergences article { padding: .8rem; opacity: .52; border: 1px solid rgba(255,255,255,.06); border-radius: .7rem; } .convergences article.unlocked { opacity: 1; border-color: color-mix(in srgb,var(--amber) 28%,transparent); } .convergences p, .convergences small { display: block; margin-top: .35rem; color: var(--dim); font-size: .7rem; line-height: 1.4; }
+
+  @media (max-width: 850px) {
+    .endgame:not(.garden-open) { inset: .5rem; }
+    .world-records, .quiet-goal-grid, .saved-loadouts, .convergences, .route-laws { grid-template-columns: 1fr; }
+    .builder { grid-template-columns: 1fr; }
+    .timeline { grid-template-columns: 1fr; }
+    .daily-route { align-items: stretch; flex-direction: column; }
+    .daily-route > div:last-child { justify-content: space-between; }
+  }
 </style>

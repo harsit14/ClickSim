@@ -131,7 +131,12 @@ law('trench-memory', 'Trench Memory', 'Pressure remembers every bright thing low
 export const TIDEFALL_UPGRADES = upgrades
 
 const TIDEFALL_LUMEN: LumenLine[] = [
-  { id: 'tide-arrival', text: 'This dark is wet. That should be impossible. It is not the strangest thing here.', when: (g) => g.clicks >= 1 },
+  {
+    id: 'tide-arrival',
+    text: 'This dark is wet. That should be impossible. It is not the strangest thing here.',
+    remembranceText: 'The water remembers us. I do too. This time, let us listen before we call the tide impossible.',
+    when: (g) => g.clicks >= 1,
+  },
   { id: 'tide-droplet', text: 'A droplet with no gravity. It is waiting for the rest of the ocean.', when: (g) => (g.owned['tidefall-droplet'] ?? 0) >= 1 },
   { id: 'tide-turn', text: 'The glow is rising. Watch the pull; this universe pays attention to timing.', when: (g) => gteAmount(g.totalEarned, amountFromNumber(1e5)) },
   { id: 'tide-beacon', text: 'That beacon is underwater. It has been calling longer than our universe was alive.', when: (g) => (g.owned['tidefall-drowned-beacon'] ?? 0) >= 1 },

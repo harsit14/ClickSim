@@ -104,6 +104,8 @@ export const VISHNULOK_SPEC: FutureUniverseSpec = {
     { name: 'Ocean Balance', description: 'Favor active openings, visible thresholds, and responsive rerouting.', favoredMotivations: ['performer', 'archivist'], visualSignature: 'four unequal currents held in one changing balance field', effects: [{ kind: 'clickMult', value: 1.25 }, { kind: 'critChance', value: 0.02 }] },
   ],
   lumen: {
+    awakeRemembered: 'The current has brought us back. I remember the route; the ocean has already revised it.',
+    firstRemembered: 'The Still Drop returns differently. Preservation was never repetition, and now we can hear the difference.',
     awake: 'The ocean is calm because every current knows where it may return. Nothing here is asleep.',
     first: 'A Still Drop can endure without refusing change. That little reed boat has passed us twice now—outward, homeward, outward again. It has the better map.',
     law: 'Choose the circuit, its reach, and the burden it can safely carry. A correction is complete only when it comes home.',

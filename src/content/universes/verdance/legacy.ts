@@ -185,7 +185,12 @@ export const VERDANCE_CABINET: CuriosityCabinetDef = {
 }
 
 export const VERDANCE_LUMEN: LumenLine[] = [
-  { id: 'verdance-lumen-arrival', text: 'This Heart is a seed. It has been waiting so long that patience became a climate.', when: (g) => g.clicks >= 1 },
+  {
+    id: 'verdance-lumen-arrival',
+    text: 'This Heart is a seed. It has been waiting so long that patience became a climate.',
+    remembranceText: 'The seed remembers our last canopy. We can return without asking it to grow the same branches.',
+    when: (g) => g.clicks >= 1,
+  },
   { id: 'verdance-lumen-root', text: 'The first root turned toward you instead of gravity.', when: (g) => (g.owned['verdance-kindling-02'] ?? 0) >= 1 },
   { id: 'verdance-lumen-law', text: 'These Kindlings are aging. Time is part of their body here.', when: (g) => gteAmount(g.totalEarned, amountFromNumber(1e5)) },
   { id: 'verdance-lumen-pruning', text: 'Pruning is not erasure. The cut becomes a memory the next seed can use.', when: (g) => g.supernovae >= 1 },

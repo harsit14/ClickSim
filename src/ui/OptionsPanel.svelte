@@ -28,9 +28,11 @@
     accessOnly?: boolean
     averagedRhythm?: boolean
     goalLensEnabled?: boolean
+    photoMode?: boolean
     promptsEnabled?: boolean
     onaveragedrhythmchange?: (enabled: boolean) => void
     ongoallenschange?: (enabled: boolean) => void
+    onphotomodechange?: (enabled: boolean) => void
     onpromptschange?: (enabled: boolean) => void
     onhardreset?: () => void
   }
@@ -40,9 +42,11 @@
     accessOnly = false,
     averagedRhythm = false,
     goalLensEnabled = false,
+    photoMode = false,
     promptsEnabled = false,
     onaveragedrhythmchange,
     ongoallenschange,
+    onphotomodechange,
     onpromptschange,
     onhardreset,
   }: Props = $props()
@@ -290,6 +294,11 @@
       <strong>Scene and notifications</strong>
       <small>Presentation only—gameplay, rewards, saving, and music never change.</small>
     </div>
+
+    <button class="toggle-card" class:active={photoMode} aria-pressed={photoMode} onclick={() => onphotomodechange?.(true)}>
+      <span><i></i><strong>Photo mode</strong></span>
+      <small>Freeze the current sky, clear the interface, and export a PNG. This is session-only.</small>
+    </button>
 
     <button class="toggle-card serene-toggle" class:active={serenePlayEnabled} aria-pressed={serenePlayEnabled} onclick={toggleSerenePlay}>
       <span><i></i><strong>Serene play</strong></span>

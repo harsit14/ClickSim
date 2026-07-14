@@ -148,6 +148,8 @@
   let averagedRhythm = $state(false)
   let promptState = $state<ContextualPromptState>({ enabled: false, dismissedIds: [] })
   let lumenActive = $state(false)
+  let photoMode = $state(false)
+  let photoMessage = $state('')
   let resumeMusicAfterNova = false
   const comparativeBlind = import.meta.env.DEV
     && new URLSearchParams(window.location.search).get('f2-blind') === '1'
@@ -276,6 +278,18 @@
   })
 
   $effect(() => {
+    if (!photoMode) return
+    document.documentElement.dataset.photoMode = 'true'
+    worldRef()?.setPhotoPaused(true)
+    const releasePause = acquireGamePause('photo mode')
+    return () => {
+      releasePause()
+      worldRef()?.setPhotoPaused(false)
+      delete document.documentElement.dataset.photoMode
+    }
+  })
+
+  $effect(() => {
     if (
       game.activeUniverse !== 'clockwork'
       || game.seen.includes(CLOCKWORK_REVELATION_TRIGGER.seenId)
@@ -290,6 +304,35 @@
 
   function closeAll() {
     shell.closeUtilityPanels()
+  }
+
+  async function enterPhotoMode() {
+    closeAll()
+    photoMessage = ''
+    photoMode = true
+    await tick()
+    document.querySelector<HTMLElement>('.photo-controls button')?.focus({ preventScroll: true })
+  }
+
+  function exitPhotoMode() {
+    photoMode = false
+    photoMessage = ''
+    requestAnimationFrame(() => document.querySelector<HTMLElement>('[aria-label="Options"]')?.focus({ preventScroll: true }))
+  }
+
+  async function exportSkyPhoto() {
+    const blob = await worldRef()?.exportPng()
+    if (!blob) {
+      photoMessage = 'The sky could not be prepared on this device.'
+      return
+    }
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `ember-${game.activeUniverse}-sky.png`
+    anchor.click()
+    URL.revokeObjectURL(url)
+    photoMessage = 'Sky image prepared.'
   }
   async function toggleSections() {
     const next = !shell.sectionsOpen
@@ -435,6 +478,11 @@
   }
 
   function onGlobalKeydown(event: KeyboardEvent) {
+    if (photoMode && event.key === 'Escape') {
+      event.preventDefault()
+      exitPhotoMode()
+      return
+    }
     if (event.key === 'Escape' && shell.sectionsOpen) {
       event.preventDefault()
       closeSections()
@@ -775,8 +823,9 @@
   class:shop-absent={!hasUi('shop')}
   class:sections-open={shell.sectionsOpen}
   class:lumen-active={lumenActive}
-  inert={modalActive}
-  aria-hidden={modalActive}
+  class:photo-mode={photoMode}
+  inert={modalActive || photoMode}
+  aria-hidden={modalActive || photoMode}
 >
   <EmberCanvas {averagedRhythm} {comparativeBlind} />
   {#if activeV2Pack && game.showWorldScenery}
@@ -958,9 +1007,11 @@
       onclose={() => (shell.panels.options = false)}
       {averagedRhythm}
       {goalLensEnabled}
+      {photoMode}
       promptsEnabled={promptState.enabled}
       onaveragedrhythmchange={(enabled) => (averagedRhythm = enabled)}
       ongoallenschange={(enabled) => (goalLensEnabled = enabled)}
+      onphotomodechange={enterPhotoMode}
       onpromptschange={(enabled) => (promptState = { ...promptState, enabled })}
       onhardreset={clearAllTransientUi}
     />
@@ -996,6 +1047,13 @@
   {/if}
   <QuestionChip onopen={() => { closeAll(); questionOpen = true }} />
 </div>
+{#if photoMode}
+  <aside class="photo-controls instrument-panel" aria-label="Photo mode controls">
+    <span>sky held still · interface hidden</span>
+    <div><button onclick={exportSkyPhoto}>Save sky PNG</button><button onclick={exitPhotoMode}>Resume · Esc</button></div>
+    {#if photoMessage}<p role="status">{photoMessage}</p>{/if}
+  </aside>
+{/if}
 {#if offlineReturnOpen}
   <WelcomeBack summary={visibleOfflineReturn} oncollect={() => (offlineGainDismissed = true)} />
 {/if}
@@ -1479,6 +1537,14 @@
     .cohesion-stack { left: 0.4rem; right: 0.4rem; top: 21.25rem; }
     .dock-btn { flex-basis: 4rem; min-width: 4rem; }
   }
+  .game-shell.photo-mode > :global(*:not(canvas):not(.manifest-world)) { display: none !important; }
+  :global(html[data-photo-mode] .manifest-world *) { animation-play-state: paused !important; transition: none !important; }
+  .photo-controls { position: fixed; z-index: 30; right: 1rem; bottom: 1rem; display: grid; gap: .45rem; min-width: 14rem; padding: .7rem; color: var(--gold); }
+  .photo-controls > span { color: var(--dim); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; }
+  .photo-controls > div { display: flex; gap: .4rem; }
+  .photo-controls button { flex: 1; padding: .45rem .6rem; color: var(--gold); background: color-mix(in srgb, var(--panel) 90%, transparent); border: 1px solid color-mix(in srgb, var(--amber) 28%, transparent); border-radius: .5rem; cursor: pointer; }
+  .photo-controls button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .photo-controls p { margin: 0; color: var(--dim); font-size: .65rem; }
   .game-shell.comparative-blind > :global(.keyboard-focus),
   .game-shell.comparative-blind > :global(.feedback-layer),
   .game-shell.comparative-blind > :global(.sr-live),

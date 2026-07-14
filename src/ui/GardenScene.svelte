@@ -22,10 +22,14 @@
     ending,
     credits,
     reducedMotion = false,
+    frozen = false,
+    exportMessage = '',
     onclose,
     onreturn,
     onchoose,
     oncontinueatlas,
+    onfreeze,
+    onexport,
   }: {
     nodes: readonly GardenNode[]
     links: readonly GardenLink[]
@@ -34,10 +38,14 @@
     ending: GardenEnding | null
     credits: readonly string[]
     reducedMotion?: boolean
+    frozen?: boolean
+    exportMessage?: string
     onclose: () => void
     onreturn: () => void
     onchoose: (ending: GardenEnding) => void
     oncontinueatlas: () => void
+    onfreeze: () => void
+    onexport: () => void
   } = $props()
 
   const MATERIALS: Record<UniverseId, string> = {
@@ -232,6 +240,7 @@
 <section
   class="garden-scene"
   class:reduced={reducedMotion}
+  class:frozen
   class:warden-tending={ritual === 'warden'}
   class:hunger-drawing={ritual === 'hunger'}
   class:hunger-holding={hungerHolding}
@@ -250,8 +259,15 @@
   </div>
 
   <div class="garden-actions">
-    <button onclick={onreturn}>Return to the Legacy</button>
+    <div>
+      <button onclick={onreturn}>Return to the Legacy</button>
+      {#if ending}
+        <button aria-pressed={frozen} onclick={onfreeze}>{frozen ? 'Resume Garden' : 'Freeze Garden'}</button>
+        <button onclick={onexport}>Save ending card</button>
+      {/if}
+    </div>
     <button class="garden-close" aria-label="Close the Garden" onclick={onclose}>Close</button>
+    {#if exportMessage}<p class="export-status" role="status">{exportMessage}</p>{/if}
   </div>
 
   <header class="garden-heading">
@@ -423,6 +439,8 @@
   .near-ground { position: absolute; left: -8%; right: -8%; bottom: -20%; height: 47%; border-radius: 50% 50% 0 0; background: radial-gradient(ellipse at 50% 0, rgba(52, 57, 40, .2), transparent 52%), #070a09; }
 
   .garden-actions { position: absolute; z-index: 12; top: 1rem; left: 1rem; right: 1rem; display: flex; justify-content: space-between; }
+  .garden-actions > div { display: flex; gap: .7rem; }
+  .export-status { position: absolute; left: 0; top: 2.2rem; margin: 0; color: rgba(232, 221, 198, .58); font-size: .6rem; }
   button { font: inherit; }
   .garden-actions button, .garden-credits button {
     padding: .45rem .65rem;
@@ -566,6 +584,7 @@
   .ending-companion .relations { opacity: .9; filter: drop-shadow(0 0 .45rem rgba(205,202,166,.3)); }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
+  .frozen * { animation-play-state: paused !important; transition: none !important; }
   .reduced *, :global([data-motion='reduced']) .garden-scene * { animation: none !important; transition: none !important; }
   @keyframes relation-breathe { to { opacity: .62; stroke-dashoffset: 20; } }
   @keyframes ember-tend { to { transform: scale(.82) rotate(3deg); opacity: .72; } }
@@ -575,6 +594,8 @@
 
   @media (max-width: 900px) {
     .garden-scene { min-height: 42rem; overflow-y: auto; }
+    .garden-actions > div { align-items: flex-start; flex-direction: column; gap: .1rem; }
+    .export-status { top: 6.4rem; }
     .garden-heading { top: 4rem; }
     .relations, .relation-names { display: none; }
     .presences { position: relative; inset: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem .5rem; padding: 8rem 1rem 2rem; }

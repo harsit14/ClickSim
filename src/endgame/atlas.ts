@@ -58,6 +58,11 @@ export interface AtlasReplayFrame {
   readonly value: string
 }
 
+export interface DailyAtlasRoute {
+  readonly utcDay: string
+  readonly route: AtlasRoute
+}
+
 const ALL_UNIVERSES: readonly UniverseId[] = [
   'emberlight', 'tidefall', 'verdance', 'clockwork', 'brahmalok', 'vishnulok', 'kailash',
 ]
@@ -150,6 +155,20 @@ function mix32(value: number): number {
   x = Math.imul(x ^ (x >>> 16), 0x45d9f3b)
   x = Math.imul(x ^ (x >>> 16), 0x45d9f3b)
   return (x ^ (x >>> 16)) >>> 0
+}
+
+/** A shared UTC day label with no player-local rollover advantage. */
+export function atlasUtcDay(now = Date.now()): string {
+  if (!Number.isFinite(now) || now < 0) throw new RangeError('Atlas day requires a nonnegative finite timestamp')
+  return new Date(Math.floor(now)).toISOString().slice(0, 10)
+}
+
+/** Daily seeds are only discovery shortcuts; their ordinary route codes never expire. */
+export function dailyAtlasRoute(now = Date.now(), universeId?: UniverseId): DailyAtlasRoute {
+  if (!Number.isFinite(now) || now < 0) throw new RangeError('Daily Atlas route requires a nonnegative finite timestamp')
+  const utcDayIndex = Math.floor(now / 86_400_000)
+  const seed = mix32(utcDayIndex ^ 0x6d2b79f5) & 0x7fffffff
+  return { utcDay: atlasUtcDay(now), route: generateAtlasRoute(seed, universeId) }
 }
 
 function pick<T>(items: readonly T[], seed: number, salt: number): T {

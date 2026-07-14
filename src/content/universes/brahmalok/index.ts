@@ -117,7 +117,9 @@ export const BRAHMALOK_SPEC: FutureUniverseSpec = {
   ],
   lumen: {
     awake: 'This is not another planet or another broken world. The lotus opened before we arrived. I am here to keep the record, not claim its source.',
+    awakeRemembered: 'The lotus opens again, but not into the same possibility. I remember which margins we left unclosed.',
     first: 'A Seed Point is possibility without an assigned body. Also, a loose page has caught in my sleeve three times. I think it has decided we are its margin.',
+    firstRemembered: 'A beginning, revisited. The seed keeps the shape of our last question without demanding the same answer.',
     law: 'Seed, measure, name, form. Move one Kindling and the whole mandala must answer for the change.',
     civil: 'The Memory Pool keeps every revision beneath the newest page. Knowledge here refuses the clean lie of a final draft.',
     archive: 'The Archive of First Forms records beginnings, corrections, and all the hands that declined to sign the final margin.',

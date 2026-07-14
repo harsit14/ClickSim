@@ -62,7 +62,9 @@ export interface FutureDoctrineSeed {
 
 export interface FutureLumenSeed {
   readonly awake: string
+  readonly awakeRemembered: string
   readonly first: string
+  readonly firstRemembered: string
   readonly law: string
   readonly civil: string
   readonly archive: string
@@ -242,8 +244,8 @@ function makeStory(spec: FutureUniverseSpec, generators: readonly GeneratorDef[]
 } {
   const owns = (owned: Readonly<Record<string, number>>, id: string, count = 1) => (owned[id] ?? 0) >= count
   const lumen: LumenLine[] = [
-    { id: `${spec.prefix}-lumen-awake`, text: spec.lumen.awake, when: (game) => game.clicks >= 1 },
-    { id: `${spec.prefix}-lumen-first`, text: spec.lumen.first, when: (game) => owns(game.owned, generators[0].id) },
+    { id: `${spec.prefix}-lumen-awake`, text: spec.lumen.awake, remembranceText: spec.lumen.awakeRemembered, when: (game) => game.clicks >= 1 },
+    { id: `${spec.prefix}-lumen-first`, text: spec.lumen.first, remembranceText: spec.lumen.firstRemembered, when: (game) => owns(game.owned, generators[0].id) },
     { id: `${spec.prefix}-lumen-law`, text: spec.lumen.law, when: (game) => owns(game.owned, generators[3].id) },
     { id: `${spec.prefix}-lumen-civil`, text: spec.lumen.civil, when: (game) => owns(game.owned, generators[7].id) },
     { id: `${spec.prefix}-lumen-archive`, text: spec.lumen.archive, when: (game) => game.curiosities.length >= 1 },

@@ -7,7 +7,12 @@ import { vesselComplete, vesselPartIdsFor } from './vessel'
 export interface LumenLine {
   id: string
   text: string
+  remembranceText?: string
   when: (g: GameState) => boolean
+}
+
+export function lumenLineText(line: LumenLine, remembrances: number): string {
+  return remembrances > 0 && line.remembranceText ? line.remembranceText : line.text
 }
 
 const owns = (g: GameState, id: string, n = 1) => (g.owned[id] ?? 0) >= n

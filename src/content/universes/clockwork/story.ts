@@ -6,7 +6,12 @@ import type { StorySceneDef } from '../types'
 const owns = (owned: Readonly<Record<string, number>>, id: string, count = 1) => (owned[id] ?? 0) >= count
 
 export const CLOCKWORK_LUMEN: LumenLine[] = [
-  { id: 'clockwork-lumen-awake', text: 'That click was accepted before you made it. I dislike how neatly this place remembers.', when: (game) => game.clicks >= 1 },
+  {
+    id: 'clockwork-lumen-awake',
+    text: 'That click was accepted before you made it. I dislike how neatly this place remembers.',
+    remembranceText: 'The schedule knew we would return. I remember how we left the interval open; the machine does too.',
+    when: (game) => game.clicks >= 1,
+  },
   { id: 'clockwork-lumen-tooth', text: 'One Tooth. It is refusing to turn until there is somewhere for the work to go.', when: (game) => owns(game.owned, 'clockwork-tooth') },
   { id: 'clockwork-lumen-route', text: 'The line is not decoration. Power entered here and arrived there. The machine insists we inspect the whole sentence.', when: (game) => owns(game.owned, 'clockwork-cog') },
   { id: 'clockwork-lumen-heart', text: 'An escapement is a promise to release only what can be used. Hearts could learn from that.', when: (game) => owns(game.owned, 'clockwork-escapement') },
