@@ -54,7 +54,7 @@ test('the cultural contract prohibits turning sacred content into ordinary econo
 test('the Unscheduled Interval is one contiguous, deterministic, accessible revelation', () => {
   assert.equal(CLOCKWORK_REVELATION_TRIGGER.sceneId, 'clockwork-scene-unscheduled-interval')
   assert.equal(CLOCKWORK_REVELATION_TRIGGER.seenId, CLOCKWORK_REVELATION_TRIGGER.sceneId)
-  assert.equal(CLOCKWORK_REVELATION_DURATION_MS, 54_000)
+  assert.equal(CLOCKWORK_REVELATION_DURATION_MS, 63_000)
   assert.equal(new Set(CLOCKWORK_REVELATION_BEATS.map(({ id }) => id)).size, CLOCKWORK_REVELATION_BEATS.length)
   assert.equal(CLOCKWORK_MAINTENANCE_SIGNALS.length, 4, 'The one-time revelation is not a recurring signal')
 
@@ -72,9 +72,14 @@ test('the Unscheduled Interval is one contiguous, deterministic, accessible reve
   }
 
   const seals = CLOCKWORK_REVELATION_BEATS.find(({ id }) => id === 'three-loka-seals')
+  const seam = CLOCKWORK_REVELATION_BEATS.find(({ id }) => id === 'law-thins')
   const forecasts = CLOCKWORK_REVELATION_BEATS.find(({ id }) => id === 'forecasts-reclassified')
   const passage = CLOCKWORK_REVELATION_BEATS.find(({ id }) => id === 'passage-remains')
   assert.deepEqual(seals?.revealsRealms, ['brahmalok', 'vishnulok', 'kailash'])
+  assert.deepEqual(seam?.revealsRealms, [])
+  assert.match(seam?.prose ?? '', /not another planet/i)
+  assert.match(seam?.prose ?? '', /heat forgets shape/i)
+  assert.match(seam?.archiveNote ?? '', /I found the seam[\s\S]*I did not make/i)
   assert.match(seals?.accessibleDescription ?? '', /Brahmalok, Vishnulok, and Kailash/)
   const bridge = [forecasts, seals, passage]
     .flatMap((beat) => beat ? [beat.prose, beat.visualIntent, beat.accessibleDescription] : [])
@@ -86,6 +91,8 @@ test('the Unscheduled Interval is one contiguous, deterministic, accessible reve
   assert.equal(clockworkRevelationBeatAt(0).id, 'schedule-fault')
   assert.equal(clockworkRevelationBeatAt(16_999).id, 'blank-date')
   assert.equal(clockworkRevelationBeatAt(17_000).id, 'witness-arrives')
+  assert.equal(clockworkRevelationBeatAt(26_000).id, 'law-thins')
+  assert.equal(clockworkRevelationBeatAt(35_000).id, 'forecasts-reclassified')
   assert.equal(clockworkRevelationBeatAt(CLOCKWORK_REVELATION_DURATION_MS).id, 'passage-remains')
   assert.throws(() => clockworkRevelationBeatAt(-1), /finite and nonnegative/)
   assert.throws(() => clockworkRevelationBeatAt(Number.NaN), /finite and nonnegative/)
@@ -124,7 +131,7 @@ test('the Clockwork revelation unlock predicate and fallback plan fail closed', 
   assert.equal(full.audio, 'authored')
   assert.equal(fallback.presentation, 'reduced')
   assert.equal(fallback.audio, 'muted-equivalent')
-  assert.equal(full.endsAtMs, 66_000)
+  assert.equal(full.endsAtMs, 75_000)
   assert.deepEqual(fallback.beats, full.beats)
   assert.throws(() => planClockworkRevelation(-1, { reducedMotion: false, muted: false }), /finite and nonnegative/)
   assert.throws(() => planClockworkRevelation(Number.NaN, { reducedMotion: false, muted: false }), /finite and nonnegative/)

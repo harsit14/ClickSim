@@ -116,7 +116,7 @@ export const BRAHMALOK_SPEC: FutureUniverseSpec = {
     { name: 'Proliferation', description: 'Spread possibility across many distinct forms and active openings.', favoredMotivations: ['performer', 'archivist'], visualSignature: 'many different petals growing from one open but unoccupied center', effects: [{ kind: 'clickShare', value: 0.01 }] },
   ],
   lumen: {
-    awake: 'This is not another broken world. The lotus opened before we arrived and does not need us to finish it.',
+    awake: 'This is not another planet or another broken world. The lotus opened before we arrived. I am here to keep the record, not claim its source.',
     first: 'A Seed Point is possibility without an assigned body. Also, a loose page has caught in my sleeve three times. I think it has decided we are its margin.',
     law: 'Seed, measure, name, form. Move one Kindling and the whole mandala must answer for the change.',
     civil: 'The Memory Pool keeps every revision beneath the newest page. Knowledge here refuses the clean lie of a final draft.',

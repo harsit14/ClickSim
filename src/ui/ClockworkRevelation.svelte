@@ -42,8 +42,10 @@
   const beat = $derived(clockworkRevelationBeatAt(elapsedMs))
   const beatIndex = $derived(CLOCKWORK_REVELATION_BEATS.findIndex(({ id }) => id === beat.id))
   const progress = $derived(Math.min(1, elapsedMs / CLOCKWORK_REVELATION_DURATION_MS))
-  const revealForecasts = $derived(beatIndex >= 4)
-  const revealSeals = $derived(beatIndex >= 5)
+  const revealFirstForms = $derived(beat.id === 'law-thins')
+  const revealForecasts = $derived(beatIndex >= 5)
+  const forecastsCurrent = $derived(beat.id === 'forecasts-reclassified')
+  const revealSeals = $derived(beatIndex >= 6)
   const cityResumed = $derived(beat.id === 'passage-remains')
 
   function finish() {
@@ -132,13 +134,31 @@
       <small>WITNESS OUTSIDE THE CALENDAR</small>
     </div>
 
-    <section class="forecast-plates" class:visible={revealForecasts} aria-label="Clockwork forecasts beyond its incomplete models">
+    <section
+      class="entropy-bridge"
+      class:visible={revealFirstForms}
+      aria-label="Physical law reaches its limit before first forms"
+      aria-hidden={!revealFirstForms}
+    >
+      <div class="measured-law">
+        <small>physical law</small>
+        <span>HEAT</span><span>WORK</span><span>SHAPE</span>
+      </div>
+      <div class="measurement-limit"><i></i><small>limit of measurement</small></div>
+      <div class="first-forms">
+        <small>first forms remain</small>
+        <strong>NOT ANOTHER PLANET</strong>
+        <span>found · not formed</span>
+      </div>
+    </section>
+
+    <section class="forecast-plates" class:visible={revealForecasts} aria-label="Clockwork forecasts beyond its incomplete models" aria-hidden={!forecastsCurrent}>
       <article><span>ORIGIN MODEL</span><i class="prism-mark"></i><strong>INCOMPLETE</strong></article>
       <article><span>CONTINUITY MODEL</span><i class="storm-mark"></i><strong>INCOMPLETE</strong></article>
       <article><span>RELEASE MODEL</span><i class="wave-mark"></i><strong>INCOMPLETE</strong></article>
     </section>
 
-    <section class="loka-seals" class:visible={revealSeals} aria-label="Three revealed lokas">
+    <section class="loka-seals" class:visible={revealSeals} aria-label="Three revealed lokas" aria-hidden={!revealSeals}>
       {#each sealRealms as realm (realm.id)}
         <article data-realm={realm.id}>
           <div class={`seal ${realm.mark}`} aria-hidden="true">
@@ -156,6 +176,9 @@
     <section class="caption" role="status" aria-live="polite">
       <span>{String(beatIndex + 1).padStart(2, '0')} / {CLOCKWORK_REVELATION_BEATS.length}</span>
       <p>{beat.prose}</p>
+      {#if beat.archiveNote}
+        <blockquote><b>Lumen · archive note</b>{beat.archiveNote}</blockquote>
+      {/if}
       <small id="revelation-description">{beat.accessibleDescription}</small>
     </section>
   {/key}
@@ -200,6 +223,7 @@
   [data-beat='city-holds'] .clock-field,
   [data-beat='blank-date'] .clock-field,
   [data-beat='witness-arrives'] .clock-field,
+  [data-beat='law-thins'] .clock-field,
   [data-beat='forecasts-reclassified'] .clock-field,
   [data-beat='three-loka-seals'] .clock-field { filter: saturate(.25); }
   .resumed .local-tick { opacity: 1; animation: local-tick 1.8s ease-out both; }
@@ -246,6 +270,19 @@
   .witness small { position: absolute; left: 50%; bottom: 0; width: max-content; transform: translateX(-50%); color: rgba(176,230,247,.82); font: 700 .6875rem/1.2 system-ui, sans-serif; letter-spacing: .12em; }
   [data-beat='witness-arrives'] .witness { opacity: 1; }
 
+  .entropy-bridge { position:absolute;left:50%;top:50%;width:min(47rem,88vw);display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:clamp(.6rem,2.5vw,1.8rem);transform:translate(-50%,-46%);opacity:0;pointer-events:none;transition:opacity 1s ease,transform 1s ease; }
+  .entropy-bridge.visible { opacity:1;transform:translate(-50%,-50%); }
+  .measured-law,.first-forms { min-height:8rem;display:grid;place-content:center;gap:.48rem;padding:.8rem;border:1px solid rgba(173,189,197,.16);background:rgba(7,9,13,.76);text-align:center; }
+  .measured-law small,.first-forms small,.measurement-limit small { color:rgba(176,230,247,.72);font:700 .56rem/1.2 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase; }
+  .measured-law span { display:inline-block;min-width:5rem;padding:.28rem .45rem;color:rgba(225,185,108,.7);border:1px solid rgba(225,185,108,.18);font:700 .62rem/1 system-ui,sans-serif;letter-spacing:.1em; }
+  .measured-law span:nth-of-type(2) { opacity:.65; }.measured-law span:nth-of-type(3) { opacity:.38; }
+  .measurement-limit { display:grid;place-items:center;gap:.4rem;width:6rem;text-align:center; }
+  .measurement-limit i { display:block;width:1px;height:7rem;background:repeating-linear-gradient(to bottom,rgba(225,185,108,.66) 0 4px,transparent 4px 9px); }
+  .measurement-limit small { color:rgba(225,185,108,.64);font-size:.48rem; }
+  .first-forms { border-color:rgba(143,217,240,.22);background:radial-gradient(circle,rgba(143,217,240,.06),transparent 65%),rgba(4,7,12,.78); }
+  .first-forms strong { color:#e8dfce;font:500 clamp(.78rem,1.7vw,1rem)/1.2 Georgia,serif;letter-spacing:.08em; }
+  .first-forms span { color:rgba(225,185,108,.78);font:700 .58rem/1.2 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase; }
+
   .forecast-plates,
   .loka-seals { position: absolute; left: 50%; top: 50%; width: min(52rem, 90vw); display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(.5rem, 2vw, 1.4rem); transform: translate(-50%, -42%); opacity: 0; pointer-events: none; transition: opacity 1s ease, transform 1s ease; }
   .forecast-plates.visible,
@@ -283,6 +320,8 @@
   .caption { position: absolute; left: 50%; bottom: 8.5%; width: min(47rem, 88vw); transform: translateX(-50%); text-align: center; animation: caption-in .7s ease both; }
   .caption > span { color: rgba(176,230,247,.82); font: 700 .6875rem/1 system-ui, sans-serif; letter-spacing: .14em; }
   .caption p { margin: .48rem 0 .3rem; color: #e8dfce; font: italic clamp(1rem, 2.2vw, 1.35rem)/1.4 Georgia, serif; }
+  .caption blockquote { display:flex;align-items:baseline;justify-content:center;gap:.45rem;margin:.28rem auto .35rem;color:rgba(218,224,227,.78);font:italic .7rem/1.35 Georgia,serif; }
+  .caption blockquote b { color:var(--clock-blue);font:700 .52rem/1.2 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase; }
   .caption small { display: block; color: rgba(218,224,227,.76); font: 500 .6875rem/1.4 system-ui, sans-serif; }
   .progress { position: absolute; left: 50%; bottom: 5.4%; width: min(38rem, 74vw); height: 1px; transform: translateX(-50%); background: rgba(255,255,255,.08); }
   .progress i { display: block; width: calc(var(--revelation-progress) * 100%); height: 100%; background: var(--clock-gold); box-shadow: 0 0 .8rem rgba(225,185,108,.35); }
@@ -301,11 +340,17 @@
     .schedule { grid-template-columns: repeat(2, 1fr); top: 2%; }
     .forecast-plates,
     .loka-seals { gap: .35rem; }
+    .entropy-bridge { grid-template-columns:1fr auto 1fr;gap:.35rem; }
+    .measured-law,.first-forms { min-height:6.5rem;padding:.35rem; }
+    .measured-law span { min-width:0;font-size:.48rem; }
+    .measurement-limit { width:3.2rem; }.measurement-limit i { height:5rem; }.measurement-limit small { font-size:.38rem; }
+    .first-forms strong { font-size:.68rem; }.first-forms span { font-size:.42rem; }
     .forecast-plates article { min-height: 6.5rem; padding: .35rem; }
     .forecast-plates article > strong { font-size: .4rem; letter-spacing: .06em; }
     .loka-seals article > span { font-size: .42rem; letter-spacing: .08em; }
     .loka-seals article > strong { font-size: .9rem; }
     .caption { bottom: 9%; }
+    .caption blockquote { align-items:center;flex-direction:column;gap:.15rem;font-size:.62rem; }
     .caption small { display: none; }
     .progress { bottom: 6%; }
     .continue { bottom: 1.5%; }

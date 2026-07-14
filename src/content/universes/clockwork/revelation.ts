@@ -5,6 +5,7 @@ export type ClockworkRevelationBeatId =
   | 'city-holds'
   | 'blank-date'
   | 'witness-arrives'
+  | 'law-thins'
   | 'forecasts-reclassified'
   | 'three-loka-seals'
   | 'passage-remains'
@@ -19,6 +20,7 @@ export interface ClockworkRevelationBeat {
   readonly audioIntent: string
   readonly accessibleDescription: string
   readonly revealsRealms: readonly DivineRealmId[]
+  readonly archiveNote?: string
 }
 
 export const CLOCKWORK_REVELATION_TRIGGER = {
@@ -78,7 +80,17 @@ export const CLOCKWORK_REVELATION_BEATS: readonly ClockworkRevelationBeat[] = [
     revealsRealms: [],
   },
   {
-    id: 'forecasts-reclassified', startsAtMs: 26_000, durationMs: 9_000,
+    id: 'law-thins', startsAtMs: 26_000, durationMs: 9_000,
+    prose: 'Physical law thins into first forms. The lokas are not another planet; they are what remains when heat forgets shape.',
+    visualIntent: 'Clockwork labels for heat, work, and shape lose their measurement lines at the protected aperture; beyond that limit, three unclaimed relational traces remain without becoming machine output.',
+    reducedMotionIntent: 'A static stepped plate reads PHYSICAL LAW, LIMIT OF MEASUREMENT, and FIRST FORMS REMAIN; it contains no sacred figure, portrait, or simulated attribute.',
+    audioIntent: 'Measured machine partials descend into near-silence before the archive note; no sacred motif, instrument, or destination theme is invented.',
+    accessibleDescription: 'The game-fiction cosmology shows thermodynamic descriptions reaching their limit. Beyond them are pre-existing first forms, not new planets or things made by Lumen.',
+    archiveNote: 'I found the seam. I did not make what lies beyond it. I can record the passage without claiming its source.',
+    revealsRealms: [],
+  },
+  {
+    id: 'forecasts-reclassified', startsAtMs: 35_000, durationMs: 9_000,
     prose: 'Divided light. Directed force. Ordered sound. Not destinations the machine invented—shadows cast by places already beyond its calendar.',
     visualIntent: 'Brahmalok, Vishnulok, and Kailash forecast plates become transparent, revealing older archive traces beneath the three Clockwork chamber diagrams.',
     reducedMotionIntent: 'Three labeled forecast plates change status from DESTINATION to INCOMPLETE READING, with OLDER TRACE printed beneath each one.',
@@ -87,7 +99,7 @@ export const CLOCKWORK_REVELATION_BEATS: readonly ClockworkRevelationBeat[] = [
     revealsRealms: [],
   },
   {
-    id: 'three-loka-seals', startsAtMs: 35_000, durationMs: 12_000,
+    id: 'three-loka-seals', startsAtMs: 44_000, durationMs: 12_000,
     prose: 'Beneath the forecasts, older traces answer: bringing forth, sustaining, releasing.',
     visualIntent: 'Lotus, endless circuit, and mountain-still-point seals emerge separately from traces that predate Clockwork and Lumen, with equal visual weight and no deity portrait.',
     reducedMotionIntent: 'Three static labeled seals appear above the caption ARCHIVE TRACE — ORIGIN PRECEDES RECORD, with distinct shape and text.',
@@ -96,7 +108,7 @@ export const CLOCKWORK_REVELATION_BEATS: readonly ClockworkRevelationBeat[] = [
     revealsRealms: DIVINE_REALMS.map(({ id }) => id),
   },
   {
-    id: 'passage-remains', startsAtMs: 47_000, durationMs: 7_000,
+    id: 'passage-remains', startsAtMs: 56_000, durationMs: 7_000,
     prose: 'Clockwork was the last world you could rebuild. The next places existed before our map; the archive only helped us find a passage.',
     visualIntent: 'The three seals remain beyond the stopped city while the Escapement Heart resumes one local, ordinary tick.',
     reducedMotionIntent: 'The three route labels remain fixed; one text tick confirms Clockwork continues behind them.',
