@@ -95,6 +95,8 @@ export function achievementPointPercent(ordinal: number): number {
 }
 
 export const STARDUST_PIVOT = 1.8e18
+/** The first-Epoch ceremony begins before the reset is ready, while reassurance can still help. */
+export const FIRST_EPOCH_APPROACH_RATIO = 0.7
 export const STARDUST_PRODUCTION_BONUS_PER_POINT = 0.03
 export const LIFETIME_SINGULARITY_STARDUST_BONUS = 2
 export const LIFETIME_SINGULARITY_PRODUCTION_BONUS = 1

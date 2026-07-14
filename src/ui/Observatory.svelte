@@ -40,13 +40,18 @@
   let {
     onclose,
     onsupernova,
-  }: { onclose: () => void; onsupernova: () => void } = $props()
+    initialNodeId = null,
+  }: { onclose: () => void; onsupernova: () => void; initialNodeId?: string | null } = $props()
 
   let selectedId = $state<string | null>(null)
   let armed = $state(false)
   let now = $state(Date.now())
   let closeButton: HTMLButtonElement
   let observatoryPanel: HTMLElement
+
+  $effect(() => {
+    if (selectedId === null && initialNodeId) selectedId = initialNodeId
+  })
 
   onMount(() => {
     closeButton.focus()

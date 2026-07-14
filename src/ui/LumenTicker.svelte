@@ -38,7 +38,7 @@
   )
 
   function importanceFor(id: string): LumenImportance {
-    if (/act[237]|question|loom|ending|epi-|nova-1|remnant-.*-whole/.test(id)) return 'important'
+    if (/act[237]|question|loom|ending|epi-|nova-1|first-epoch|remnant-.*-whole/.test(id)) return 'important'
     if (/remnant-|curiosity|first-|vessel|echo|crossing|cross-habit/.test(id)) return 'reflective'
     return 'ambient'
   }

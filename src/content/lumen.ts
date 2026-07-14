@@ -1,5 +1,6 @@
 import type { GameState } from '../engine/game.svelte'
 import { amountFromNumber, gteAmount } from '../core/numeric/amount'
+import { FIRST_EPOCH_APPROACH_RATIO, STARDUST_PIVOT } from './economy-balance'
 import { SINGULARITY_COST } from './deep'
 import { vesselComplete, vesselPartIdsFor } from './vessel'
 
@@ -168,6 +169,13 @@ export const LUMEN_LINES: LumenLine[] = [
     id: 'billion',
     text: 'The dark is thinner here now. Do you feel it watching?',
     when: (g) => gteAmount(g.totalEarned, amountFromNumber(1e9)),
+  },
+  {
+    id: 'first-epoch-reassurance',
+    text: 'You can end this sky and keep the dust. Ending is not failure.',
+    when: (g) => g.remembrances === 0
+      && g.supernovae === 0
+      && gteAmount(g.eraEarned, amountFromNumber(STARDUST_PIVOT * FIRST_EPOCH_APPROACH_RATIO)),
   },
   {
     id: 'quadrillion',

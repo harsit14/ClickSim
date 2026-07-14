@@ -10,6 +10,7 @@ import {
   lumenClaimIds,
 } from '../content/legacy-exchange'
 import { THEMES } from '../content/themes'
+import { EXPERIENCE_SEEN_IDS } from '../content/experience-markers'
 import { UI_UNLOCKS } from '../content/ui-unlocks'
 import { DEFAULT_UNIVERSE_ID, UNIVERSES, universeById } from '../content/universes'
 import { VESSEL_PARTS } from '../content/vessel'
@@ -433,7 +434,10 @@ const themeIds = new Set(THEMES.map((item) => item.id))
 const uiIds = new Set(UI_UNLOCKS.map((item) => item.id))
 const universeIds = new Set(UNIVERSES.map((item) => item.id))
 const vesselPartIds = new Set(VESSEL_PARTS.map((item) => item.id))
-const seenIds = new Set(UNIVERSES.flatMap((universe) => universe.lumen.map((item) => item.id)))
+const seenIds = new Set([
+  ...UNIVERSES.flatMap((universe) => universe.lumen.map((item) => item.id)),
+  ...EXPERIENCE_SEEN_IDS,
+])
 const chronicleMilestones = new Set([
   'awakening', 'epoch-turn', 'deep-collapse', 'answer', 'beacon', 'garden', 'atlas-route',
 ])
@@ -688,7 +692,10 @@ function sanitizeUniverseRun(value: unknown, universeId: string): LegacyUniverse
   const upgradeIds = new Set(pack.upgrades.map((item) => item.id))
   const echoIds = new Set(pack.echoes.map((item) => item.id))
   const curiosityIds = new Set(pack.cabinet.items.map((item) => item.id))
-  const localSeenIds = new Set(pack.lumen.map((item) => item.id))
+  const localSeenIds = new Set([
+    ...pack.lumen.map((item) => item.id),
+    ...(universeId === 'emberlight' ? EXPERIENCE_SEEN_IDS : []),
+  ])
   const totalEarned = numberValue(source.totalEarned, 0)
   const stardustTotal = integerValue(source.stardustTotal)
   const singTotal = integerValue(source.singTotal)

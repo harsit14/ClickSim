@@ -1,8 +1,7 @@
 import type { UniverseId } from '../src/content/universes/types'
+export { FIRST_EPOCH_APPROACH_RATIO } from '../src/content/economy-balance'
 
 /** Phase 0 contracts for the retention work. These are intentionally player outcomes, not tuning knobs. */
-export const FIRST_EPOCH_APPROACH_RATIO = 0.7
-
 export const FIRST_EPOCH_FUNNEL_STEPS = [
   'approach-seen',
   'observatory-opened',

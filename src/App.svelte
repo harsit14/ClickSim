@@ -26,6 +26,8 @@
   import CrossingPrelude from './ui/CrossingPrelude.svelte'
   import GameGuide from './ui/GameGuide.svelte'
   import GoalLens from './ui/GoalLens.svelte'
+  import FirstEpochLens from './ui/FirstEpochLens.svelte'
+  import FirstEpochHandoff from './ui/FirstEpochHandoff.svelte'
   import ContextualPrompts from './ui/ContextualPrompts.svelte'
   import ResetComparisonCard from './ui/ResetComparisonCard.svelte'
   import ManifestWorldLayer from './ui/ManifestWorldLayer.svelte'
@@ -42,6 +44,7 @@
     crossToUniverse,
     performSupernova,
     supernovaGain,
+    stardustTargetFor,
     vesselHasReadyPart,
     vesselRevealed,
     universeVisited,
@@ -61,7 +64,9 @@
     startMusic,
   } from './audio/music'
   import { THEME_BY_ID, themeVarsForUniverse } from './content/themes'
-  import { progressionIdentity } from './content/universe-progression'
+  import { constellationNodeCopy, progressionIdentity } from './content/universe-progression'
+  import { CONSTELLATION } from './content/constellation'
+  import { FIRST_EPOCH_HANDOFF_SEEN_ID } from './content/experience-markers'
   import { universeById, universeV2ById } from './content/universes'
   import { kailashLongRestStatus } from './content/universes/f4-runtime'
   import { acquireGamePause } from './core/pause.svelte'
@@ -69,7 +74,7 @@
   import { clearToasts, setToastPreferences } from './systems/toasts.svelte'
   import { resetSessionFeedback } from './feedback/reset-session'
   import type { EconomyAmount } from './content/universes/types'
-  import { ZERO_AMOUNT, addAmounts, amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
+  import { ONE_AMOUNT, ZERO_AMOUNT, addAmounts, amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
   import { format } from './core/format'
   import { resolveEffectiveVisualQuality } from './core/preferences'
   import { renderHealth } from './core/render-health.svelte'
@@ -93,6 +98,7 @@
   import type { ContextualPromptCandidate, ContextualPromptState } from './experience/contextual-prompts'
   import type { UiTextResolver } from './experience/ui-text'
   import type { FocusReturnDescriptor } from './accessibility/focus'
+  import { buildFirstEpochCeremony } from './experience/first-epoch'
   import {
     CLOCKWORK_REVELATION_TRIGGER,
     clockworkRevelationAvailable,
@@ -103,6 +109,11 @@
 
   const MOBILE_BREAKPOINT = 800
   const shell = createShellState(window.innerWidth, MOBILE_BREAKPOINT)
+  const resumesFirstEpochHandoff = game.activeUniverse === 'emberlight'
+    && game.remembrances === 0
+    && game.supernovae === 1
+    && game.constellation.length === 0
+    && !game.seen.includes(FIRST_EPOCH_HANDOFF_SEEN_ID)
 
   let cutsceneActive = $state(false)
   let questionOpen = $state(false)
@@ -114,6 +125,10 @@
   let clockworkRevelationActive = $state(false)
   let clockworkRevelationReplay = $state(false)
   let deepCollapseActive = $state(false)
+  let firstEpochComparisonSeen = $state(false)
+  let firstEpochHandoffOpen = $state(resumesFirstEpochHandoff)
+  let firstEpochReward = $state<EconomyAmount>(resumesFirstEpochHandoff ? game.stardust : ZERO_AMOUNT)
+  let observatoryInitialNodeId = $state<string | null>(null)
   let universeInstrumentActive = $state(false)
   let transientResetToken = $state(0)
   let offlineGainDismissed = $state(false)
@@ -140,6 +155,16 @@
     : 1
 
   const novaReady = $derived(!isZeroAmount(supernovaGain()))
+  const firstEpochTarget = $derived(stardustTargetFor(ONE_AMOUNT))
+  const firstEpochCeremony = $derived(buildFirstEpochCeremony({
+    universeId: game.activeUniverse,
+    remembrances: game.remembrances,
+    epochTurns: game.supernovae,
+    currentEraEarnings: game.eraEarned,
+    firstEpochTarget,
+    epochReady: novaReady,
+    comparisonSeen: firstEpochComparisonSeen,
+  }))
   const observatoryVisible = $derived(
     !isZeroAmount(game.stardustTotal) || game.supernovae > 0 || novaReady || gteAmount(game.allTimeEarned, amountFromNumber(1e11)),
   )
@@ -151,6 +176,7 @@
   const activePack = $derived(universeById(game.activeUniverse))
   const activeV2Pack = $derived(universeV2ById(game.activeUniverse))
   const observatoryIdentity = $derived(progressionIdentity(activePack.id).observatory)
+  const firstEpochRecommendation = $derived(constellationNodeCopy(CONSTELLATION[0], activePack.id))
   const epochMatterGlyph = $derived(activeV2Pack?.economy.localPrestige.rewardCurrency.glyph ?? '✧')
   const observatoryDockGlyph = $derived(activePack.id === 'brahmalok' ? '✤' : epochMatterGlyph)
   const effectiveQuality = $derived(resolveEffectiveVisualQuality(game.visualQuality, {
@@ -179,7 +205,7 @@
   const storyModalActive = $derived(
     cutsceneActive || deepCollapseActive || questionOpen || remembering || crossingPrelude || clockworkRevelationActive,
   )
-  const modalActive = $derived(storyModalActive || shell.panels.guide || resetPreviewOpen || shell.panels.curiosities || shell.panels.endgame)
+  const modalActive = $derived(storyModalActive || firstEpochHandoffOpen || shell.panels.guide || resetPreviewOpen || shell.panels.curiosities || shell.panels.endgame)
   const transientGoverned = $derived(universeInstrumentActive || utilityPanelOpen || storyModalActive || resetPreviewOpen || lumenActive)
   const visibleOfflineGain = $derived(offlineGainDismissed ? ZERO_AMOUNT : offlineGain)
   const goalCandidates = $derived(buildEmberGoalCandidates(game, novaReady, Date.now()))
@@ -211,7 +237,7 @@
       actionLabelKey: 'prompt.supernova.action',
       announcementKey: 'prompt.supernova.announcement',
       priority: 30,
-      available: novaReady,
+      available: novaReady && !firstEpochCeremony.visible,
     },
   ] satisfies readonly ContextualPromptCandidate[])
   const confirmResetFocus: FocusReturnDescriptor = {
@@ -228,7 +254,7 @@
   }
 
   $effect(() => {
-    if (!storyModalActive && !resetPreviewOpen) return
+    if (!storyModalActive && !resetPreviewOpen && !firstEpochHandoffOpen) return
     return acquireGamePause('story scene')
   })
 
@@ -312,6 +338,7 @@
   function toggleObservatory() {
     const next = !shell.panels.observatory
     closeAll()
+    if (next) observatoryInitialNodeId = null
     shell.panels.observatory = next
   }
   function toggleCodex() {
@@ -354,6 +381,10 @@
   function clearAllTransientUi() {
     quietSessionFeedback()
     offlineGainDismissed = true
+    firstEpochComparisonSeen = false
+    firstEpochHandoffOpen = false
+    firstEpochReward = ZERO_AMOUNT
+    observatoryInitialNodeId = null
     worldRef()?.resetForUniverse()
   }
 
@@ -423,6 +454,7 @@
 
   function beginSupernova() {
     closeAll()
+    if (firstEpochCeremony.visible) firstEpochComparisonSeen = true
     const gain = supernovaGain()
     const rewardCurrency = activeV2Pack?.economy.localPrestige.rewardCurrency
     resetComparison = compareProgressionBoundary({
@@ -506,8 +538,22 @@
     else if (promptId === 'first-kindling') closeAll()
   }
 
+  function advanceFirstEpochCeremony() {
+    if (firstEpochCeremony.stage === 'collapse') {
+      beginSupernova()
+      return
+    }
+    closeAll()
+    observatoryInitialNodeId = null
+    shell.panels.observatory = true
+  }
+
   function resetForSupernova(): EconomyAmount {
+    const completingFirstEpoch = game.activeUniverse === 'emberlight'
+      && game.remembrances === 0
+      && game.supernovae === 0
     const gain = performSupernova()
+    if (completingFirstEpoch && !isZeroAmount(gain)) firstEpochReward = gain
     clearBuffs()
     combo.streak = 0
     combo.lastRewardAt = 0
@@ -517,8 +563,28 @@
 
   function afterSupernova() {
     cutsceneActive = false
+    firstEpochHandoffOpen = game.activeUniverse === 'emberlight'
+      && game.remembrances === 0
+      && game.supernovae === 1
+      && !isZeroAmount(firstEpochReward)
     if (resumeMusicAfterNova && hasUi('music')) startMusic()
     resumeMusicAfterNova = false
+  }
+
+  function finishFirstEpochHandoff(openConstellation: boolean) {
+    firstEpochHandoffOpen = false
+    firstEpochReward = ZERO_AMOUNT
+    if (!game.seen.includes(FIRST_EPOCH_HANDOFF_SEEN_ID)) {
+      game.seen.push(FIRST_EPOCH_HANDOFF_SEEN_ID)
+      save()
+    }
+    if (openConstellation) {
+      closeAll()
+      observatoryInitialNodeId = 'forge-1'
+      shell.panels.observatory = true
+      return
+    }
+    requestAnimationFrame(() => document.querySelector<HTMLElement>('[data-focus-region="heart"]')?.focus({ preventScroll: true }))
   }
 
   function resetForDeepCollapse(): EconomyAmount {
@@ -706,8 +772,16 @@
       <UpgradeBar dense={(!shell.shopCollapsed && hasUi('shop')) || lumenActive} />
     {/if}
   </section>
-  {#if activeV2Pack && !utilityPanelOpen && (goalLensEnabled || promptState.enabled)}
-    <section class="cohesion-stack" aria-label="Optional guidance">
+  {#if activeV2Pack && !utilityPanelOpen && (goalLensEnabled || promptState.enabled || firstEpochCeremony.visible)}
+    <section class="cohesion-stack" class:first-epoch={firstEpochCeremony.visible} aria-label={firstEpochCeremony.visible ? 'First Epoch guidance' : 'Optional guidance'}>
+      {#if firstEpochCeremony.visible}
+        <FirstEpochLens
+          model={firstEpochCeremony}
+          current={format(game.eraEarned)}
+          target={format(firstEpochTarget)}
+          onaction={advanceFirstEpochCeremony}
+        />
+      {/if}
       {#if goalLensEnabled}
         <GoalLens
           id="universe-goal-lens"
@@ -857,7 +931,14 @@
     <VesselPanel onclose={() => (shell.panels.vessel = false)} oncross={beginCrossingPrelude} />
   {/if}
   {#if shell.panels.observatory}
-    <Observatory onclose={() => (shell.panels.observatory = false)} onsupernova={beginSupernova} />
+    <Observatory
+      initialNodeId={observatoryInitialNodeId}
+      onclose={() => {
+        shell.panels.observatory = false
+        observatoryInitialNodeId = null
+      }}
+      onsupernova={beginSupernova}
+    />
   {/if}
   {#if shell.panels.codex}
     <Codex
@@ -887,6 +968,17 @@
     resolveText={resolveActiveUiText}
     formatDuration={formatGoalDuration}
     ondecision={handleResetDecision}
+  />
+{/if}
+{#if firstEpochHandoffOpen}
+  <FirstEpochHandoff
+    rewardGlyph={epochMatterGlyph}
+    rewardName={activeV2Pack?.economy.localPrestige.rewardCurrency.localName ?? 'Stardust'}
+    rewardGain={format(firstEpochReward)}
+    recommendationName={firstEpochRecommendation.name}
+    recommendationEffect="×1.5 all production"
+    onopen={() => finishFirstEpochHandoff(true)}
+    ondismiss={() => finishFirstEpochHandoff(false)}
   />
 {/if}
 {#if shell.panels.guide}
@@ -1131,6 +1223,7 @@
       overflow-y: auto;
       transform: none;
     }
+    .cohesion-stack.first-epoch { max-height: min(18rem, 35dvh); }
     .game-shell.lumen-active .cohesion-stack,
     .game-shell:not(.shop-collapsed):not(.shop-absent) .cohesion-stack {
       opacity: 0;
