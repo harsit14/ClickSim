@@ -33,6 +33,7 @@ export interface AutoKindlerPurchase {
   readonly cost: EconomyAmount
   readonly paybackLog10: number
   readonly owned: number
+  readonly affordable: boolean
 }
 
 function compareCandidate(
@@ -52,12 +53,11 @@ function compareCandidate(
   return left.paybackLog10 - right.paybackLog10 || left.generator.tier - right.generator.tier
 }
 
-/** Chooses one affordable purchase without mutating the supplied economy. */
-export function selectAutoKindlerPurchase(
+function rankedAutoKindlerPurchases(
   state: EcoState,
   settings: AutoKindlerSettings,
-): AutoKindlerPurchase | null {
-  if (settings.families.length === 0) return null
+): AutoKindlerPurchase[] {
+  if (settings.families.length === 0) return []
   const allowed = new Set(settings.families)
   const scale = costScaleOf(state)
   const candidates: AutoKindlerPurchase[] = []
@@ -65,7 +65,6 @@ export function selectAutoKindlerPurchase(
     if (!allowed.has(autoKindlerFamilyForTier(generator.tier)) || genDisabled(state, generator)) continue
     const owned = state.owned[generator.id] ?? 0
     const cost = costOf(generator, owned, costMultOf(state, generator), scale)
-    if (!gteAmount(state.light, cost)) continue
     const delta = multiplyAmounts(unitRate(state, generator), globalMult(state))
     if (isZeroAmount(delta)) continue
     candidates.push({
@@ -73,8 +72,25 @@ export function selectAutoKindlerPurchase(
       cost,
       paybackLog10: amountLog10(cost) - amountLog10(delta),
       owned,
+      affordable: gteAmount(state.light, cost),
     })
   }
   candidates.sort((left, right) => compareCandidate(left, right, settings.priority))
-  return candidates[0] ?? null
+  return candidates
+}
+
+/** Previews the next routed target even when its cost is still gathering. */
+export function previewAutoKindlerPurchase(
+  state: EcoState,
+  settings: AutoKindlerSettings,
+): AutoKindlerPurchase | null {
+  return rankedAutoKindlerPurchases(state, settings)[0] ?? null
+}
+
+/** Chooses one affordable purchase without mutating the supplied economy. */
+export function selectAutoKindlerPurchase(
+  state: EcoState,
+  settings: AutoKindlerSettings,
+): AutoKindlerPurchase | null {
+  return rankedAutoKindlerPurchases(state, settings).find(({ affordable }) => affordable) ?? null
 }

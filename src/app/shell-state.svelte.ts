@@ -7,6 +7,7 @@ export type UtilityPanelId =
   | 'observatory'
   | 'codex'
   | 'deep'
+  | 'steward'
   | 'guide'
   | 'endgame'
 
@@ -21,6 +22,7 @@ const UTILITY_PANEL_IDS: readonly UtilityPanelId[] = [
   'observatory',
   'codex',
   'deep',
+  'steward',
   'guide',
   'endgame',
 ]
@@ -35,6 +37,7 @@ function closedPanels(): UtilityPanelState {
     observatory: false,
     codex: false,
     deep: false,
+    steward: false,
     guide: false,
     endgame: false,
   }

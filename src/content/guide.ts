@@ -47,7 +47,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Reading the screen',
         paragraphs: [
           'The large number at the top is spendable currency. The smaller rate is passive currency per second. Temporary blessings, rhythm streaks, prestige balances, and realm physics appear nearby only when relevant.',
-          'The right rail is Kindling. The bottom-left dock opens permanent systems such as Stats, Options, the cabinet, Observatory, Deep, Story Archive, Vessel, and this guide.',
+          'The right rail is Kindling. The bottom-left dock opens permanent systems such as Stats, Options, the cabinet, Observatory, Deep, the Steward, Story Archive, Vessel, and this guide.',
         ],
       },
     ],
@@ -239,7 +239,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Automation',
         paragraphs: [],
         bullets: [
-          'Auto-Kindler buys every two seconds. In the Deep, choose any of six three-tier Kindling families and prioritize best payback, lowest cost, least owned, or highest tier. At least one family always remains eligible.',
+          'Auto-Kindler buys every two seconds. Once owned, the Steward becomes a permanent dock section where you can choose any of six three-tier Kindling families, set the purchase priority, and review banked realm decisions. At least one family always remains eligible.',
           'Auto-Stoker buys the cheapest currently available normal upgrade.',
           'Nova Engine performs a Supernova when its displayed Stardust-gain threshold is reached.',
           'Automation is disabled inside trials so each rule set must be solved directly.',
@@ -391,7 +391,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'Saving and offline progress',
         paragraphs: [
-          'The game autosaves locally and saves around major state changes. Returning after time away presents a collect screen at 50% production for up to six hours away; an eight-hour return is worth three hours of passive production. Constellation perks raise efficiency to 75% and the cap to twelve hours.',
+          'The game autosaves locally and saves around major state changes. Returning after time away presents a collect screen at 50% production for up to twelve hours away; an eight-hour return is worth four hours of passive production. Constellation perks raise efficiency to 75% and the cap to eighteen hours.',
           'Options can copy or download the entire save as a text code and import a validated code later. Export before changing browsers or clearing site data. Import replaces the current game and reloads only after the data passes migration and content validation.',
           'Three rolling recovery checkpoints are captured during play, plus one daily checkpoint. If the primary snapshot becomes unreadable, EMBER automatically tries those checkpoints from newest to oldest. They can also be restored manually from Save Safety in Options.',
         ],
@@ -404,7 +404,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
           'Click or tap the central object to earn currency.',
           'Space or Enter also activates the central object when focus is not inside a control.',
           'Number keys 1–9 buy the matching visible generator.',
-          'G opens this guide; I opens Stats; O opens Options; C opens the active cabinet; V opens the Vessel; S opens the Observatory; D opens the Deep; E opens the Story Archive; and L opens the Legacy hub when each system exists.',
+          'G opens this guide; I opens Stats; O opens Options; C opens the active cabinet; V opens the Vessel; S opens the Observatory; D opens the Deep; A opens the Steward; E opens the Story Archive; and L opens the Legacy hub when each system exists.',
           'B cycles the 1, 10, 100, and maximum bulk-buy settings. Escape closes any utility panel.',
           'Every major panel, upgrade, shop item, and story choice is keyboard focusable.',
           'Reduced-motion preferences disable or simplify major interface animations.',

@@ -15,13 +15,14 @@ import {
 } from './save-import'
 export { describeSaveImportFailure } from './save-import'
 export type { SaveImportFailure, SaveImportResult } from './save-import'
-import type { EconomyAmount } from '../content/universes/types'
-import {
-  ZERO_AMOUNT,
-  multiplyAmountByNumber,
-} from './numeric/amount'
+import { multiplyAmountByNumber } from './numeric/amount'
 import { commitV13Migration, V12_ROLLBACK_KEY } from './numeric/save-transaction'
-import { planOfflineProgress } from './offline-pacing'
+import {
+  EMPTY_OFFLINE_RETURN,
+  planOfflineProgress,
+  summarizeOfflineReturn,
+  type OfflineReturnSummary,
+} from './offline-pacing'
 
 const KEY = 'ember.save'
 const RECENT_BACKUP_KEYS = ['ember.save.backup.1', 'ember.save.backup.2', 'ember.save.backup.3'] as const
@@ -384,8 +385,8 @@ export function save() {
   }
 }
 
-/** Loads the save if present. Returns pending offline earnings (not yet applied). */
-export function load(): EconomyAmount {
+/** Loads the save if present. Returns the pending, not-yet-applied offline report. */
+export function load(): OfflineReturnSummary {
   const sameTabSession = hasActiveSession()
   const lastActiveAt = readNumber(PRESENCE_KEY)
   const now = Date.now()
@@ -423,9 +424,9 @@ export function load(): EconomyAmount {
       break
     }
   } catch {
-    return ZERO_AMOUNT
+    return EMPTY_OFFLINE_RETURN
   }
-  if (!data) return ZERO_AMOUNT
+  if (!data) return EMPTY_OFFLINE_RETURN
   const messages: string[] = []
   if (recoveredFrom) messages.push(`Recovered from the ${recoveredFrom}.`)
   if (migratedFromV12) {
@@ -437,11 +438,11 @@ export function load(): EconomyAmount {
     lastActiveAt > 0 ? now - lastActiveAt < ACTIVE_SESSION_GRACE_MS : sameTabSession
   if (activeReload) {
     save()
-    return ZERO_AMOUNT
+    return EMPTY_OFFLINE_RETURN
   }
   const lastMeaningfulActivity = Math.max(data.savedAt ?? now, lastActiveAt)
   const elapsedMs = Math.max(0, now - lastMeaningfulActivity)
-  if (elapsedMs < MIN_OFFLINE_MS) return ZERO_AMOUNT
+  if (elapsedMs < MIN_OFFLINE_MS) return EMPTY_OFFLINE_RETURN
   const offlinePlan = planOfflineProgress(
     elapsedMs / 1000,
     perkBonus(game.constellation, 'offline'),
@@ -453,14 +454,20 @@ export function load(): EconomyAmount {
     advanceVerdanceCohortLawState(game.numericLawState, game.owned, generatorIds, counted * 500)
     const midpointRate = ratePerSec()
     advanceVerdanceCohortLawState(game.numericLawState, game.owned, generatorIds, counted * 500)
-    return multiplyAmountByNumber(midpointRate, offlinePlan.equivalentActiveSeconds)
+    return summarizeOfflineReturn(
+      multiplyAmountByNumber(midpointRate, offlinePlan.equivalentActiveSeconds),
+      offlinePlan,
+    )
   }
   if (game.activeUniverse === 'brahmalok' || game.activeUniverse === 'vishnulok') {
     const context = { upgrades: game.upgrades, archiveCount: game.curiosities.length, promptsPaused: game.challenge !== null }
     applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5, context))
     const midpointRate = ratePerSec()
     applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted * 0.5, context))
-    return multiplyAmountByNumber(midpointRate, offlinePlan.equivalentActiveSeconds)
+    return summarizeOfflineReturn(
+      multiplyAmountByNumber(midpointRate, offlinePlan.equivalentActiveSeconds),
+      offlinePlan,
+    )
   }
   if (game.activeUniverse === 'kailash') {
     applyF4LawEvents(advanceF4LawState(game.activeUniverse, game.numericLawState, game.owned, counted, {
@@ -469,7 +476,10 @@ export function load(): EconomyAmount {
       promptsPaused: game.challenge !== null,
     }))
   }
-  return multiplyAmountByNumber(ratePerSec(), offlinePlan.equivalentActiveSeconds)
+  return summarizeOfflineReturn(
+    multiplyAmountByNumber(ratePerSec(), offlinePlan.equivalentActiveSeconds),
+    offlinePlan,
+  )
 }
 
 export function exportSave(): string {

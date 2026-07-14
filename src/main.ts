@@ -41,7 +41,7 @@ if (import.meta.env.DEV) {
   )
 }
 
-const offlineGain = load()
+const offlineReturn = load()
 setMasterVolume(game.sfxVolume)
 setMusicVolume(game.musicVolume)
 startLoop()
@@ -52,6 +52,6 @@ registerOfflineWorker()
 
 mount(App, {
   target: document.getElementById('app')!,
-  props: { offlineGain },
+  props: { offlineReturn },
 })
 }

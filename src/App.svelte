@@ -19,6 +19,7 @@
   import Codex from './ui/Codex.svelte'
   import SupernovaCutscene from './ui/SupernovaCutscene.svelte'
   import TheDeep from './ui/TheDeep.svelte'
+  import IdleSteward from './ui/IdleSteward.svelte'
   import ChallengeBanner from './ui/ChallengeBanner.svelte'
   import QuestionChip from './ui/QuestionChip.svelte'
   import TheQuestion from './ui/TheQuestion.svelte'
@@ -74,6 +75,7 @@
   import { clearToasts, setToastPreferences } from './systems/toasts.svelte'
   import { resetSessionFeedback } from './feedback/reset-session'
   import type { EconomyAmount } from './content/universes/types'
+  import type { OfflineReturnSummary } from './core/offline-pacing'
   import { ONE_AMOUNT, ZERO_AMOUNT, addAmounts, amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
   import { format } from './core/format'
   import { resolveEffectiveVisualQuality } from './core/preferences'
@@ -99,13 +101,15 @@
   import type { UiTextResolver } from './experience/ui-text'
   import type { FocusReturnDescriptor } from './accessibility/focus'
   import { buildFirstEpochCeremony } from './experience/first-epoch'
+  import { idleManagerRealmStatus } from './experience/idle-manager'
+  import { welcomeBackEligible } from './ui/welcome-back-model'
   import {
     CLOCKWORK_REVELATION_TRIGGER,
     clockworkRevelationAvailable,
   } from './content/universes/clockwork/revelation'
   import { createShellState } from './app/shell-state.svelte'
 
-  let { offlineGain }: { offlineGain: EconomyAmount } = $props()
+  let { offlineReturn }: { offlineReturn: OfflineReturnSummary } = $props()
 
   const MOBILE_BREAKPOINT = 800
   const shell = createShellState(window.innerWidth, MOBILE_BREAKPOINT)
@@ -172,6 +176,13 @@
   const deepVisible = $derived(
     !isZeroAmount(game.singTotal) || game.collapses > 0 || deepReady || game.challenge !== null,
   )
+  const stewardVisible = $derived(game.singUpgrades.includes('auto-kindler'))
+  const idleManagerStatus = $derived(idleManagerRealmStatus(
+    game.activeUniverse,
+    game.numericLawState,
+    game.owned,
+    game.curiosities.length,
+  ))
   const curiositiesVisible = $derived(game.curiosities.length > 0 || gteAmount(game.totalEarned, amountFromNumber(250_000)))
   const activePack = $derived(universeById(game.activeUniverse))
   const activeV2Pack = $derived(universeV2ById(game.activeUniverse))
@@ -192,6 +203,7 @@
   const anySectionReady = $derived(
     (observatoryVisible && novaReady)
     || (deepVisible && deepReady)
+    || (stewardVisible && idleManagerStatus.attentionCount > 0)
     || (vesselVisible && vesselReady)
     || (endgameVisible && endgameReady),
   )
@@ -205,9 +217,12 @@
   const storyModalActive = $derived(
     cutsceneActive || deepCollapseActive || questionOpen || remembering || crossingPrelude || clockworkRevelationActive,
   )
-  const modalActive = $derived(storyModalActive || firstEpochHandoffOpen || shell.panels.guide || resetPreviewOpen || shell.panels.curiosities || shell.panels.endgame)
+  const visibleOfflineReturn = $derived(offlineGainDismissed
+    ? { ...offlineReturn, gain: ZERO_AMOUNT }
+    : offlineReturn)
+  const offlineReturnOpen = $derived(welcomeBackEligible(visibleOfflineReturn.gain))
+  const modalActive = $derived(storyModalActive || firstEpochHandoffOpen || offlineReturnOpen || shell.panels.guide || resetPreviewOpen || shell.panels.curiosities || shell.panels.endgame)
   const transientGoverned = $derived(universeInstrumentActive || utilityPanelOpen || storyModalActive || resetPreviewOpen || lumenActive)
-  const visibleOfflineGain = $derived(offlineGainDismissed ? ZERO_AMOUNT : offlineGain)
   const goalCandidates = $derived(buildEmberGoalCandidates(game, novaReady, Date.now()))
   const goalLensInput = $derived({
     enabled: goalLensEnabled,
@@ -254,7 +269,7 @@
   }
 
   $effect(() => {
-    if (!storyModalActive && !resetPreviewOpen && !firstEpochHandoffOpen) return
+    if (!storyModalActive && !resetPreviewOpen && !firstEpochHandoffOpen && !offlineReturnOpen) return
     return acquireGamePause('story scene')
   })
 
@@ -351,6 +366,17 @@
     closeAll()
     shell.panels.deep = next
   }
+  function toggleSteward() {
+    const next = !shell.panels.steward
+    closeAll()
+    shell.panels.steward = next
+  }
+  function reviewRealmManager() {
+    shell.panels.steward = false
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>('[aria-label="Configure universe instrument"], [aria-label="Collapse universe instrument"], [aria-label="Open universe instrument"]')?.focus({ preventScroll: true })
+    })
+  }
   function toggleGuide() {
     const next = !shell.panels.guide
     closeAll()
@@ -442,6 +468,7 @@
     else if (key === 'v' && vesselVisible) toggleVessel()
     else if (key === 's' && observatoryVisible) toggleObservatory()
     else if (key === 'd' && deepVisible) toggleDeep()
+    else if (key === 'a' && stewardVisible) toggleSteward()
     else if (key === 'e' && storyArchiveVisible) toggleCodex()
     else if (key === 'l' && endgameVisible) toggleEndgame()
     else if (key === 'b' && hasUi('bulk')) {
@@ -827,8 +854,6 @@
     />
     <Toasts governed={transientGoverned} clearOfShop={hasUi('shop') && !utilityPanelOpen && !shell.shopCollapsed} />
   </aside>
-  <WelcomeBack amount={visibleOfflineGain} />
-
   {#if !hasUi('options')}
     <button
       class="access-hatch"
@@ -888,6 +913,9 @@
       {/if}
       {#if deepVisible}
         <button class="dock-btn deep" class:open={shell.panels.deep} class:ready={deepReady} onclick={toggleDeep} title="The Deep · D" data-hint="The Deep · D" aria-label="The Deep" aria-keyshortcuts="D"><span aria-hidden="true">◉</span><small>Deep reset</small></button>
+      {/if}
+      {#if stewardVisible}
+        <button class="dock-btn steward" class:open={shell.panels.steward} class:ready={idleManagerStatus.attentionCount > 0} onclick={toggleSteward} title="The Steward · A" data-hint="The Steward · A" aria-label="The Steward" aria-keyshortcuts="A"><span aria-hidden="true">◒</span><small>Steward</small></button>
       {/if}
       {#if storyArchiveVisible}
         <button class="dock-btn" class:open={shell.panels.codex} onclick={toggleCodex} title="Story Archive · E" data-hint="Story Archive · E" aria-label="Story Archive" aria-keyshortcuts="E"><span aria-hidden="true">❖</span><small>Story</small></button>
@@ -950,8 +978,14 @@
   {#if shell.panels.deep}
     <TheDeep onrequestcollapse={beginDeepCollapse} onclose={() => (shell.panels.deep = false)} />
   {/if}
+  {#if shell.panels.steward}
+    <IdleSteward onclose={() => (shell.panels.steward = false)} onreviewrealm={reviewRealmManager} />
+  {/if}
   <QuestionChip onopen={() => { closeAll(); questionOpen = true }} />
 </div>
+{#if offlineReturnOpen}
+  <WelcomeBack summary={visibleOfflineReturn} oncollect={() => (offlineGainDismissed = true)} />
+{/if}
 {#if shell.panels.curiosities}
   <CuriosityCabinet onclose={() => closeModalPanel('curiosities')} />
 {/if}
@@ -1177,6 +1211,12 @@
   .dock-btn.deep.ready {
     color: #bfeaff;
     border-color: rgba(140, 220, 255, 0.5);
+  }
+  .dock-btn.steward:hover,
+  .dock-btn.steward.open,
+  .dock-btn.steward.ready {
+    color: #b9e8dc;
+    border-color: rgba(132, 218, 194, 0.48);
   }
   .dock-btn.curiosity:hover,
   .dock-btn.curiosity.open {

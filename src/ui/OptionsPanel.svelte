@@ -353,7 +353,7 @@
       <div><dt><kbd>1</kbd>–<kbd>9</kbd></dt><dd>Buy visible Kindling</dd></div>
       <div><dt><kbd>B</kbd></dt><dd>Cycle bulk amount</dd></div>
       <div><dt><kbd>G</kbd> <kbd>I</kbd> <kbd>O</kbd></dt><dd>Guide, records, options</dd></div>
-      <div><dt><kbd>C</kbd> <kbd>V</kbd> <kbd>S</kbd> <kbd>D</kbd></dt><dd>Cabinet, Vessel, Epoch, Deep</dd></div>
+      <div><dt><kbd>C</kbd> <kbd>V</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>A</kbd></dt><dd>Cabinet, Vessel, Epoch, Deep, Steward</dd></div>
       <div><dt><kbd>E</kbd> <kbd>L</kbd> <kbd>Esc</kbd></dt><dd>Story, Legacy, close panel</dd></div>
     </dl>
   </section>

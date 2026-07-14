@@ -1,11 +1,19 @@
+import type { EconomyAmount } from '../content/universes/types'
+import { ZERO_AMOUNT } from './numeric/amount'
+
 export const BASE_OFFLINE_EFFICIENCY = 0.5
-export const BASE_OFFLINE_CAP_HOURS = 6
+export const BASE_OFFLINE_CAP_HOURS = 12
 
 export interface OfflineProgressPlan {
   readonly elapsedSeconds: number
   readonly countedSeconds: number
   readonly efficiency: number
   readonly equivalentActiveSeconds: number
+}
+
+export interface OfflineReturnSummary extends OfflineProgressPlan {
+  readonly gain: EconomyAmount
+  readonly capReached: boolean
 }
 
 /** Pure return-session pacing plan shared by loading and balance studies. */
@@ -28,3 +36,19 @@ export function planOfflineProgress(
     equivalentActiveSeconds: countedSeconds * efficiency,
   }
 }
+
+export function summarizeOfflineReturn(
+  gain: EconomyAmount,
+  plan: OfflineProgressPlan,
+): OfflineReturnSummary {
+  return {
+    ...plan,
+    gain,
+    capReached: plan.countedSeconds < plan.elapsedSeconds,
+  }
+}
+
+export const EMPTY_OFFLINE_RETURN: OfflineReturnSummary = summarizeOfflineReturn(
+  ZERO_AMOUNT,
+  planOfflineProgress(0),
+)

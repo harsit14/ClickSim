@@ -63,7 +63,7 @@ export interface MinimalOwnershipIdleAuditResult {
   readonly finalEarned: SerializedEconomyAmount
 }
 
-function initialState(universeId: UniverseId): EcoState {
+export function createCurrentPackAuditState(universeId: UniverseId): EcoState {
   return {
     activeUniverse: universeId,
     light: ZERO_AMOUNT,
@@ -91,7 +91,7 @@ function initialState(universeId: UniverseId): EcoState {
   }
 }
 
-function advanceActiveUniverseLaw(
+export function advanceActiveUniverseLaw(
   state: EcoState,
   profile: SimulatorProfile,
   elapsedSeconds: number,
@@ -153,7 +153,7 @@ export function runCurrentPackAudit(
   horizonHours = AUDIT_HORIZON_HOURS,
 ): CurrentPackAuditResult {
   const pack = universeById(universeId)
-  const state = initialState(universeId)
+  const state = createCurrentPackAuditState(universeId)
   const events: CurrentPackAuditEvent[] = []
   const firstBought = new Set<string>()
   const purchasedGeneratorIds: string[] = []
@@ -282,7 +282,7 @@ export function runMinimalOwnershipIdleAudit(
   const pack = universeById(universeId)
   const firstGenerator = pack.generators[0]
   if (!firstGenerator) throw new RangeError(`${universeId} has no first Kindling`)
-  const state = initialState(universeId)
+  const state = createCurrentPackAuditState(universeId)
   state.owned[firstGenerator.id] = 1
   let finalEarned = ZERO_AMOUNT
   const horizonMs = horizonHours * 3_600_000
