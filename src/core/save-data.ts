@@ -314,6 +314,7 @@ export interface SaveDataV23 extends Omit<SaveDataV22, 'version'> {
   showRoutineToasts: boolean
   showWorldScenery: boolean
   showInteractionEffects: boolean
+  audioFocusMode: boolean
   endgame: EndgameState
 }
 
@@ -326,6 +327,7 @@ export interface SerializedSaveDataV23 extends Omit<SerializedSaveDataV22, 'vers
   showRoutineToasts: boolean
   showWorldScenery: boolean
   showInteractionEffects: boolean
+  audioFocusMode: boolean
 }
 
 const MIGRATIONS: Record<number, (d: Record<string, unknown>) => Record<string, unknown>> = {
@@ -1249,6 +1251,7 @@ export function convertSaveV22ToV23(value: SaveDataV22): SaveDataV23 {
     showRoutineToasts: true,
     showWorldScenery: true,
     showInteractionEffects: true,
+    audioFocusMode: false,
   }
 }
 
@@ -1282,6 +1285,7 @@ function sanitizeSaveV23(data: unknown): SaveDataV23 | null {
     showRoutineToasts: booleanValue(source.showRoutineToasts, true),
     showWorldScenery: booleanValue(source.showWorldScenery, true),
     showInteractionEffects: booleanValue(source.showInteractionEffects, true),
+    audioFocusMode: booleanValue(source.audioFocusMode, false),
   }
 }
 
@@ -1306,6 +1310,7 @@ export function serializeSaveDataV23(value: SaveDataV23): SerializedSaveDataV23 
     showRoutineToasts: value.showRoutineToasts,
     showWorldScenery: value.showWorldScenery,
     showInteractionEffects: value.showInteractionEffects,
+    audioFocusMode: value.audioFocusMode,
   }
 }
 

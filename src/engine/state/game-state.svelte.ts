@@ -79,6 +79,7 @@ export interface GameState extends EcoState, Omit<EndgameState,
   playtime: number
   sfxVolume: number
   musicVolume: number
+  audioFocusMode: boolean
   motionPreference: MotionPreference
   visualQuality: VisualQuality
   beatVisual: BeatVisual
@@ -146,6 +147,7 @@ export const game: GameState = $state({
   playtime: 0,
   sfxVolume: 0.5,
   musicVolume: 0.6,
+  audioFocusMode: false,
   motionPreference: 'system',
   visualQuality: 'auto',
   beatVisual: 'heart',

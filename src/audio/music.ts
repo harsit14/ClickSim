@@ -3,6 +3,7 @@ import { getAudio } from './sfx'
 import type { UniverseId } from '../content/universes/types'
 
 const LOOKAHEAD_SEC = 0.35
+export const FOCUS_MUSIC_MULTIPLIER = 0.28
 
 export type MusicMode = UniverseId
 
@@ -29,6 +30,8 @@ const TIDE_SCALE = [293.66, 329.63, 392.0, 440.0, 523.25, 587.33]
 export interface RealmMusicProfile {
   readonly character: string
   readonly tempoBpm: number
+  readonly formBars: 8 | 12 | 16
+  readonly emptyBars: readonly number[]
   readonly chords: readonly (readonly number[])[]
   readonly roots: readonly number[]
   readonly scale: readonly number[]
@@ -52,6 +55,7 @@ export interface RealmMusicProfile {
 export const MUSIC_PROFILES: Readonly<Record<MusicMode, RealmMusicProfile>> = {
   emberlight: {
     character: 'warm heartbeat and close triangular firelight', tempoBpm: 72,
+    formBars: 8, emptyBars: [7],
     chords: CHORDS, roots: ROOTS, scale: PENTA,
     padTypes: ['triangle', 'triangle'], padDetunes: [-6, 6], padAttack: 0.9, padPeak: 0.035, padFilterHz: 900,
     pulseBeats: [0, 1, 2, 3], pulseType: 'sine', pulseStartHz: 150, pulseEndHz: 55, pulsePeak: 0.14, pulseDecay: 0.16,
@@ -59,6 +63,7 @@ export const MUSIC_PROFILES: Readonly<Record<MusicMode, RealmMusicProfile>> = {
   },
   tidefall: {
     character: 'submerged minor-seventh pressure and surface droplets', tempoBpm: 60,
+    formBars: 12, emptyBars: [5, 11],
     chords: TIDE_CHORDS, roots: TIDE_ROOTS, scale: TIDE_SCALE,
     padTypes: ['sine', 'triangle'], padDetunes: [-9, 9], padAttack: 1.45, padPeak: 0.026, padFilterHz: 680,
     pulseBeats: [0, 2], pulseType: 'sine', pulseStartHz: 92, pulseEndHz: 38, pulsePeak: 0.13, pulseDecay: 0.78,
@@ -66,6 +71,7 @@ export const MUSIC_PROFILES: Readonly<Record<MusicMode, RealmMusicProfile>> = {
   },
   verdance: {
     character: 'slow germinating major sevenths and woody paired breaths', tempoBpm: 66,
+    formBars: 12, emptyBars: [11],
     chords: [
       [261.63, 329.63, 392, 493.88], [293.66, 349.23, 440, 523.25],
       [220, 261.63, 329.63, 392], [174.61, 220, 261.63, 329.63],
@@ -77,6 +83,7 @@ export const MUSIC_PROFILES: Readonly<Record<MusicMode, RealmMusicProfile>> = {
   },
   clockwork: {
     character: 'dry escapement fifths and counted metallic teeth', tempoBpm: 96,
+    formBars: 16, emptyBars: [15],
     chords: [
       [146.83, 220, 293.66], [164.81, 246.94, 329.63],
       [130.81, 196, 261.63], [110, 164.81, 220],
@@ -88,6 +95,7 @@ export const MUSIC_PROFILES: Readonly<Record<MusicMode, RealmMusicProfile>> = {
   },
   brahmalok: {
     character: 'open dawn intervals unfolding in four measured directions', tempoBpm: 78,
+    formBars: 12, emptyBars: [11],
     chords: [
       [146.83, 184.99, 220, 277.18], [164.81, 207.65, 246.94, 329.63],
       [196, 246.94, 293.66, 369.99], [130.81, 164.81, 220, 293.66],
@@ -99,6 +107,7 @@ export const MUSIC_PROFILES: Readonly<Record<MusicMode, RealmMusicProfile>> = {
   },
   vishnulok: {
     character: 'returning suspended currents around a stable low refuge', tempoBpm: 68,
+    formBars: 16, emptyBars: [7, 15],
     chords: [
       [196, 233.08, 293.66, 392], [174.61, 220, 261.63, 349.23],
       [146.83, 196, 246.94, 329.63], [164.81, 220, 293.66, 369.99],
@@ -110,6 +119,7 @@ export const MUSIC_PROFILES: Readonly<Record<MusicMode, RealmMusicProfile>> = {
   },
   kailash: {
     character: 'austere open fifths, long air, and isolated summit tones', tempoBpm: 54,
+    formBars: 8, emptyBars: [3, 7],
     chords: [[146.83, 220], [130.81, 196], [110, 164.81], [98, 146.83]],
     roots: [73.42, 65.41, 55, 49], scale: [220, 293.66, 329.63, 392, 440, 587.33],
     padTypes: ['sine'], padDetunes: [-2, 2], padAttack: 2.6, padPeak: 0.02, padFilterHz: 820,
@@ -122,6 +132,8 @@ export function musicProfileFingerprint(mode: MusicMode): string {
   const profile = MUSIC_PROFILES[mode]
   return [
     profile.tempoBpm,
+    profile.formBars,
+    profile.emptyBars.join(','),
     profile.character,
     profile.chords.flat().join(','),
     profile.padTypes.join(','),
@@ -150,9 +162,11 @@ let volume = 0.6
 let stems: StemFlags = { mallets: false, bass: false, strings: false, choir: false }
 let musicMode: MusicMode = 'emberlight'
 let stillness = false
+let focusMode = false
+let ownershipDensity = 0
 
 function musicGainTarget(): number {
-  return volume * (stillness ? 0.11 : 0.9)
+  return volume * (stillness ? 0.11 : 0.9) * (focusMode ? FOCUS_MUSIC_MULTIPLIER : 1)
 }
 
 export function beatDurationSec(): number {
@@ -174,6 +188,64 @@ export function setMusicMode(mode: MusicMode) {
 export function setMusicVolume(v: number) {
   volume = Math.max(0, Math.min(1, v))
   if (musicGain) musicGain.gain.value = musicGainTarget()
+}
+
+export function musicFocusModeActive(): boolean {
+  return focusMode
+}
+
+/** Ducks only the score, leaving effects and visual beat guidance untouched. */
+export function setMusicFocusMode(active: boolean): void {
+  if (focusMode === active) return
+  focusMode = active
+  if (!musicGain) return
+  const a = getAudio()
+  if (!a) return
+  const now = a.ctx.currentTime
+  musicGain.gain.cancelScheduledValues(now)
+  musicGain.gain.setValueAtTime(Math.max(0.0001, musicGain.gain.value), now)
+  musicGain.gain.exponentialRampToValueAtTime(Math.max(0.0001, musicGainTarget()), now + 0.45)
+}
+
+/** Ownership is counted by distinct Kindling, so bulk purchases cannot spike density. */
+export function setMusicOwnershipDensity(ownedKinds: number, totalKinds: number): void {
+  const safeTotal = Number.isFinite(totalKinds) ? Math.max(1, Math.floor(totalKinds)) : 1
+  const safeOwned = Number.isFinite(ownedKinds) ? Math.max(0, Math.floor(ownedKinds)) : 0
+  ownershipDensity = Math.max(0, Math.min(1, safeOwned / safeTotal))
+}
+
+export interface MusicBarPlan {
+  readonly formBar: number
+  readonly formBars: 8 | 12 | 16
+  readonly phrase: number
+  readonly harmonicIndex: number
+  readonly density: number
+  readonly densityStage: 0 | 1 | 2 | 3
+  readonly empty: boolean
+}
+
+/** Pure arrangement decision used by the scheduler and contract tests. */
+export function musicBarPlan(
+  mode: MusicMode,
+  bar: number,
+  density = ownershipDensity,
+  longRest = false,
+): MusicBarPlan {
+  const profile = MUSIC_PROFILES[mode]
+  const safeBar = Number.isFinite(bar) ? Math.max(0, Math.floor(bar)) : 0
+  const formBar = safeBar % profile.formBars
+  const safeDensity = Math.max(0, Math.min(1, Number.isFinite(density) ? density : 0))
+  const densityStage = (safeDensity >= 0.75 ? 3 : safeDensity >= 0.45 ? 2 : safeDensity >= 0.15 ? 1 : 0) as 0 | 1 | 2 | 3
+  const phrase = Math.floor(formBar / 4)
+  return {
+    formBar,
+    formBars: profile.formBars,
+    phrase,
+    harmonicIndex: (formBar + phrase) % profile.chords.length,
+    density: safeDensity,
+    densityStage,
+    empty: longRest ? formBar % 4 !== 0 : profile.emptyBars.includes(formBar),
+  }
 }
 
 export function musicStillnessActive(): boolean {
@@ -315,29 +387,38 @@ function tone(
 }
 
 function scheduleBar(ctx: AudioContext, bar: number) {
+  const plan = musicBarPlan(musicMode, bar, ownershipDensity, musicMode === 'kailash' && stillness)
+  if (plan.empty) return
   if (musicMode === 'kailash' && stillness) {
     scheduleKailashStillnessBar(ctx, bar)
     return
   }
   if (musicMode === 'tidefall') {
-    scheduleTidefallBar(ctx, bar)
+    scheduleTidefallBar(ctx, bar, plan)
     return
   }
-  scheduleProfiledBar(ctx, bar, MUSIC_PROFILES[musicMode])
+  scheduleProfiledBar(ctx, bar, MUSIC_PROFILES[musicMode], plan)
 }
 
-function scheduleProfiledBar(ctx: AudioContext, bar: number, profile: RealmMusicProfile) {
+function scheduleProfiledBar(
+  ctx: AudioContext,
+  bar: number,
+  profile: RealmMusicProfile,
+  plan: MusicBarPlan,
+) {
   if (!musicGain) return
   const output = musicGain
   const beatSec = beatDurationSec()
   const barSec = beatSec * 4
   const t0 = startAt + bar * barSec
-  const chord = profile.chords[bar % profile.chords.length]
-  const root = profile.roots[bar % profile.roots.length]
+  const chord = profile.chords[plan.harmonicIndex]
+  const root = profile.roots[plan.harmonicIndex % profile.roots.length]
   const activeStems = effectiveStemFlags()
+  const padNotes = chord.slice(0, plan.densityStage === 0 ? 2 : plan.densityStage === 1 ? 3 : chord.length)
+  const padDetunes = plan.densityStage === 0 ? profile.padDetunes.slice(0, 1) : profile.padDetunes
 
-  for (const frequency of chord) {
-    profile.padDetunes.forEach((detune, index) => {
+  for (const frequency of padNotes) {
+    padDetunes.forEach((detune, index) => {
       tone(ctx, {
         freq: frequency,
         type: profile.padTypes[index % profile.padTypes.length],
@@ -351,28 +432,30 @@ function scheduleProfiledBar(ctx: AudioContext, bar: number, profile: RealmMusic
     })
   }
 
-  profile.pulseBeats.forEach((beat, index) => {
-    const at = t0 + beat * beatSec
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.type = profile.pulseType
-    osc.frequency.setValueAtTime(profile.pulseStartHz, at)
-    osc.frequency.exponentialRampToValueAtTime(
-      profile.pulseEndHz,
-      at + Math.max(0.025, Math.min(profile.pulseDecay * 0.65, 0.45)),
-    )
-    const peak = index === 0 ? profile.pulsePeak : profile.pulsePeak * 0.55
-    gain.gain.setValueAtTime(peak, at)
-    gain.gain.exponentialRampToValueAtTime(0.0001, at + profile.pulseDecay)
-    osc.connect(gain).connect(output)
-    osc.start(at)
-    osc.stop(at + profile.pulseDecay + 0.05)
-  })
+  profile.pulseBeats
+    .filter((_, index) => index === 0 || plan.densityStage >= 2)
+    .forEach((beat, index) => {
+      const at = t0 + beat * beatSec
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = profile.pulseType
+      osc.frequency.setValueAtTime(profile.pulseStartHz, at)
+      osc.frequency.exponentialRampToValueAtTime(
+        profile.pulseEndHz,
+        at + Math.max(0.025, Math.min(profile.pulseDecay * 0.65, 0.45)),
+      )
+      const peak = index === 0 ? profile.pulsePeak : profile.pulsePeak * 0.55
+      gain.gain.setValueAtTime(peak, at)
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + profile.pulseDecay)
+      osc.connect(gain).connect(output)
+      osc.start(at)
+      osc.stop(at + profile.pulseDecay + 0.05)
+    })
 
-  if (activeStems.mallets) {
+  if (activeStems.mallets && plan.densityStage >= 1) {
     const rand = mulberry32(bar * 7919 + profile.character.length * 131)
     for (let eighth = 0; eighth < 8; eighth++) {
-      if (rand() > profile.malletDensity) continue
+      if (rand() > profile.malletDensity * (0.45 + plan.density * 0.55)) continue
       const frequency = profile.scale[Math.floor(rand() * profile.scale.length)]
       tone(ctx, {
         freq: frequency * profile.malletMultiplier,
@@ -386,7 +469,7 @@ function scheduleProfiledBar(ctx: AudioContext, bar: number, profile: RealmMusic
     }
   }
 
-  if (activeStems.bass) {
+  if (activeStems.bass && plan.densityStage >= 1) {
     for (const beat of profile.bassBeats) {
       tone(ctx, {
         freq: root,
@@ -400,7 +483,7 @@ function scheduleProfiledBar(ctx: AudioContext, bar: number, profile: RealmMusic
     }
   }
 
-  if (activeStems.strings) {
+  if (activeStems.strings && plan.densityStage >= 2) {
     for (const frequency of chord) {
       tone(ctx, {
         freq: frequency * 2,
@@ -414,7 +497,7 @@ function scheduleProfiledBar(ctx: AudioContext, bar: number, profile: RealmMusic
     }
   }
 
-  if (activeStems.choir) {
+  if (activeStems.choir && plan.densityStage >= 3) {
     for (const frequency of chord) {
       tone(ctx, {
         freq: frequency * (musicMode === 'kailash' ? 2 : 4),
@@ -444,18 +527,20 @@ function scheduleKailashStillnessBar(ctx: AudioContext, bar: number) {
   })
 }
 
-function scheduleTidefallBar(ctx: AudioContext, bar: number) {
+function scheduleTidefallBar(ctx: AudioContext, bar: number, plan: MusicBarPlan) {
   if (!musicGain) return
   const beatSec = beatDurationSec()
   const barSec = beatSec * 4
   const t0 = startAt + bar * barSec
-  const chord = TIDE_CHORDS[bar % TIDE_CHORDS.length]
-  const root = TIDE_ROOTS[bar % TIDE_ROOTS.length]
+  const chord = TIDE_CHORDS[plan.harmonicIndex]
+  const root = TIDE_ROOTS[plan.harmonicIndex % TIDE_ROOTS.length]
   const activeStems = effectiveStemFlags()
 
   // Submerged pad: slower sine/triangle bloom with a narrow, dark filter.
-  for (const freq of chord) {
-    for (const detune of [-9, 9]) {
+  const padNotes = chord.slice(0, plan.densityStage === 0 ? 2 : plan.densityStage === 1 ? 3 : chord.length)
+  const padDetunes = plan.densityStage === 0 ? [-9] : [-9, 9]
+  for (const freq of padNotes) {
+    for (const detune of padDetunes) {
       tone(ctx, {
         freq,
         type: detune < 0 ? 'sine' : 'triangle',
@@ -472,7 +557,7 @@ function scheduleTidefallBar(ctx: AudioContext, bar: number) {
   }
 
   // The tide is the pulse here: two long pressure swells instead of a heartbeat.
-  for (const beat of [0, 2]) {
+  for (const beat of plan.densityStage >= 2 ? [0, 2] : [0]) {
     const at = t0 + beat * beatSec
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
@@ -488,7 +573,7 @@ function scheduleTidefallBar(ctx: AudioContext, bar: number) {
   }
 
   // A tiny surface droplet keeps the combo grid legible without sounding percussive.
-  for (let beat = 0; beat < 4; beat++) {
+  for (const beat of plan.densityStage >= 2 ? [0, 1, 2, 3] : [0, 2]) {
     tone(ctx, {
       freq: 740 + (bar % 2) * 90,
       type: 'sine',
@@ -500,10 +585,10 @@ function scheduleTidefallBar(ctx: AudioContext, bar: number) {
     })
   }
 
-  if (activeStems.mallets) {
+  if (activeStems.mallets && plan.densityStage >= 1) {
     const rand = mulberry32(bar * 6151 + 43)
     for (let eighth = 0; eighth < 8; eighth++) {
-      if (rand() < 0.58) continue
+      if (rand() > 0.42 * (0.45 + plan.density * 0.55)) continue
       const freq = TIDE_SCALE[Math.floor(rand() * TIDE_SCALE.length)]
       tone(ctx, {
         freq: freq * 1.5,
@@ -518,17 +603,17 @@ function scheduleTidefallBar(ctx: AudioContext, bar: number) {
     }
   }
 
-  if (activeStems.bass) {
+  if (activeStems.bass && plan.densityStage >= 1) {
     tone(ctx, { freq: root, type: 'triangle', at: t0, attack: 0.18, peak: 0.08, decayTo: barSec, filterHz: 320 })
   }
 
-  if (activeStems.strings) {
+  if (activeStems.strings && plan.densityStage >= 2) {
     for (const freq of chord.slice(1)) {
       tone(ctx, { freq: freq * 2, type: 'sine', at: t0 + beatSec, attack: 1.1, peak: 0.018, decayTo: barSec, vibratoHz: 0.32, vibratoDepth: 5 })
     }
   }
 
-  if (activeStems.choir) {
+  if (activeStems.choir && plan.densityStage >= 3) {
     for (const freq of chord.slice(1)) {
       tone(ctx, { freq: freq * 3, type: 'triangle', at: t0, attack: 1.8, peak: 0.009, decayTo: barSec + 0.8, filterHz: 1450, vibratoHz: 4.2, vibratoDepth: 7 })
     }

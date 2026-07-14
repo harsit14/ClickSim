@@ -3,24 +3,55 @@ import type { UniverseId } from '../content/universes/types'
 let ctx: AudioContext | null = null
 let master: GainNode | null = null
 let output: BiquadFilterNode | null = null
+let spatialWet: GainNode | null = null
 let volume = 0.5
-let deepLowPassActive = false
+let audioSpace: AudioSpace = 'world'
 
 export const DEEP_LOW_PASS_HZ = 3_400
 export const OPEN_LOW_PASS_HZ = 20_000
+export const ARCHIVE_LOW_PASS_HZ = 6_200
+
+export type AudioSpace = 'world' | 'archive' | 'deep'
+
+export interface AudioSpaceProfile {
+  readonly lowPassHz: number
+  readonly reverbWet: number
+  readonly transitionSec: number
+}
+
+/** Shared spatial treatments keep music and effects in the same navigable world. */
+export const AUDIO_SPACE_PROFILES: Readonly<Record<AudioSpace, AudioSpaceProfile>> = {
+  world: { lowPassHz: OPEN_LOW_PASS_HZ, reverbWet: 0, transitionSec: 0.45 },
+  archive: { lowPassHz: ARCHIVE_LOW_PASS_HZ, reverbWet: 0.075, transitionSec: 0.65 },
+  deep: { lowPassHz: DEEP_LOW_PASS_HZ, reverbWet: 0.16, transitionSec: 0.9 },
+}
 
 export function depthLowPassFrequency(active: boolean): number {
   return active ? DEEP_LOW_PASS_HZ : OPEN_LOW_PASS_HZ
 }
 
+export function currentAudioSpace(): AudioSpace {
+  return audioSpace
+}
+
 /** Reversible shared-output treatment; does not initialize audio by itself. */
-export function setDepthLowPass(active: boolean): void {
-  deepLowPassActive = active
-  if (!ctx || !output) return
+export function setAudioSpace(space: AudioSpace): void {
+  if (audioSpace === space) return
+  audioSpace = space
+  if (!ctx || !output || !spatialWet) return
   const now = ctx.currentTime
+  const profile = AUDIO_SPACE_PROFILES[space]
   output.frequency.cancelScheduledValues(now)
   output.frequency.setValueAtTime(Math.max(20, output.frequency.value), now)
-  output.frequency.exponentialRampToValueAtTime(depthLowPassFrequency(active), now + (active ? 0.7 : 0.45))
+  output.frequency.exponentialRampToValueAtTime(profile.lowPassHz, now + profile.transitionSec)
+  spatialWet.gain.cancelScheduledValues(now)
+  spatialWet.gain.setValueAtTime(Math.max(0, spatialWet.gain.value), now)
+  spatialWet.gain.linearRampToValueAtTime(profile.reverbWet, now + profile.transitionSec)
+}
+
+/** Compatibility helper for ceremony surfaces that only distinguish Deep/open. */
+export function setDepthLowPass(active: boolean): void {
+  setAudioSpace(active ? 'deep' : 'world')
 }
 
 export function setMasterVolume(v: number) {
@@ -39,12 +70,28 @@ function audio(): { ctx: AudioContext; master: GainNode; output: BiquadFilterNod
       ctx = new AudioContext()
       master = ctx.createGain()
       output = ctx.createBiquadFilter()
+      const reverb = ctx.createConvolver()
+      spatialWet = ctx.createGain()
       master.gain.value = volume
       output.type = 'lowpass'
-      output.frequency.value = depthLowPassFrequency(deepLowPassActive)
+      output.frequency.value = AUDIO_SPACE_PROFILES[audioSpace].lowPassHz
       output.Q.value = 0.35
+      spatialWet.gain.value = AUDIO_SPACE_PROFILES[audioSpace].reverbWet
+      const impulseLength = Math.floor(ctx.sampleRate * 2.4)
+      const impulse = ctx.createBuffer(2, impulseLength, ctx.sampleRate)
+      for (let channel = 0; channel < impulse.numberOfChannels; channel += 1) {
+        const data = impulse.getChannelData(channel)
+        let seed = 1_337 + channel * 977
+        for (let index = 0; index < impulseLength; index += 1) {
+          seed = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+          const noise = ((seed >>> 0) / 4294967296) * 2 - 1
+          data[index] = noise * ((1 - index / impulseLength) ** 3)
+        }
+      }
+      reverb.buffer = impulse
       master.connect(output)
       output.connect(ctx.destination)
+      output.connect(reverb).connect(spatialWet).connect(ctx.destination)
     }
     if (ctx.state === 'suspended') void ctx.resume()
     return { ctx, master: master!, output: output! }

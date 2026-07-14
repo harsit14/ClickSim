@@ -9,7 +9,7 @@ import { createDevScenario } from './core/dev-scenarios'
 import { startLoop } from './core/loop'
 import { game } from './engine/game.svelte'
 import { setMasterVolume } from './audio/sfx'
-import { setMusicVolume } from './audio/music'
+import { setMusicFocusMode, setMusicVolume } from './audio/music'
 import { startAchievementWatcher } from './systems/achievements.svelte'
 import { startAutomation } from './systems/automation.svelte'
 import { registerOfflineWorker } from './core/offline'
@@ -44,6 +44,7 @@ if (import.meta.env.DEV) {
 const offlineReturn = load()
 setMasterVolume(game.sfxVolume)
 setMusicVolume(game.musicVolume)
+setMusicFocusMode(game.audioFocusMode)
 startLoop()
 startAutosave()
 startAchievementWatcher()

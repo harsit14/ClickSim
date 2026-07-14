@@ -74,6 +74,7 @@ function snapshot(): SaveDataV23 {
     playtime: game.playtime,
     sfxVolume: game.sfxVolume,
     musicVolume: game.musicVolume,
+    audioFocusMode: game.audioFocusMode,
     motionPreference: game.motionPreference,
     visualQuality: game.visualQuality,
     beatVisual: game.beatVisual,
@@ -166,6 +167,7 @@ function apply(d: SaveDataV23) {
   game.playtime = d.playtime
   game.sfxVolume = d.sfxVolume
   game.musicVolume = d.musicVolume
+  game.audioFocusMode = d.audioFocusMode
   game.motionPreference = d.motionPreference
   game.visualQuality = d.visualQuality
   game.beatVisual = d.beatVisual

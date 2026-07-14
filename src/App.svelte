@@ -60,10 +60,12 @@
   import {
     isPlaying,
     setMusicMode,
+    setMusicOwnershipDensity,
     setMusicStillness,
     setStems,
     startMusic,
   } from './audio/music'
+  import { setAudioSpace } from './audio/sfx'
   import { THEME_BY_ID, themeVarsForUniverse } from './content/themes'
   import { constellationNodeCopy, progressionIdentity } from './content/universe-progression'
   import { CONSTELLATION } from './content/constellation'
@@ -713,6 +715,16 @@
   })
 
   $effect(() => {
+    setAudioSpace(
+      shell.panels.deep
+        ? 'deep'
+        : shell.panels.codex || shell.panels.curiosities
+          ? 'archive'
+          : 'world',
+    )
+  })
+
+  $effect(() => {
     const governed = (!shell.shopCollapsed && hasUi('shop')) || transientGoverned
     if (governed) document.documentElement.dataset.attention = 'governed'
     else delete document.documentElement.dataset.attention
@@ -744,6 +756,7 @@
   const anyOf = (ids: string[]) => ids.some((id) => (game.owned[id] ?? 0) > 0)
   $effect(() => {
     const ids = activePack.generators.map(({ id }) => id)
+    setMusicOwnershipDensity(ids.filter((id) => (game.owned[id] ?? 0) > 0).length, ids.length)
     setStems({
       mallets: anyOf(ids.slice(0, 5)),
       bass: anyOf(ids.slice(5, 9)),

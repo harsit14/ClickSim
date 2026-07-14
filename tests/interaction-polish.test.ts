@@ -3,6 +3,8 @@ import test from 'node:test'
 import { readFileSync } from 'node:fs'
 import { compile } from 'svelte/compiler'
 import {
+  ARCHIVE_LOW_PASS_HZ,
+  AUDIO_SPACE_PROFILES,
   DEEP_LOW_PASS_HZ,
   OPEN_LOW_PASS_HZ,
   depthLowPassFrequency,
@@ -33,17 +35,22 @@ test('landmarks reveal bounded interior marks without changing their silhouette 
   assert.match(world, /\.motion-paused \.landmark-interior \{ transition: none;/)
 })
 
-test('Deep applies one restrained reversible low-pass to music and effects', () => {
+test('Archive and Deep apply restrained reversible depth to music and effects', () => {
   assert.equal(depthLowPassFrequency(true), DEEP_LOW_PASS_HZ)
   assert.equal(depthLowPassFrequency(false), OPEN_LOW_PASS_HZ)
   assert.ok(DEEP_LOW_PASS_HZ >= 2_500 && DEEP_LOW_PASS_HZ <= 5_000)
+  assert.ok(ARCHIVE_LOW_PASS_HZ > DEEP_LOW_PASS_HZ)
+  assert.ok(ARCHIVE_LOW_PASS_HZ < OPEN_LOW_PASS_HZ)
+  assert.ok(AUDIO_SPACE_PROFILES.deep.reverbWet > AUDIO_SPACE_PROFILES.archive.reverbWet)
+  assert.ok(AUDIO_SPACE_PROFILES.archive.reverbWet > AUDIO_SPACE_PROFILES.world.reverbWet)
   const sfx = read('../src/audio/sfx.ts')
   const music = read('../src/audio/music.ts')
-  const deep = read('../src/ui/TheDeep.svelte')
+  const app = read('../src/App.svelte')
   assert.match(sfx, /output\.type = 'lowpass'/)
-  assert.match(sfx, /exponentialRampToValueAtTime\(depthLowPassFrequency\(active\)/)
+  assert.match(sfx, /createConvolver\(\)/)
+  assert.match(sfx, /exponentialRampToValueAtTime\(profile\.lowPassHz/)
   assert.match(music, /musicGain\.connect\(a\.output\)/)
-  assert.match(deep, /setDepthLowPass\(true\)[\s\S]*return \(\) => setDepthLowPass\(false\)/)
+  assert.match(app, /setAudioSpace\([\s\S]*shell\.panels\.deep[\s\S]*'archive'[\s\S]*'world'/)
 })
 
 test('polished interaction surfaces compile without accessibility warnings', () => {

@@ -37,6 +37,7 @@ export function createDiagnosticReport(now = Date.now()) {
       interactionEffects: game.showInteractionEffects,
       sfxVolume: game.sfxVolume,
       musicVolume: game.musicVolume,
+      audioFocusMode: game.audioFocusMode,
     },
     progression: {
       universe: pack.id,

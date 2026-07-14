@@ -17,7 +17,7 @@
     type SaveBackupSummary,
   } from '../core/save'
   import { setMasterVolume } from '../audio/sfx'
-  import { setMusicVolume } from '../audio/music'
+  import { setMusicFocusMode, setMusicVolume } from '../audio/music'
   import { resolveVisualQuality, type BeatVisual, type MotionPreference, type TextScale, type VisualQuality } from '../core/preferences'
   import { CREDIT_LINES, FEEDBACK_URL, GAME_VERSION, SOURCE_URL } from '../content/credits'
   import { renderHealth } from '../core/render-health.svelte'
@@ -84,6 +84,12 @@
     const v = Number((e.target as HTMLInputElement).value)
     game.musicVolume = v
     setMusicVolume(v)
+  }
+
+  function toggleAudioFocus() {
+    game.audioFocusMode = !game.audioFocusMode
+    setMusicFocusMode(game.audioFocusMode)
+    save()
   }
 
   function setMotion(value: MotionPreference) {
@@ -239,6 +245,10 @@
         <span>music <b>{Math.round(game.musicVolume * 100)}%</b></span>
         <input aria-label="music volume" type="range" min="0" max="1" step="0.05" value={game.musicVolume} oninput={onMusicVolume} onchange={() => save()} />
       </label>
+      <button class="toggle-card focus-toggle" class:active={game.audioFocusMode} aria-pressed={game.audioFocusMode} onclick={toggleAudioFocus}>
+        <span><i></i><strong>Focus mode</strong></span>
+        <small>Lower the score while keeping effects and the visual beat guide clear.</small>
+      </button>
     {/if}
   </section>
 
