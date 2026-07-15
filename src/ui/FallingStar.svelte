@@ -26,6 +26,10 @@
   import type { UniversePowerUp } from '../content/universes'
   import type { EconomyAmount, UniverseId } from '../content/universes/types'
   import {
+    nextClockworkMaintenanceOccurrence,
+    type ClockworkMaintenanceOccurrence,
+  } from '../content/universes/clockwork/maintenance'
+  import {
     hudClearanceRect,
     rectIntersectsHudClearance,
   } from '../render/hud-clearance'
@@ -59,7 +63,12 @@
   const durScale = () => 1 + perkBonus(game.constellation, 'starDuration')
   const starsForbidden = () => {
     const c = game.challenge ? CHALLENGE_BY_ID.get(game.challenge) : null
-    return !!(c?.mods.noStars || c?.mods.silence || !universeById(game.activeUniverse).twist.randomnessAllowed)
+    const universe = universeById(game.activeUniverse)
+    return !!(
+      c?.mods.noStars
+      || c?.mods.silence
+      || (!universe.twist.randomnessAllowed && universe.id !== 'clockwork')
+    )
   }
   const FIRST_DELAY = () => (20_000 + Math.random() * 25_000) * rateScale()
   const NEXT_DELAY = () => (90_000 + Math.random() * 150_000) * rateScale()
@@ -100,6 +109,24 @@
   let forcedEntry = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('entry') : null
   let attractionUniverse = $state(game.activeUniverse)
   let handledResetToken = $state(0)
+  let mounted = false
+  let scheduledClockworkOccurrence: ClockworkMaintenanceOccurrence | null = null
+  const handledClockworkOccurrences = new Set<string>()
+
+  function clockworkSpawnDelay(): number {
+    scheduledClockworkOccurrence = nextClockworkMaintenanceOccurrence(Date.now(), handledClockworkOccurrences)
+    return scheduledClockworkOccurrence
+      ? Math.max(0, scheduledClockworkOccurrence.startsAtMs - Date.now())
+      : 30_000
+  }
+
+  function initialSpawnDelay(): number {
+    return game.activeUniverse === 'clockwork' ? clockworkSpawnDelay() : FIRST_DELAY()
+  }
+
+  function followingSpawnDelay(): number {
+    return game.activeUniverse === 'clockwork' ? clockworkSpawnDelay() : NEXT_DELAY()
+  }
 
   function availableRightEdge(viewportWidth = window.innerWidth): number {
     if (!reserveShop) return viewportWidth
@@ -115,6 +142,11 @@
     if (attractionUniverse === game.activeUniverse) return
     attractionUniverse = game.activeUniverse
     resetOmenAttraction()
+    scheduledClockworkOccurrence = null
+    if (mounted) {
+      clearTimeout(spawnTimer)
+      spawnTimer = setTimeout(spawn, forcedPowerId ? 650 : initialSpawnDelay())
+    }
   })
 
   $effect(() => {
@@ -127,16 +159,22 @@
     bankedEmbers = null
     queuedSummon = false
     handledSummons = fallingStarState.pendingSummons
+    handledClockworkOccurrences.clear()
+    scheduledClockworkOccurrence = null
     delete document.documentElement.dataset.omenArrival
-    spawnTimer = setTimeout(spawn, FIRST_DELAY())
+    spawnTimer = setTimeout(spawn, forcedPowerId ? 650 : initialSpawnDelay())
   })
 
-  function pickPower(fromRhythm = false): UniversePowerUp {
+  function pickPower(fromRhythm = false, scheduledPowerId: string | null = null): UniversePowerUp {
     const powers = universeById(game.activeUniverse).events.powerUps
     if (forcedPowerId) {
       const forced = powers.find((power) => power.id === forcedPowerId)
       forcedPowerId = null
       if (forced) return forced
+    }
+    if (scheduledPowerId) {
+      const scheduled = powers.find((power) => power.id === scheduledPowerId)
+      if (scheduled) return scheduled
     }
     const pool = powers.map((power) => ({
       power,
@@ -158,6 +196,27 @@
       return
     }
     const pack = universeById(game.activeUniverse)
+    let clockworkOccurrence: ClockworkMaintenanceOccurrence | null = null
+    if (pack.id === 'clockwork' && !forcedPowerId) {
+      scheduledClockworkOccurrence ??= nextClockworkMaintenanceOccurrence(Date.now(), handledClockworkOccurrences)
+      if (!scheduledClockworkOccurrence) {
+        spawnTimer = setTimeout(spawn, 30_000)
+        return
+      }
+      const remainingMs = scheduledClockworkOccurrence.startsAtMs - Date.now()
+      if (remainingMs > 50) {
+        spawnTimer = setTimeout(spawn, remainingMs)
+        return
+      }
+      clockworkOccurrence = scheduledClockworkOccurrence
+    }
+    const selectedPower = pickPower(fromRhythm, clockworkOccurrence?.signalId ?? null)
+    const powerIndex = Math.max(0, pack.events.powerUps.findIndex(({ id }) => id === selectedPower.id))
+    const deterministicRoll = (salt: number): number => {
+      const cycle = clockworkOccurrence?.cycleIndex ?? game.starsCaught
+      return ((cycle + 1) * (salt * 17 + 11) + powerIndex * 23) % 97 / 97
+    }
+    const routeRoll = (salt: number): number => pack.id === 'clockwork' ? deterministicRoll(salt) : Math.random()
     const viewport = { width: window.innerWidth, height: window.innerHeight }
     const clearance = hudClearanceRect(viewport)
     const heartCenter = heartTargetCenter(viewport)
@@ -166,9 +225,9 @@
     const protectedRight = Math.max(clearance.x + clearance.width, heartCenter.x + heartClearance)
     const forcedEdgeRoll = forcedEntry === 'top' ? 0.1
       : forcedEntry === 'bottom' ? 0.55
-        : forcedEntry === 'left' ? 0.78
+      : forcedEntry === 'left' ? 0.78
           : forcedEntry === 'right' ? 0.92
-            : Math.random()
+            : pack.id === 'clockwork' ? [0.1, 0.55, 0.78, 0.92][powerIndex] : Math.random()
     forcedEntry = null
     const entry = planPowerUpSpawn({
       viewportWidth: viewport.width,
@@ -181,14 +240,18 @@
       protectedHeartTop: heartCenter.y - heartClearance,
       reservedRight: availableRightEdge(viewport.width),
       edgeRoll: forcedEdgeRoll,
-      laneRoll: Math.random(),
-      positionRoll: Math.random(),
-      speedRoll: Math.random(),
-      driftRoll: Math.random(),
+      laneRoll: routeRoll(1),
+      positionRoll: routeRoll(2),
+      speedRoll: routeRoll(3),
+      driftRoll: routeRoll(4),
     })
+    if (clockworkOccurrence) {
+      handledClockworkOccurrences.add(clockworkOccurrence.key)
+      scheduledClockworkOccurrence = null
+    }
     const next = {
       phase: 'announcing' as const,
-      power: pickPower(fromRhythm),
+      power: selectedPower,
       universeId: pack.id,
       motion: pack.events.motion,
       eventNoun: pack.events.noun,
@@ -214,7 +277,7 @@
       queuedSummon = false
       spawnTimer = setTimeout(() => spawn(true), 1_200)
     } else {
-      spawnTimer = setTimeout(spawn, NEXT_DELAY())
+      spawnTimer = setTimeout(spawn, followingSpawnDelay())
     }
   }
 
@@ -343,7 +406,11 @@
     playStarCatch(caught.audioMode)
     worldRef()?.emitParticleRecipe('omen', caught.x, caught.y)
     applyReward(caught, 1)
-    if (Math.random() < perkBonus(game.constellation, 'starPair') && summonFallingStar()) {
+    const pairChance = perkBonus(game.constellation, 'starPair')
+    const paired = caught.universeId === 'clockwork'
+      ? pairChance > 0 && game.starsCaught % Math.max(1, Math.round(1 / pairChance)) === 0
+      : Math.random() < pairChance
+    if (paired && summonFallingStar()) {
       pushToast('A paired omen', `Another ${caught.eventNoun} follows the first.`, 'constellation')
     }
     scheduleNext()
@@ -361,8 +428,10 @@
   })
 
   onMount(() => {
-    spawnTimer = setTimeout(spawn, forcedPowerId ? 650 : FIRST_DELAY())
+    mounted = true
+    spawnTimer = setTimeout(spawn, forcedPowerId ? 650 : initialSpawnDelay())
     return () => {
+      mounted = false
       clearTimeout(spawnTimer)
       clearTimeout(bankedEmberTimer)
       cancelAnimationFrame(raf)

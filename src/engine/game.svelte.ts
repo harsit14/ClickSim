@@ -77,6 +77,7 @@ import {
   type VesselPartId,
 } from '../content/vessel'
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
+import { criticalClickOccurs } from '../systems/critical-click'
 import { pushToast } from '../systems/toasts.svelte'
 import type { EconomyAmount } from '../content/universes/types'
 import {
@@ -888,9 +889,13 @@ export function clickEmber(extraMult = 1): ClickResult {
     return { amount: ZERO_AMOUNT, crit: false, critMult: 1 }
   }
   const randomAllowed = universeById(game.activeUniverse).twist.randomnessAllowed
-  const roll = randomAllowed ? Math.random() : 1
   const chance = critChance()
-  const crit = roll < chance
+  const crit = criticalClickOccurs({
+    completedClicks: game.clicks,
+    chance,
+    randomnessAllowed: randomAllowed,
+    randomRoll: randomAllowed ? Math.random() : undefined,
+  })
   const mult = crit ? critMult() : 1
   const power = multiplyAmountByNumber(clickPower(), extraMult * mult)
   const next = prepareClickCommit(game, power, crit, game.challenge === null)

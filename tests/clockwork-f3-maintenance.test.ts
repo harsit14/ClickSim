@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { planClockworkHeartResponse } from '../src/content/universes/clockwork/heart'
 import {
   CLOCKWORK_MAINTENANCE_SIGNALS,
+  clockworkMaintenanceOccurrenceKey,
   clockworkMaintenanceSignalStateAt,
   clockworkMaintenanceTimeline,
+  nextClockworkMaintenanceOccurrence,
 } from '../src/content/universes/clockwork/maintenance'
 import { planClockworkRewinding } from '../src/content/universes/clockwork/rewinding'
 
@@ -33,6 +36,31 @@ test('the combined Maintenance timeline is sorted, repeatable, and caller-bounde
   assert.ok(first.every((entry, index) => index === 0 || first[index - 1].startsAtMs <= entry.startsAtMs))
   assert.equal(new Set(first.map(({ signalId }) => signalId)).size, 4)
   assert.throws(() => clockworkMaintenanceTimeline(0, -1), /nonnegative/)
+})
+
+test('the event layer can consume each deterministic Maintenance occurrence once', () => {
+  const first = nextClockworkMaintenanceOccurrence(0)
+  assert.ok(first)
+  assert.equal(first.signalId, 'clockwork-maintenance-window')
+  assert.equal(first.startsAtMs, 60_000)
+  assert.equal(first.key, clockworkMaintenanceOccurrenceKey(first))
+
+  const duringFirst = nextClockworkMaintenanceOccurrence(60_000)
+  assert.equal(duringFirst?.key, first.key)
+  const afterHandling = nextClockworkMaintenanceOccurrence(60_000, new Set([first.key]))
+  assert.equal(afterHandling?.signalId, 'clockwork-noon-alignment')
+  assert.equal(afterHandling?.startsAtMs, 180_000)
+})
+
+test('Clockwork scheduled signals and cadence criticals are wired into the live interaction layers', () => {
+  const events = readFileSync(new URL('../src/ui/FallingStar.svelte', import.meta.url), 'utf8')
+  const game = readFileSync(new URL('../src/engine/game.svelte.ts', import.meta.url), 'utf8')
+  const stats = readFileSync(new URL('../src/ui/StatsPanel.svelte', import.meta.url), 'utf8')
+  assert.match(events, /nextClockworkMaintenanceOccurrence/)
+  assert.match(events, /universe\.id !== 'clockwork'/)
+  assert.match(events, /handledClockworkOccurrences\.add/)
+  assert.match(game, /criticalClickOccurs/)
+  assert.match(stats, /crit cadence/)
 })
 
 test('Rewinding releases five semantic phases and returns Mainsprings in every presentation mode', () => {

@@ -64,9 +64,9 @@ const CLOCKWORK_DOCTRINES: FourTuple<UniversePackV2['economy']['doctrines'][numb
 ]
 
 /**
- * Legacy registry bridge for the current engine. Random events stay disabled by the
- * twist; the four entries below are guide metadata only until scheduled-signal wiring
- * consumes CLOCKWORK_MAINTENANCE_SIGNALS and CLOCKWORK_V2_PACK.omens.
+ * Legacy registry bridge for the current engine. Random events stay disabled by
+ * the twist; the event layer consumes these four entries only at their authored
+ * deterministic Maintenance Signal times.
  */
 export const CLOCKWORK: UniversePack = {
   id: 'clockwork',
@@ -110,7 +110,7 @@ export const CLOCKWORK: UniversePack = {
     id: 'clockwork-deterministic-routing',
     name: 'The Visible Train',
     randomnessAllowed: false,
-    description: 'No random criticals or random Omens. Production follows inspected routes and scheduled Maintenance Signals.',
+    description: 'Critical clicks follow an inspected cadence rather than a roll. Power-ups follow visible routes and scheduled Maintenance Signals.',
   },
   route: {
     glyph: '⚙',

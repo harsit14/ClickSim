@@ -24,6 +24,7 @@
   } from '../content/repeatables'
   import { renderHealth } from '../core/render-health.svelte'
   import { clickBuffMult, productionBuffMult } from '../systems/buffs.svelte'
+  import { criticalCadenceForChance } from '../systems/critical-click'
   import {
     LIFETIME_SINGULARITY_PRODUCTION_BONUS,
     LIFETIME_SINGULARITY_STARDUST_BONUS,
@@ -52,6 +53,8 @@
   })
 
   const pack = $derived(universeById(game.activeUniverse))
+  const currentCritChance = $derived(critChance())
+  const criticalCadence = $derived(criticalCadenceForChance(currentCritChance))
   const localVessel = $derived(vesselBlueprint(game.activeUniverse))
   const localVesselParts = $derived(vesselPartIdsFor(game))
   const rate = $derived(ratePerSec(inspectedAt))
@@ -120,7 +123,11 @@
       {/if}
       <dt>per click</dt><dd>{format(clickPower())}</dd>
       <dt>critical clicks</dt><dd>{game.crits}</dd>
-      <dt>crit chance</dt><dd>{Math.round(critChance() * 100)}% ×{critMult()}</dd>
+      {#if pack.twist.randomnessAllowed}
+        <dt>crit chance</dt><dd>{Math.round(currentCritChance * 100)}% ×{critMult()}</dd>
+      {:else}
+        <dt>crit cadence</dt><dd>1 in {criticalCadence ?? '—'} clicks ×{critMult()}</dd>
+      {/if}
       <dt>clicks</dt><dd>{format(game.clicks)}</dd>
       <dt>upgrades found</dt><dd>{game.upgrades.length}</dd>
       <dt>objects catalogued</dt><dd>{game.curiosities.length}</dd>

@@ -94,7 +94,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
         heading: 'Click power and criticals',
         paragraphs: [
           'A click begins at one currency, then upgrades add flat multipliers and a share of passive production. That percentage scaling is why clicking remains useful after the numbers become enormous.',
-          'Critical clicks begin as a small random chance to multiply one touch. Cabinet objects, upgrades, and permanent rewards can improve their frequency or force. The Stats panel records critical count and the largest critical ever made.',
+          'Critical clicks begin at a small frequency and multiply one touch. Realms that allow randomness roll that chance; deterministic realms turn the same displayed rate into a guaranteed click cadence. Cabinet objects, upgrades, and permanent rewards can improve their frequency or force. The Stats panel records critical count and the largest critical ever made.',
         ],
       },
       {

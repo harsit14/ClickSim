@@ -131,6 +131,16 @@ export interface ClockworkMaintenanceTimelineEntry extends ClockworkMaintenanceS
   readonly nonColorShape: string
 }
 
+export interface ClockworkMaintenanceOccurrence extends ClockworkMaintenanceTimelineEntry {
+  readonly key: string
+}
+
+export function clockworkMaintenanceOccurrenceKey(
+  occurrence: Pick<ClockworkMaintenanceSignalState, 'signalId' | 'cycleIndex'>,
+): string {
+  return `${occurrence.signalId}:${occurrence.cycleIndex}`
+}
+
 export function clockworkMaintenanceTimeline(
   nowMs: number,
   horizonMs: number,
@@ -162,4 +172,16 @@ export function clockworkMaintenanceTimeline(
     }
   }
   return entries.sort((left, right) => left.startsAtMs - right.startsAtMs || left.signalId.localeCompare(right.signalId))
+}
+
+/** Returns the next unhandled scheduled signal, including one already open. */
+export function nextClockworkMaintenanceOccurrence(
+  nowMs: number,
+  handledKeys: ReadonlySet<string> = new Set(),
+): ClockworkMaintenanceOccurrence | null {
+  const horizonMs = Math.max(...CLOCKWORK_MAINTENANCE_SIGNALS.map(({ periodMs }) => periodMs))
+  const occurrence = clockworkMaintenanceTimeline(nowMs, horizonMs).find((entry) => (
+    !handledKeys.has(clockworkMaintenanceOccurrenceKey(entry))
+  ))
+  return occurrence ? { ...occurrence, key: clockworkMaintenanceOccurrenceKey(occurrence) } : null
 }
