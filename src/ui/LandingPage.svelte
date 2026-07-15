@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
   import { landingPrimaryCta } from '../experience/landing'
-  import emberlightImage from '../../docs/screenshots/emberlight.webp?url'
-  import tidefallImage from '../../docs/screenshots/tidefall.webp?url'
-  import clockworkImage from '../../docs/screenshots/clockwork.webp?url'
-  import brahmalokImage from '../../docs/screenshots/brahmalok.webp?url'
-  import vishnulokImage from '../../docs/screenshots/vishnulok.webp?url'
-  import kailashImage from '../../docs/screenshots/kailash.webp?url'
+  import emberlightImage from '../assets/landing/emberlight.webp?url'
+  import tidefallImage from '../assets/landing/tidefall.webp?url'
+  import clockworkImage from '../assets/landing/clockwork.webp?url'
+  import brahmalokImage from '../assets/landing/brahmalok.webp?url'
+  import vishnulokImage from '../assets/landing/vishnulok.webp?url'
+  import kailashImage from '../assets/landing/kailash.webp?url'
 
   let {
     returningPlayer,
