@@ -3,6 +3,7 @@
   import { landingPrimaryCta } from '../experience/landing'
   import emberlightImage from '../assets/landing/emberlight.webp?url'
   import tidefallImage from '../assets/landing/tidefall.webp?url'
+  import verdanceImage from '../assets/landing/verdance.webp?url'
   import clockworkImage from '../assets/landing/clockwork.webp?url'
   import brahmalokImage from '../assets/landing/brahmalok.webp?url'
   import vishnulokImage from '../assets/landing/vishnulok.webp?url'
@@ -30,6 +31,13 @@
       image: tidefallImage,
       description: 'Learn the pulse of a moonless ocean where every current keeps a record.',
       accent: '#80e5dd',
+    },
+    {
+      name: 'Verdance',
+      chapter: 'III',
+      image: verdanceImage,
+      description: 'Grow a living network of roots, grafts, cohorts, pruning, and inherited memory.',
+      accent: '#a9d97c',
     },
     {
       name: 'Clockwork',
@@ -180,24 +188,24 @@
       <span class="orbit orbit-one" aria-hidden="true"></span>
       <span class="orbit orbit-two" aria-hidden="true"></span>
       <div class="world-window">
-        <img src={emberlightImage} alt="Emberlight filled with constellations, settlements, and a radiant central Heart" />
-        <div class="window-shade" aria-hidden="true"></div>
-        <div class="window-label">
-          <span>Realm I</span>
-          <strong>Emberlight</strong>
-          <small>The first light remembers you.</small>
+        <div class="gameplay-focus gameplay-heart">
+          <img src={emberlightImage} alt="The Emberlight Heart and growing light counter" />
+          <span>1 · Click the Heart</span>
+          <div class="heart-pulse" aria-hidden="true"><i></i></div>
         </div>
-        <div class="heart-pulse" aria-hidden="true"><i></i></div>
+        <div class="gameplay-focus gameplay-upgrade">
+          <img src={emberlightImage} alt="A close view of the Spark Kindling upgrade" />
+          <span>3 · Buy a Kindling</span>
+        </div>
       </div>
-      <div class="floating-card card-kindlings">
-        <span>Kindlings</span>
-        <strong>18 <small>per realm</small></strong>
+      <div class="gameplay-loop" aria-label="The core gameplay loop">
+        <span><small>Realm I · Emberlight</small><strong>See the loop, not a mockup.</strong></span>
+        <ol>
+          <li><b>Click</b> the Heart</li>
+          <li><b>Grow</b> your light</li>
+          <li><b>Build</b> the world</li>
+        </ol>
       </div>
-      <div class="floating-card card-realms">
-        <span>A complete saga</span>
-        <strong>7 <small>realms</small></strong>
-      </div>
-      <p class="visual-caption"><span></span> Your progress becomes the landscape.</p>
     </div>
 
     <a class="scroll-cue" href="#journey" aria-label="Scroll to discover the journey">
@@ -256,7 +264,6 @@
         </button>
       {/each}
     </div>
-    <p class="verdance-note"><span aria-hidden="true">⌇</span> The journey also passes through Verdance—a living world of roots, cohorts, pruning, and memory.</p>
   </section>
 
   <section id="ways-to-play" class="features section-shell" aria-labelledby="features-title">
@@ -440,28 +447,30 @@
   .return-note { margin: 1.15rem 0 0; color: #cbc5d2; font: italic 0.82rem/1.5 var(--font-story); }
   .return-note span { color: var(--landing-gold); margin-right: 0.35rem; }
 
-  .hero-visual { position: relative; animation: visual-in 1s 0.2s ease both; }
-  .world-window { position: relative; aspect-ratio: 1.6; overflow: hidden; background: #0c0b12; border: 1px solid rgba(255, 220, 158, 0.18); border-radius: 1.3rem; box-shadow: 0 2.5rem 7rem rgba(0, 0, 0, 0.55), 0 0 5rem rgba(224, 139, 50, 0.08); transform: perspective(1000px) rotateY(-3deg) rotateX(1deg); }
+  .hero-visual { position: relative; min-width: 0; animation: visual-in 1s 0.2s ease both; }
+  .world-window { position: relative; aspect-ratio: 1.6; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(9rem, 0.72fr); overflow: hidden; background: #0c0b12; border: 1px solid rgba(255, 220, 158, 0.18); border-radius: 1.3rem; box-shadow: 0 2.5rem 7rem rgba(0, 0, 0, 0.55), 0 0 5rem rgba(224, 139, 50, 0.08); transform: perspective(1000px) rotateY(-3deg) rotateX(1deg); }
   .world-window::before { content: ''; position: absolute; inset: 0.55rem; z-index: 4; border: 1px solid rgba(255, 221, 163, 0.08); border-radius: 0.9rem; pointer-events: none; }
-  .world-window img { width: 100%; height: 100%; display: block; object-fit: cover; filter: saturate(0.85) brightness(0.78) contrast(1.04); transform: scale(1.025); }
-  .window-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5, 6, 11, 0.22), transparent 55%), linear-gradient(0deg, rgba(5, 6, 11, 0.88), transparent 48%); }
-  .window-label { position: absolute; left: 2rem; bottom: 1.7rem; z-index: 3; display: grid; }
-  .window-label span { color: var(--landing-gold); font-size: 0.55rem; font-weight: 700; letter-spacing: 0.21em; text-transform: uppercase; }
-  .window-label strong { margin-top: 0.25rem; font: 500 1.4rem/1.2 var(--font-story); }
-  .window-label small { margin-top: 0.22rem; color: #b1aab8; font: italic 0.67rem/1.3 var(--font-story); }
-  .heart-pulse { position: absolute; left: 49.5%; top: 67%; width: 3.2rem; height: 3.2rem; display: grid; place-items: center; border: 1px solid rgba(255, 214, 140, 0.42); border-radius: 50%; box-shadow: 0 0 3rem rgba(255, 164, 67, 0.5); animation: heart-breathe 3s ease-in-out infinite; }
+  .gameplay-focus { position: relative; min-width: 0; overflow: hidden; }
+  .gameplay-focus::after { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(0deg, rgba(5, 6, 11, 0.8), transparent 36%); pointer-events: none; }
+  .gameplay-focus > img { position: absolute; max-width: none; height: auto; display: block; filter: saturate(0.9) brightness(0.82) contrast(1.07); }
+  .gameplay-focus > span { position: absolute; left: 1.25rem; bottom: 1rem; z-index: 3; padding: 0.48rem 0.65rem; color: #fff1ce; background: rgba(8, 8, 13, 0.78); border: 1px solid rgba(255, 211, 138, 0.16); border-radius: 0.5rem; font-size: 0.57rem; font-weight: 720; letter-spacing: 0.08em; text-transform: uppercase; backdrop-filter: blur(8px); }
+  .gameplay-heart { border-right: 1px solid rgba(255, 220, 158, 0.14); }
+  .gameplay-heart > img { width: 195%; left: 50%; top: 0; transform: translateX(-50%); }
+  .gameplay-upgrade > img { width: 500%; right: 0; top: -15%; }
+  .gameplay-upgrade > span { left: 0.85rem; right: 0.85rem; text-align: center; }
+  .heart-pulse { position: absolute; left: 50%; top: 82%; z-index: 2; width: 3.2rem; height: 3.2rem; margin: -1.6rem 0 0 -1.6rem; display: grid; place-items: center; border: 1px solid rgba(255, 214, 140, 0.42); border-radius: 50%; box-shadow: 0 0 3rem rgba(255, 164, 67, 0.5); animation: heart-breathe 3s ease-in-out infinite; }
   .heart-pulse i { width: 0.65rem; height: 0.65rem; background: #fff2cc; border-radius: 50%; box-shadow: 0 0 1.4rem #ffb55b; }
+  .gameplay-loop { margin: 1rem 0.5rem 0; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+  .gameplay-loop > span { display: grid; gap: 0.25rem; }
+  .gameplay-loop small { color: #736e7b; font-size: 0.5rem; font-weight: 720; letter-spacing: 0.15em; text-transform: uppercase; }
+  .gameplay-loop strong { color: #c5bfca; font: italic 0.78rem/1.35 var(--font-story); }
+  .gameplay-loop ol { display: flex; align-items: center; gap: 0.7rem; margin: 0; padding: 0; color: #7f7987; list-style: none; font-size: 0.57rem; }
+  .gameplay-loop li { display: flex; align-items: center; gap: 0.7rem; white-space: nowrap; }
+  .gameplay-loop li + li::before { content: '→'; color: rgba(255, 211, 138, 0.38); }
+  .gameplay-loop b { color: var(--landing-gold); font-weight: 720; }
   .orbit { position: absolute; left: 48%; top: 45%; border: 1px solid rgba(255, 213, 145, 0.1); border-radius: 50%; pointer-events: none; }
   .orbit-one { width: 116%; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(-18deg); }
   .orbit-two { width: 88%; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(22deg); }
-  .floating-card { position: absolute; z-index: 6; min-width: 8.8rem; padding: 0.82rem 1rem; display: grid; gap: 0.12rem; background: rgba(10, 9, 16, 0.86); border: 1px solid rgba(255, 221, 164, 0.14); border-radius: 0.8rem; box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.38); backdrop-filter: blur(12px); }
-  .floating-card > span { color: #8f8998; font-size: 0.5rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
-  .floating-card strong { color: var(--landing-gold); font: 500 1.45rem/1.2 var(--font-story); }
-  .floating-card small { color: #afa9b7; font: 500 0.62rem/1 var(--font-interface); }
-  .card-kindlings { top: -1.5rem; right: -1.5rem; }
-  .card-realms { left: -2.2rem; bottom: 2.5rem; }
-  .visual-caption { position: absolute; right: 0.75rem; bottom: -2.3rem; margin: 0; color: #777280; font: italic 0.65rem/1.4 var(--font-story); }
-  .visual-caption span { width: 1.8rem; display: inline-block; margin-right: 0.45rem; border-top: 1px solid rgba(255, 211, 138, 0.32); vertical-align: middle; }
   .scroll-cue { position: absolute; left: 0; bottom: 2.2rem; display: flex; align-items: center; gap: 0.8rem; color: #6f6b77; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
   .scroll-cue i { position: relative; width: 1px; height: 2.5rem; overflow: hidden; background: rgba(255, 255, 255, 0.12); }
   .scroll-cue i::after { content: ''; position: absolute; inset: 0 0 auto; height: 45%; background: var(--landing-gold); animation: scroll-line 2s ease-in-out infinite; }
@@ -495,13 +504,10 @@
   .realm-controls { margin-top: 2.3rem; display: flex; align-items: center; gap: 0.85rem; }
   .realm-controls button { width: 2.5rem; height: 2.5rem; border: 1px solid color-mix(in srgb, var(--realm-accent) 22%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--realm-accent) 5%, transparent); cursor: pointer; }
   .realm-controls span { color: #797480; font-size: 0.62rem; font-variant-numeric: tabular-nums; }
-  .realm-tabs { display: grid; grid-template-columns: repeat(6, 1fr); margin-top: 0.8rem; gap: 0.5rem; }
+  .realm-tabs { display: grid; grid-template-columns: repeat(7, 1fr); margin-top: 0.8rem; gap: 0.5rem; }
   .realm-tabs button { min-height: 3.4rem; display: flex; align-items: center; gap: 0.55rem; padding: 0.65rem 0.75rem; color: #7f7987; background: rgba(255, 255, 255, 0.018); border: 1px solid rgba(255, 255, 255, 0.055); border-radius: 0.65rem; font-size: 0.68rem; cursor: pointer; transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease; }
   .realm-tabs button span { color: #5d5865; font: 500 0.8rem/1 var(--font-story); }
   .realm-tabs button:hover, .realm-tabs button.active { color: #e9e4ed; border-color: rgba(255, 211, 138, 0.2); background: rgba(255, 211, 138, 0.045); }
-  .verdance-note { margin: 1.15rem 0 0; color: #777380; font: italic 0.73rem/1.5 var(--font-story); text-align: center; }
-  .verdance-note span { margin-right: 0.35rem; color: #9ecf9d; }
-
   .features { padding: clamp(7rem, 10vw, 10rem) 0; }
   .feature-grid { margin-top: 4.2rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
   .feature-grid article { min-height: 21rem; display: flex; flex-direction: column; padding: 1.5rem; background: linear-gradient(145deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.012)); border: 1px solid rgba(255, 255, 255, 0.065); border-radius: 0.9rem; transition: transform 0.25s ease, border-color 0.25s ease; }
@@ -512,7 +518,7 @@
   .feature-top small { color: #4f4b56; font: 500 0.65rem/1 var(--font-interface); }
   .feature-grid article > p:first-of-type { margin: 2rem 0 0.55rem; color: #726d79; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; }
   .feature-grid h3 { margin: 0; font: 470 1.55rem/1.12 var(--font-story); }
-  .feature-rule { flex: 1; min-height: 2.3rem; display: flex; align-items: center; }
+  .feature-rule { flex: 0 0 3.1rem; display: flex; align-items: center; }
   .feature-rule i { width: 2.4rem; border-top: 1px solid rgba(255, 211, 138, 0.17); }
   .feature-grid article > p:last-child { margin: 0; color: #938e9c; font: 400 0.78rem/1.65 var(--font-story); }
 
@@ -566,8 +572,7 @@
 
   @media (max-width: 1050px) {
     .hero { grid-template-columns: 1fr 0.95fr; gap: 3rem; }
-    .card-kindlings { right: -0.5rem; }
-    .card-realms { left: -0.8rem; }
+    .gameplay-loop { align-items: flex-start; flex-direction: column; gap: 0.65rem; }
     .feature-grid { grid-template-columns: repeat(2, 1fr); }
     .feature-grid article.feature-wide { grid-column: span 1; }
     .philosophy { gap: 4rem; padding: 4rem; }
@@ -583,8 +588,7 @@
     .hero-copy { max-width: 38rem; }
     h1 { font-size: clamp(3.25rem, 13.5vw, 5.5rem); }
     .hero-visual { width: calc(100% - 1rem); justify-self: center; }
-    .card-realms { left: -0.5rem; bottom: -1.2rem; }
-    .card-kindlings { top: -1.2rem; right: -0.5rem; }
+    .gameplay-loop { align-items: center; flex-direction: row; gap: 1.5rem; }
     .scroll-cue { display: none; }
     .promise-band { grid-template-columns: 1fr 1fr; gap: 1.5rem; padding: 1.5rem; }
     .promise-band > i { display: none; }
@@ -613,13 +617,18 @@
     .secondary-cta { align-self: flex-start; }
     .trust-line { gap: 0.7rem 1rem; }
     .hero-visual { width: calc(100% - 0.5rem); }
-    .world-window { aspect-ratio: 1.22; }
-    .world-window img { object-position: 48% center; }
-    .window-label { left: 1.2rem; bottom: 1.15rem; }
-    .heart-pulse { display: none; }
-    .floating-card { min-width: 7.5rem; padding: 0.65rem 0.78rem; }
-    .floating-card strong { font-size: 1.15rem; }
-    .visual-caption { display: none; }
+    .world-window { aspect-ratio: 0.92; grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) 8.25rem; transform: none; }
+    .gameplay-heart { border-right: 0; border-bottom: 1px solid rgba(255, 220, 158, 0.14); }
+    .gameplay-heart > img { width: 175%; top: 0; }
+    .gameplay-upgrade > img { width: 440%; top: -72%; }
+    .gameplay-focus > span { left: 0.8rem; bottom: 0.75rem; }
+    .gameplay-upgrade > span { left: auto; right: 0.75rem; width: auto; }
+    .heart-pulse { top: 90%; }
+    .gameplay-loop { margin: 0.9rem 0 0; align-items: stretch; flex-direction: column; gap: 0.8rem; }
+    .gameplay-loop > span { text-align: center; }
+    .gameplay-loop ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; }
+    .gameplay-loop li { justify-content: center; gap: 0.35rem; text-align: center; white-space: normal; }
+    .gameplay-loop li + li::before { display: none; }
     .promise-band { grid-template-columns: 1fr; }
     .promise-band div { justify-content: space-between; }
     .section-intro h2, .philosophy h2, .final-invitation h2 { font-size: clamp(2.7rem, 13vw, 4rem); }
