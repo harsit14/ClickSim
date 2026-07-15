@@ -77,7 +77,7 @@
   .root.secondary { stroke-width:2.8;opacity:.58; }
   .root.hair { stroke-width:1.35;opacity:.38;stroke-dasharray:2 9; }
   .grove-field { position:absolute;inset:0; }
-  .cohort-grove { position:absolute;left:var(--grove-x);top:var(--grove-ground);z-index:2;width:7rem;height:9rem;margin:0;transform:translate(-50%,-100%);transform-origin:50% 100%;filter:drop-shadow(0 .4rem .7rem color-mix(in srgb,var(--bg) 54%,transparent)); }
+  .cohort-grove { position:absolute;left:clamp(3.5rem,var(--grove-x),calc(100% - 3.5rem));top:var(--grove-ground);z-index:2;width:7rem;height:9rem;margin:0;transform:translate(-50%,-100%);transform-origin:50% 100%;filter:drop-shadow(0 .4rem .7rem color-mix(in srgb,var(--bg) 54%,transparent)); }
   .plant,.plant i,.companion { position:absolute;display:block; }
   .plant { inset:auto 50% 0;width:5rem;height:8rem;transform:translateX(-50%); }
   .trunk { left:50%;bottom:0;width:.48rem;height:2.3rem;transform:translateX(-50%);background:linear-gradient(90deg,#1b2b17,var(--growth) 45%,#172715);clip-path:polygon(28% 0,76% 0,100% 100%,0 100%); }

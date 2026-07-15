@@ -20,12 +20,12 @@ export interface VerdanceGrovePlan {
 }
 
 const GROVE_SEATS = [
-  { index: 0, xPercent: 15, groundPercent: 72 },
-  { index: 3, xPercent: 29, groundPercent: 64 },
-  { index: 6, xPercent: 40, groundPercent: 70 },
+  { index: 0, xPercent: 8, groundPercent: 72 },
+  { index: 3, xPercent: 25, groundPercent: 64 },
+  { index: 6, xPercent: 39, groundPercent: 70 },
   { index: 9, xPercent: 61, groundPercent: 68 },
-  { index: 12, xPercent: 72, groundPercent: 61 },
-  { index: 15, xPercent: 84, groundPercent: 72 },
+  { index: 12, xPercent: 75, groundPercent: 61 },
+  { index: 15, xPercent: 92, groundPercent: 72 },
 ] as const
 
 export function verdanceOwnershipThreshold(count: number): VerdanceOwnershipThreshold {

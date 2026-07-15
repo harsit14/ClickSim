@@ -23,13 +23,13 @@ export interface VishnulokShelterPlan {
   readonly silhouette: string
 }
 
-const SHELTER_SEATS = [
-  { index: 0, kind: 'harbor', xPercent: 18, yPercent: 57 },
-  { index: 3, kind: 'reef', xPercent: 28, yPercent: 75 },
-  { index: 6, kind: 'lamp', xPercent: 45, yPercent: 82 },
-  { index: 9, kind: 'arch', xPercent: 62, yPercent: 80 },
-  { index: 12, kind: 'shoal', xPercent: 78, yPercent: 68 },
-  { index: 15, kind: 'ferry', xPercent: 82, yPercent: 48 },
+export const VISHNULOK_SHELTER_SEATS = [
+  { index: 0, kind: 'harbor', xPercent: 8, yPercent: 57 },
+  { index: 3, kind: 'reef', xPercent: 24, yPercent: 75 },
+  { index: 6, kind: 'lamp', xPercent: 42, yPercent: 82 },
+  { index: 9, kind: 'arch', xPercent: 58, yPercent: 80 },
+  { index: 12, kind: 'shoal', xPercent: 76, yPercent: 68 },
+  { index: 15, kind: 'ferry', xPercent: 92, yPercent: 48 },
 ] as const
 
 export function planVishnulokShelters(
@@ -38,7 +38,7 @@ export function planVishnulokShelters(
   quality: 'low' | 'balanced' | 'high' = 'high',
 ): readonly VishnulokShelterPlan[] {
   const generators = objects.filter(({ sourceKind }) => sourceKind === 'generator')
-  const plans = SHELTER_SEATS.flatMap((seat): VishnulokShelterPlan[] => {
+  const plans = VISHNULOK_SHELTER_SEATS.flatMap((seat): VishnulokShelterPlan[] => {
     const band = generators.slice(seat.index, seat.index + 3)
     const count = Math.max(0, ...band.map(({ sourceId }) => owned[sourceId] ?? 0))
     const threshold = vishnulokOwnershipThreshold(count)
@@ -75,8 +75,8 @@ export function planVishnulokLivingChart(wovenRoutes: number, completedReturns: 
   const visible = Math.min(WOVEN_ROUTE_CAP, totalRoutes)
   return {
     routes: Array.from({ length: visible }, (_, index) => {
-      const from = index % SHELTER_SEATS.length
-      const to = (index * 2 + 3) % SHELTER_SEATS.length
+      const from = index % VISHNULOK_SHELTER_SEATS.length
+      const to = (index * 2 + 3) % VISHNULOK_SHELTER_SEATS.length
       return {
         id: `woven-route-${index + 1}`,
         from,

@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { tidefallTideState } from '../content/universes/tidefall/tide-state'
   import {
+    TIDEFALL_FAMILY_SEATS,
     TIDEFALL_SET_PIECES,
     tidefallOwnershipThreshold,
   } from '../render/tidefall/set-piece-registry'
@@ -19,18 +20,6 @@
     leviathanActive?: boolean
     quality?: 'low' | 'balanced' | 'high'
   } = $props()
-
-  const seats = [
-    { x: 11, y: 35, size: 3.8, depth: 'surface' },
-    { x: 25, y: 47, size: 4.6, depth: 'middle' },
-    { x: 39, y: 38, size: 4.9, depth: 'middle' },
-    { x: 66, y: 42, size: 5.2, depth: 'middle' },
-    { x: 82, y: 34, size: 4.8, depth: 'surface' },
-    { x: 15, y: 63, size: 5.1, depth: 'deep' },
-    { x: 31, y: 73, size: 5.5, depth: 'trench' },
-    { x: 73, y: 65, size: 5.7, depth: 'deep' },
-    { x: 87, y: 76, size: 6, depth: 'trench' },
-  ] as const
 
   const bubbles = [
     [7, 49, 0.45], [13, 72, 0.28], [21, 55, 0.34], [35, 66, 0.2],
@@ -51,7 +40,7 @@
     const count = Math.max(earlyCount, lateCount)
     return {
       ...piece,
-      ...seats[index],
+      ...TIDEFALL_FAMILY_SEATS[index],
       count,
       threshold: tidefallOwnershipThreshold(count),
       stage: lateCount > 0 ? late : early,
@@ -128,7 +117,7 @@
         data-pelagic-family={family.id}
         data-depth={family.depth}
         data-ownership-threshold={family.threshold ?? 0}
-        style={`--x:${family.x}%;--y:${family.y}%;--size:${family.size}rem`}
+        style={`--x:${family.x}%;--y:${family.y}%;--size:${family.size}rem;--half-size:${family.size / 2}rem`}
       >
         {#if (family.threshold ?? 0) >= 50}<span class="habitat-glow"></span>{/if}
         {#if (family.threshold ?? 0) >= 25}<span class="current-link"><i></i><i></i><i></i></span>{/if}
@@ -244,7 +233,7 @@
   .migration-wake { position:absolute;left:-.7rem;top:.32rem;width:.75rem;height:1.3rem;border-left:1px solid currentColor;border-radius:50%;opacity:.38; }
   .migration-crown { position:absolute;left:.24rem;top:-.38rem;width:.7rem;height:.3rem;border-top:1px solid currentColor;border-radius:50%;opacity:.5; }
   .pelagic-family {
-    position: absolute; left: var(--x); top: calc(var(--y) + var(--tide-lift));
+    position: absolute; left: clamp(var(--half-size), var(--x), calc(100% - var(--half-size))); top: calc(var(--y) + var(--tide-lift));
     width: var(--size); height: var(--size); margin: 0;
     transform: translate(-50%, -50%);
     filter: drop-shadow(0 0 0.65rem rgba(69, 218, 195, 0.25));

@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     buildEmberlightFlagshipScene,
+    EMBERLIGHT_LIFECYCLE_SEATS,
     emberlightOwnershipThreshold,
     type FlagshipSeat,
   } from '../render/emberlight/flagship-scene'
@@ -22,28 +23,28 @@
 
   const lifecycleLandmarks = $derived([
     (owned.wisp ?? 0) > 0
-      ? { family: 'ember-exhale', name: 'The Auroral River', count: owned.wisp ?? 0, objectId: 'ember-kindling-wisp', x: 9, y: 68, size: 2.7, depth: 'ground' }
+      ? { family: 'ember-exhale', name: 'The Auroral River', count: owned.wisp ?? 0, objectId: 'ember-kindling-wisp', ...EMBERLIGHT_LIFECYCLE_SEATS['ember-exhale'] }
       : null,
     (owned.beacon ?? 0) > 0 || (owned.forge ?? 0) > 0
-      ? { family: 'industry-signal', name: 'The Listening Crown', count: Math.max(owned.forge ?? 0, owned.beacon ?? 0), objectId: (owned.beacon ?? 0) > 0 ? 'ember-kindling-beacon' : 'ember-kindling-forge', x: 41, y: 71, size: 3.6, depth: 'ground' }
+      ? { family: 'industry-signal', name: 'The Listening Crown', count: Math.max(owned.forge ?? 0, owned.beacon ?? 0), objectId: (owned.beacon ?? 0) > 0 ? 'ember-kindling-beacon' : 'ember-kindling-forge', ...EMBERLIGHT_LIFECYCLE_SEATS['industry-signal'] }
       : null,
     (owned.starseed ?? 0) > 0 || (owned.titan ?? 0) > 0
-      ? { family: 'horizon-seed', name: 'The Seeded Range', count: Math.max(owned.titan ?? 0, owned.starseed ?? 0), objectId: (owned.starseed ?? 0) > 0 ? 'ember-kindling-starseed' : 'ember-kindling-titan', x: 76, y: 67, size: 3.4, depth: 'horizon' }
+      ? { family: 'horizon-seed', name: 'The Seeded Range', count: Math.max(owned.titan ?? 0, owned.starseed ?? 0), objectId: (owned.starseed ?? 0) > 0 ? 'ember-kindling-starseed' : 'ember-kindling-titan', ...EMBERLIGHT_LIFECYCLE_SEATS['horizon-seed'] }
       : null,
     (owned.sun ?? 0) < 1 && (owned.protostar ?? 0) > 0
-      ? { family: 'stellar-birth', name: 'The Rising Nursery', count: owned.protostar ?? 0, objectId: 'ember-kindling-protostar', x: 61, y: 43, size: 3.45, depth: 'horizon' }
+      ? { family: 'stellar-birth', name: 'The Rising Nursery', count: owned.protostar ?? 0, objectId: 'ember-kindling-protostar', ...EMBERLIGHT_LIFECYCLE_SEATS['stellar-birth'] }
       : null,
     (owned.constellation ?? 0) < 1 && (owned.binary ?? 0) > 0
-      ? { family: 'stellar-relations', name: 'The Paired Clock', count: owned.binary ?? 0, objectId: 'ember-kindling-binary', x: 70, y: 39, size: 3.2, depth: 'deep' }
+      ? { family: 'stellar-relations', name: 'The Paired Clock', count: owned.binary ?? 0, objectId: 'ember-kindling-binary', ...EMBERLIGHT_LIFECYCLE_SEATS['stellar-relations'] }
       : null,
     (owned.galaxy ?? 0) > 0 || (owned.nebula ?? 0) > 0
-      ? { family: 'deep-sky', name: 'The Nursery Spiral', count: Math.max(owned.nebula ?? 0, owned.galaxy ?? 0), objectId: (owned.galaxy ?? 0) > 0 ? 'ember-kindling-galaxy' : 'ember-kindling-nebula', x: 72, y: 25, size: 4.25, depth: 'deep' }
+      ? { family: 'deep-sky', name: 'The Nursery Spiral', count: Math.max(owned.nebula ?? 0, owned.galaxy ?? 0), objectId: (owned.galaxy ?? 0) > 0 ? 'ember-kindling-galaxy' : 'ember-kindling-nebula', ...EMBERLIGHT_LIFECYCLE_SEATS['deep-sky'] }
       : null,
     (owned.web ?? 0) > 0 || (owned.supercluster ?? 0) > 0
-      ? { family: 'cosmic-topology', name: 'The Web', count: Math.max(owned.supercluster ?? 0, owned.web ?? 0), objectId: (owned.web ?? 0) > 0 ? 'ember-kindling-web' : 'ember-kindling-supercluster', x: 32, y: 15, size: 3.9, depth: 'deep' }
+      ? { family: 'cosmic-topology', name: 'The Web', count: Math.max(owned.supercluster ?? 0, owned.web ?? 0), objectId: (owned.web ?? 0) > 0 ? 'ember-kindling-web' : 'ember-kindling-supercluster', ...EMBERLIGHT_LIFECYCLE_SEATS['cosmic-topology'] }
       : null,
     (owned.loom ?? 0) > 0
-      ? { family: 'answer', name: 'The Deep Loom', count: owned.loom ?? 0, objectId: 'ember-kindling-loom', x: 6, y: 57, size: 4.6, depth: 'horizon' }
+      ? { family: 'answer', name: 'The Deep Loom', count: owned.loom ?? 0, objectId: 'ember-kindling-loom', ...EMBERLIGHT_LIFECYCLE_SEATS.answer }
       : null,
   ].filter((landmark) => landmark !== null))
 
@@ -80,7 +81,7 @@
         data-lifecycle-family={landmark.family}
         data-depth={landmark.depth}
         data-ownership-threshold={landmarkThreshold}
-        style={`--x:${landmark.x}%;--y:${landmark.y}%;--size:${landmark.size}rem`}
+        style={`--x:${landmark.x}%;--y:${landmark.y}%;--size:${landmark.size}rem;--half-size:${landmark.size / 2}rem`}
       >
         {#if landmarkThreshold >= 10 && landmarkThreshold < 100}
           <span class="structure-echoes"><i></i><i></i><i></i></span>
@@ -166,7 +167,7 @@
   .lifecycle-landmarks { position: absolute; inset: 0; }
   .lifecycle-landmark {
     position: absolute;
-    left: var(--x); top: var(--y); width: var(--size); height: var(--size); margin: 0;
+    left: clamp(var(--half-size), var(--x), calc(100% - var(--half-size))); top: var(--y); width: var(--size); height: var(--size); margin: 0;
     transform: translate(-50%, -100%);
     filter: drop-shadow(0 0 0.7rem color-mix(in srgb, #ffad52 28%, transparent));
   }

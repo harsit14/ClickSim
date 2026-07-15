@@ -34,23 +34,38 @@ export interface EmberlightFlagshipScene {
   readonly constellationAtlas: boolean
 }
 
+/**
+ * The opaque shop is a reversible mask, so Emberlight's authored landmarks
+ * occupy the complete stage instead of reserving a permanent right-side lane.
+ */
+export const EMBERLIGHT_LIFECYCLE_SEATS = {
+  'ember-exhale': { x: 7, y: 68, size: 2.7, depth: 'ground' },
+  'industry-signal': { x: 34, y: 71, size: 3.6, depth: 'ground' },
+  'horizon-seed': { x: 93, y: 67, size: 3.4, depth: 'horizon' },
+  'stellar-birth': { x: 64, y: 43, size: 3.45, depth: 'horizon' },
+  'stellar-relations': { x: 79, y: 39, size: 3.2, depth: 'deep' },
+  'deep-sky': { x: 90, y: 25, size: 4.25, depth: 'deep' },
+  'cosmic-topology': { x: 27, y: 15, size: 3.9, depth: 'deep' },
+  answer: { x: 5, y: 57, size: 4.6, depth: 'horizon' },
+} as const
+
 const HEARTH_SEATS: readonly FlagshipSeat[] = [
-  { x: 19, y: 75, scale: 0.84, tilt: -4 },
+  { x: 50, y: 75, scale: 0.84, tilt: -4 },
   { x: 25, y: 72, scale: 1, tilt: 2 },
-  { x: 32, y: 74, scale: 0.78, tilt: -2 },
-  { x: 39, y: 71, scale: 0.9, tilt: 3 },
-  { x: 45, y: 75, scale: 0.7, tilt: -3 },
+  { x: 75, y: 74, scale: 0.78, tilt: -2 },
+  { x: 8, y: 71, scale: 0.9, tilt: 3 },
+  { x: 92, y: 75, scale: 0.7, tilt: -3 },
 ] as const
 
 const SUN_SEATS: readonly FlagshipSeat[] = [
-  { x: 27, y: 35, scale: 0.74, tilt: -7 },
-  { x: 37, y: 29, scale: 0.92, tilt: 4 },
-  { x: 49, y: 26, scale: 1.08, tilt: -3 },
-  { x: 61, y: 28, scale: 0.86, tilt: 6 },
-  { x: 72, y: 34, scale: 0.7, tilt: -5 },
-  { x: 81, y: 42, scale: 0.58, tilt: 3 },
-  { x: 18, y: 43, scale: 0.6, tilt: -2 },
-  { x: 55, y: 38, scale: 0.56, tilt: 5 },
+  { x: 50, y: 26, scale: 1.08, tilt: -3 },
+  { x: 30, y: 35, scale: 0.74, tilt: -7 },
+  { x: 70, y: 29, scale: 0.92, tilt: 4 },
+  { x: 10, y: 42, scale: 0.58, tilt: 3 },
+  { x: 90, y: 34, scale: 0.7, tilt: -5 },
+  { x: 20, y: 43, scale: 0.6, tilt: -2 },
+  { x: 80, y: 38, scale: 0.56, tilt: 5 },
+  { x: 60, y: 28, scale: 0.86, tilt: 6 },
 ] as const
 
 /** Twelve authored figures. They are routes with names, not a random star scatter. */

@@ -5,6 +5,7 @@
     planVishnulokReturn,
     planVishnulokShelters,
     planVishnulokStrainMarker,
+    VISHNULOK_SHELTER_SEATS,
   } from '../render/vishnulok/world-layer'
 
   let {
@@ -29,7 +30,7 @@
   const chart = $derived(planVishnulokLivingChart(wovenRoutes, completedReturns))
   const returning = $derived(planVishnulokReturn(numericLawState, reducedMotion))
   const strain = $derived(planVishnulokStrainMarker(numericLawState))
-  const seats = [[18,57],[28,75],[45,82],[62,80],[78,68],[82,48]] as const
+  const seats = VISHNULOK_SHELTER_SEATS.map(({ xPercent, yPercent }) => [xPercent, yPercent] as const)
 
   function routePath(from: number, to: number): string {
     const a = seats[from] ?? seats[0]
@@ -70,10 +71,10 @@
   .woven-routes path.old { opacity:.35;stroke-width:.1; }.woven-routes path.fresh { opacity:.9;stroke-width:.35; }
   .woven-routes .active-return { stroke:#f1d895;stroke-width:.55;stroke-dasharray:3 2;animation:return-dash 2.6s linear infinite;filter:drop-shadow(0 0 .2rem #cba85c); }
   .woven-routes .active-return.confluence { stroke-width:.8;stroke-dasharray:4 1 1 1; }
-  .ocean-shelter { position:absolute;left:var(--shelter-x);top:var(--shelter-y);width:2rem;height:1.35rem;display:grid;place-items:center;transform:translate(-50%,-50%);color:#cbbd94;border:1px solid color-mix(in srgb,#b8cbe2 36%,transparent);border-bottom:2px solid #c8ad6e;border-radius:55% 55% 12% 12%;background:color-mix(in srgb,var(--ocean-ink) 88%,transparent);box-shadow:0 .35rem .65rem #030710; }
+  .ocean-shelter { position:absolute;left:clamp(1.2rem,var(--shelter-x),calc(100% - 1.2rem));top:var(--shelter-y);width:2rem;height:1.35rem;display:grid;place-items:center;transform:translate(-50%,-50%);color:#cbbd94;border:1px solid color-mix(in srgb,#b8cbe2 36%,transparent);border-bottom:2px solid #c8ad6e;border-radius:55% 55% 12% 12%;background:color-mix(in srgb,var(--ocean-ink) 88%,transparent);box-shadow:0 .35rem .65rem #030710; }
   .ocean-shelter b { font:.75rem/1 system-ui,sans-serif; }.ocean-shelter small { position:absolute;right:-.55rem;top:-.25rem;color:#d7c98e;font:.42rem/1 system-ui,sans-serif; }
   .ocean-shelter[data-threshold='1'] { scale:.72;opacity:.62; }.ocean-shelter[data-threshold='10'] { scale:.82; }.ocean-shelter[data-threshold='25'] { scale:.9; }.ocean-shelter[data-threshold='50'] { scale:1;box-shadow:0 .35rem .65rem #030710,0 0 .6rem color-mix(in srgb,#d8b76a 22%,transparent); }.ocean-shelter[data-threshold='100'] { scale:1.08;border-width:2px; }
-  .return-pulse { position:absolute;left:18%;top:57%;width:.65rem;height:.65rem;border:2px solid #f5d98f;border-radius:50%;box-shadow:0 0 .8rem #d0a84d;offset-path:path('M0 0 C260px -120px 520px -80px 720px 0 C450px 240px 180px 220px 0 0');animation:return-travel 7s linear infinite; }
+  .return-pulse { position:absolute;left:8%;top:57%;width:.65rem;height:.65rem;border:2px solid #f5d98f;border-radius:50%;box-shadow:0 0 .8rem #d0a84d;offset-path:path('M0 0 C260px -120px 520px -80px 720px 0 C450px 240px 180px 220px 0 0');animation:return-travel 7s linear infinite; }
   .return-pulse.confluence { box-shadow:0 0 0 .25rem color-mix(in srgb,#a7d9cf 35%,transparent),0 0 .9rem #e3bd61; }
   .return-pulse.static { left:50%;top:69%;offset-path:none;animation:none; }
   .strain-marker { position:absolute;left:var(--strain-x);top:var(--strain-y);display:grid;grid-template-columns:auto auto;gap:.08rem .32rem;align-items:center;max-width:10rem;padding:.32rem .42rem;color:#e5d5a4;background:#111d2e;border:1px dashed #dfcc8d;box-shadow:0 .4rem 1rem #030712; }

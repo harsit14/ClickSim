@@ -94,7 +94,7 @@
 
 <style>
   .kailash-world-layer { position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none;--kailash-stone:#173047;--kailash-snow:#c9dce4;--kailash-river:#87c4d3;--kailash-copper:#c47d4f; }
-  .formation { position:absolute;left:var(--formation-x);bottom:var(--formation-bottom);width:clamp(6.4rem,10vw,10rem);height:clamp(5rem,8vw,8rem);margin:0;transform:translateX(-50%) scale(var(--formation-scale));transform-origin:50% 100%;filter:drop-shadow(0 .55rem .8rem color-mix(in srgb,var(--bg) 72%,transparent));opacity:.76; }
+  .formation { position:absolute;left:clamp(4rem,var(--formation-x),calc(100% - 4rem));bottom:var(--formation-bottom);width:clamp(6.4rem,10vw,10rem);height:clamp(5rem,8vw,8rem);margin:0;transform:translateX(-50%) scale(var(--formation-scale));transform-origin:50% 100%;filter:drop-shadow(0 .55rem .8rem color-mix(in srgb,var(--bg) 72%,transparent));opacity:.76; }
   .formation-art { width:100%;height:100%;overflow:visible;animation:formation-breathe 9s ease-in-out infinite alternate; }
   .formation-mass { fill:color-mix(in srgb,var(--kailash-stone) 86%,var(--bg));stroke:color-mix(in srgb,var(--kailash-snow) 28%,transparent);stroke-width:.65; }
   .formation-detail,.formation-route,.formation-shelter,.formation-crown { fill:none;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round; }

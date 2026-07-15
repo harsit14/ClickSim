@@ -1,5 +1,6 @@
 import type { Effect } from './upgrades'
 import type { GameState } from '../engine/game.svelte'
+import type { GeneratorDef } from './generators'
 import type { EconomyAmount } from './universes/types'
 import { amountFromNumber, gteAmount } from '../core/numeric/amount'
 
@@ -36,8 +37,8 @@ export interface ChallengeDef {
   flavor: string
   rules: string
   goalText: string
-  goal: (g: GameState) => boolean
-  progress: (g: GameState) => { current: number | EconomyAmount; target: number | EconomyAmount }
+  goal: (g: GameState, generators: readonly GeneratorDef[]) => boolean
+  progress: (g: GameState, generators: readonly GeneratorDef[]) => { current: number | EconomyAmount; target: number | EconomyAmount }
   rewardDesc: string
   rewardEffects: Effect[]
   /** permanent multiplier on all generator costs once completed */
@@ -68,8 +69,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'Everything costs more, eventually. Here, immediately.',
     rules: 'Generator costs grow at ×1.30 instead of ×1.15.',
     goalText: 'kindle a {sun}',
-    goal: (g) => (g.owned['sun'] ?? 0) >= 1,
-    progress: (g) => ({ current: g.owned['sun'] ?? 0, target: 1 }),
+    goal: (g, generators) => (g.owned[generators[9]?.id ?? 'sun'] ?? 0) >= 1,
+    progress: (g, generators) => ({ current: g.owned[generators[9]?.id ?? 'sun'] ?? 0, target: 1 }),
     rewardDesc: 'all generator costs −3%, always',
     rewardEffects: [],
     rewardCostScale: 0.97,
@@ -134,8 +135,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'The sky allows breadth, but refuses abundance.',
     rules: 'No kindling may be owned above 15.',
     goalText: 'kindle a {sun}',
-    goal: (g) => (g.owned['sun'] ?? 0) >= 1,
-    progress: (g) => ({ current: g.owned['sun'] ?? 0, target: 1 }),
+    goal: (g, generators) => (g.owned[generators[9]?.id ?? 'sun'] ?? 0) >= 1,
+    progress: (g, generators) => ({ current: g.owned[generators[9]?.id ?? 'sun'] ?? 0, target: 1 }),
     rewardDesc: 'all light ×1.15, always',
     rewardEffects: [{ kind: 'globalMult', value: 1.15 }],
     unlockAfter: 3,
@@ -160,8 +161,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'No refinements. No laws. Make a universe without instructions.',
     rules: 'Upgrades cannot be bought.',
     goalText: 'kindle a {sun}',
-    goal: (g) => (g.owned['sun'] ?? 0) >= 1,
-    progress: (g) => ({ current: g.owned['sun'] ?? 0, target: 1 }),
+    goal: (g, generators) => (g.owned[generators[9]?.id ?? 'sun'] ?? 0) >= 1,
+    progress: (g, generators) => ({ current: g.owned[generators[9]?.id ?? 'sun'] ?? 0, target: 1 }),
     rewardDesc: 'all light ×1.2, always',
     rewardEffects: [{ kind: 'globalMult', value: 1.2 }],
     unlockAfter: 5,
@@ -200,8 +201,8 @@ export const CHALLENGES: ChallengeDef[] = [
     flavor: 'The infinite, rebuilt from ten of everything.',
     rules: 'No kindling may be owned above 10.',
     goalText: 'kindle {ember2}',
-    goal: (g) => (g.owned['ember2'] ?? 0) >= 1,
-    progress: (g) => ({ current: g.owned['ember2'] ?? 0, target: 1 }),
+    goal: (g, generators) => (g.owned[generators[17]?.id ?? 'ember2'] ?? 0) >= 1,
+    progress: (g, generators) => ({ current: g.owned[generators[17]?.id ?? 'ember2'] ?? 0, target: 1 }),
     rewardDesc: 'all generator resonances ×2, always',
     rewardEffects: [{ kind: 'synergyMult', value: 2 }],
     unlockAfter: 10,

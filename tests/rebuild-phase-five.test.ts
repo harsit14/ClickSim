@@ -96,8 +96,13 @@ test('Clockwork assigns all eighteen stable Kindlings to Heart-clear machine add
     [...CLOCKWORK_KINDLING_IDS].sort(),
   )
   assert.equal(new Set(CLOCKWORK_MACHINE_SEATS.map(({ id }) => id)).size, 18)
+  assert.ok(Math.min(...CLOCKWORK_MACHINE_SEATS.map(({ x }) => x)) <= 6)
+  assert.ok(Math.max(...CLOCKWORK_MACHINE_SEATS.map(({ x }) => x)) >= 94)
+  const leftSeats = CLOCKWORK_MACHINE_SEATS.filter(({ x }) => x < 50).length
+  const rightSeats = CLOCKWORK_MACHINE_SEATS.filter(({ x }) => x > 50).length
+  assert.ok(Math.abs(leftSeats - rightSeats) <= 1, 'Clockwork machine addresses should balance across the full stage')
   for (const seat of CLOCKWORK_MACHINE_SEATS) {
-    assert.ok(seat.x <= 74, `${seat.id} enters the Kindling-shop lane`)
+    assert.ok(seat.x >= 4 && seat.x <= 96, `${seat.id} leaves the full-width stage`)
     assert.ok(Math.hypot(seat.x - 50, seat.y - 62) > 10, `${seat.id} enters the Heart clearance`)
   }
 })

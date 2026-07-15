@@ -13,8 +13,9 @@ import { achievementPointPercent } from '../content/economy-balance'
 function checkChallenge() {
   if (!game.challenge) return
   const c = CHALLENGE_BY_ID.get(game.challenge)
-  if (!c || !c.goal(game)) return
-  const copy = challengeCopy(c, universeById(game.activeUniverse))
+  const universe = universeById(game.activeUniverse)
+  if (!c || !c.goal(game, universe.generators)) return
+  const copy = challengeCopy(c, universe)
   endChallenge(true)
   save()
   playSupernova()

@@ -13,8 +13,9 @@
   } from '../core/numeric/amount'
 
   const trial = $derived(game.challenge ? CHALLENGE_BY_ID.get(game.challenge) : null)
-  const copy = $derived(trial ? challengeCopy(trial, universeById(game.activeUniverse)) : null)
-  const progress = $derived(trial ? trial.progress(game) : null)
+  const universe = $derived(universeById(game.activeUniverse))
+  const copy = $derived(trial ? challengeCopy(trial, universe) : null)
+  const progress = $derived(trial ? trial.progress(game, universe.generators) : null)
   const progressCurrent = $derived(progress ? toAmount(progress.current) : null)
   const progressTarget = $derived(progress ? toAmount(progress.target) : null)
   const progressShown = $derived(progressCurrent && progressTarget ? minAmount(progressCurrent, progressTarget) : null)

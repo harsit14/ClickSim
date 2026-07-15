@@ -77,8 +77,8 @@ test('Emberlight archive landmarks preserve record meaning, identity, themed cop
     assert.equal(landmark.interactive, true)
     assert.equal(landmark.grouped, false)
     assert.ok(ARCHIVE_LANDMARK_SLOTS.includes(landmark.slot))
-    assert.deepEqual(landmark.slot.avoids, ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui'])
-    assert.ok(landmark.slot.x >= 0.09 && landmark.slot.x <= 0.73)
+    assert.deepEqual(landmark.slot.avoids, ['heart', 'top-ui', 'left-ui', 'bottom-ui'])
+    assert.ok(landmark.slot.x >= 0.06 && landmark.slot.x <= 0.94)
     assert.ok(landmark.slot.y >= 0.24 && landmark.slot.y <= 0.83)
     const requiredHeartClearance = Math.max(...landmark.recordIds.map((recordId) => {
       const record = EMBERLIGHT_V2.archive.records.find(({ id }) => id === recordId)
@@ -181,8 +181,15 @@ test('all seven completed Archives render all twelve records with the collection
       assert.deepEqual(plan.landmarks.flatMap(({ recordIds: ids }) => ids).sort(), [...recordIds].sort())
       assert.equal(new Set(plan.landmarks.map(({ slot }) => slot.x)).size, 12, `${universeId}/${mode} aligned x positions`)
       assert.equal(new Set(plan.landmarks.map(({ slot }) => slot.y)).size, 12, `${universeId}/${mode} aligned y positions`)
+      assert.ok(plan.landmarks.some(({ slot }) => slot.x <= 0.26), `${universeId}/${mode} omitted the outer-left field`)
+      assert.ok(plan.landmarks.some(({ slot }) => slot.x >= 0.74), `${universeId}/${mode} omitted the shop-overlay field`)
     }
   }
+})
+
+test('opaque panels mask cabinet landmarks without leaving covered controls focusable', () => {
+  const worldSource = readFileSync('src/ui/ManifestWorldLayer.svelte', 'utf8')
+  assert.match(worldSource, /class="archive-landmarks"[\s\S]*inert=\{preferences\.panelOpen\}/)
 })
 
 test('every Archive tooltip opens away from the shared HUD in every universe', () => {

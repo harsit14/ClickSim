@@ -6,6 +6,7 @@ import { localizeChallengeText } from '../src/content/challenge-language'
 import { DEEP_UPGRADES } from '../src/content/deep'
 import { challengeCopy, deepUpgradeCopy, progressionIdentity } from '../src/content/universe-progression'
 import { UNIVERSES, V2_UNIVERSE_BY_ID } from '../src/content/universes'
+import type { GameState } from '../src/engine/game.svelte'
 
 const canonicalLeak = /\b(?:kindle|kindling|generators?|clicks|upgrades|falling stars?)\b/i
 
@@ -52,6 +53,27 @@ test('Clockwork Maintenance Trials use mechanism, Ticks, and named machine tiers
   assert.equal(final.rewardDesc, 'all mechanism linkages ×2, always')
 })
 
+test('localized generator trial goals inspect the active universe generator tiers', () => {
+  const generatorGoalIds = ['entropy', 'glass-ceiling', 'unwritten']
+
+  for (const universe of UNIVERSES) {
+    const tierTenId = universe.generators[9].id
+    const tierEighteenId = universe.generators[17].id
+    const tierTenState = { owned: { [tierTenId]: 1 } } as unknown as GameState
+    const tierEighteenState = { owned: { [tierEighteenId]: 1 } } as unknown as GameState
+
+    for (const challengeId of generatorGoalIds) {
+      const challenge = CHALLENGES.find(({ id }) => id === challengeId)!
+      assert.equal(challenge.goal(tierTenState, universe.generators), true, `${universe.id}/${challengeId}`)
+      assert.deepEqual(challenge.progress(tierTenState, universe.generators), { current: 1, target: 1 })
+    }
+
+    const final = CHALLENGES.find(({ id }) => id === 'small-vessels')!
+    assert.equal(final.goal(tierEighteenState, universe.generators), true, `${universe.id}/small-vessels`)
+    assert.deepEqual(final.progress(tierEighteenState, universe.generators), { current: 1, target: 1 })
+  }
+})
+
 test('Vishnulok and Kailash keep distinct public trial-unit language', () => {
   const vishnulok = UNIVERSES.find(({ id }) => id === 'vishnulok')!
   const kailash = UNIVERSES.find(({ id }) => id === 'kailash')!
@@ -71,12 +93,16 @@ test('trial display, guide, active banner, and completion toast share the resolv
   assert.match(deep, /\{copy\.rules\}[\s\S]*\{copy\.goalText\}[\s\S]*\{copy\.rewardDesc\}/)
   assert.doesNotMatch(deep, /localize\(c\.(?:rules|goalText|rewardDesc)\)/)
   assert.match(guide, /copy\.rules[\s\S]*copy\.goalText[\s\S]*copy\.rewardDesc/)
-  assert.match(banner, /challengeCopy\(trial, universeById\(game\.activeUniverse\)\)/)
+  assert.match(banner, /const universe = \$derived\(universeById\(game\.activeUniverse\)\)/)
+  assert.match(banner, /challengeCopy\(trial, universe\)/)
+  assert.match(banner, /trial\.progress\(game, universe\.generators\)/)
   assert.match(banner, /<strong>Rule:<\/strong>/)
   assert.match(banner, /<b>Goal:<\/b>/)
   assert.match(banner, /First: use the Heart|First: buy a production source/)
   assert.match(deep, /aria-label=\{`Begin \$\{copy\.name\}/)
-  assert.match(achievements, /challengeCopy\(c, universeById\(game\.activeUniverse\)\)/)
+  assert.match(achievements, /const universe = universeById\(game\.activeUniverse\)/)
+  assert.match(achievements, /c\.goal\(game, universe\.generators\)/)
+  assert.match(achievements, /challengeCopy\(c, universe\)/)
   assert.match(achievements, /copy\.rewardDesc/)
 })
 

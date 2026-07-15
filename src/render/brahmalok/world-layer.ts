@@ -30,10 +30,10 @@ export interface BrahmalokCourtPlan {
 }
 
 const COURT_SEATS = [
-  { xPercent: 27, yPercent: 65, silhouette: 'seed gardens in low stepped beds', pattern: 'dot and rising contour' },
-  { xPercent: 38, yPercent: 79, silhouette: 'measure halls with open ruled colonnades', pattern: 'parallel ruled lines' },
-  { xPercent: 63, yPercent: 79, silhouette: 'name terraces carrying distinct blank title stones', pattern: 'diagonal hatch' },
-  { xPercent: 75, yPercent: 64, silhouette: 'form workshops with unclosed clay frames', pattern: 'offset blocks' },
+  { xPercent: 10, yPercent: 65, silhouette: 'seed gardens in low stepped beds', pattern: 'dot and rising contour' },
+  { xPercent: 34, yPercent: 79, silhouette: 'measure halls with open ruled colonnades', pattern: 'parallel ruled lines' },
+  { xPercent: 66, yPercent: 79, silhouette: 'name terraces carrying distinct blank title stones', pattern: 'diagonal hatch' },
+  { xPercent: 90, yPercent: 64, silhouette: 'form workshops with unclosed clay frames', pattern: 'offset blocks' },
 ] as const
 
 export function planBrahmalokCourts(

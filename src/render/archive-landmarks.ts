@@ -53,46 +53,47 @@ export interface ArchiveLandmarkSlot {
   readonly y: number
   /** Clearance from the Heart expressed in the same Heart-radius unit as the manifest. */
   readonly heartClearanceRadii: number
-  readonly avoids: readonly ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui']
+  readonly avoids: readonly ['heart', 'top-ui', 'left-ui', 'bottom-ui']
 }
 
 /**
- * An oversized pool of irregular stage positions. Each universe deterministically
- * selects twelve, producing a stable scatter without covering the Heart or UI rails.
+ * An oversized, mirrored pool of irregular stage positions. Each universe
+ * deterministically selects twelve across the complete stage. Reversible opaque
+ * side panels mask the world instead of permanently shrinking its composition.
  */
 export const ARCHIVE_LANDMARK_SLOTS: readonly ArchiveLandmarkSlot[] = [
   ...([
-    ['scatter-01', 'far', 0.32, 0.27],
-    ['scatter-02', 'near', 0.43, 0.31],
-    ['scatter-03', 'far', 0.57, 0.26],
-    ['scatter-04', 'near', 0.70, 0.34],
-    ['scatter-05', 'far', 0.31, 0.41],
-    ['scatter-06', 'near', 0.71, 0.46],
-    ['scatter-07', 'far', 0.18, 0.52],
-    ['scatter-08', 'near', 0.30, 0.57],
-    ['scatter-09', 'far', 0.69, 0.61],
-    ['scatter-10', 'near', 0.09, 0.69],
-    ['scatter-11', 'far', 0.22, 0.76],
-    ['scatter-12', 'near', 0.36, 0.72],
-    ['scatter-13', 'far', 0.47, 0.82],
-    ['scatter-14', 'near', 0.59, 0.74],
-    ['scatter-15', 'far', 0.73, 0.83],
-    ['scatter-16', 'near', 0.13, 0.59],
-    ['scatter-17', 'far', 0.40, 0.24],
-    ['scatter-18', 'near', 0.64, 0.38],
-    ['scatter-19', 'far', 0.26, 0.55],
-    ['scatter-20', 'near', 0.42, 0.56],
-    ['scatter-21', 'far', 0.52, 0.58],
-    ['scatter-22', 'near', 0.61, 0.60],
-    ['scatter-23', 'far', 0.67, 0.63],
-    ['scatter-24', 'near', 0.16, 0.65],
+    ['scatter-01', 'far', 0.20, 0.27],
+    ['scatter-02', 'near', 0.80, 0.31],
+    ['scatter-03', 'far', 0.36, 0.26],
+    ['scatter-04', 'near', 0.64, 0.34],
+    ['scatter-05', 'far', 0.28, 0.41],
+    ['scatter-06', 'near', 0.72, 0.46],
+    ['scatter-07', 'far', 0.10, 0.52],
+    ['scatter-08', 'near', 0.90, 0.57],
+    ['scatter-09', 'far', 0.18, 0.61],
+    ['scatter-10', 'near', 0.82, 0.69],
+    ['scatter-11', 'far', 0.26, 0.76],
+    ['scatter-12', 'near', 0.74, 0.72],
+    ['scatter-13', 'far', 0.34, 0.82],
+    ['scatter-14', 'near', 0.66, 0.74],
+    ['scatter-15', 'far', 0.06, 0.83],
+    ['scatter-16', 'near', 0.94, 0.59],
+    ['scatter-17', 'far', 0.42, 0.24],
+    ['scatter-18', 'near', 0.58, 0.38],
+    ['scatter-19', 'far', 0.14, 0.55],
+    ['scatter-20', 'near', 0.86, 0.56],
+    ['scatter-21', 'far', 0.30, 0.58],
+    ['scatter-22', 'near', 0.70, 0.60],
+    ['scatter-23', 'far', 0.38, 0.63],
+    ['scatter-24', 'near', 0.62, 0.65],
   ] as const).map(([id, screenZone, x, y]) => ({
     id,
     screenZone,
     x,
     y,
     heartClearanceRadii: 1.75,
-    avoids: ['heart', 'top-ui', 'left-ui', 'right-ui', 'bottom-ui'] as const,
+    avoids: ['heart', 'top-ui', 'left-ui', 'bottom-ui'] as const,
   })),
 ]
 
@@ -272,6 +273,13 @@ function stableHash(value: string): number {
   return hash >>> 0
 }
 
+function stageBandForX(x: number): 0 | 1 | 2 | 3 {
+  if (x <= 0.26) return 0
+  if (x < 0.5) return 1
+  if (x < 0.74) return 2
+  return 3
+}
+
 function slotFor(
   unit: CandidateUnit,
   universeId: UniversePackV2['id'],
@@ -282,9 +290,23 @@ function slotFor(
   const maximumRequiredClearance = Math.max(
     ...unit.candidates.map(({ record }) => record.object.minimumHeartDistance),
   )
+  const usedBandCounts = [0, 0, 0, 0]
+  for (const slot of ARCHIVE_LANDMARK_SLOTS) {
+    if (usedSlotIds.has(slot.id)) usedBandCounts[stageBandForX(slot.x)] += 1
+  }
+  const leastUsed = Math.min(...usedBandCounts)
+  const preferredBands = usedBandCounts.flatMap((count, band) => count === leastUsed ? [band] : [])
+  const bandOffset = stableHash(`${universeId}:${unit.id}:band`) % preferredBands.length
+  const preferredBand = preferredBands[bandOffset]
   const offset = stableHash(`${universeId}:${unit.id}`) % ARCHIVE_LANDMARK_SLOTS.length
-  for (let step = 0; step < ARCHIVE_LANDMARK_SLOTS.length; step += 1) {
-    const slot = ARCHIVE_LANDMARK_SLOTS[(offset + step) % ARCHIVE_LANDMARK_SLOTS.length]
+  const rotatedSlots = ARCHIVE_LANDMARK_SLOTS.map((_, step) => (
+    ARCHIVE_LANDMARK_SLOTS[(offset + step) % ARCHIVE_LANDMARK_SLOTS.length]
+  ))
+  const orderedSlots = [
+    ...rotatedSlots.filter((slot) => stageBandForX(slot.x) === preferredBand),
+    ...rotatedSlots.filter((slot) => stageBandForX(slot.x) !== preferredBand),
+  ]
+  for (const slot of orderedSlots) {
     if (usedSlotIds.has(slot.id)) continue
     if (slot.heartClearanceRadii < maximumRequiredClearance) continue
     const landmarkSize = 3.5 * 16
@@ -298,6 +320,15 @@ function slotFor(
       ? rectsIntersect(landmarkRect, topUiClearance)
       : rectIntersectsHudClearance(landmarkRect, viewport)) continue
     if (rectIntersectsHeartTarget(landmarkRect, viewport)) continue
+    const topUiBottom = topUiClearance
+      ? topUiClearance.y + topUiClearance.height
+      : hudClearanceRect(viewport).height
+    const hintPlacement = archiveHintPlacement(slot, viewport, topUiBottom)
+    const anchorY = slot.y * viewport.height
+    const hintTop = hintPlacement === 'above'
+      ? anchorY - ARCHIVE_HINT_ANCHOR_OFFSET_PX - ARCHIVE_HINT_HEIGHT_PX
+      : anchorY + ARCHIVE_HINT_ANCHOR_OFFSET_PX
+    if (hintTop < topUiBottom) continue
     return slot
   }
   return null

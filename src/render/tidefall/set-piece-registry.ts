@@ -6,6 +6,18 @@ export interface TidefallSetPiece {
   readonly stages: readonly [SetPieceStage, SetPieceStage]
 }
 
+export const TIDEFALL_FAMILY_SEATS = [
+  { x: 7, y: 35, size: 3.8, depth: 'surface' },
+  { x: 24, y: 47, size: 4.6, depth: 'middle' },
+  { x: 40, y: 38, size: 4.9, depth: 'middle' },
+  { x: 65, y: 42, size: 5.2, depth: 'middle' },
+  { x: 92, y: 34, size: 4.8, depth: 'surface' },
+  { x: 10, y: 63, size: 5.1, depth: 'deep' },
+  { x: 30, y: 73, size: 5.5, depth: 'trench' },
+  { x: 72, y: 65, size: 5.7, depth: 'deep' },
+  { x: 90, y: 76, size: 6, depth: 'trench' },
+] as const
+
 const layer = (id: string, role: SetPiecePathLayer['role'], d: string, fillRule?: SetPiecePathLayer['fillRule']): SetPiecePathLayer => ({
   id, role, d, ...(fillRule ? { fillRule } : {}),
 })

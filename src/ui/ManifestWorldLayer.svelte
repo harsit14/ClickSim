@@ -412,6 +412,7 @@
       class="archive-landmarks"
       data-landmark-count={archiveLandmarkPlan.landmarks.length}
       aria-label={`${pack.archive.localName} visible landmarks`}
+      inert={preferences.panelOpen}
     >
       {#each archiveLandmarkPlan.landmarks as landmark (landmark.id)}
         {@const record = archiveRecordById.get(landmark.representativeRecordId)}
@@ -630,7 +631,7 @@
   }
   .archive-landmark {
     position: absolute;
-    left: var(--landmark-x);
+    left: clamp(2.25rem, var(--landmark-x), calc(100% - 2.25rem));
     top: var(--landmark-y);
     width: 3.15rem;
     height: 3.15rem;

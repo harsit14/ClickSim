@@ -178,7 +178,7 @@
   .linkage-torque[data-route-kind='efficiency'] { stroke: rgba(218, 165, 95, 0.65); stroke-dasharray: 0.025 0.075; }
   marker path { fill: rgba(245, 208, 128, 0.9); }
   .machine-node {
-    position: absolute; z-index: 3; left: var(--x); top: var(--y); width: calc(3.4rem * var(--machine-scale)); height: calc(3rem * var(--machine-scale));
+    position: absolute; z-index: 3; left: clamp(2rem, var(--x), calc(100% - 2rem)); top: var(--y); width: calc(3.4rem * var(--machine-scale)); height: calc(3rem * var(--machine-scale));
     margin: 0; transform: translate(-50%, -50%); filter: drop-shadow(0 0 0.55rem rgba(220, 169, 73, 0.2));
   }
   .machine-body {

@@ -63,7 +63,7 @@
 
 <style>
   .brahmalok-world-layer { position:absolute;inset:0;z-index:2;pointer-events:none;--folio-gold:#d8b46a;--folio-rose:#9e4f63;--folio-ivory:#e6d8bf; }
-  .creation-court { position:absolute;left:var(--court-x);top:var(--court-y);width:8rem;height:4.7rem;margin:0;transform:translate(-50%,-50%);color:var(--folio-ivory);opacity:.76; }
+  .creation-court { position:absolute;left:clamp(4.4rem,var(--court-x),calc(100% - 4.4rem));top:var(--court-y);width:8rem;height:4.7rem;margin:0;transform:translate(-50%,-50%);color:var(--folio-ivory);opacity:.76; }
   .court-ground { position:absolute;left:8%;right:8%;bottom:.4rem;height:1.3rem;border:1px solid color-mix(in srgb,var(--folio-gold) 40%,transparent);border-radius:50%;transform:skewX(-12deg);background:color-mix(in srgb,#351b29 70%,transparent); }
   .creation-court > b { position:absolute;left:50%;top:.35rem;transform:translateX(-50%);font:.85rem/1 Georgia,serif; }.creation-court > span { position:absolute;left:50%;top:1.35rem;transform:translateX(-50%);font:700 .4rem/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase; }
   .court-building { position:absolute;bottom:1rem;width:1.45rem;height:1.4rem;border:1px solid currentColor;border-bottom:0;background:repeating-linear-gradient(90deg,transparent 0 .28rem,color-mix(in srgb,currentColor 25%,transparent) .3rem .34rem); }.court-building.first { left:1.15rem; }.court-building.second { right:1.15rem;height:1.75rem; }
