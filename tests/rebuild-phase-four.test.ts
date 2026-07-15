@@ -7,11 +7,13 @@ const read = (relative: string) => readFileSync(new URL(relative, import.meta.ur
 
 test('Phase 4 loads local variable Fraunces and Inter with the authored type tokens', () => {
   const main = read('../src/main.ts')
+  const fonts = read('../src/fonts.css')
   const css = read('../src/app.css')
   const pkg = JSON.parse(read('../package.json')) as { dependencies?: Record<string, string> }
-  assert.match(main, /@fontsource-variable\/inter\/opsz\.css/)
-  assert.match(main, /@fontsource-variable\/fraunces\/full\.css/)
-  assert.match(main, /@fontsource-variable\/fraunces\/full-italic\.css/)
+  assert.match(main, /\.\/fonts\.css/)
+  assert.match(fonts, /inter\/files\/inter-latin-opsz-normal\.woff2/)
+  assert.match(fonts, /fraunces\/files\/fraunces-latin-full-normal\.woff2/)
+  assert.match(fonts, /fraunces\/files\/fraunces-latin-full-italic\.woff2/)
   assert.ok(pkg.dependencies?.['@fontsource-variable/inter'])
   assert.ok(pkg.dependencies?.['@fontsource-variable/fraunces'])
   assert.match(css, /--font-interface: 'Inter Variable'/)

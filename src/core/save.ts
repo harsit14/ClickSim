@@ -270,6 +270,16 @@ function parseStored(raw: string | null): SaveDataV23 | null {
   }
 }
 
+/** True when the primary save or one of its recovery snapshots can resume play. */
+export function hasStoredProgress(): boolean {
+  try {
+    return [KEY, ...RECENT_BACKUP_KEYS, DAILY_BACKUP_KEY]
+      .some((key) => parseStored(localStorage.getItem(key)) !== null)
+  } catch {
+    return false
+  }
+}
+
 function storedVersion(raw: string): number | null {
   try {
     const parsed = JSON.parse(raw) as unknown
