@@ -263,7 +263,8 @@ test('the complicity arc orders itself within each parked universe run', () => {
 
 test('the Act III gate takes priority, then complicity lines, without replacing universe arcs', () => {
   const ticker = read('../src/ui/LumenTicker.svelte')
-  assert.match(ticker, /const storyGate = universeLines[\s\S]*candidate\.id === 'act3-hook'/)
+  assert.match(ticker, /const storyGate = universeLines[\s\S]*candidate\.unlocksQuestion[\s\S]*!game\.seen\.includes\('act3-hook'\)/)
+  assert.match(ticker, /line\.unlocksQuestion[\s\S]*game\.seen\.push\('act3-hook'\)/)
   assert.match(ticker, /const metaLine = lumenComplicityLinesFor\(universeId\)/)
   assert.match(ticker, /const line = storyGate\s*\?\? metaLine\s*\?\? universeLines\.find/)
   assert.match(ticker, /act\[237\]/)

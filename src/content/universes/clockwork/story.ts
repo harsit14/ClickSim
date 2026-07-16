@@ -1,6 +1,7 @@
 import { amountFromNumber, gteAmount } from '../../../core/numeric/amount'
 import type { EchoDef } from '../../echoes'
 import type { LumenLine } from '../../lumen'
+import { questionHookReady } from '../../question-gate'
 import type { StorySceneDef } from '../types'
 
 const owns = (owned: Readonly<Record<string, number>>, id: string, count = 1) => (owned[id] ?? 0) >= count
@@ -20,7 +21,7 @@ export const CLOCKWORK_LUMEN: LumenLine[] = [
   { id: 'clockwork-lumen-ledger', text: 'A Patent Ledger is an archive that believes every discovery should have an owner. The final pages disagree.', when: (game) => game.curiosities.length >= 1 },
   { id: 'clockwork-lumen-rewinding', text: 'Everything returned to zero except the perfected interval. The Mainspring is carrying time, not ashes.', when: (game) => game.supernovae >= 1 },
   { id: 'clockwork-lumen-calendar', text: 'Every day is engraved. One remains blank. They preserved uncertainty as if it were oxygen.', when: (game) => owns(game.owned, 'clockwork-last-calendar') },
-  { id: 'clockwork-lumen-regulator', text: 'The Great Regulator can predict the next motion. It cannot predict why you chose to restore it.', when: (game) => owns(game.owned, 'clockwork-great-regulator') },
+  { id: 'clockwork-lumen-regulator', text: 'The Great Regulator can predict the next motion. It cannot predict why you chose to restore it. The trials and the deep are behind you. When the final interval opens — ask me the question.', unlocksQuestion: true, when: (game) => questionHookReady(game, 'clockwork-great-regulator') },
 ]
 
 export const CLOCKWORK_ECHOES: EchoDef[] = [

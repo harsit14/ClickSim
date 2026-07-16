@@ -16,6 +16,7 @@ import {
   migrateAndSanitizeSaveV22,
   serializeSaveDataV22,
 } from '../src/core/save-data'
+import { UNIVERSES } from '../src/content/universes'
 import type { GameState } from '../src/engine/game.svelte'
 
 const COMPLETE_PARTS = [...VESSEL_PART_IDS]
@@ -30,6 +31,23 @@ test('all seven universes own a distinct five-part crossing vessel', () => {
     assert.deepEqual(blueprint.parts.map(({ id }) => id), VESSEL_PART_IDS)
     assert.equal(blueprint.stages.length, 6)
     assert.ok(blueprint.parts.every(({ name, requirement, action, glyph }) => name && requirement && action && glyph))
+  }
+})
+
+test('every realm can surface The Question from its own final Kindling after a Deep Collapse', () => {
+  for (const universe of UNIVERSES) {
+    const hooks = universe.lumen.filter(({ unlocksQuestion }) => unlocksQuestion)
+    assert.equal(hooks.length, 1, `${universe.id} must own exactly one Question hook`)
+    const hook = hooks[0]
+    const generatorId = universe.beacon.generatorId
+    const state = { collapses: 0, owned: {} } as unknown as GameState
+
+    assert.equal(hook.when(state), false, `${universe.id} opened before its final Kindling`)
+    state.owned[generatorId] = universe.beacon.count
+    assert.equal(hook.when(state), false, `${universe.id} opened before a Deep Collapse`)
+    state.collapses = 1
+    assert.equal(hook.when(state), true, `${universe.id} could not open The Question`)
+    assert.match(hook.text, /ask me the question/i)
   }
 })
 

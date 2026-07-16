@@ -2,12 +2,14 @@ import type { GameState } from '../engine/game.svelte'
 import { amountFromNumber, gteAmount } from '../core/numeric/amount'
 import { FIRST_EPOCH_APPROACH_RATIO, STARDUST_PIVOT } from './economy-balance'
 import { SINGULARITY_COST } from './deep'
+import { questionHookReady } from './question-gate'
 import { vesselComplete, vesselPartIdsFor } from './vessel'
 
 export interface LumenLine {
   id: string
   text: string
   remembranceText?: string
+  unlocksQuestion?: boolean
   when: (g: GameState) => boolean
 }
 
@@ -264,7 +266,8 @@ export const LUMEN_LINES: LumenLine[] = [
   {
     id: 'act3-hook',
     text: 'The second ember. The trials. The deep. You are ready. Next time the sky opens — ask me the question.',
-    when: (g) => (g.owned['ember2'] ?? 0) >= 1 && g.collapses >= 1,
+    unlocksQuestion: true,
+    when: (g) => questionHookReady(g, 'ember2'),
   },
   {
     id: 'act3-infall-rhyme',

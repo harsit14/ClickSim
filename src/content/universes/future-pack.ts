@@ -5,6 +5,7 @@ import type { CuriosityCabinetDef, CuriosityDef, CuriosityShelfDef } from '../cu
 import type { EchoDef } from '../echoes'
 import type { GeneratorDef } from '../generators'
 import type { LumenLine } from '../lumen'
+import { questionHookReady } from '../question-gate'
 import type { Effect, UpgradeDef } from '../upgrades'
 import { adaptLegacyUniversePack, type UniversePackV2Supplement } from './legacy-v2-adapter'
 import type {
@@ -253,7 +254,7 @@ function makeStory(spec: FutureUniverseSpec, generators: readonly GeneratorDef[]
     { id: `${spec.prefix}-lumen-epoch`, text: spec.lumen.epoch, when: (game) => game.supernovae >= 1 },
     { id: `${spec.prefix}-lumen-cosmic`, text: spec.lumen.cosmic, when: (game) => owns(game.owned, generators[13].id) },
     { id: `${spec.prefix}-lumen-question`, text: spec.lumen.question, when: (game) => gteAmount(game.allTimeEarned, amountFromNumber(1e15)) },
-    { id: `${spec.prefix}-lumen-beacon`, text: spec.lumen.beacon, when: (game) => owns(game.owned, generators[17].id) },
+    { id: `${spec.prefix}-lumen-beacon`, text: `${spec.lumen.beacon} The trials and the deep are behind you. When ${spec.beaconName} opens the way — ask me the question.`, unlocksQuestion: true, when: (game) => questionHookReady(game, generators[17].id) },
   ]
   const echoes: EchoDef[] = spec.story.map((entry, index) => ({
     id: `${spec.prefix}-echo-${String(index + 1).padStart(2, '0')}`,

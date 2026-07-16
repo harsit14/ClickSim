@@ -44,8 +44,8 @@
     return 'ambient'
   }
 
-  function present(entry: { readonly id: string; readonly text: string }) {
-    const line: HistoryLine = { ...entry, importance: importanceFor(entry.id) }
+  function present(entry: { readonly id: string; readonly text: string; readonly unlocksQuestion?: boolean }) {
+    const line: HistoryLine = { ...entry, importance: entry.unlocksQuestion ? 'important' : importanceFor(entry.id) }
     history = [line, ...history.filter(({ id }) => id !== line.id)].slice(0, 5)
     current = line
     clearTimeout(timer)
@@ -106,14 +106,15 @@
     }
     const universeLines = universeById(universeId).lumen
     const storyGate = universeLines
-      .find((candidate) => candidate.id === 'act3-hook' && !game.seen.includes(candidate.id) && candidate.when(game))
+      .find((candidate) => candidate.unlocksQuestion && !game.seen.includes('act3-hook') && candidate.when(game))
     const metaLine = lumenComplicityLinesFor(universeId)
       .find((candidate) => !game.seen.includes(candidate.id) && candidate.when(game))
     const line = storyGate
       ?? metaLine
       ?? universeLines.find((candidate) => !game.seen.includes(candidate.id) && candidate.when(game))
     if (!line) return
-    game.seen.push(line.id)
+    if (!game.seen.includes(line.id)) game.seen.push(line.id)
+    if (line.unlocksQuestion && !game.seen.includes('act3-hook')) game.seen.push('act3-hook')
     present({ ...line, text: lumenLineText(line, game.remembrances) })
   })
 

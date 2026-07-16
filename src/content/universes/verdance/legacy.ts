@@ -3,6 +3,7 @@ import { CABINET_RESONANCE_PER_ITEM } from '../../curiosities'
 import type { EchoDef } from '../../echoes'
 import type { GeneratorDef } from '../../generators'
 import type { LumenLine } from '../../lumen'
+import { questionHookReady } from '../../question-gate'
 import type { UpgradeDef } from '../../upgrades'
 import type { UniversePack } from '../types'
 import { amountFromNumber, gteAmount } from '../../../core/numeric/amount'
@@ -199,7 +200,7 @@ export const VERDANCE_LUMEN: LumenLine[] = [
   { id: 'verdance-lumen-shade', text: 'The trials remove light because this world once removed uncertainty.', when: (g) => g.challengesDone.length >= 6 },
   { id: 'verdance-lumen-root-network', text: 'The roots are exchanging stories faster than I can catalogue them.', when: (g) => (g.owned['verdance-kindling-13'] ?? 0) >= 1 },
   { id: 'verdance-lumen-question', text: 'If nothing is allowed to end, care becomes another kind of cage.', when: (g) => (g.owned['verdance-kindling-17'] ?? 0) >= 1 },
-  { id: 'verdance-lumen-beacon', text: 'The World-Tree is opening a flower toward the dark between worlds.', when: (g) => (g.owned['verdance-kindling-18'] ?? 0) >= 1 },
+  { id: 'verdance-lumen-beacon', text: 'The World-Tree is opening a flower toward the dark between worlds. The trials and the deep are behind you. When the canopy opens — ask me the question.', unlocksQuestion: true, when: (g) => questionHookReady(g, 'verdance-kindling-18') },
 ]
 
 const ECHO_TITLES = [

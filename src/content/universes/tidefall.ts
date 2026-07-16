@@ -1,6 +1,7 @@
 import type { EchoDef } from '../echoes'
 import type { GeneratorDef } from '../generators'
 import type { LumenLine } from '../lumen'
+import { questionHookReady } from '../question-gate'
 import type { Effect, UpgradeDef } from '../upgrades'
 import type { UniversePack } from './types'
 import { TIDEFALL_CABINET } from '../curiosities'
@@ -146,7 +147,7 @@ const TIDEFALL_LUMEN: LumenLine[] = [
   { id: 'tide-first-circle', text: 'Six trials, and still you rise. This ocean has begun measuring its depth against you.', when: (g) => g.challengesDone.length >= 6 },
   { id: 'tide-all-trials', text: 'Twelve impossible tides endured. The sea is out of ways to make you smaller.', when: (g) => g.challengesDone.length >= 12 },
   { id: 'tide-trench', text: 'Do not mistake the bottom for emptiness. Something here learned to sleep under pressure.', when: (g) => (g.owned['tidefall-deep-trench'] ?? 0) >= 1 },
-  { id: 'tide-second-wave', text: 'The Second Wave has no shore to break upon. Perhaps it is meant to cross instead.', when: (g) => (g.owned['tidefall-second-wave'] ?? 0) >= 1 },
+  { id: 'tide-second-wave', text: 'The Second Wave has no shore to break upon. The trials and the deep are behind you. Next time the sea opens — ask me the question.', unlocksQuestion: true, when: (g) => questionHookReady(g, 'tidefall-second-wave') },
 ]
 
 export const TIDEFALL_ECHOES: EchoDef[] = [
