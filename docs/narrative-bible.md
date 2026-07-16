@@ -166,9 +166,27 @@ Minimum practical callback coverage:
 - One Vessel acknowledgment that changes flavor only; costs and requirements remain unchanged.
 - One Garden synthesis assembled from all seven current realm answers, while Remembrance history continues to govern the optional `continue` reconciliation gate.
 
+## Answer presentation grammar
+
+Every named answer owns one save-stable illustration and cadence fingerprint. The illustration must communicate the choice without relying on hue, sound, or motion; audio and animation elaborate that same image but never carry information alone. Resolve cues use bounded synthesized tones rather than sampled or imitated ritual instruments.
+
+| Realm | Boundary answer | Renewal answer | Relation answer |
+| --- | --- | --- | --- |
+| Emberlight | **Banked hearth** — seal, then breathe around an untouched margin. | **Many hearths** — one ember spends itself in a quick three-beat flare. | **Spark relay** — a spark crosses several hands, then leaves the original axis. |
+| Tidefall | **Name ark** — written marks rise from the drowned threshold at a measured pace. | **Archive current** — pages soften into fish and silt along one continuous undertow. | **Many shores** — three unequal vessels depart asynchronously toward chosen coasts. |
+| Verdance | **Witnessed cut** — two witnesses hold while one named branch settles after the cut. | **Wind-opened canopy** — old crowns part, admit light, and rest without closing again. | **Living graft** — unlike roots counterpulse before joining and flowering in one another’s forms. |
+| Clockwork | **Open warning** — a forecast scans, reaches an appeal gate, and pauses. | **Shattered schedule** — the dial snaps apart, scatters, and leaves an audible silence. | **Private hour** — regular ticks yield to one long unmeasured dwell. |
+| Brahmalok | **Open folio margin** — writing reaches the margin, stops, and listens. | **Released folio** — a page loosens, lifts, and departs beyond the original frame. | **Many-handed revision** — several stylus paths enter on different beats and counterwrite a shared form. |
+| Vishnulok | **Sheltering shape** — a steady outline holds an inner ebb that never repeats exactly. | **Promise ribbon** — one continuous obligation exchanges between visibly different forms. | **Self-naming return** — a returned figure emerges, pauses, and inscribes a new star-name. |
+| Kailash | **Seed descent** — one seed follows a seven-step path down while the summit remains open. | **Released aperture** — concentric fragments widen and fade around a precisely empty center. | **Open pass** — footprints cross an incomplete threshold and continue beyond the frame. |
+
+Preview and resolve phases share each answer’s fingerprint. Reduced motion presents the completed silhouette immediately. Muted presentation keeps the visible resolve and the authored acknowledgment; low-quality presentation retains the primary path and accent geometry. No feedback for Brahmalok, Vishnulok, or Kailash may imitate mantra, raga, temple ceremony, sacred bells, conch ritual, damaru performance, or a divine attribute.
+
 ## Garden resolutions
 
 The Garden unlocks only after all seven Beacons. It does not total the player’s answers or declare a winning doctrine. Its seven presences and seven links show how choices affected one another. The Garden’s final resolution is a new commitment made with that history visible.
+
+Each link resolves through an authored 3×3 answer-pair matrix: seven links produce sixty-three exact combinations rather than doctrine-only substitutions. Nine non-valuative relation characters—kept, permeable, witnessed, bounded, open, branching, answerable, responsive, and reciprocal—change the link’s prose and visual cadence without ranking the player or collapsing the two source answers into a score.
 
 ### Boundary — stable closure `warden`
 

@@ -1,4 +1,11 @@
+import type { RealmAnswerId } from '../content/endings'
 import type { UniverseId } from '../content/universes/types'
+import { ANSWER_CHOREOGRAPHY_EVENT } from '../render/answer-choreography'
+import {
+  answerAudioPlan,
+  answerIdFromChoreographyEvent,
+  scheduleAnswerAudioPlan,
+} from './answer-cues'
 
 let ctx: AudioContext | null = null
 let master: GainNode | null = null
@@ -97,6 +104,30 @@ function audio(): { ctx: AudioContext; master: GainNode; output: BiquadFilterNod
     return { ctx, master: master!, output: output! }
   } catch {
     return null
+  }
+}
+
+/** A deterministic, answer-local ceremony. Returns false when audio is unavailable or busy. */
+export function playRealmAnswerChoreography(answerId: RealmAnswerId): boolean {
+  const shared = audio()
+  if (!shared) return false
+  return scheduleAnswerAudioPlan(shared.ctx, shared.master, answerAudioPlan(answerId))
+}
+
+type AnswerAudioWindow = Window & {
+  __clicksimAnswerAudioChoreographyInstalled?: boolean
+}
+
+// The visual dispatch is optional and cancelable. Claim it only after bespoke
+// audio schedules successfully, leaving the existing doctrine cue as fallback.
+if (typeof window !== 'undefined') {
+  const answerWindow = window as AnswerAudioWindow
+  if (!answerWindow.__clicksimAnswerAudioChoreographyInstalled) {
+    answerWindow.__clicksimAnswerAudioChoreographyInstalled = true
+    window.addEventListener(ANSWER_CHOREOGRAPHY_EVENT, (event) => {
+      const answerId = answerIdFromChoreographyEvent(event.detail)
+      if (answerId && playRealmAnswerChoreography(answerId)) event.preventDefault()
+    })
   }
 }
 

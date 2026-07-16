@@ -1,7 +1,13 @@
 import { GUIDE_CHAPTERS } from '../content/guide'
 import { V2_UNIVERSE_BY_ID } from '../content/universes'
 import { ATLAS_FRAGMENTS, ATLAS_LAWS, ATLAS_MASTERIES, CONVERGENCES } from '../endgame/atlas'
-import { GARDEN_CLOSURES, GARDEN_LINKS, GARDEN_NODES } from '../endgame/garden'
+import {
+  GARDEN_CLOSURES,
+  GARDEN_LINK_CHARACTERS,
+  GARDEN_LINKS,
+  GARDEN_LINK_VARIANTS,
+  GARDEN_NODES,
+} from '../endgame/garden'
 import { LUMEN_COMPLICITY_LINES } from '../content/lumen-complicity'
 import { REALM_CHOICE_CALLBACKS, REALM_CONCLUSIONS } from '../content/endings'
 import { SAGA_LUMEN_LINES } from '../content/saga-lumen'
@@ -109,6 +115,14 @@ export function buildEnglishCatalog(): Readonly<Record<string, string>> {
   for (const link of GARDEN_LINKS) {
     put(`garden.link.${link.id}.name`, link.name)
     put(`garden.link.${link.id}.result`, link.result)
+    put(`garden.link.${link.id}.character`, link.characterLabel)
+  }
+  for (const variant of GARDEN_LINK_VARIANTS) {
+    const root = `garden.link.${variant.linkId}.variant.${variant.sourceAnswerId}.${variant.targetAnswerId}`
+    put(`${root}.result`, variant.result)
+  }
+  for (const [character, presentation] of Object.entries(GARDEN_LINK_CHARACTERS)) {
+    put(`garden.link-character.${character}`, presentation.label)
   }
   for (const closure of GARDEN_CLOSURES) {
     put(`garden.closure.${closure.id}.name`, closure.name)

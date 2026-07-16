@@ -35,10 +35,10 @@
     availableGardenClosures,
     gardenAnswerEchoes,
     gardenCredits,
+    gardenLinksForAnswers,
     gardenNodesForAnswers,
     gardenSynthesis,
     gardenUnlocked,
-    GARDEN_LINKS,
     livedAnswers,
   } from '../endgame/garden'
   import type { AutomationProfile, LawLoadout } from '../endgame/types'
@@ -83,6 +83,7 @@
   const closures = $derived(availableGardenClosures(game.beacons, game.pastEndings, game.ending))
   const gardenNodes = $derived(gardenNodesForAnswers(game.realmAnswers))
   const gardenEchoes = $derived(gardenAnswerEchoes(game.realmAnswers))
+  const gardenLinks = $derived(gardenLinksForAnswers(game.realmAnswers))
   const synthesis = $derived(gardenSynthesis(game.realmAnswers))
   const credits = $derived(game.gardenEnding ? gardenCredits(game.gardenEnding, game.realmAnswers) : [])
   const answers = $derived(livedAnswers(game.pastEndings, game.ending))
@@ -447,7 +448,7 @@
       <span class="garden-status" aria-live="polite">{game.gardenEnding ? 'The Garden has received your answer.' : ''}</span>
       <GardenScene
         nodes={gardenNodes}
-        links={GARDEN_LINKS}
+        links={gardenLinks}
         answerEchoes={gardenEchoes}
         {synthesis}
         {closures}

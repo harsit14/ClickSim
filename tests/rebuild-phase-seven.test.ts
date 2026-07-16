@@ -83,8 +83,9 @@ test('the numberless Garden renders no digit-bearing prose', () => {
 
 test('the Garden keeps relations semantic and becomes still with reduced motion', () => {
   const scene = read('../src/ui/GardenScene.svelte')
-  assert.match(scene, /aria-label="Relations among the restored worlds"/)
-  assert.match(scene, /\{link\.name\}: \{link\.result\}/)
+  assert.match(scene, /aria-label="Relations among the restored worlds and lokas"/)
+  assert.match(scene, /\{link\.name\}: \{link\.characterLabel\}\. \{link\.result\}/)
+  assert.match(scene, /data-character=\{characterFor\('shared-sky'\)\}/)
   assert.match(scene, /class:reduced=\{reducedMotion\}/)
   assert.match(scene, /\.reduced \*, :global\(\[data-motion='reduced'\]\) \.garden-scene \* \{ animation: none !important; transition: none !important; \}/)
 })

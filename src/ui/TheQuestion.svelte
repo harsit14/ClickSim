@@ -9,11 +9,17 @@
   import { universeById, type UniverseId } from '../content/universes'
   import { game, chooseRealmAnswer, recordRevisedRealmConclusion } from '../engine/game.svelte'
   import { format } from '../core/format'
+  import type { RenderQuality } from '../core/preferences'
   import { save } from '../core/save'
   import { isPlaying, stopMusic, startMusic } from '../audio/music'
   import { playSupernova, playBloom, playCollect } from '../audio/sfx'
   import { onMount } from 'svelte'
   import { questionInfallBeat } from '../content/infall-rhyme'
+  import {
+    ANSWER_CHOREOGRAPHY_EVENT,
+    answerChoreographyCue,
+  } from '../render/answer-choreography'
+  import AnswerChoreography from './AnswerChoreography.svelte'
   import QuestionInfallRhyme from './QuestionInfallRhyme.svelte'
 
   let {
@@ -21,11 +27,13 @@
     universeId = game.activeUniverse as UniverseId,
     reviewAnswerId = null,
     recordOnly = false,
+    renderQuality = null,
   }: {
     onclose: () => void
     universeId?: UniverseId
     reviewAnswerId?: RealmAnswerId | null
     recordOnly?: boolean
+    renderQuality?: RenderQuality | null
   } = $props()
 
   type Stage = 'lines' | 'choice' | 'epilogue' | 'ending'
@@ -51,6 +59,9 @@
   const allEchoes = $derived(recordOnly || runEchoes.length >= universe.echoes.length)
   const isFinal = $derived(lineIdx === storyLines.length - 1)
   const chosen = $derived(realmAnswerChoice(chosenId))
+  const answerArtQuality = $derived(
+    renderQuality === 'low' || (renderQuality === null && game.visualQuality === 'low') ? 'low' : 'full',
+  )
   const infallBeat = $derived(
     stage === 'lines' && universeId === 'emberlight' ? questionInfallBeat(lineIdx) : null,
   )
@@ -96,13 +107,21 @@
     chosenId = id
     save()
     beginEpilogue(id)
+    // Bespoke audio can claim this cancelable cue with preventDefault(). The
+    // doctrine sound below remains a resilient fallback, not the identity.
+    const cueClaimed = !window.dispatchEvent(new CustomEvent(ANSWER_CHOREOGRAPHY_EVENT, {
+      detail: answerChoreographyCue(id, 'resolve'),
+      cancelable: true,
+    }))
     // Audio is ornament, never authority: a suspended/unsupported context must
     // not strand the player after their answer has already been saved.
     try {
-      if (answer.doctrine === 'warden') playBloom()
-      else if (answer.doctrine === 'hunger' && universeId === 'emberlight') playSupernova()
-      else if (answer.doctrine === 'hunger') playCollect()
-      else playCollect()
+      if (!cueClaimed) {
+        if (answer.doctrine === 'warden') playBloom()
+        else if (answer.doctrine === 'hunger' && universeId === 'emberlight') playSupernova()
+        else if (answer.doctrine === 'hunger') playCollect()
+        else playCollect()
+      }
     } catch {
       // the visual ending continues in silence
     }
@@ -157,6 +176,7 @@
   aria-label={`The Question of ${universe.shortName}`}
   tabindex="-1"
   data-universe={universeId}
+  data-answer-id={chosenId}
   data-review={archivedMode}
   style={`--realm-hue:${universe.palette.accentHue}`}
 >
@@ -185,7 +205,7 @@
       <span class="hint">{isFinal ? 'answer' : 'continue'} <b>›</b></span>
     </button>
   {:else if stage === 'choice'}
-    <section class="choice-stage" aria-labelledby="question-title">
+    <section class="choice-stage" aria-labelledby="question-title" tabindex="-1" data-story-focus>
       <span class="eyebrow">{universe.shortName} · {conclusion.title} · {recordOnly ? 'the revised answer enters the archive' : 'the answer becomes law'}</span>
       <h2 id="question-title">{conclusion.question}</h2>
       <p class="choice-intro">{recordOnly
@@ -193,17 +213,25 @@
         : 'Each answer protects something real and accepts a different debt. The Vessel, Lumen, and the Garden will remember it.'}</p>
 
       <div class="choices" role="group" aria-label={`Choose an answer to: ${conclusion.question}`}>
-        {#each conclusion.choices as choice, index (choice.id)}
+        {#each conclusion.choices as choice (choice.id)}
           {@const locked = !!choice.secret && !allEchoes}
           <button
             class="choice {choice.doctrine}"
             class:locked
             disabled={locked}
             aria-label={locked ? `A third ${universe.shortName} answer is locked until every Echo is recovered` : `${choice.label}. ${choice.stance} Benefit: ${choice.benefit} Cost: ${choice.cost}`}
-            data-story-focus={index === 0 ? '' : undefined}
             onclick={() => choose(choice.id)}
           >
             <span class="choice-glyph" aria-hidden="true">{locked ? '◇' : choice.glyph}</span>
+            {#if locked}
+              <span class="locked-illustration" aria-hidden="true"><i></i><i></i><i></i></span>
+            {:else}
+              <AnswerChoreography
+                answerId={choice.id}
+                phase="preview"
+                quality={answerArtQuality}
+              />
+            {/if}
             <span class="choice-doctrine">{locked ? 'an answer in the margins' : choice.stance}</span>
             <strong>{locked ? 'A Third Answer' : choice.label}</strong>
             <em>{locked ? 'The archive is incomplete. Lumen is still holding a page open.' : `“${choice.line}”`}</em>
@@ -221,6 +249,13 @@
     </section>
   {:else if stage === 'epilogue' && chosen}
     <button class="story-step epilogue" onclick={advance} data-story-focus>
+      <span class="epilogue-illustration" aria-hidden="true">
+        <AnswerChoreography
+          answerId={chosen.id}
+          phase="resolve"
+          quality={answerArtQuality}
+        />
+      </span>
       <span class="ending-mark" aria-hidden="true">{chosen.glyph}</span>
       <span class="sequence">{chosen.label} · final entry {epilogueIdx + 1}/{epilogue.length}</span>
       <span class="sequence-track" aria-hidden="true"><i style:width={`${((epilogueIdx + 1) / epilogue.length) * 100}%`}></i></span>
@@ -230,11 +265,17 @@
       <span class="hint">{epilogueIdx < epilogue.length - 1 ? 'continue' : review ? 'return to the record' : 'record the answer'} <b>›</b></span>
     </button>
   {:else if stage === 'ending' && chosen}
-    <section class="ending-tableau" aria-labelledby="ending-title">
-      <div class="orbit one" aria-hidden="true"></div>
-      <div class="orbit two" aria-hidden="true"></div>
+    <section class="ending-tableau" aria-labelledby="ending-title" tabindex="-1" data-story-focus>
       <span class="eyebrow">{review ? 'revisited entry' : recordOnly ? 'revised entry recorded' : 'answer recorded'} · {universe.shortName}</span>
-      <div class="final-glyph" aria-hidden="true">{chosen.glyph}<small>{universe.route.glyph}</small></div>
+      <div class="final-illustration">
+        <AnswerChoreography
+          answerId={chosen.id}
+          phase="resolve"
+          decorative={false}
+          quality={answerArtQuality}
+        />
+        <span class="final-glyph" aria-hidden="true">{chosen.glyph}<small>{universe.route.glyph}</small></span>
+      </div>
       <h2 id="ending-title">{chosen.label}</h2>
       <p class="doctrine">{conclusion.tableau}</p>
       <blockquote>{chosen.coda}</blockquote>
@@ -254,7 +295,7 @@
       </dl>
 
       <p class="afterword">{conclusion.afterword}</p>
-      <button class="return" onclick={finish} data-story-focus>{review ? 'Close the revisited entry' : recordOnly ? 'Return to the Story Archive' : `Return to the ${universe.currency.toLowerCase()}`}</button>
+      <button class="return" onclick={finish}>{review ? 'Close the revisited entry' : recordOnly ? 'Return to the Story Archive' : `Return to the ${universe.currency.toLowerCase()}`}</button>
     </section>
   {/if}
 </div>
@@ -403,13 +444,23 @@
   @keyframes hint-in { from { opacity: 0; } to { opacity: 1; } }
   .ending-mark {
     position: absolute;
-    top: 22%;
+    top: 18%;
+    z-index: 1;
     font-size: 2.4rem;
     color: rgba(255, 217, 138, 0.52);
     text-shadow: 0 0 30px currentColor;
   }
   .hunger .ending-mark { color: rgba(255, 106, 67, 0.58); }
   .companion .ending-mark { color: rgba(178, 190, 255, 0.62); }
+  .epilogue-illustration {
+    position: absolute;
+    top: 12%;
+    left: 50%;
+    width: min(31rem, 82vw);
+    opacity: 0.2;
+    transform: translateX(-50%) scale(1.25);
+    pointer-events: none;
+  }
 
   .choice-stage {
     position: relative;
@@ -477,6 +528,23 @@
   .choice-glyph { font-size: 2rem; line-height: 1; color: var(--gold); text-shadow: 0 0 24px currentColor; }
   .choice.hunger .choice-glyph { color: #ff8059; }
   .choice.companion .choice-glyph { color: #bdc7ff; }
+  .locked-illustration {
+    position: relative;
+    width: 100%;
+    height: 5.35rem;
+    display: grid;
+    place-items: center;
+    margin: 0.35rem 0 0.2rem;
+  }
+  .locked-illustration i {
+    position: absolute;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px dashed rgba(205, 199, 224, 0.25);
+    transform: rotate(45deg);
+  }
+  .locked-illustration i:nth-child(2) { width: 1.6rem; height: 1.6rem; transform: rotate(22.5deg); }
+  .locked-illustration i:nth-child(3) { width: 0.35rem; height: 0.35rem; background: rgba(205, 199, 224, 0.24); border: 0; border-radius: 50%; }
   .choice-doctrine { min-height: 2.2rem; margin-top: 1.1rem; font-family: Georgia, serif; font-size: 0.72rem; line-height: 1.4; color: var(--dim); }
   .choice strong { margin-top: 0.35rem; font-family: Georgia, serif; font-size: 1.25rem; }
   .choice em { margin-top: 0.65rem; font-family: Georgia, serif; font-size: 0.8rem; line-height: 1.48; color: rgba(199, 194, 216, 0.78); }
@@ -520,26 +588,20 @@
     animation: tableau-in 1.2s ease both;
   }
   @keyframes tableau-in { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
-  .orbit {
-    position: absolute;
-    top: 4.6rem;
-    left: 50%;
-    width: 8.5rem;
-    height: 8.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 50%;
-    transform: translateX(-50%) rotate(18deg) scaleY(0.38);
-    pointer-events: none;
-  }
-  .orbit.two { transform: translateX(-50%) rotate(-28deg) scaleY(0.5); opacity: 0.55; }
-  .final-glyph {
+  .final-illustration {
     position: relative;
-    width: 5rem;
-    height: 5rem;
+    width: min(27rem, 82vw);
+    margin: 0.45rem auto 0;
+  }
+  .final-glyph {
+    position: absolute;
+    right: 0.2rem;
+    bottom: 0.2rem;
+    width: 3.35rem;
+    height: 3.35rem;
     display: grid;
     place-items: center;
-    margin: 0.8rem auto 0;
-    font-size: 2.3rem;
+    font-size: 1.45rem;
     color: var(--gold);
     background: radial-gradient(circle, rgba(255, 217, 138, 0.17), transparent 66%);
     border: 1px solid rgba(255, 217, 138, 0.18);
@@ -626,11 +688,23 @@
     .choice-stage { padding-top: 2.6rem; }
     .choices { grid-template-columns: 1fr; }
     .choice { min-height: 0; padding: 0.9rem; }
+    .choice :global(.answer-choreography.preview) { height: 4.45rem; }
     .choice-doctrine { min-height: 0; margin-top: 0.6rem; }
     .choice-law { margin-top: 0.8rem; }
     .ending-tableau { padding-top: 2rem; }
+    .final-illustration { width: min(24rem, 88vw); }
     .journey { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .permanent-law { align-items: flex-start; flex-direction: column; gap: 0.3rem; }
+  }
+
+  @media (min-width: 761px) and (max-height: 800px) {
+    .choice-stage { max-height: 82vh; padding-block: 0.65rem 0.8rem; }
+    .choice-stage h2 { font-size: clamp(1.9rem, 4.2vw, 2.8rem); }
+    .choice-intro { margin-bottom: 0.8rem; }
+    .choice { min-height: 0; padding: 0.9rem; }
+    .choice :global(.answer-choreography.preview) { height: 4.35rem; margin-top: 0.15rem; }
+    .choice-doctrine { min-height: 1.9rem; margin-top: 0.65rem; }
+    .ending-tableau { max-height: 82vh; padding-block: 0.65rem 0.8rem; }
   }
 
   @media (prefers-reduced-motion: reduce) {

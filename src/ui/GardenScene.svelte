@@ -117,6 +117,21 @@
           : 'Stay outside the answer.',
   )
   const selectedNode = $derived(nodes.find((node) => node.universeId === selectedUniverseId) ?? nodes[0] ?? null)
+  let selectedLinkId = $state<string | null>(null)
+  const selectedLink = $derived(selectedLinkId ? links.find((link) => link.id === selectedLinkId) ?? null : null)
+
+  function characterFor(linkId: string): GardenLink['character'] {
+    return links.find((link) => link.id === linkId)?.character ?? 'latent'
+  }
+
+  function readPresence(universeId: UniverseId) {
+    selectedLinkId = null
+    selectedUniverseId = universeId
+  }
+
+  function readRelation(linkId: string) {
+    selectedLinkId = linkId
+  }
 
   function cancelFrame() {
     if (animationFrame !== null) cancelAnimationFrame(animationFrame)
@@ -294,7 +309,7 @@
     <h2 id="garden-title">The Garden</h2>
   </header>
 
-  {#if ritual === 'choice' && selectedNode}
+  {#if ritual === 'choice' && selectedNode && !selectedLink}
     <section class="presence-reading" aria-live="polite" aria-label={`Question from ${selectedNode.name}`}>
       <span>{selectedNode.name} asks</span>
       <strong>{selectedNode.question}</strong>
@@ -303,20 +318,14 @@
   {/if}
 
   <svg class="relations" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
-    <path class="shared-sky" d="M 135 170 C 330 80, 520 110, 780 150" />
-    <path class="rain-treaty" d="M 125 420 C 230 520, 350 520, 455 455" />
-    <path class="weather-clock" d="M 855 395 C 900 310, 900 230, 820 190" />
-    <path class="choir-storms" d="M 860 405 C 750 540, 600 560, 500 500" />
-    <path class="garden-map" d="M 450 470 C 470 510, 485 515, 505 505" />
-    <path class="open-future" d="M 815 185 C 800 145, 790 140, 775 150" />
-    <path class="first-water" d="M 130 175 C 65 250, 70 340, 120 420" />
+    <path class="shared-sky" data-character={characterFor('shared-sky')} data-selected={selectedLink?.id === 'shared-sky'} d="M 135 170 C 330 80, 520 110, 780 150" />
+    <path class="rain-treaty" data-character={characterFor('rain-treaty')} data-selected={selectedLink?.id === 'rain-treaty'} d="M 125 420 C 230 520, 350 520, 455 455" />
+    <path class="weather-clock" data-character={characterFor('weather-clock')} data-selected={selectedLink?.id === 'weather-clock'} d="M 855 395 C 900 310, 900 230, 820 190" />
+    <path class="choir-storms" data-character={characterFor('choir-storms')} data-selected={selectedLink?.id === 'choir-storms'} d="M 860 405 C 750 540, 600 560, 500 500" />
+    <path class="garden-map" data-character={characterFor('garden-map')} data-selected={selectedLink?.id === 'garden-map'} d="M 450 470 C 470 510, 485 515, 505 505" />
+    <path class="open-future" data-character={characterFor('open-future')} data-selected={selectedLink?.id === 'open-future'} d="M 815 185 C 800 145, 790 140, 775 150" />
+    <path class="first-water" data-character={characterFor('first-water')} data-selected={selectedLink?.id === 'first-water'} d="M 130 175 C 65 250, 70 340, 120 420" />
   </svg>
-
-  <div class="relation-names" aria-hidden="true">
-    {#each links as link (link.id)}
-      <span class={link.id}>{link.name}</span>
-    {/each}
-  </div>
 
   <div class="presences">
     {#each nodes as node (node.universeId)}
@@ -344,9 +353,9 @@
           disabled={ritual !== 'choice' || !!ending}
           aria-pressed={selectedNode?.universeId === node.universeId}
           aria-label={`Read ${node.name}: ${node.question}`}
-          onfocus={() => (selectedUniverseId = node.universeId)}
-          onpointerenter={() => (selectedUniverseId = node.universeId)}
-          onclick={() => (selectedUniverseId = node.universeId)}
+          onfocus={() => readPresence(node.universeId)}
+          onpointerenter={() => readPresence(node.universeId)}
+          onclick={() => readPresence(node.universeId)}
         ><span class="sr-only">Read {node.name}</span></button>
         {#if ritual === 'warden' && !ending}
           <button
@@ -367,6 +376,26 @@
       </figure>
     {/each}
   </div>
+
+  <nav class="relation-names" aria-label="Relations among the restored worlds and lokas">
+    {#each links as link (link.id)}
+      <button
+        class={link.id}
+        data-character={link.character}
+        disabled={ritual !== 'choice' || !!ending}
+        aria-pressed={selectedLink?.id === link.id}
+        aria-label={`Read ${link.name}: ${link.characterLabel}. ${link.result}`}
+        onclick={() => readRelation(link.id)}
+      ><i aria-hidden="true">{link.characterGlyph}</i><span>{link.name}</span></button>
+    {/each}
+  </nav>
+
+  {#if ritual === 'choice' && !ending && selectedLink}
+    <section class="relation-reading" aria-live="polite" aria-label="Selected relation between restored presences">
+      <span><i aria-hidden="true">{selectedLink.characterGlyph}</i>{selectedLink.name} · {selectedLink.characterLabel}</span>
+      <strong>{selectedLink.result}</strong>
+    </section>
+  {/if}
 
   <div class="clearing" aria-hidden="true"><i></i><b></b></div>
 
@@ -438,9 +467,9 @@
     </section>
   {/if}
 
-  <ul class="sr-only" aria-label="Relations among the restored worlds">
+  <ul class="sr-only" aria-label="Full results of relations among the restored worlds and lokas">
     {#each links as link (link.id)}
-      <li>{link.name}: {link.result}</li>
+      <li>{link.name}: {link.characterLabel}. {link.result}</li>
     {/each}
   </ul>
 </section>
@@ -484,18 +513,34 @@
   .garden-heading span { display: block; color: rgba(232, 226, 204, .76); font-size: .6875rem; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
   .garden-heading h2 { margin: .25rem 0 0; color: rgba(239, 226, 196, .86); font: italic clamp(1.45rem, 2.3vw, 2.35rem) Fraunces, Georgia, serif; font-weight: 400; letter-spacing: .03em; }
 
-  .presence-reading { position: absolute; z-index: 6; top: 11.5%; left: 50%; width: min(29rem, 72vw); padding: .55rem .8rem; transform: translateX(-50%); text-align: center; background: rgba(5,8,8,.84); border: 1px solid rgba(232,221,198,.2); border-radius: .65rem; }
-  .presence-reading span { display: block; color: rgba(232,226,204,.76); font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; }
-  .presence-reading strong { display: block; margin-top: .18rem; color: #fff3d9; font: italic 700 .82rem/1.35 Fraunces, Georgia, serif; }
+  .presence-reading, .relation-reading { position: absolute; z-index: 6; top: 11.5%; left: 50%; width: min(29rem, 72vw); padding: .55rem .8rem; transform: translateX(-50%); text-align: center; background: rgba(5,8,8,.84); border: 1px solid rgba(232,221,198,.2); border-radius: .65rem; }
+  .presence-reading span, .relation-reading span { display: block; color: rgba(232,226,204,.76); font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; }
+  .presence-reading strong, .relation-reading strong { display: block; margin-top: .18rem; color: #fff3d9; font: italic 700 .82rem/1.35 Fraunces, Georgia, serif; }
   .presence-reading em { display: block; margin-top: .18rem; color: rgba(232,226,204,.72); font-size: .6875rem; font-style: normal; }
+  .relation-reading i { margin-right: .45rem; color: #f3d99e; font-style: normal; letter-spacing: .02em; }
 
   .relations { z-index: -1; width: 100%; height: 100%; opacity: .48; transition: opacity .8s ease, filter .8s ease; }
-  .relations path { fill: none; stroke: rgba(198, 186, 143, .28); stroke-width: 1.1; stroke-dasharray: 2 8; vector-effect: non-scaling-stroke; animation: relation-breathe 9s ease-in-out infinite alternate; }
+  .relations path { --relation-travel: 20; fill: none; stroke: rgba(198, 186, 143, .28); stroke-width: 1.1; stroke-dasharray: 2 8; vector-effect: non-scaling-stroke; animation: relation-breathe 9s ease-in-out infinite alternate; transition: opacity .35s ease, stroke-width .35s ease, filter .35s ease; }
+  .relations path[data-character='held'] { --relation-travel: 7; stroke-dasharray: 1 5 1 10; animation-duration: 12s; }
+  .relations path[data-character='spillway'] { --relation-travel: 18; stroke-dasharray: 8 5; animation-duration: 8s; }
+  .relations path[data-character='handoff'] { --relation-travel: 14; stroke-dasharray: 2 4 9 4; animation-duration: 10s; }
+  .relations path[data-character='tempered'] { --relation-travel: -12; stroke-width: 1.35; stroke-dasharray: 10 3 1 3; animation-duration: 11s; }
+  .relations path[data-character='open'] { --relation-travel: 5; stroke-width: 1.55; stroke-dasharray: none; animation-duration: 13s; }
+  .relations path[data-character='branching'] { --relation-travel: 24; stroke-width: 1.3; stroke-dasharray: 3 3 1 6; animation-duration: 7s; }
+  .relations path[data-character='answered'] { --relation-travel: -9; stroke-dasharray: 1 3 6 3; animation-duration: 12s; }
+  .relations path[data-character='responsive'] { --relation-travel: -20; stroke-width: 1.4; stroke-dasharray: 7 5 2 5; animation-duration: 8.5s; }
+  .relations path[data-character='reciprocal'] { --relation-travel: 12; stroke-width: 1.6; stroke-dasharray: 2 2; animation-direction: alternate-reverse; animation-duration: 10s; }
+  .relations path[data-selected='true'] { opacity: 1; stroke-width: 2.15; filter: drop-shadow(0 0 .3rem currentColor); }
   .relations .rain-treaty { stroke: rgba(91, 196, 166, .25); }
   .relations .weather-clock, .relations .open-future { stroke: rgba(145, 190, 212, .24); }
   .relations .choir-storms, .relations .garden-map { stroke: rgba(170, 145, 213, .22); }
-  .relation-names { z-index: 0; pointer-events: none; }
-  .relation-names span { position: absolute; color: rgba(238, 229, 195, .72); font: italic .6875rem Fraunces, Georgia, serif; letter-spacing: .04em; text-shadow: 0 1px .35rem #000; }
+  .relation-names { z-index: 5; pointer-events: none; }
+  .relation-names button { position: absolute; display: inline-grid; place-items: center; width: 2.25rem; min-height: 2.25rem; padding: .2rem; color: rgba(238,229,195,.72); background: rgba(5,8,8,.68); border: 1px solid rgba(238,229,195,.1); border-radius: 999px; font: italic .6875rem Fraunces, Georgia, serif; letter-spacing: .04em; text-shadow: 0 1px .35rem #000; pointer-events: auto; cursor: pointer; }
+  .relation-names button i { color: rgba(245,218,158,.78); font: normal .58rem/1 ui-monospace, monospace; letter-spacing: 0; }
+  .relation-names button span { position: absolute; top: calc(100% + .25rem); left: 50%; z-index: 2; width: max-content; max-width: 10rem; padding: .25rem .38rem; opacity: 0; color: #fff3d9; background: rgba(5,8,8,.94); border: 1px solid rgba(238,229,195,.2); border-radius: .3rem; line-height: 1.25; transform: translateX(-50%); transition: opacity .18s ease; pointer-events: none; }
+  .relation-names button:hover span, .relation-names button:focus-visible span, .relation-names button[aria-pressed='true'] span { opacity: 1; }
+  .relation-names button:hover, .relation-names button:focus-visible, .relation-names button[aria-pressed='true'] { color: #fff3d9; background: rgba(12,16,15,.9); border-color: rgba(238,229,195,.3); outline: none; }
+  .relation-names button:disabled { opacity: .42; pointer-events: none; }
   .relation-names .shared-sky { top: 16%; left: 44%; }
   .relation-names .rain-treaty { left: 25%; bottom: 18%; }
   .relation-names .weather-clock { top: 37%; right: 8%; }
@@ -524,6 +569,7 @@
   figcaption span { color: rgba(238, 231, 211, .76); font-size: .6875rem; }
   figcaption small { color: transparent; font: italic .6875rem/1.35 Fraunces, Georgia, serif; transition: color .2s ease; }
   figcaption em { color: rgba(238, 231, 211, .7); font-size: .6875rem; font-style: normal; letter-spacing: .03em; }
+  figcaption small, figcaption em { display: none; }
   .presence.selected figcaption small,
   .presence:focus-within figcaption small { color: rgba(255, 246, 224, .92); }
   .tend-presence { position: relative; z-index: 2; min-height: 1.5rem; margin-top: .35rem; padding: .28rem .4rem; color: color-mix(in srgb, var(--world) 55%, #efe2c9); background: rgba(4,8,8,.72); border: 1px solid color-mix(in srgb, var(--world) 35%, transparent); border-radius: 50%; font-size: .6875rem; letter-spacing: .04em; cursor: pointer; }
@@ -567,7 +613,7 @@
   .clearing i { position: absolute; inset: 24%; border: 1px solid rgba(224,205,151,.13); border-radius: 50%; }
   .clearing b { position: absolute; left: 50%; top: 50%; width: .28rem; height: .28rem; border-radius: 50%; background: rgba(251,227,165,.7); box-shadow: 0 0 2rem .5rem rgba(251,227,165,.15); }
 
-  .garden-answers, .garden-credits { position: absolute; z-index: 6; left: 50%; top: 46%; width: min(40rem, 46vw); transform: translate(-50%, -50%); text-align: center; }
+  .garden-answers, .garden-credits { position: absolute; z-index: 6; left: 50%; top: 46%; width: min(34rem, 40vw); transform: translate(-50%, -50%); text-align: center; }
   .synthesis { margin-bottom: .65rem; padding: .55rem .75rem; background: rgba(5,8,8,.78); border: 1px solid rgba(232,221,198,.14); border-radius: .65rem; }
   .synthesis > span { display: block; color: rgba(232,221,198,.48); font-size: .5rem; letter-spacing: .13em; text-transform: uppercase; }
   .synthesis > strong { display: block; margin-top: .22rem; color: rgba(247,231,199,.82); font: 600 .65rem/1.35 Fraunces, Georgia, serif; }
@@ -619,7 +665,7 @@
 
   .frozen * { animation-play-state: paused !important; transition: none !important; }
   .reduced *, :global([data-motion='reduced']) .garden-scene * { animation: none !important; transition: none !important; }
-  @keyframes relation-breathe { to { opacity: .62; stroke-dashoffset: 20; } }
+  @keyframes relation-breathe { to { opacity: .62; stroke-dashoffset: var(--relation-travel); } }
   @keyframes ember-tend { to { transform: scale(.82) rotate(3deg); opacity: .72; } }
   @keyframes water-return { 0% { transform: translateY(0) rotate(45deg); opacity: .2; } 48% { opacity: .8; } 70% { transform: translateY(2.3rem) rotate(45deg); opacity: 0; } 100% { transform: translateY(0) rotate(45deg); opacity: 0; } }
   @keyframes escapement { to { transform: rotate(360deg); } }
@@ -632,15 +678,27 @@
     .garden-heading { top: 5rem; left: 1rem; right: 1rem; transform: none; }
     .garden-heading span { white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
     .presence-reading { top: 8.75rem; width: calc(100% - 2rem); }
-    .relations, .relation-names { display: none; }
+    .relations { display: none; }
     .presences { position: relative; inset: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem .5rem; padding: 14rem 1rem 2rem; }
     .presence { position: relative; left: auto !important; top: auto !important; width: auto; transform: none; }
     .presence.kailash { grid-column: 1 / -1; }
+    figcaption small, figcaption em { display: block; }
     figcaption small { color: rgba(235,226,204,.58); }
+    .relation-names { position: relative; inset: auto; display: flex; gap: .35rem; margin: 0 1rem .65rem; padding: .25rem 0 .4rem; overflow-x: auto; overscroll-behavior-inline: contain; pointer-events: auto; scrollbar-width: thin; }
+    .relation-names button { position: static; display: inline-flex; flex: 0 0 auto; width: auto; min-height: 2.75rem; gap: .35rem; padding: .45rem .6rem; border-radius: .45rem; white-space: nowrap; }
+    .relation-names button span { position: static; width: auto; max-width: none; padding: 0; opacity: 1; background: transparent; border: 0; transform: none; }
+    .relation-reading { position: relative; inset: auto; width: calc(100% - 2rem); margin: 0 auto 1.25rem; transform: none; }
     .clearing { display: none; }
     .garden-answers, .garden-credits, .ritual-instruction { position: relative; left: auto; top: auto; bottom: auto; width: calc(100% - 2rem); margin: 0 auto 2rem; transform: none; }
     .answer-paths { flex-wrap: wrap; }
     .answer-paths .path { flex: 1 1 42%; }
+  }
+  @media (min-width: 901px) and (max-height: 800px) {
+    .presence.tidefall, .presence.vishnulok { top: 68%; }
+    .presence.verdance { top: 77%; left: 31%; }
+    .presence.kailash { top: 78%; left: 65%; }
+    .presence.brahmalok { left: 75%; }
+    .presence.clockwork { left: 86%; }
   }
   @media (prefers-reduced-motion: reduce) {
     .garden-scene *, .garden-scene *::before, .garden-scene *::after { animation: none !important; transition: none !important; }

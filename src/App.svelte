@@ -773,7 +773,8 @@
     document.documentElement.dataset.textScale = game.textScale
     document.documentElement.dataset.contrast = game.highContrast ? 'high' : 'standard'
     document.documentElement.dataset.beatVisual = game.beatVisual
-    document.documentElement.dataset.visualQuality = game.visualQuality
+    document.documentElement.dataset.visualQuality = effectiveQuality
+    document.documentElement.dataset.visualQualityPreference = game.visualQuality
     document.documentElement.dataset.worldScenery = game.showWorldScenery ? 'shown' : 'hidden'
     document.documentElement.dataset.interactionEffects = game.showInteractionEffects ? 'shown' : 'hidden'
     const theme = THEME_BY_ID.get(game.theme) ?? THEME_BY_ID.get('ember')!
@@ -1138,6 +1139,7 @@
     universeId={conclusionReview?.universeId ?? game.activeUniverse as UniverseId}
     reviewAnswerId={conclusionReview?.answerId ?? null}
     recordOnly={conclusionReview !== null && conclusionReview.answerId === null}
+    renderQuality={effectiveQuality}
     onclose={closeQuestion}
   />
 {/if}
