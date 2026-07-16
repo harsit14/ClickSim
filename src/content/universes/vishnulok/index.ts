@@ -25,7 +25,7 @@ export const VISHNULOK_SPEC: FutureUniverseSpec = {
   epithet: 'The Sustaining Ocean',
   premise: 'Enter a realm where preservation means noticing imbalance, offering refuge, and returning every correction to the living whole.',
   primaryVerb: 'sustain',
-  question: 'Can order remain responsive enough to protect life without imprisoning it?',
+  question: 'When care changes what it saves, what makes the return the same?',
   currency: 'Continuity',
   currencyGlyph: '≈',
   currencyMaterial: 'shared duration carried through currents, shelters, seasons, and remembered routes',

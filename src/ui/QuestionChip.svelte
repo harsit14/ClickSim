@@ -40,4 +40,7 @@
   @media (max-width: 720px) {
     .ask { bottom: var(--mobile-transient-bottom, 48vh); min-height: 2.75rem; max-width: calc(100vw - 1rem); }
   }
+  @media (prefers-reduced-motion: reduce) {
+    .ask { animation: none; transition: none; }
+  }
 </style>

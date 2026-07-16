@@ -77,7 +77,8 @@
   import { worldRef } from './render/world-ref'
   import { clearToasts, setToastPreferences } from './systems/toasts.svelte'
   import { resetSessionFeedback } from './feedback/reset-session'
-  import type { EconomyAmount } from './content/universes/types'
+  import type { EconomyAmount, UniverseId } from './content/universes/types'
+  import type { RealmAnswerId } from './content/endings'
   import type { OfflineReturnSummary } from './core/offline-pacing'
   import { ONE_AMOUNT, ZERO_AMOUNT, addAmounts, amountFromNumber, gteAmount, isZeroAmount } from './core/numeric/amount'
   import { format } from './core/format'
@@ -124,6 +125,8 @@
 
   let cutsceneActive = $state(false)
   let questionOpen = $state(false)
+  let conclusionReview = $state<{ universeId: UniverseId; answerId: RealmAnswerId | null } | null>(null)
+  let codexInitialTab = $state<'journal' | 'conclusions'>('journal')
   let remembering = $state(false)
   let crossingPrelude = $state(false)
   let crossingTarget = $state<string | null>(null)
@@ -412,6 +415,7 @@
   function toggleCodex() {
     const next = !shell.panels.codex
     closeAll()
+    if (next) codexInitialTab = 'journal'
     shell.panels.codex = next
   }
   function toggleDeep() {
@@ -724,6 +728,22 @@
     closeAll()
     clockworkRevelationReplay = true
     clockworkRevelationActive = true
+  }
+
+  function replayRealmConclusion(universeId: UniverseId, answerId: RealmAnswerId | null) {
+    closeAll()
+    conclusionReview = { universeId, answerId }
+    questionOpen = true
+  }
+
+  function closeQuestion() {
+    const wasReview = conclusionReview !== null
+    questionOpen = false
+    conclusionReview = null
+    if (wasReview) {
+      codexInitialTab = 'conclusions'
+      shell.panels.codex = true
+    }
   }
 
   function finishClockworkRevelation() {
@@ -1047,9 +1067,11 @@
   {/if}
   {#if shell.panels.codex}
     <Codex
+      initialTab={codexInitialTab}
       onclose={() => (shell.panels.codex = false)}
       onremember={beginRemembranceReview}
       onreplayclockwork={replayClockworkRevelation}
+      onreplayconclusion={replayRealmConclusion}
     />
   {/if}
   {#if shell.panels.deep}
@@ -1058,7 +1080,7 @@
   {#if shell.panels.steward}
     <IdleSteward onclose={() => (shell.panels.steward = false)} onreviewrealm={reviewRealmManager} />
   {/if}
-  <QuestionChip onopen={() => { closeAll(); questionOpen = true }} />
+  <QuestionChip onopen={() => { closeAll(); conclusionReview = null; questionOpen = true }} />
 </div>
 {#if photoMode}
   <aside class="photo-controls instrument-panel" aria-label="Photo mode controls">
@@ -1112,7 +1134,12 @@
   <DeepCollapseCeremony doReset={resetForDeepCollapse} onfinished={afterDeepCollapse} timeScale={deepCollapseTimeScale} />
 {/if}
 {#if questionOpen}
-  <TheQuestion onclose={() => (questionOpen = false)} />
+  <TheQuestion
+    universeId={conclusionReview?.universeId ?? game.activeUniverse as UniverseId}
+    reviewAnswerId={conclusionReview?.answerId ?? null}
+    recordOnly={conclusionReview !== null && conclusionReview.answerId === null}
+    onclose={closeQuestion}
+  />
 {/if}
 {#if remembering}
   <RemembranceOverlay onfinished={() => (remembering = false)} />

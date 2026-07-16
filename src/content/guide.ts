@@ -305,22 +305,22 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
     nav: 'Story & endings',
     eyebrow: 'the archive speaks',
     title: 'Lumen, the Story Archive, The Question, and Remembrance',
-    summary: 'Story is delivered through short ambient lines, collectible Echoes, major in-engine scenes, and a final answer that changes future play.',
-    keywords: ['lumen', 'echo', 'codex', 'story', 'question', 'ending', 'warden', 'hunger', 'companion', 'remembrance', 'spoiler'],
+    summary: 'Each realm ends with its own Question; the Story Archive carries every answer into later dialogue, crossings, and the Garden.',
+    keywords: ['lumen', 'echo', 'codex', 'story', 'question', 'conclusion', 'answer', 'warden', 'hunger', 'companion', 'remembrance', 'spoiler'],
     blocks: [
       {
         heading: 'Lumen and the Story Archive',
         paragraphs: [
           'Lumen’s ticker reacts to milestones but never blocks input. Every line in the saved realm histories is retained in occurrence order. Open the Story Archive from the dock to revisit the latest line or read the complete journal for every visited realm.',
-          'Recovered Echoes are longer archive fragments from economic and generator milestones. They remain available in the Story Archive’s Echoes tab.',
+          'Recovered Echoes are longer archive fragments from economic and generator milestones. They remain available in the Story Archive’s Echoes tab, while the Realm Conclusions tab keeps every Question, answer, tradeoff, consequence, and replay.',
           'Echo collections belong to their realm. Completing the active realm’s archive can reveal an additional answer when The Question arrives.',
         ],
       },
       {
         heading: 'The Question',
         paragraphs: [
-          'Act III culminates in a narrative choice rather than another numeric reset. Each answer grants a permanent law and recolors the central object. The game continues after an ending, with new Lumen lines acknowledging the chosen doctrine.',
-          'After an ending, the Story Archive offers Remembrance: return to the first point of light while retaining the archive and record. Each Remembrance doubles production and allows another answer to be chosen later.',
+          'Every realm culminates in a different narrative choice rather than another numeric reset. Its three answers protect different values and name both a benefit and a cost. Across realms, those answers revisit Boundary, Renewal, and Relation without replacing each realm’s own language.',
+          'The answer is recorded for that realm without replacing choices made elsewhere. Later Lumen lines, conclusion scenes, the crossing Vessel, and the Garden can recall it. After an ending, the Story Archive offers Remembrance: return the active realm to its first point of light while retaining all realm conclusions and the permanent record.',
         ],
         note: 'The guide explains the system without revealing the central story twist. A spoiler panel inside this chapter records the exact ending bonuses for players who choose to open it.',
       },
@@ -344,7 +344,7 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
       {
         heading: 'The Garden is an ending',
         paragraphs: [
-          'After all seven Beacons are lit, the Garden places four restored worlds and three lokas in relationship rather than opening an eighth generator ladder. Creation, preservation, and responsible release remain distinct; the Garden is renewal after Kailash, not a fourth divine realm. Warden, Hunger, and Companion each receive a fulfilled closure. After all three answers have been lived across Remembrances, Continue reconciles them without declaring any one answer false.',
+          'After all seven Beacons are lit, the Garden places four restored worlds and three lokas in relationship rather than opening an eighth generator ladder. It reads all seven realm conclusions together, without scoring a winning worldview. Creation, preservation, and responsible release remain distinct; the Garden is renewal after Kailash, not a fourth divine realm. Boundary, Renewal, and Relation each receive a fulfilled closure. Continue appears once all three commitments have been lived across Remembrances, and reconciles them without declaring any one answer false.',
           'Brahmalok, Vishnulok, and Kailash are approached through respectful game-fiction rather than owned as resources. Their deities are never generators, currencies, opponents, or upgrade buttons; the loka systems express creation, refuge and continuity, and responsible release through environments, choices, and relationships.',
           'The credits scene is replayable through the permanent record. Choosing closure does not erase the save; it makes the transition from authored saga to continuing mastery explicit.',
         ],

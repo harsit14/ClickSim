@@ -251,6 +251,17 @@ export function createDevScenario(name: string | null, now = Date.now()): SaveDa
       vesselParts: ['hull-hearths', 'sails-constellation', 'heart-sun', 'keel-trials', 'archive'],
     })
     if (!scenario) return null
+    if (name === 'garden') {
+      scenario.realmAnswers = {
+        emberlight: ['emberlight-bank-fire'],
+        tidefall: ['tidefall-trust-current'],
+        verdance: ['verdance-graft-inheritance'],
+        clockwork: ['clockwork-keep-warnings'],
+        brahmalok: ['brahmalok-release-work'],
+        vishnulok: ['vishnulok-returned-name'],
+        kailash: ['kailash-leave-path'],
+      }
+    }
     if (name === 'verdance') {
       scenario.numericLawState = {
         'verdance-kindling-01-cohort-quantity': amountFromNumber(70),

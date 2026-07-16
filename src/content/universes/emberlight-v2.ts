@@ -448,7 +448,7 @@ export const EMBERLIGHT_V2_SUPPLEMENT: UniversePackV2Supplement = {
     epithet: 'The Known Sky',
     premise: 'Rebuild a universe from plasma, dust, gravity, stars, galaxies, and the cosmic web.',
     primaryVerb: 'kindle',
-    civilizationQuestion: 'Is creation an act of care, or only hunger delayed?',
+    civilizationQuestion: 'What does a beginning owe the dark it spends?',
   },
   economy: {
     currency: {
@@ -515,7 +515,7 @@ export const EMBERLIGHT_V2_SUPPLEMENT: UniversePackV2Supplement = {
   },
   trials: TRIALS,
   story: {
-    civilizationQuestion: 'Is creation an act of care, or only hunger delayed?',
+    civilizationQuestion: 'What does a beginning owe the dark it spends?',
     scenes: [
       { id: 'emberlight-arrival', kind: 'arrival', skippableAfterFirstView: true, replayable: true },
       { id: 'emberlight-supernova-scene', kind: 'epoch', skippableAfterFirstView: true, replayable: true },

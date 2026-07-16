@@ -9,6 +9,7 @@ import type { BeatVisual, MotionPreference, TextScale, VisualQuality } from '../
 import { ONE_AMOUNT, ZERO_AMOUNT } from '../../core/numeric/amount'
 import { emptyEndgameState, type ActiveAtlasRoute, type EndgameState, type LawLoadout } from '../../endgame/types'
 import type { EcoState } from '../compute'
+import type { RealmAnswerHistory } from '../../content/endings'
 
 export type BuyAmount = 1 | 10 | 100 | 'max'
 
@@ -111,6 +112,8 @@ export interface GameState extends EcoState, Omit<EndgameState,
   challengeReturn: RunSnapshot | null
   theme: string
   pastEndings: Array<'warden' | 'hunger' | 'companion'>
+  /** Realm-keyed narrative answers, including earlier Remembrance choices. */
+  realmAnswers: RealmAnswerHistory
   curiosities: string[]
   keeperFedUntil: number
   snailLastGiftAt: number
@@ -179,6 +182,7 @@ export const game: GameState = $state({
   theme: 'ember',
   remembrances: 0,
   pastEndings: [],
+  realmAnswers: {},
   curiosities: [],
   keeperFedUntil: 0,
   snailLastGiftAt: 0,

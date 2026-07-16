@@ -3,6 +3,8 @@ import { V2_UNIVERSE_BY_ID } from '../content/universes'
 import { ATLAS_FRAGMENTS, ATLAS_LAWS, ATLAS_MASTERIES, CONVERGENCES } from '../endgame/atlas'
 import { GARDEN_CLOSURES, GARDEN_LINKS, GARDEN_NODES } from '../endgame/garden'
 import { LUMEN_COMPLICITY_LINES } from '../content/lumen-complicity'
+import { REALM_CHOICE_CALLBACKS, REALM_CONCLUSIONS } from '../content/endings'
+import { SAGA_LUMEN_LINES } from '../content/saga-lumen'
 
 export const SHELL_MESSAGES: Readonly<Record<string, string>> = {
   'shell.game-title': 'EMBER',
@@ -113,6 +115,37 @@ export function buildEnglishCatalog(): Readonly<Record<string, string>> {
     put(`garden.closure.${closure.id}.consequence`, closure.consequence)
     put(`garden.closure.${closure.id}.final-line`, closure.finalLine)
   }
+  for (const [universeId, conclusion] of Object.entries(REALM_CONCLUSIONS)) {
+    const root = `conclusion.${universeId}`
+    put(`${root}.title`, conclusion.title)
+    put(`${root}.theme`, conclusion.theme)
+    put(`${root}.conflict`, conclusion.conflict)
+    put(`${root}.emotional-purpose`, conclusion.emotionalPurpose)
+    put(`${root}.tableau`, conclusion.tableau)
+    put(`${root}.archive-title`, conclusion.archiveTitle)
+    put(`${root}.question`, conclusion.question)
+    conclusion.lines.forEach((line, index) => put(`${root}.line.${index}`, line))
+    put(`${root}.afterword`, conclusion.afterword)
+    for (const answer of conclusion.choices) {
+      const answerRoot = `${root}.answer.${answer.id}`
+      put(`${answerRoot}.label`, answer.label)
+      put(`${answerRoot}.stance`, answer.stance)
+      put(`${answerRoot}.line`, answer.line)
+      put(`${answerRoot}.benefit`, answer.benefit)
+      put(`${answerRoot}.cost`, answer.cost)
+      put(`${answerRoot}.acknowledgment`, answer.acknowledgment)
+      put(`${answerRoot}.coda`, answer.coda)
+      put(`${answerRoot}.law`, answer.lawName)
+      put(`${answerRoot}.vessel`, answer.vesselEcho)
+      put(`${answerRoot}.garden`, answer.gardenEcho)
+      answer.epilogue.forEach((line, index) => put(`${answerRoot}.epilogue.${index}`, line))
+    }
+  }
+  for (const callback of REALM_CHOICE_CALLBACKS) {
+    put(`conclusion.callback.${callback.id}.completion`, callback.completionLine)
+    put(`conclusion.callback.${callback.id}.lumen`, callback.lumenLine)
+  }
+  for (const line of SAGA_LUMEN_LINES) put(`lumen.saga.${line.id}`, line.text)
   for (const line of LUMEN_COMPLICITY_LINES) put(`lumen.complicity.${line.id}`, line.text)
 
   return Object.fromEntries(Object.entries(messages).sort(([left], [right]) => left.localeCompare(right)))

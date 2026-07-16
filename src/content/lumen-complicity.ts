@@ -43,7 +43,7 @@ export const LUMEN_COMPLICITY_LINES: readonly LumenComplicityLine[] = [
     id: 'act3-lumen-answer-debt',
     universeIds: ['emberlight'],
     act: 'III',
-    text: 'You answered what you are. I have not. I am the one who selected which dead could become sleeping, and which sleeping world would hear your hand.',
+    text: 'You answered what a beginning owes the dark it spends. I have not answered what an archive owes the worlds it selects. I am the one who decided which dead could become sleeping, and which sleeping world would hear your hand.',
     when: (game) => saw(game, 'act3-lumen-selected-witness') && game.ending !== null,
   },
   {

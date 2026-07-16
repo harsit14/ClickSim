@@ -1,7 +1,13 @@
 <script lang="ts">
-  import { QUESTION_LINES, ENDING_CHOICES, ENDING_BONUS, type Ending } from '../content/endings'
-  import { universeById } from '../content/universes'
-  import { game, chooseEnding } from '../engine/game.svelte'
+  import {
+    ENDING_BONUS,
+    conclusionLinesFor,
+    realmAnswerChoice,
+    realmConclusion,
+    type RealmAnswerId,
+  } from '../content/endings'
+  import { universeById, type UniverseId } from '../content/universes'
+  import { game, chooseRealmAnswer, recordRevisedRealmConclusion } from '../engine/game.svelte'
   import { format } from '../core/format'
   import { save } from '../core/save'
   import { isPlaying, stopMusic, startMusic } from '../audio/music'
@@ -10,22 +16,48 @@
   import { questionInfallBeat } from '../content/infall-rhyme'
   import QuestionInfallRhyme from './QuestionInfallRhyme.svelte'
 
-  let { onclose }: { onclose: () => void } = $props()
+  let {
+    onclose,
+    universeId = game.activeUniverse as UniverseId,
+    reviewAnswerId = null,
+    recordOnly = false,
+  }: {
+    onclose: () => void
+    universeId?: UniverseId
+    reviewAnswerId?: RealmAnswerId | null
+    recordOnly?: boolean
+  } = $props()
 
   type Stage = 'lines' | 'choice' | 'epilogue' | 'ending'
   let stage = $state<Stage>('lines')
   let lineIdx = $state(0)
-  let chosenId = $state<Ending | null>(null)
+  let chosenId = $state<RealmAnswerId | null>(null)
   let epilogue = $state<string[]>([])
   let epilogueIdx = $state(0)
   let resumeMusic = false
   let dialog: HTMLDivElement
 
-  const universe = $derived(universeById(game.activeUniverse))
-  const allEchoes = $derived(game.echoes.length >= universe.echoes.length)
-  const isFinal = $derived(lineIdx === QUESTION_LINES.length - 1)
-  const chosen = $derived(ENDING_CHOICES.find((choice) => choice.id === chosenId) ?? null)
-  const infallBeat = $derived(stage === 'lines' ? questionInfallBeat(lineIdx) : null)
+  const review = $derived(reviewAnswerId !== null)
+  const archivedMode = $derived(review || recordOnly)
+  const universe = $derived(universeById(universeId))
+  const conclusion = $derived(realmConclusion(universeId))
+  // A replay is a historical record. Do not rewrite it with a callback chosen
+  // during a later Remembrance; only a newly reached Question gets live echoes.
+  const storyLines = $derived(archivedMode
+    ? conclusion.lines
+    : conclusionLinesFor(universeId, game.realmAnswers))
+  const run = $derived(universeId === game.activeUniverse ? game : game.universeRuns[universeId] ?? null)
+  const runEchoes = $derived(run?.echoes ?? [])
+  const allEchoes = $derived(recordOnly || runEchoes.length >= universe.echoes.length)
+  const isFinal = $derived(lineIdx === storyLines.length - 1)
+  const chosen = $derived(realmAnswerChoice(chosenId))
+  const infallBeat = $derived(
+    stage === 'lines' && universeId === 'emberlight' ? questionInfallBeat(lineIdx) : null,
+  )
+
+  $effect(() => {
+    if (reviewAnswerId !== null && chosenId === null) chosenId = reviewAnswerId
+  })
 
   $effect(() => {
     stage
@@ -36,7 +68,8 @@
 
   function advance() {
     if (stage === 'lines') {
-      if (isFinal) stage = 'choice'
+      if (isFinal && review && chosen) beginEpilogue(chosen.id)
+      else if (isFinal) stage = 'choice'
       else lineIdx += 1
     } else if (stage === 'epilogue') {
       if (epilogueIdx < epilogue.length - 1) epilogueIdx += 1
@@ -44,20 +77,31 @@
     }
   }
 
-  function choose(id: Ending) {
-    if (stage !== 'choice' || chosenId !== null) return
-    const choice = ENDING_CHOICES.find((entry) => entry.id === id)!
-    chosenId = id
-    chooseEnding(id)
-    save()
-    epilogue = choice.epilogue
+  function beginEpilogue(id: RealmAnswerId) {
+    const answer = realmAnswerChoice(id)
+    if (!answer) return
+    epilogue = [answer.acknowledgment, ...answer.epilogue]
     epilogueIdx = 0
     stage = 'epilogue'
+  }
+
+  function choose(id: RealmAnswerId) {
+    if (stage !== 'choice' || chosenId !== null) return
+    const answer = realmAnswerChoice(id)
+    if (!answer) return
+    const recorded = recordOnly
+      ? recordRevisedRealmConclusion(universeId, id)
+      : chooseRealmAnswer(id)
+    if (!recorded) return
+    chosenId = id
+    save()
+    beginEpilogue(id)
     // Audio is ornament, never authority: a suspended/unsupported context must
     // not strand the player after their answer has already been saved.
     try {
-      if (id === 'warden') playBloom()
-      else if (id === 'hunger') playSupernova()
+      if (answer.doctrine === 'warden') playBloom()
+      else if (answer.doctrine === 'hunger' && universeId === 'emberlight') playSupernova()
+      else if (answer.doctrine === 'hunger') playCollect()
       else playCollect()
     } catch {
       // the visual ending continues in silence
@@ -70,7 +114,7 @@
   }
 
   function cancel() {
-    if (stage === 'epilogue') return
+    if (stage === 'epilogue' && !review) return
     finish()
   }
 
@@ -105,15 +149,19 @@
 <div
   bind:this={dialog}
   class="question"
-  class:warden={chosenId === 'warden'}
-  class:hunger={chosenId === 'hunger'}
-  class:companion={chosenId === 'companion'}
+  class:warden={chosen?.doctrine === 'warden'}
+  class:hunger={chosen?.doctrine === 'hunger'}
+  class:companion={chosen?.doctrine === 'companion'}
   role="dialog"
   aria-modal="true"
-  aria-label="The Question"
+  aria-label={`The Question of ${universe.shortName}`}
   tabindex="-1"
+  data-universe={universeId}
+  data-review={archivedMode}
+  style={`--realm-hue:${universe.palette.accentHue}`}
 >
   <div class="scene-glow" aria-hidden="true"></div>
+  <div class="realm-watermark" aria-hidden="true">{universe.route.glyph}</div>
   <div class="bar top" aria-hidden="true"></div>
   <div class="bar bottom" aria-hidden="true"></div>
 
@@ -124,41 +172,48 @@
   {/if}
 
   {#if stage === 'lines' || stage === 'choice'}
-    <button class="leave" aria-label="leave the question" onclick={(event) => { event.stopPropagation(); cancel() }}>×</button>
+    <button class="leave" aria-label={`Leave the Question of ${universe.shortName}`} onclick={(event) => { event.stopPropagation(); cancel() }}>×</button>
   {/if}
 
   {#if stage === 'lines'}
     <button class="story-step" onclick={advance} data-story-focus>
-      <span class="sequence">the last archive · {lineIdx + 1}/{QUESTION_LINES.length}</span>
-      <span class="sequence-track" aria-hidden="true"><i style:width={`${((lineIdx + 1) / QUESTION_LINES.length) * 100}%`}></i></span>
+      <span class="sequence">act {conclusion.act} · {conclusion.archiveTitle.toLowerCase()} · {lineIdx + 1}/{storyLines.length}</span>
+      <span class="sequence-track" aria-hidden="true"><i style:width={`${((lineIdx + 1) / storyLines.length) * 100}%`}></i></span>
       {#key lineIdx}
-        <span class="line" class:final={isFinal} aria-live="polite">{QUESTION_LINES[lineIdx]}</span>
+        <span class="line" class:final={isFinal} aria-live="polite">{storyLines[lineIdx]}</span>
       {/key}
       <span class="hint">{isFinal ? 'answer' : 'continue'} <b>›</b></span>
     </button>
   {:else if stage === 'choice'}
     <section class="choice-stage" aria-labelledby="question-title">
-      <span class="eyebrow">the truth is known · the answer becomes law</span>
-      <h2 id="question-title">What are you?</h2>
-      <p class="choice-intro">The Garden and every route still possible will remember what you call yourself.</p>
+      <span class="eyebrow">{universe.shortName} · {conclusion.title} · {recordOnly ? 'the revised answer enters the archive' : 'the answer becomes law'}</span>
+      <h2 id="question-title">{conclusion.question}</h2>
+      <p class="choice-intro">{recordOnly
+        ? 'This choice repairs a missing story record. It joins the saga without overwriting the law your current run carries.'
+        : 'Each answer protects something real and accepts a different debt. The Vessel, Lumen, and the Garden will remember it.'}</p>
 
-      <div class="choices" role="group" aria-label="Choose your answer">
-        {#each ENDING_CHOICES as choice, index (choice.id)}
+      <div class="choices" role="group" aria-label={`Choose an answer to: ${conclusion.question}`}>
+        {#each conclusion.choices as choice, index (choice.id)}
           {@const locked = !!choice.secret && !allEchoes}
           <button
-            class="choice {choice.id}"
+            class="choice {choice.doctrine}"
             class:locked
             disabled={locked}
+            aria-label={locked ? `A third ${universe.shortName} answer is locked until every Echo is recovered` : `${choice.label}. ${choice.stance} Benefit: ${choice.benefit} Cost: ${choice.cost}`}
             data-story-focus={index === 0 ? '' : undefined}
             onclick={() => choose(choice.id)}
           >
             <span class="choice-glyph" aria-hidden="true">{locked ? '◇' : choice.glyph}</span>
-            <span class="choice-doctrine">{locked ? 'an answer in the margins' : choice.doctrine}</span>
+            <span class="choice-doctrine">{locked ? 'an answer in the margins' : choice.stance}</span>
             <strong>{locked ? 'A Third Answer' : choice.label}</strong>
             <em>{locked ? 'The archive is incomplete. Lumen is still holding a page open.' : `“${choice.line}”`}</em>
+            {#if !locked}
+              <span class="tradeoff"><small>protects</small>{choice.benefit}</span>
+              <span class="tradeoff cost"><small>accepts</small>{choice.cost}</span>
+            {/if}
             <span class="choice-law">
-              <small>{locked ? 'echoes recovered' : 'permanent law'}</small>
-              {locked ? `${game.echoes.length}/${universe.echoes.length}` : ENDING_BONUS[choice.id]}
+              <small>{locked ? 'echoes recovered' : recordOnly ? 'revised archive record' : choice.lawName}</small>
+              {locked ? `${runEchoes.length}/${universe.echoes.length}` : recordOnly ? 'current run remains unchanged' : ENDING_BONUS[choice.doctrine]}
             </span>
           </button>
         {/each}
@@ -172,34 +227,34 @@
       {#key epilogueIdx}
         <span class="line epilogue-line" aria-live="polite">{epilogue[epilogueIdx]}</span>
       {/key}
-      <span class="hint">{epilogueIdx < epilogue.length - 1 ? 'continue' : 'record the answer'} <b>›</b></span>
+      <span class="hint">{epilogueIdx < epilogue.length - 1 ? 'continue' : review ? 'return to the record' : 'record the answer'} <b>›</b></span>
     </button>
   {:else if stage === 'ending' && chosen}
     <section class="ending-tableau" aria-labelledby="ending-title">
       <div class="orbit one" aria-hidden="true"></div>
       <div class="orbit two" aria-hidden="true"></div>
-      <span class="eyebrow">final entry · answer recorded</span>
-      <div class="final-glyph" aria-hidden="true">{chosen.glyph}</div>
+      <span class="eyebrow">{review ? 'revisited entry' : recordOnly ? 'revised entry recorded' : 'answer recorded'} · {universe.shortName}</span>
+      <div class="final-glyph" aria-hidden="true">{chosen.glyph}<small>{universe.route.glyph}</small></div>
       <h2 id="ending-title">{chosen.label}</h2>
-      <p class="doctrine">{chosen.doctrine}</p>
+      <p class="doctrine">{conclusion.tableau}</p>
       <blockquote>{chosen.coda}</blockquote>
 
       <div class="permanent-law">
-        <span>the law your vessel carries forward</span>
-        <strong>{ENDING_BONUS[chosen.id]}</strong>
+        <span>{recordOnly ? 'revised Archive record · no current run overwritten' : `${chosen.lawName} · the law this Vessel carries`}</span>
+        <strong>{recordOnly ? 'carried into the saga' : ENDING_BONUS[chosen.doctrine]}</strong>
       </div>
 
       <dl class="journey" aria-label="Your journey">
-        <div><dt>{universe.currency.toLowerCase()} remembered</dt><dd>{universe.currencyGlyph} {format(game.allTimeEarned)}</dd></div>
-        <div><dt>epoch turns completed</dt><dd>{game.supernovae}</dd></div>
-        <div><dt>deep boundaries crossed</dt><dd>{game.collapses}</dd></div>
-        <div><dt>trials endured</dt><dd>{game.challengesDone.length}/12</dd></div>
-        <div><dt>echoes recovered</dt><dd>{game.echoes.length}/{universe.echoes.length}</dd></div>
-        <div><dt>archive records held</dt><dd>{game.curiosities.length}</dd></div>
+        <div><dt>{universe.currency.toLowerCase()} remembered</dt><dd>{universe.currencyGlyph} {format(run?.totalEarned ?? 0)}</dd></div>
+        <div><dt>epoch turns completed</dt><dd>{run?.supernovae ?? 0}</dd></div>
+        <div><dt>deep boundaries crossed</dt><dd>{run?.collapses ?? 0}</dd></div>
+        <div><dt>trials endured</dt><dd>{run?.challengesDone.length ?? 0}/12</dd></div>
+        <div><dt>echoes recovered</dt><dd>{runEchoes.length}/{universe.echoes.length}</dd></div>
+        <div><dt>archive records held</dt><dd>{run?.curiosities.length ?? 0}</dd></div>
       </dl>
 
-      <p class="afterword">The game continues. The completed cycle leads toward the Garden, while the Story Archive keeps a path back to the first ember if you choose to remember it all again.</p>
-      <button class="return" onclick={finish} data-story-focus>Return to the {universe.currency.toLowerCase()}</button>
+      <p class="afterword">{conclusion.afterword}</p>
+      <button class="return" onclick={finish} data-story-focus>{review ? 'Close the revisited entry' : recordOnly ? 'Return to the Story Archive' : `Return to the ${universe.currency.toLowerCase()}`}</button>
     </section>
   {/if}
 </div>
@@ -214,7 +269,7 @@
     place-items: center;
     color: #ece9f5;
     background:
-      radial-gradient(circle at 50% 48%, rgba(38, 32, 62, 0.24), transparent 34%),
+      radial-gradient(circle at 50% 48%, hsla(var(--realm-hue), 62%, 42%, 0.16), transparent 38%),
       rgba(2, 2, 7, 0.985);
     animation: q-in 1.1s ease both;
     outline: none;
@@ -223,9 +278,24 @@
     position: absolute;
     inset: 9vh 0;
     opacity: 0;
-    background: radial-gradient(circle at 50% 48%, rgba(255, 217, 138, 0.16), transparent 36%);
+    background: radial-gradient(circle at 50% 48%, hsla(var(--realm-hue), 74%, 68%, 0.14), transparent 36%);
     transition: opacity 1.8s ease, background 1.8s ease;
   }
+  .realm-watermark {
+    position: absolute;
+    z-index: 0;
+    font: 400 min(46vw, 34rem)/1 Georgia, serif;
+    color: hsla(var(--realm-hue), 76%, 72%, 0.035);
+    transform: rotate(-8deg);
+    pointer-events: none;
+    user-select: none;
+  }
+  .question[data-universe='tidefall'] .realm-watermark,
+  .question[data-universe='vishnulok'] .realm-watermark { transform: rotate(7deg) scaleX(1.2); }
+  .question[data-universe='verdance'] .realm-watermark,
+  .question[data-universe='brahmalok'] .realm-watermark { transform: rotate(-14deg) scale(1.08); }
+  .question[data-universe='clockwork'] .realm-watermark { transform: rotate(24deg) scale(0.92); }
+  .question[data-universe='kailash'] .realm-watermark { transform: translateY(-2vh) scale(1.14); }
   .question.warden .scene-glow { opacity: 1; background: radial-gradient(circle at 50% 48%, rgba(255, 216, 140, 0.18), transparent 39%); }
   .question.hunger .scene-glow { opacity: 1; background: radial-gradient(circle at 50% 48%, rgba(255, 76, 35, 0.2), transparent 42%); }
   .question.companion .scene-glow { opacity: 1; background: radial-gradient(circle at 50% 48%, rgba(160, 178, 255, 0.2), transparent 42%); }
@@ -377,7 +447,7 @@
   }
   .choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
   .choice {
-    min-height: 20rem;
+    min-height: 25rem;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -410,6 +480,23 @@
   .choice-doctrine { min-height: 2.2rem; margin-top: 1.1rem; font-family: Georgia, serif; font-size: 0.72rem; line-height: 1.4; color: var(--dim); }
   .choice strong { margin-top: 0.35rem; font-family: Georgia, serif; font-size: 1.25rem; }
   .choice em { margin-top: 0.65rem; font-family: Georgia, serif; font-size: 0.8rem; line-height: 1.48; color: rgba(199, 194, 216, 0.78); }
+  .tradeoff {
+    display: block;
+    margin-top: 0.7rem;
+    font-size: 0.66rem;
+    line-height: 1.42;
+    color: rgba(210, 205, 225, 0.78);
+  }
+  .tradeoff.cost { margin-top: 0.42rem; color: rgba(188, 181, 205, 0.72); }
+  .tradeoff small {
+    display: block;
+    margin-bottom: 0.12rem;
+    color: color-mix(in srgb, hsl(var(--realm-hue), 72%, 72%) 72%, white);
+    font-size: 0.5rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
   .choice-law {
     width: 100%;
     margin-top: auto;
@@ -459,6 +546,20 @@
     border-radius: 50%;
     box-shadow: 0 0 44px rgba(255, 196, 99, 0.14);
   }
+  .final-glyph small {
+    position: absolute;
+    right: -0.2rem;
+    bottom: -0.1rem;
+    width: 1.55rem;
+    height: 1.55rem;
+    display: grid;
+    place-items: center;
+    color: hsla(var(--realm-hue), 82%, 78%, 0.94);
+    font: 700 0.72rem/1 system-ui, sans-serif;
+    background: rgba(5, 5, 11, 0.94);
+    border: 1px solid hsla(var(--realm-hue), 62%, 68%, 0.34);
+    border-radius: 50%;
+  }
   .hunger .final-glyph { color: #ff7952; background: radial-gradient(circle, rgba(255, 72, 34, 0.19), transparent 66%); border-color: rgba(255, 94, 54, 0.2); box-shadow: 0 0 48px rgba(255, 65, 27, 0.16); }
   .companion .final-glyph { color: #bdc7ff; background: radial-gradient(circle, rgba(150, 170, 255, 0.2), transparent 66%); border-color: rgba(176, 188, 255, 0.2); box-shadow: 0 0 48px rgba(128, 148, 255, 0.18); }
   .doctrine { margin: 0.28rem 0 0; font-family: Georgia, serif; font-size: 0.78rem; font-style: italic; color: var(--dim); }
@@ -482,7 +583,7 @@
   .companion .permanent-law strong { color: #c5ceff; }
   .journey {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1px;
     max-width: 42rem;
     margin: 1rem auto 0;
@@ -529,7 +630,6 @@
     .choice-law { margin-top: 0.8rem; }
     .ending-tableau { padding-top: 2rem; }
     .journey { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .journey div:last-child { grid-column: 1 / -1; }
     .permanent-law { align-items: flex-start; flex-direction: column; gap: 0.3rem; }
   }
 

@@ -91,7 +91,7 @@ const ASTRAL_COPY: Readonly<Record<string, ArchiveCopy>> = {
     glyph: '⋇',
     classification: 'braided spacetime signal · deep sky 02',
     flavor: 'Two ancient collisions tied together before either occurred.',
-    record: 'The knot tightens on Emberlight’s beat and relaxes between touches. Lumen identifies three overlapping waveforms, then quietly names them Warden, Hunger, and Companion.',
+    record: 'The knot tightens on Emberlight’s beat and relaxes between touches. Lumen identifies three overlapping waveforms, then quietly names them Boundary, Renewal, and Relation.',
     desc: 'its precise waveform widens the beat window by 20ms',
   },
   letter: {

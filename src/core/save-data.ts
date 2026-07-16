@@ -12,8 +12,17 @@ import {
 import { THEMES } from '../content/themes'
 import { MEMENTO_IDS } from '../content/mementos'
 import { EXPERIENCE_SEEN_IDS } from '../content/experience-markers'
+import {
+  REALM_CONCLUSIONS,
+  legacyRealmAnswerId,
+  type Ending,
+  type RealmAnswerHistory,
+  type RealmAnswerId,
+} from '../content/endings'
+import { lumenComplicityLinesFor, LUMEN_COMPLICITY_LINES } from '../content/lumen-complicity'
+import { sagaLumenLinesFor, SAGA_LUMEN_LINES } from '../content/saga-lumen'
 import { UI_UNLOCKS } from '../content/ui-unlocks'
-import { DEFAULT_UNIVERSE_ID, UNIVERSES, universeById } from '../content/universes'
+import { DEFAULT_UNIVERSE_ID, UNIVERSES, universeById, type UniverseId } from '../content/universes'
 import { VESSEL_PARTS } from '../content/vessel'
 import { DEEP_WORKS, STARDUST_WORKS } from '../content/repeatables'
 import type { BuyAmount } from '../engine/game.svelte'
@@ -308,6 +317,7 @@ export interface SerializedSaveDataV22 extends Omit<SerializedSaveDataV13, 'vers
 
 export interface SaveDataV23 extends Omit<SaveDataV22, 'version'> {
   version: 23
+  realmAnswers: RealmAnswerHistory
   vesselPartsByUniverse: Record<string, string[]>
   autoKindlerFamilies: AutoKindlerFamily[]
   autoKindlerPriority: AutoKindlerPriority
@@ -321,6 +331,7 @@ export interface SaveDataV23 extends Omit<SaveDataV22, 'version'> {
 
 export interface SerializedSaveDataV23 extends Omit<SerializedSaveDataV22, 'version'> {
   version: 23
+  realmAnswers: RealmAnswerHistory
   vesselPartsByUniverse: Record<string, string[]>
   autoKindlerFamilies: AutoKindlerFamily[]
   autoKindlerPriority: AutoKindlerPriority
@@ -439,6 +450,9 @@ const universeIds = new Set(UNIVERSES.map((item) => item.id))
 const vesselPartIds = new Set(VESSEL_PARTS.map((item) => item.id))
 const seenIds = new Set([
   ...UNIVERSES.flatMap((universe) => universe.lumen.map((item) => item.id)),
+  ...LUMEN_COMPLICITY_LINES.map((item) => item.id),
+  ...SAGA_LUMEN_LINES.map((item) => item.id),
+  'act3-hook',
   ...EXPERIENCE_SEEN_IDS,
 ])
 const chronicleMilestones = new Set([
@@ -698,6 +712,9 @@ function sanitizeUniverseRun(value: unknown, universeId: string): LegacyUniverse
   const curiosityIds = new Set(pack.cabinet.items.map((item) => item.id))
   const localSeenIds = new Set([
     ...pack.lumen.map((item) => item.id),
+    ...lumenComplicityLinesFor(universeId as UniverseId).map((item) => item.id),
+    ...sagaLumenLinesFor(universeId as UniverseId).map((item) => item.id),
+    'act3-hook',
     ...(universeId === 'emberlight' ? EXPERIENCE_SEEN_IDS : []),
   ])
   const totalEarned = numberValue(source.totalEarned, 0)
@@ -1186,6 +1203,51 @@ function sanitizeVesselPartsByUniverse(
   return result
 }
 
+function sanitizeRealmAnswers(
+  value: unknown,
+  legacy: Pick<SaveDataV22, 'activeUniverse' | 'ending' | 'universeRuns' | 'endgame'>,
+): RealmAnswerHistory {
+  const result: RealmAnswerHistory = {}
+  const source = value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+
+  const orderedChronicle = [...legacy.endgame.chronicleEvents]
+    .sort((left, right) => left.at - right.at || left.id.localeCompare(right.id))
+
+  for (const universe of UNIVERSES) {
+    const universeId = universe.id as UniverseId
+    const allowed = new Set(REALM_CONCLUSIONS[universeId].choices.map(({ id }) => id))
+    const rawHistory = source[universe.id]
+    if (Array.isArray(rawHistory)) {
+      const history = rawHistory
+        .filter((answerId): answerId is RealmAnswerId => typeof answerId === 'string' && allowed.has(answerId as RealmAnswerId))
+      if (history.length > 0) result[universeId] = history
+    }
+
+    if (result[universeId]?.length) continue
+
+    const migratedHistory = orderedChronicle.flatMap((event) => {
+      if (event.universeId !== universeId || event.milestone !== 'answer') return []
+      const match = /^Answered (warden|hunger|companion)\.$/.exec(event.detail)
+      if (!match) return []
+      const migrated = legacyRealmAnswerId(universeId, match[1] as Ending)
+      return migrated ? [migrated] : []
+    })
+
+    const legacyEnding = universe.id === legacy.activeUniverse
+      ? legacy.endgame.activeAtlasRoute
+        ? legacy.universeRuns[universe.id]?.ending ?? null
+        : legacy.ending
+      : legacy.universeRuns[universe.id]?.ending ?? null
+    const fallback = legacyRealmAnswerId(universeId, legacyEnding as Ending | null)
+    if (fallback && migratedHistory.at(-1) !== fallback) migratedHistory.push(fallback)
+    if (migratedHistory.length > 0) result[universeId] = migratedHistory
+  }
+
+  return result
+}
+
 export function convertSaveV13ToV22(value: SaveDataV13): SaveDataV22 {
   const endgame = emptyEndgameState()
   endgame.unlockedConvergences = CONVERGENCES
@@ -1246,6 +1308,7 @@ export function convertSaveV22ToV23(value: SaveDataV22): SaveDataV23 {
   return {
     ...value,
     version: 23,
+    realmAnswers: sanitizeRealmAnswers(undefined, value),
     vesselPartsByUniverse: sanitizeVesselPartsByUniverse(undefined, value),
     autoKindlerFamilies: [...AUTO_KINDLER_FAMILIES],
     autoKindlerPriority: 'efficiency',
@@ -1280,6 +1343,7 @@ function sanitizeSaveV23(data: unknown): SaveDataV23 | null {
   return {
     ...prior,
     version: 23,
+    realmAnswers: sanitizeRealmAnswers(source.realmAnswers, prior),
     vesselPartsByUniverse: sanitizeVesselPartsByUniverse(source.vesselPartsByUniverse, prior),
     autoKindlerFamilies: sanitizeAutoKindlerFamilies(source.autoKindlerFamilies),
     autoKindlerPriority: sanitizeAutoKindlerPriority(source.autoKindlerPriority),
@@ -1303,6 +1367,9 @@ export function serializeSaveDataV23(value: SaveDataV23): SerializedSaveDataV23 
   return {
     ...serializeSaveDataV22({ ...value, version: 22 }),
     version: 23,
+    realmAnswers: Object.fromEntries(
+      Object.entries(value.realmAnswers).map(([id, history]) => [id, [...history]]),
+    ) as RealmAnswerHistory,
     vesselPartsByUniverse: Object.fromEntries(
       Object.entries(value.vesselPartsByUniverse).map(([id, parts]) => [id, [...parts]]),
     ),

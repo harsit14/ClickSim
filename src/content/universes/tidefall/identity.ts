@@ -16,5 +16,5 @@ export const TIDEFALL_CANONICAL_IDENTITY = {
   epochTurnName: 'Undertow',
   epochMatterName: 'Moon Salt',
   primaryVerb: 'surf',
-  civilizationQuestion: 'Can memory guide a world without becoming a force that controls it?',
+  civilizationQuestion: 'When change takes a home, what deserves to cross the flood?',
 } as const

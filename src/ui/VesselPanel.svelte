@@ -33,6 +33,7 @@
   import LumenVaultShelf from './LumenVaultShelf.svelte'
   import SuccessionRelayHome from './SuccessionRelayHome.svelte'
   import RealmDoctrineAtlas from './RealmDoctrineAtlas.svelte'
+  import { latestRealmAnswer } from '../content/endings'
 
   let { onclose, oncross }: { onclose: () => void; oncross: (universeId: string) => void } = $props()
   let closeButton: HTMLButtonElement
@@ -41,6 +42,7 @@
 
   const activePack = $derived(universeById(game.activeUniverse))
   const activeBlueprint = $derived(vesselBlueprint(game.activeUniverse))
+  const activeAnswer = $derived(latestRealmAnswer(game.realmAnswers, game.activeUniverse))
   const activeParts = $derived(vesselPartsForUniverse(game.activeUniverse))
   const activePartIds = $derived(vesselPartIdsFor(game))
   const activeVesselComplete = $derived(vesselComplete())
@@ -102,6 +104,13 @@
   </header>
 
   <p class="blueprint-intro">{activeBlueprint.description}</p>
+  {#if activeAnswer}
+    <aside class="answer-cargo" aria-label="Conclusion carried by this Vessel">
+      <span>answer carried from {activePack.shortName}</span>
+      <strong>{activeAnswer.label}</strong>
+      <p>{activeAnswer.vesselEcho}</p>
+    </aside>
+  {/if}
 
   <div
     class="schematic"
@@ -256,6 +265,10 @@
     animation: vessel-in 0.24s ease both;
     scrollbar-width: thin;
   }
+  .answer-cargo { margin: .65rem 0; padding: .65rem .75rem; background: color-mix(in srgb, hsl(var(--accent-hue, 38) 70% 55%) 5%, transparent); border-left: 2px solid color-mix(in srgb, var(--amber) 48%, transparent); }
+  .answer-cargo span { display: block; color: var(--dim); font-size: .58rem; letter-spacing: .13em; text-transform: uppercase; }
+  .answer-cargo strong { display: block; margin-top: .18rem; color: var(--gold); font: italic .82rem Georgia, serif; }
+  .answer-cargo p { margin: .15rem 0 0; color: var(--dim); font: italic .68rem/1.4 Georgia, serif; }
   @keyframes vessel-in {
     from { opacity: 0; transform: translate(-50%, -48%); }
     to { opacity: 1; transform: translate(-50%, -50%); }

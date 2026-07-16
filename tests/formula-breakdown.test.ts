@@ -75,6 +75,8 @@ test('rate formula is sourced, canonical, and exactly matches the compute result
   assert.match(JSON.stringify(formula), /Spark base rate/)
   assert.match(JSON.stringify(formula), /Spark owned/)
   assert.match(JSON.stringify(formula), /Wisp Chorus/)
+  assert.match(JSON.stringify(formula), /Bank the Fire answer/)
+  assert.doesNotMatch(JSON.stringify(formula), /Warden answer/)
 })
 
 test('Formula Inspector display preserves a root result beyond 1e308', () => {
@@ -91,6 +93,7 @@ test('Formula Inspector display preserves a root result beyond 1e308', () => {
 
 test('click formula matches explicit rate and output multipliers without UI arithmetic', () => {
   const game = state()
+  game.ending = 'hunger'
   const evaluatedAt = 54_321
   const rateMultiplier = 1.4
   const outputMultiplier = 2.25
@@ -102,6 +105,8 @@ test('click formula matches explicit rate and output multipliers without UI arit
   )
   assert.match(JSON.stringify(formula), /Base rate share/)
   assert.match(JSON.stringify(formula), /Active click effect/)
+  assert.match(JSON.stringify(formula), /Spend the Ember answer/)
+  assert.doesNotMatch(JSON.stringify(formula), /Hunger answer/)
 })
 
 test('formula validation fails closed on duplicate nodes and a mismatched result', () => {

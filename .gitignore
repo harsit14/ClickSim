@@ -11,6 +11,9 @@ pnpm-debug.log*
 
 # Internal production material (kept locally, never published)
 docs/
+!docs/
+docs/*
+!docs/narrative-bible.md
 suggestion/
 suggestions/
 LOKA_DEPTH_PLAN.md

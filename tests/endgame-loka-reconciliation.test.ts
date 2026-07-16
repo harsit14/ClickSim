@@ -2,9 +2,10 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { ACHIEVEMENTS } from '../src/content/achievements'
-import { QUESTION_LINES } from '../src/content/endings'
+import { REALM_CONCLUSIONS } from '../src/content/endings'
 import { SUCCESSION_RELAYS } from '../src/content/legacy-exchange'
 import { LUMEN_COMPLICITY_LINES } from '../src/content/lumen-complicity'
+import { ZERO_AMOUNT } from '../src/core/numeric/amount'
 import {
   CONVERGENCES,
   decodeAtlasRoute,
@@ -25,9 +26,14 @@ test('Phase 9.7 carries the three lokas through Lumen, the Question, and the Gar
   assert.ok(GARDEN_LINKS.every(({ name, result }) =>
     !/labeled lens|weather clock|choir of storms|percussion/i.test(`${name} ${result}`)))
 
-  const question = QUESTION_LINES.join(' ')
-  for (const name of ['Brahmalok', 'Vishnulok', 'Kailash']) assert.match(question, new RegExp(name))
-  assert.match(question, /creation, preservation, and responsible release/i)
+  const lokaConclusions = [
+    REALM_CONCLUSIONS.brahmalok,
+    REALM_CONCLUSIONS.vishnulok,
+    REALM_CONCLUSIONS.kailash,
+  ]
+  assert.equal(new Set(lokaConclusions.map(({ question }) => question)).size, 3)
+  assert.deepEqual(lokaConclusions.map(({ universeId }) => universeId), ['brahmalok', 'vishnulok', 'kailash'])
+  assert.match(REALM_CONCLUSIONS.kailash.emotionalPurpose, /creation, preservation, or release/i)
 
   const admissions = LUMEN_COMPLICITY_LINES.filter(({ act }) => act === 'VII').map(({ text }) => text).join(' ')
   assert.match(admissions, /preservation/i)
@@ -70,6 +76,19 @@ test('relays, achievements, guide, and Clockwork revelation expose the completed
   assert.match(SUCCESSION_RELAYS.slice(-3).map(({ description }) => description).join(' '), /Brahmalok.*Vishnulok.*Kailash/s)
   assert.ok(ACHIEVEMENTS.some(({ id }) => id === 'loka-cycle'))
   assert.ok(ACHIEVEMENTS.some(({ id }) => id === 'garden-renewal'))
+
+  const allAnswers = ACHIEVEMENTS.find(({ id }) => id === 'all-answers')!
+  const realmAnswers = Object.fromEntries(Object.entries(REALM_CONCLUSIONS).map(([universeId, conclusion]) => (
+    [universeId, [conclusion.choices[0].id]]
+  )))
+  const achievementState = (
+    pastEndings: readonly string[],
+    ending: string | null,
+    answers: Record<string, readonly string[]> = {},
+  ) => ({ pastEndings, ending, realmAnswers: answers }) as unknown as Parameters<typeof allAnswers.when>[0]
+  assert.equal(allAnswers.when(achievementState(['warden', 'hunger', 'companion'], null), ZERO_AMOUNT), true)
+  assert.equal(allAnswers.when(achievementState(['warden', 'hunger'], 'companion'), ZERO_AMOUNT), true)
+  assert.equal(allAnswers.when(achievementState([], null, realmAnswers), ZERO_AMOUNT), false)
 
   const guide = read('../src/content/guide.ts')
   assert.match(guide, /four restored worlds and three lokas/i)

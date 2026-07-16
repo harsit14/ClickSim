@@ -23,6 +23,7 @@ import {
   gardenUnlocked,
   GARDEN_LINKS,
   GARDEN_NODES,
+  livedAnswers,
 } from '../src/endgame/garden'
 import { V2_UNIVERSE_BY_ID, type UniverseId } from '../src/content/universes'
 import { THEMES } from '../src/content/themes'
@@ -101,7 +102,7 @@ test('Chronicle records are bounded, sanitized, ordered, and keep personal bests
   assert.equal(faster[0].durationMs, 4_000)
 })
 
-test('Garden requires seven Beacons and exposes reconciliation only after all answers', () => {
+test('Garden requires seven Beacons and exposes Continue only after all Remembrance commitments', () => {
   assert.equal(GARDEN_NODES.length, 7)
   assert.equal(GARDEN_LINKS.length, 7)
   assert.equal(gardenUnlocked(universeIds.slice(0, 6)), false)
@@ -110,6 +111,8 @@ test('Garden requires seven Beacons and exposes reconciliation only after all an
   assert.deepEqual(ordinary.map((closure) => closure.id), ['warden', 'hunger', 'companion'])
   const reconciled = availableGardenClosures(universeIds, ['warden', 'hunger'], 'companion')
   assert.deepEqual(reconciled.map((closure) => closure.id), ['warden', 'hunger', 'companion', 'continue'])
+  assert.deepEqual(livedAnswers(['warden', 'hunger'], 'companion'), ['warden', 'hunger', 'companion'])
+  assert.deepEqual(livedAnswers([], null), [])
   assert.ok(gardenCredits('continue').at(-1)?.includes('permanent continuation'))
 })
 

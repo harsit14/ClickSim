@@ -134,7 +134,7 @@ export const CLOCKWORK_V2_PACK: UniversePackV2 = {
     epithet: 'The Unwound City',
     premise: 'Restart a deterministic universe where time is transmitted as torque through an immense civic machine.',
     primaryVerb: 'route',
-    civilizationQuestion: 'If every future is predictable, can any choice be free?',
+    civilizationQuestion: 'If certainty can prevent suffering, who may refuse it?',
   },
   economy: {
     currency: {
@@ -184,7 +184,7 @@ export const CLOCKWORK_V2_PACK: UniversePackV2 = {
   archive: CLOCKWORK_ARCHIVE,
   trials: CLOCKWORK_TRIALS,
   story: {
-    civilizationQuestion: 'If every future is predictable, can any choice be free?',
+    civilizationQuestion: 'If certainty can prevent suffering, who may refuse it?',
     lumen: CLOCKWORK_LUMEN,
     echoes: CLOCKWORK_ECHOES,
     scenes: CLOCKWORK_STORY_SCENES,

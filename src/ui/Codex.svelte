@@ -1,31 +1,58 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { ENDING_CHOICES } from '../content/endings'
-  import { UNIVERSES, universeById } from '../content/universes'
+  import {
+    ENDING_BONUS,
+    realmAnswerChoice,
+    realmConclusion,
+    type RealmAnswerId,
+  } from '../content/endings'
+  import { UNIVERSES, universeById, type UniverseId } from '../content/universes'
   import { game } from '../engine/game.svelte'
   import { buildStoryTranscript } from '../experience/story-archive'
   import { CLOCKWORK_REVELATION_TRIGGER } from '../content/universes/clockwork/revelation'
+  import { storyLinesForUniverse } from '../content/story-lines'
 
   let {
     onclose,
     onremember,
     onreplayclockwork = () => {},
+    onreplayconclusion = () => {},
+    initialTab = 'journal',
   }: {
     onclose: () => void
     onremember: () => void
     onreplayclockwork?: () => void
+    onreplayconclusion?: (universeId: UniverseId, answerId: RealmAnswerId | null) => void
+    initialTab?: 'journal' | 'conclusions' | 'echoes'
   } = $props()
   let closeButton: HTMLButtonElement
-  let activeTab = $state<'journal' | 'echoes'>('journal')
+  type ArchiveTab = 'journal' | 'conclusions' | 'echoes'
+  let activeTab = $state<ArchiveTab>('journal')
   let openId = $state<string | null>(null)
 
   const echoes = $derived(universeById(game.activeUniverse).echoes)
   const reading = $derived(echoes.find((e) => e.id === openId) ?? null)
   const found = $derived(game.echoes.length)
-  const answer = $derived(ENDING_CHOICES.find((c) => c.id === game.ending) ?? null)
-  const readingAnswer = $derived(openId === 'the-answer' && answer !== null)
+  const conclusionRecords = $derived.by(() => UNIVERSES.flatMap((universe) => {
+    const answers = (game.realmAnswers[universe.id as UniverseId] ?? [])
+      .flatMap((answerId) => {
+        const answer = realmAnswerChoice(answerId)
+        return answer ? [{ answerId, answer }] : []
+      })
+    return answers.length > 0 || game.beacons.includes(universe.id) ? [{
+      universe,
+      conclusion: realmConclusion(universe.id as UniverseId),
+      answers,
+    }] : []
+  }))
+  const conclusionCount = $derived(conclusionRecords.reduce((count, record) => count + record.answers.length, 0))
+  const pendingConclusionCount = $derived(conclusionRecords.filter((record) => record.answers.length === 0).length)
   const transcript = $derived(buildStoryTranscript(
-    UNIVERSES,
+    UNIVERSES.map((universe) => ({
+      id: universe.id,
+      shortName: universe.shortName,
+      lumen: storyLinesForUniverse(universe.id as UniverseId),
+    })),
     game.activeUniverse,
     game.seen,
     game.universeRuns,
@@ -35,9 +62,12 @@
     && game.seen.includes(CLOCKWORK_REVELATION_TRIGGER.seenId),
   )
 
-  onMount(() => closeButton.focus())
+  onMount(() => {
+    activeTab = initialTab
+    closeButton.focus()
+  })
 
-  function selectTab(tab: 'journal' | 'echoes') {
+  function selectTab(tab: ArchiveTab) {
     activeTab = tab
     openId = null
   }
@@ -46,7 +76,13 @@
 <section class="codex instrument-panel">
   <header class="codex-header">
     <h2>Story Archive</h2>
-    <span class="count">{activeTab === 'journal' ? `${transcript.count} lines remembered` : `${found} / ${echoes.length} recovered`}</span>
+    <span class="count">{activeTab === 'journal'
+      ? `${transcript.count} lines remembered`
+      : activeTab === 'conclusions'
+        ? pendingConclusionCount > 0
+          ? `${conclusionCount} answers · ${pendingConclusionCount} need review`
+          : `${conclusionCount} answers recorded`
+        : `${found} / ${echoes.length} recovered`}</span>
     <button bind:this={closeButton} class="close" aria-label="close the Story Archive" onclick={onclose}>✕</button>
   </header>
 
@@ -60,6 +96,15 @@
       class:active={activeTab === 'journal'}
       onclick={() => selectTab('journal')}
     >Lumen Journal <span>{transcript.count}</span></button>
+    <button
+      id="conclusions-tab"
+      type="button"
+      role="tab"
+      aria-selected={activeTab === 'conclusions'}
+      aria-controls="conclusions-panel"
+      class:active={activeTab === 'conclusions'}
+      onclick={() => selectTab('conclusions')}
+    >Realm Conclusions <span>{conclusionRecords.length}</span></button>
     <button
       id="echoes-tab"
       type="button"
@@ -118,21 +163,51 @@
         <p class="empty-journal">Lumen has not spoken yet. The first remembered line will appear here.</p>
       {/if}
     </div>
-  {:else if readingAnswer && answer}
-    <div id="echoes-panel" class="page" role="tabpanel" aria-labelledby="echoes-tab">
-      <button class="back" onclick={() => (openId = null)}>‹ echoes</button>
-      <h3>The Answer — {answer.label}</h3>
-      <p class="prov">the last entry in the old archive. written by you.</p>
-      <p class="body">“{answer.line}”
-
-{answer.epilogue.join('\n\n')}</p>
-      <div class="remembrance">
-        <p class="rem-pitch">
-          Lumen can fold this active realm into memory and wake you at its first pixel, twice as bright.
-          Other realms, the Archive, the Between, settings, and the permanent record remain.
-        </p>
-        <button class="rem-btn" onclick={onremember}>Review Remembrance</button>
+  {:else if activeTab === 'conclusions'}
+    <div id="conclusions-panel" class="conclusions" role="tabpanel" aria-labelledby="conclusions-tab">
+      <div class="conclusion-intro">
+        <strong>The seven Questions</strong>
+        <span>Every answer remains attached to its realm and every Remembrance stays in order.</span>
       </div>
+      {#each conclusionRecords as record (record.universe.id)}
+        <article class="conclusion-record" class:current={record.universe.id === game.activeUniverse} style={`--record-hue:${record.universe.palette.accentHue}`}>
+          <header>
+            <div><small>act {record.conclusion.act} · {record.universe.id === game.activeUniverse ? 'current realm' : 'visited realm'}</small><strong>{record.universe.shortName} · {record.conclusion.title}</strong></div>
+            <span>{record.answers.length} {record.answers.length === 1 ? 'answer' : 'answers'} lived</span>
+          </header>
+          <h3>{record.conclusion.question}</h3>
+          {#if record.answers.length > 0}
+            <div class="answer-history">
+              {#each record.answers as entry, index (`${entry.answerId}-${index}`)}
+                <section class:latest={index === record.answers.length - 1}>
+                  <div class="answer-heading"><span aria-hidden="true">{entry.answer.glyph}</span><div><small>{index === record.answers.length - 1 ? 'carried now' : 'earlier Remembrance'}</small><strong>{entry.answer.label}</strong></div></div>
+                  <blockquote>“{entry.answer.line}”</blockquote>
+                  <p>{entry.answer.acknowledgment}</p>
+                  <dl>
+                    <div><dt>protects</dt><dd>{entry.answer.benefit}</dd></div>
+                    <div><dt>accepts</dt><dd>{entry.answer.cost}</dd></div>
+                  </dl>
+                  <footer><span>{entry.answer.lawName} · {ENDING_BONUS[entry.answer.doctrine]}</span><button onclick={() => onreplayconclusion(record.universe.id as UniverseId, entry.answerId)}>Revisit conclusion</button></footer>
+                </section>
+              {/each}
+            </div>
+          {:else}
+            <section class="legacy-conclusion">
+              <small>completed Beacon · exact answer unavailable</small>
+              <p>This realm was completed before conclusions were recorded by realm. The Archive will not guess what you chose.</p>
+              <button onclick={() => onreplayconclusion(record.universe.id as UniverseId, null)}>Encounter the revised conclusion</button>
+            </section>
+          {/if}
+          {#if record.universe.id === game.activeUniverse && game.ending !== null}
+            <div class="remembrance compact">
+              <p class="rem-pitch">Remembrance returns this active realm to its first point of light. Other realms, the Archive, the Between, settings, and the permanent record remain; its realm conclusions stay in order.</p>
+              <button class="rem-btn" onclick={onremember}>Review Remembrance</button>
+            </div>
+          {/if}
+        </article>
+      {:else}
+        <p class="empty-journal">No realm conclusion has been recorded yet. Each completed Question will remain reviewable here.</p>
+      {/each}
     </div>
   {:else if reading}
     <div id="echoes-panel" class="page" role="tabpanel" aria-labelledby="echoes-tab">
@@ -144,13 +219,6 @@
   {:else}
     <div id="echoes-panel" role="tabpanel" aria-labelledby="echoes-tab">
       <ul class="echo-list">
-        {#if answer}
-          <li>
-            <button class="entry answer" onclick={() => (openId = 'the-answer')}>
-              <span class="mark">✧</span>The Answer — {answer.label}
-            </button>
-          </li>
-        {/if}
         {#each echoes as echo (echo.id)}
           {@const owned = game.echoes.includes(echo.id)}
           {#if owned}
@@ -219,7 +287,7 @@
   }
   .tabs {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.32rem;
     margin-bottom: 0.72rem;
     padding: 0.25rem;
@@ -355,6 +423,44 @@
   }
   .empty-journal { margin: 1.2rem 0; color: var(--dim); font: italic 0.86rem/1.5 Georgia, serif; text-align: center; }
 
+  .conclusions { display: grid; gap: 0.68rem; }
+  .conclusion-intro { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.1rem 0.18rem 0.25rem; }
+  .conclusion-intro strong { color: rgba(226, 221, 244, 0.82); font-size: 0.72rem; }
+  .conclusion-intro span { color: var(--dim); font-size: 0.6rem; text-align: right; }
+  .conclusion-record {
+    padding: 0.78rem;
+    background: linear-gradient(120deg, hsla(var(--record-hue), 65%, 52%, 0.055), transparent 48%), rgba(255,255,255,0.018);
+    border: 1px solid hsla(var(--record-hue), 58%, 66%, 0.15);
+    border-radius: 12px;
+  }
+  .conclusion-record.current { border-color: hsla(var(--record-hue), 70%, 72%, 0.34); }
+  .conclusion-record > header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; padding-bottom: 0.52rem; border-bottom: 1px solid rgba(255,255,255,0.055); }
+  .conclusion-record > header small { display: block; color: hsla(var(--record-hue), 72%, 76%, 0.68); font-size: 0.52rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; }
+  .conclusion-record > header strong { display: block; margin-top: 0.12rem; color: rgba(236,232,247,0.92); font: 560 0.88rem/1.25 Georgia, serif; }
+  .conclusion-record > header > span { color: var(--dim); font-size: 0.56rem; }
+  .conclusion-record > h3 { margin: 0.62rem 0; color: color-mix(in srgb, hsl(var(--record-hue), 72%, 78%) 68%, white); font: italic 1rem/1.4 Georgia, serif; }
+  .answer-history { display: grid; gap: 0.45rem; }
+  .answer-history > section { padding: 0.65rem; background: rgba(0,0,0,0.16); border: 1px solid rgba(255,255,255,0.055); border-radius: 9px; }
+  .answer-history > section.latest { border-color: hsla(var(--record-hue), 60%, 70%, 0.2); }
+  .answer-heading { display: flex; align-items: center; gap: 0.55rem; }
+  .answer-heading > span { color: hsla(var(--record-hue), 80%, 76%, 0.9); font-size: 1.1rem; }
+  .answer-heading small { display: block; color: var(--dim); font-size: 0.48rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .answer-heading strong { display: block; color: rgba(235,231,247,0.92); font: 560 0.84rem/1.2 Georgia, serif; }
+  .answer-history blockquote { margin: 0.45rem 0 0; color: rgba(218,213,235,0.84); font: italic 0.76rem/1.45 Georgia, serif; }
+  .answer-history section > p { margin: 0.35rem 0 0; color: rgba(193,188,211,0.72); font: italic 0.68rem/1.4 Georgia, serif; }
+  .answer-history dl { display: grid; grid-template-columns: 1fr 1fr; gap: 0.38rem; margin: 0.52rem 0 0; }
+  .answer-history dl div { padding: 0.4rem 0.46rem; background: rgba(255,255,255,0.02); border-radius: 6px; }
+  .answer-history dt { color: hsla(var(--record-hue), 68%, 75%, 0.7); font-size: 0.48rem; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
+  .answer-history dd { margin: 0.18rem 0 0; color: rgba(205,200,220,0.72); font-size: 0.6rem; line-height: 1.38; }
+  .answer-history footer { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; margin-top: 0.55rem; }
+  .answer-history footer span { color: var(--dim); font-size: 0.54rem; }
+  .answer-history footer button { padding: 0.35rem 0.55rem; color: color-mix(in srgb, hsl(var(--record-hue), 70%, 76%) 78%, white); background: hsla(var(--record-hue), 55%, 48%, 0.07); border: 1px solid hsla(var(--record-hue), 58%, 68%, 0.24); border-radius: 999px; font: 700 0.55rem/1 system-ui, sans-serif; cursor: pointer; }
+  .legacy-conclusion { padding: 0.7rem; background: rgba(0,0,0,0.16); border: 1px dashed hsla(var(--record-hue), 58%, 68%, 0.24); border-radius: 9px; }
+  .legacy-conclusion small { color: hsla(var(--record-hue), 72%, 76%, 0.72); font-size: 0.5rem; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
+  .legacy-conclusion p { margin: 0.35rem 0 0.58rem; color: rgba(205,200,220,0.76); font: italic 0.72rem/1.45 Georgia, serif; }
+  .legacy-conclusion button { padding: 0.4rem 0.62rem; color: color-mix(in srgb, hsl(var(--record-hue), 70%, 76%) 78%, white); background: hsla(var(--record-hue), 55%, 48%, 0.08); border: 1px solid hsla(var(--record-hue), 58%, 68%, 0.26); border-radius: 999px; font: 700 0.56rem/1 system-ui, sans-serif; cursor: pointer; }
+  .remembrance.compact { margin-top: 0.72rem; }
+
   .echo-list {
     list-style: none;
     margin: 0;
@@ -378,12 +484,6 @@
     transition: background 0.15s;
   }
   .entry:hover { background: rgba(255, 217, 138, 0.12); }
-  .entry.answer {
-    color: #d8d2ff;
-    border-color: rgba(180, 170, 255, 0.3);
-    background: rgba(180, 170, 255, 0.06);
-  }
-  .entry.answer:hover { background: rgba(180, 170, 255, 0.14); }
   .missing {
     display: flex;
     align-items: center;
@@ -452,4 +552,16 @@
     transition: transform 0.08s;
   }
   .rem-btn:hover { transform: scale(1.04); }
+
+  @media (max-width: 620px) {
+    .tabs { grid-template-columns: 1fr; }
+    .conclusion-intro, .conclusion-record > header, .answer-history footer { align-items: flex-start; flex-direction: column; gap: 0.25rem; }
+    .conclusion-intro span { text-align: left; }
+    .answer-history dl { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .codex { animation: none; }
+    .rem-btn { transition: none; }
+  }
 </style>

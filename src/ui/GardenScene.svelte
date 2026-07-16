@@ -1,7 +1,13 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import type { UniverseId } from '../content/universes'
-  import type { GardenClosure, GardenLink, GardenNode } from '../endgame/garden'
+  import type {
+    GardenAnswerEcho,
+    GardenClosure,
+    GardenLink,
+    GardenNode,
+    GardenSynthesis,
+  } from '../endgame/garden'
   import type { GardenEnding } from '../endgame/types'
   import {
     allGardenPresencesTended,
@@ -17,6 +23,8 @@
   let {
     nodes,
     links,
+    answerEchoes,
+    synthesis,
     closures,
     answers,
     ending,
@@ -33,6 +41,8 @@
   }: {
     nodes: readonly GardenNode[]
     links: readonly GardenLink[]
+    answerEchoes: readonly GardenAnswerEcho[]
+    synthesis: GardenSynthesis
     closures: readonly GardenClosure[]
     answers: readonly GardenEnding[]
     ending: GardenEnding | null
@@ -62,6 +72,15 @@
     return MATERIALS[universeId]
   }
 
+  const PRESENTED_ANSWERS: Readonly<Record<GardenEnding, string>> = {
+    warden: 'Boundary',
+    hunger: 'Renewal',
+    companion: 'Relation',
+    continue: 'Continue',
+  }
+
+  const livedAnswerNames = $derived(answers.map((answer) => PRESENTED_ANSWERS[answer]))
+
   type Ritual = 'choice' | 'warden' | 'hunger' | 'companion'
   let ritual = $state<Ritual>('choice')
   let selectedUniverseId = $state<UniverseId | null>(null)
@@ -85,10 +104,10 @@
   )
 
   const hungerWords = $derived(
-    ritualRatio < .28 ? 'Keep drawing them inward.'
-      : ritualRatio < .62 ? 'Do not release what you chose to take.'
-        : ritualRatio < .9 ? 'The field is resisting you.'
-          : 'Hold through the last refusal.',
+    ritualRatio < .28 ? 'Hold the boundary: fallen matter only.'
+      : ritualRatio < .62 ? 'Name what this change will feed.'
+        : ritualRatio < .9 ? 'Leave every living presence where it stands.'
+          : 'Stop at the stated limit.',
   )
 
   const companionWords = $derived(
@@ -301,6 +320,7 @@
 
   <div class="presences">
     {#each nodes as node (node.universeId)}
+      {@const answerEcho = answerEchoes.find((echo) => echo.universeId === node.universeId)}
       <figure class="presence {node.universeId}" class:selected={selectedNode?.universeId === node.universeId} class:tended={tended.includes(node.universeId)}>
         <div class="material" aria-hidden="true">
           {#if node.universeId === 'emberlight'}
@@ -339,6 +359,7 @@
         {/if}
         <figcaption>
           <strong>{node.name}</strong>
+          {#if answerEcho}<b class="chosen-answer">{answerEcho.answerLabel}</b>{/if}
           <span>{node.offering}</span>
           <small>{node.question}</small>
           <em>{materialFor(node.universeId)}</em>
@@ -358,9 +379,17 @@
     </section>
   {:else if ritual === 'choice'}
     <section class="garden-answers" aria-labelledby="answers-title">
+      {#if synthesis.complete}
+        <div class="synthesis">
+          <span>{synthesis.title}</span>
+          <strong>{synthesis.opening}</strong>
+          <p>{synthesis.pattern}</p>
+          <p>{synthesis.tension}</p>
+        </div>
+      {/if}
       <div class="answer-memory">
-        <span id="answers-title">answers already lived</span>
-        <strong>{answers.join(' · ') || 'none carried here'}</strong>
+        <span id="answers-title">commitments already lived</span>
+        <strong>{livedAnswerNames.join(' · ') || 'none carried here'}</strong>
       </div>
       <div class="answer-paths">
         {#each closures as closure (closure.id)}
@@ -372,22 +401,22 @@
         {/each}
       </div>
       {#if !closures.some((closure) => closure.id === 'continue')}
-        <p class="continue-hint">Another path appears after every prior answer has been lived.</p>
+        <p class="continue-hint">Continue appears after Boundary, Renewal, and Relation have each been lived across Remembrances.</p>
       {/if}
     </section>
   {:else if ritual === 'warden'}
     <section class="ritual-instruction warden-instruction" aria-live="polite">
-      <span>The Warden does not gather.</span>
+      <span>Boundary does not gather.</span>
       <strong>Visit every presence. Tend it, then leave its boundary intact.</strong>
       <button onclick={resetRitual}>Step back from this answer</button>
     </section>
   {:else if ritual === 'hunger'}
     <section class="ritual-instruction hunger-instruction" aria-live="polite">
-      <span>The field will not call a brief appetite a doctrine.</span>
+      <span>Renewal changes only what has already fallen.</span>
       <button
         class="hunger-hold"
         class:holding={hungerHolding}
-        aria-label="Hold to draw every presence into the Heart; releasing begins again"
+        aria-label="Hold to transform only fallen matter into soil until the stated limit; releasing begins again"
         onpointerdown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); startHungerHold() }}
         onpointerup={releaseHungerHold}
         onpointercancel={releaseHungerHold}
@@ -396,13 +425,13 @@
         onkeyup={hungerKeyUp}
       >
         <i aria-hidden="true"></i>
-        <strong>{hungerHolding ? hungerWords : 'Press and do not release.'}</strong>
+        <strong>{hungerHolding ? hungerWords : 'Press and hold within the limit.'}</strong>
       </button>
-      <button class="leave-answer" onclick={resetRitual}>Refuse this appetite</button>
+      <button class="leave-answer" onclick={resetRitual}>Step back from Renewal</button>
     </section>
   {:else}
     <section class="ritual-instruction companion-instruction" aria-live="polite">
-      <span>The Companion cannot make the first connection.</span>
+      <span>Relation cannot make the first connection.</span>
       <strong>{companionWords}</strong>
       <i class="stillness-mark" aria-hidden="true"></i>
       <button class="leave-answer" onclick={resetRitual}>Return to the clearing</button>
@@ -490,6 +519,7 @@
   .material { position: relative; width: 5.8rem; height: 5.8rem; margin: 0 auto .25rem; filter: drop-shadow(0 0 .8rem color-mix(in srgb, var(--world) 22%, transparent)); }
   .material i, .material b { position: absolute; display: block; box-sizing: border-box; }
   figcaption strong { display: block; color: color-mix(in srgb, var(--world) 60%, #f3e8cf); font: 600 .78rem Fraunces, Georgia, serif; }
+  .chosen-answer { display: block; margin-top: .12rem; color: rgba(255,246,224,.88); font: 600 .6875rem/1.2 Fraunces, Georgia, serif; }
   figcaption span, figcaption small, figcaption em { display: block; margin-top: .15rem; line-height: 1.35; }
   figcaption span { color: rgba(238, 231, 211, .76); font-size: .6875rem; }
   figcaption small { color: transparent; font: italic .6875rem/1.35 Fraunces, Georgia, serif; transition: color .2s ease; }
@@ -537,15 +567,18 @@
   .clearing i { position: absolute; inset: 24%; border: 1px solid rgba(224,205,151,.13); border-radius: 50%; }
   .clearing b { position: absolute; left: 50%; top: 50%; width: .28rem; height: .28rem; border-radius: 50%; background: rgba(251,227,165,.7); box-shadow: 0 0 2rem .5rem rgba(251,227,165,.15); }
 
-  .garden-answers, .garden-credits { position: absolute; z-index: 6; left: 50%; top: 46%; width: min(38rem, 42vw); transform: translate(-50%, -50%); text-align: center; }
+  .garden-answers, .garden-credits { position: absolute; z-index: 6; left: 50%; top: 46%; width: min(40rem, 46vw); transform: translate(-50%, -50%); text-align: center; }
+  .synthesis { margin-bottom: .65rem; padding: .55rem .75rem; background: rgba(5,8,8,.78); border: 1px solid rgba(232,221,198,.14); border-radius: .65rem; }
+  .synthesis > span { display: block; color: rgba(232,221,198,.48); font-size: .5rem; letter-spacing: .13em; text-transform: uppercase; }
+  .synthesis > strong { display: block; margin-top: .22rem; color: rgba(247,231,199,.82); font: 600 .65rem/1.35 Fraunces, Georgia, serif; }
+  .synthesis p { margin: .22rem 0 0; color: rgba(232,221,198,.62); font: italic .54rem/1.38 Fraunces, Georgia, serif; }
   .answer-memory { margin-bottom: .55rem; color: rgba(232,221,198,.38); font-size: .5rem; letter-spacing: .13em; text-transform: uppercase; }
   .answer-memory strong { display: block; margin-top: .18rem; color: rgba(232,221,198,.58); font-weight: 500; }
   .answer-paths { display: flex; justify-content: center; align-items: stretch; gap: .2rem; }
   .answer-paths .path { flex: 1; min-width: 0; padding: .45rem .35rem; color: rgba(232,221,198,.54); background: linear-gradient(transparent, rgba(221,209,177,.025)); border: 0; border-bottom: 1px solid rgba(221,209,177,.13); cursor: pointer; }
   .path strong { display: block; color: rgba(244,230,198,.76); font: 600 .68rem Fraunces, Georgia, serif; }
-  .path span, .path em { display: none; }
-  .path:hover span, .path:focus-visible span { display: block; margin-top: .35rem; color: rgba(232,221,198,.62); font-size: .54rem; line-height: 1.4; }
-  .path:hover em, .path:focus-visible em { display: block; margin-top: .25rem; color: rgba(247,231,199,.75); font: italic .54rem Fraunces, Georgia, serif; }
+  .path span { display: block; margin-top: .35rem; color: rgba(232,221,198,.62); font-size: .54rem; line-height: 1.4; }
+  .path em { display: block; margin-top: .25rem; color: rgba(247,231,199,.75); font: italic .54rem Fraunces, Georgia, serif; }
   .continue-hint { margin: .6rem 0 0; color: rgba(232,221,198,.38); font: italic .55rem Fraunces, Georgia, serif; }
   .garden-credits { width: min(34rem, 42vw); padding: 1rem 1.5rem; background: radial-gradient(ellipse, rgba(5,8,9,.96) 30%, rgba(5,8,9,.64) 68%, transparent); }
   .garden-credits h3 { margin: 0 0 .6rem; color: rgba(246,231,197,.82); font: 500 .86rem Fraunces, Georgia, serif; letter-spacing: .1em; }
@@ -563,10 +596,10 @@
   .hunger-hold i { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(rgba(238,188,111,.68) calc(var(--ritual-progress) * 1turn), rgba(238,188,111,.09) 0); mask: radial-gradient(circle, transparent 61%, black 63%); }
   .hunger-hold::after { content: ''; position: absolute; inset: 17%; border: 1px solid rgba(238,188,111,.2); border-radius: 50%; box-shadow: inset 0 0 1.2rem rgba(238,126,67, calc(var(--ritual-progress) * .22)); }
   .hunger-hold strong { position: relative; z-index: 1; max-width: 5rem; font: 500 .6rem/1.35 Fraunces, Georgia, serif; }
-  .hunger-drawing .relations { opacity: calc(.46 - var(--ritual-progress) * .34); }
-  .hunger-holding .presence { opacity: calc(1 - var(--ritual-progress) * .78); filter: saturate(calc(1 - var(--ritual-progress) * .82)); scale: calc(1 - var(--ritual-progress) * .28); }
-  .hunger-holding .clearing { scale: calc(1 + var(--ritual-progress) * .24); filter: brightness(calc(1 + var(--ritual-progress) * .85)); }
-  .ending-hunger .presence { opacity: .2; filter: saturate(.15); scale: .72; }
+  .hunger-drawing .relations { opacity: calc(.46 + var(--ritual-progress) * .18); }
+  .hunger-holding .presence { filter: brightness(calc(1 + var(--ritual-progress) * .16)); }
+  .hunger-holding .clearing { scale: calc(1 + var(--ritual-progress) * .24); filter: brightness(calc(1 + var(--ritual-progress) * .85)) sepia(calc(var(--ritual-progress) * .35)); }
+  .ending-hunger .presence { opacity: 1; filter: none; scale: 1; }
 
   .companion-instruction { pointer-events: none; }
   .companion-instruction .leave-answer { pointer-events: auto; opacity: 0; transition: opacity .6s ease; }
@@ -596,9 +629,11 @@
     .garden-scene { min-height: 42rem; overflow-y: auto; }
     .garden-actions > div { align-items: flex-start; flex-direction: column; gap: .1rem; }
     .export-status { top: 6.4rem; }
-    .garden-heading { top: 4rem; }
+    .garden-heading { top: 5rem; left: 1rem; right: 1rem; transform: none; }
+    .garden-heading span { white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
+    .presence-reading { top: 8.75rem; width: calc(100% - 2rem); }
     .relations, .relation-names { display: none; }
-    .presences { position: relative; inset: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem .5rem; padding: 8rem 1rem 2rem; }
+    .presences { position: relative; inset: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem .5rem; padding: 14rem 1rem 2rem; }
     .presence { position: relative; left: auto !important; top: auto !important; width: auto; transform: none; }
     .presence.kailash { grid-column: 1 / -1; }
     figcaption small { color: rgba(235,226,204,.58); }
@@ -606,5 +641,8 @@
     .garden-answers, .garden-credits, .ritual-instruction { position: relative; left: auto; top: auto; bottom: auto; width: calc(100% - 2rem); margin: 0 auto 2rem; transform: none; }
     .answer-paths { flex-wrap: wrap; }
     .answer-paths .path { flex: 1 1 42%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .garden-scene *, .garden-scene *::before, .garden-scene *::after { animation: none !important; transition: none !important; }
   }
 </style>

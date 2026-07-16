@@ -13,6 +13,7 @@ import {
   curiosityProductionMult,
 } from '../content/curiosities'
 import { universeById, V2_UNIVERSE_BY_ID } from '../content/universes'
+import { realmConclusion } from '../content/endings'
 import {
   verdanceGeneratorCohortStatus,
   verdanceGraftProductionMultiplier,
@@ -365,6 +366,12 @@ export function clickPower(s: EcoState, rateMult = 1, now = Date.now()): Economy
   )
 }
 
+function localEndingLabel(s: EcoState): string | null {
+  if (!s.ending) return null
+  return realmConclusion(s.activeUniverse as UniverseId).choices
+    .find(({ doctrine }) => doctrine === s.ending)?.label ?? null
+}
+
 function globalFormulaTerms(s: EcoState, now: number, prefix: string): FormulaNode[] {
   const universe = universeById(s.activeUniverse)
   const terms: FormulaNode[] = [
@@ -446,7 +453,7 @@ function globalFormulaTerms(s: EcoState, now: number, prefix: string): FormulaNo
       `${prefix}:doctrine`,
       'doctrine',
       s.ending!,
-      `${s.ending![0].toUpperCase()}${s.ending!.slice(1)} answer`,
+      `${localEndingLabel(s) ?? 'Realm'} answer`,
       formulaScalar('multiplier', endingMultiplier),
     ))
   }
@@ -729,6 +736,7 @@ export function clickFormula(
   const cabinetMultiplier = curiosityClickMult(s.curiosities, universe.cabinet)
   const challengeMultiplier = challengeMods(s).clickScale ?? 1
   const hungerMultiplier = s.ending === 'hunger' ? 2 : 1
+  const endingAnswerLabel = localEndingLabel(s)
   const lawClickMultiplier = f4ClickMultiplier(s.activeUniverse, s.numericLawState, s.owned, evaluatedAtMs)
   const resultAmount = multiplyAmountByNumber(clickPower(s, rateMultiplier, evaluatedAtMs), outputMultiplier)
   const root: FormulaNode = {
@@ -759,7 +767,13 @@ export function clickFormula(
         ],
         result: formulaAmount(preModifier),
       },
-      formulaTerm('click:hunger', 'doctrine', s.ending === 'hunger' ? 'hunger' : 'no-hunger', 'Hunger answer', formulaScalar('multiplier', hungerMultiplier)),
+      formulaTerm(
+        'click:hunger',
+        'doctrine',
+        s.ending === 'hunger' ? 'hunger' : 'no-hunger',
+        s.ending === 'hunger' ? `${endingAnswerLabel ?? 'Transformative'} answer` : 'No click-doubling answer',
+        formulaScalar('multiplier', hungerMultiplier),
+      ),
       formulaTerm('click:archive', 'archive', universe.cabinet.id, universe.cabinet.title, formulaScalar('multiplier', cabinetMultiplier), universe.id),
       formulaTerm('click:challenge', 'system', s.challenge ?? 'no-challenge', s.challenge ? 'Trial click rule' : 'No trial click penalty', formulaScalar('multiplier', challengeMultiplier), universe.id),
       formulaTerm('click:universe-law', 'universe-law', `${universe.id}-click-law`, universe.twist.name, formulaScalar('multiplier', lawClickMultiplier), universe.id),

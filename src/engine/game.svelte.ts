@@ -79,7 +79,7 @@ import {
 import { clickBuffMult, productionBuffMult, tickBuffs } from '../systems/buffs.svelte'
 import { criticalClickOccurs } from '../systems/critical-click'
 import { pushToast } from '../systems/toasts.svelte'
-import type { EconomyAmount } from '../content/universes/types'
+import type { EconomyAmount, UniverseId } from '../content/universes/types'
 import {
   ONE_AMOUNT,
   ZERO_AMOUNT,
@@ -138,6 +138,13 @@ import {
 import { THEMES } from '../content/themes'
 import { availableGardenClosures } from '../endgame/garden'
 import {
+  legacyRealmAnswerId,
+  realmAnswerChoice,
+  realmConclusion,
+  type Ending,
+  type RealmAnswerId,
+} from '../content/endings'
+import {
   emptyEndgameState,
   type EndgameState,
   type GardenEnding,
@@ -151,19 +158,53 @@ import type {
   RunSnapshot,
   UniverseRunState,
 } from './state/game-state.svelte'
+import {
+  realmQuestionStateAvailable,
+  recordRevisedRealmConclusionState,
+} from './realm-conclusion-state'
 
 export { game }
 export type { BuyAmount, ClickResult, GameState, RunSnapshot, UniverseRunState }
 
 /** The Question becomes available once its moment has been witnessed. */
 export function questionReady(): boolean {
-  return game.seen.includes('act3-hook') && game.ending === null
+  if (!realmQuestionStateAvailable(game)) return false
+  const localHookSeen = universeById(game.activeUniverse).lumen
+    .some((line) => line.unlocksQuestion && game.seen.includes(line.id))
+  return localHookSeen || game.seen.includes('act3-hook')
 }
 
-export function chooseEnding(id: 'warden' | 'hunger' | 'companion') {
-  if (game.ending !== null) return
-  game.ending = id
-  addChronicleMilestone('answer', `Answered ${id}.`)
+export function chooseRealmAnswer(id: RealmAnswerId): boolean {
+  const answer = realmAnswerChoice(id)
+  const conclusion = realmConclusion(game.activeUniverse as UniverseId)
+  if (!realmQuestionStateAvailable(game) || !answer || !conclusion.choices.some((choice) => choice.id === id)) return false
+  const history = game.realmAnswers[conclusion.universeId] ?? []
+  game.realmAnswers = {
+    ...game.realmAnswers,
+    [conclusion.universeId]: [...history, id],
+  }
+  game.ending = answer.doctrine
+  addChronicleMilestone('answer', `${conclusion.title}: ${answer.label}.`)
+  return true
+}
+
+/**
+ * Lets a player with an already-lit legacy Beacon choose the realm-specific
+ * conclusion that did not exist in their original save. The old mechanical
+ * ending remains untouched; this only fills an otherwise missing story record.
+ */
+export function recordRevisedRealmConclusion(universeId: UniverseId, id: RealmAnswerId): boolean {
+  if (!recordRevisedRealmConclusionState(game, universeId, id)) return false
+  const conclusion = realmConclusion(universeId)
+  const answer = realmAnswerChoice(id)!
+  addChronicleMilestone('answer', `${conclusion.title}: ${answer.label}.`, universeId)
+  return true
+}
+
+/** Compatibility action for dev tools and legacy callers. */
+export function chooseEnding(id: Ending): boolean {
+  const answerId = legacyRealmAnswerId(game.activeUniverse as UniverseId, id)
+  return answerId ? chooseRealmAnswer(answerId) : false
 }
 
 /** Remembrance — NG+. Everything returns to the first dark pixel, except what
@@ -1131,6 +1172,7 @@ export function wipe() {
   game.theme = 'ember'
   game.remembrances = 0
   game.pastEndings = []
+  game.realmAnswers = {}
   game.curiosities = []
   game.keeperFedUntil = 0
   game.snailLastGiftAt = 0

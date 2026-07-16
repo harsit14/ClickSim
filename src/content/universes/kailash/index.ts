@@ -24,7 +24,7 @@ export const KAILASH_FRONT_LUMEN = {
 export const KAILASH_SPEC: FutureUniverseSpec = {
   id: 'kailash', prefix: 'kailash', name: 'Kailash', shortName: 'Kailash', epithet: 'The Mountain Beyond Ending',
   premise: 'Approach a mountain where endings make refuge, renewal, concealment, and grace possible without turning dissolution into spectacle.',
-  primaryVerb: 'release', question: 'What can end without being discarded?',
+  primaryVerb: 'release', question: 'What should the cycle leave unfinished when it ends?',
   currency: 'Stillness', currencyGlyph: '△', currencyMaterial: 'measured change moving through snow, river, stone, ash, shelter, and deliberate stillness',
   heartName: 'The Still Point', heartPhenomenon: 'A quiet mountain threshold where five visible acts and one chosen rest may be arranged without making a sacred presence into an instrument.',
   heartSilhouette: 'blue-stone summit divided by a silver river thread, five horizon notches, and one open resting interval',

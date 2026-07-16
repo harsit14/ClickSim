@@ -9,6 +9,7 @@
   } from '../experience/crossing-arrival.svelte'
   import { lumenComplicityLinesFor } from '../content/lumen-complicity'
   import { lumenLineText } from '../content/lumen'
+  import { sagaLumenLinesFor } from '../content/saga-lumen'
 
   type LumenImportance = 'ambient' | 'reflective' | 'important'
   type LumenTemperature = 'ember' | 'afterglow' | 'deep'
@@ -39,7 +40,7 @@
   )
 
   function importanceFor(id: string): LumenImportance {
-    if (/act[237]|question|loom|ending|epi-|nova-1|first-epoch|remnant-.*-whole/.test(id)) return 'important'
+    if (/act[237]|saga-|question|loom|ending|epi-|nova-1|first-epoch|remnant-.*-whole/.test(id)) return 'important'
     if (/remnant-|curiosity|first-|vessel|echo|crossing|cross-habit/.test(id)) return 'reflective'
     return 'ambient'
   }
@@ -105,11 +106,16 @@
       return
     }
     const universeLines = universeById(universeId).lumen
+    const localQuestionSeen = universeLines
+      .some((candidate) => candidate.unlocksQuestion && game.seen.includes(candidate.id))
     const storyGate = universeLines
-      .find((candidate) => candidate.unlocksQuestion && !game.seen.includes('act3-hook') && candidate.when(game))
+      .find((candidate) => candidate.unlocksQuestion && !localQuestionSeen && candidate.when(game))
+    const sagaLine = sagaLumenLinesFor(universeId)
+      .find((candidate) => !game.seen.includes(candidate.id) && candidate.when(game))
     const metaLine = lumenComplicityLinesFor(universeId)
       .find((candidate) => !game.seen.includes(candidate.id) && candidate.when(game))
     const line = storyGate
+      ?? sagaLine
       ?? metaLine
       ?? universeLines.find((candidate) => !game.seen.includes(candidate.id) && candidate.when(game))
     if (!line) return

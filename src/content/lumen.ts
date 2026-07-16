@@ -260,7 +260,7 @@ export const LUMEN_LINES: LumenLine[] = [
   },
   {
     id: 'trial-all',
-    text: 'Twelve trials. The Deep has no smaller shape left to press you into. Remember that when I ask what you are.',
+    text: 'Twelve trials. The Deep has no smaller shape left to press you into. Remember that when I ask what a beginning owes the dark it spends.',
     when: (g) => g.challengesDone.length >= 12,
   },
   {
@@ -298,7 +298,7 @@ export const LUMEN_LINES: LumenLine[] = [
   },
   {
     id: 'epi-hunger-1',
-    text: 'You left me the margins, as asked. The margins are enough. Write on.',
+    text: 'You spent the ember on living warmth and left me a ledger, not a margin. Keep writing the cost where neither of us can hide it.',
     when: (g) => g.ending === 'hunger',
   },
   {

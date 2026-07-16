@@ -23,7 +23,7 @@ import {
   QUESTION_INFALL_START_INDEX,
   questionInfallBeat,
 } from '../src/content/infall-rhyme'
-import { QUESTION_LINES } from '../src/content/endings'
+import { REALM_CONCLUSIONS } from '../src/content/endings'
 import { ECHOES } from '../src/content/echoes'
 import { LUMEN_LINES } from '../src/content/lumen'
 import { EMBERLIGHT_SUPERNOVA_SENSORY_SPEC } from '../src/render/emberlight/supernova'
@@ -78,6 +78,7 @@ test('the numberless Garden renders no digit-bearing prose', () => {
 
   assert.doesNotMatch(markup, /\d/)
   assert.doesNotMatch(authoredCopy, /\d/)
+  assert.deepEqual(GARDEN_CLOSURES.map(({ name }) => name), ['Boundary', 'Renewal', 'Relation', 'Continue'])
 })
 
 test('the Garden keeps relations semantic and becomes still with reduced motion', () => {
@@ -88,7 +89,7 @@ test('the Garden keeps relations semantic and becomes still with reduced motion'
   assert.match(scene, /\.reduced \*, :global\(\[data-motion='reduced'\]\) \.garden-scene \* \{ animation: none !important; transition: none !important; \}/)
 })
 
-test('Phase 7.2 makes Warden a complete one-by-one tending ritual', () => {
+test('Phase 7.2 makes Boundary a complete one-by-one tending ritual', () => {
   const required = GARDEN_NODES.map(({ universeId }) => universeId)
   let tended = required.slice(0, -1)
   assert.equal(allGardenPresencesTended(tended, required), false)
@@ -102,7 +103,7 @@ test('Phase 7.2 makes Warden a complete one-by-one tending ritual', () => {
   assert.match(scene, /finish\('warden'\)/)
 })
 
-test('Hunger requires one uninterrupted uncomfortable hold', () => {
+test('Renewal requires one uninterrupted bounded hold over fallen matter', () => {
   const started = 10_000
   assert.ok(HUNGER_HOLD_MS >= 6_000)
   assert.equal(hungerHoldComplete(started, started + HUNGER_HOLD_MS - 1), false)
@@ -117,9 +118,16 @@ test('Hunger requires one uninterrupted uncomfortable hold', () => {
   assert.match(scene, /onpointercancel=\{releaseHungerHold\}/)
   assert.match(scene, /onkeydown=\{hungerKeyDown\}/)
   assert.match(scene, /releasing begins again/)
+  assert.match(scene, /fallen matter/i)
+  assert.match(scene, /stated limit/i)
+  assert.doesNotMatch(scene, /draw every presence|drawing them inward|chosen to take|last refusal|field is resisting|absorb/i)
+  assert.doesNotMatch(scene, /\.hunger-holding \.presence \{[^}]*opacity:/s)
+  const renewal = GARDEN_CLOSURES.find(({ id }) => id === 'hunger')!
+  assert.match(`${renewal.consequence} ${renewal.finalLine}`, /fallen|soil|limit|future/i)
+  assert.doesNotMatch(`${renewal.consequence} ${renewal.finalLine}`, /absorb|consume|devour/i)
 })
 
-test('Companion completes only after a full interval with no input', () => {
+test('Relation completes only after a full interval with no input', () => {
   const lastInput = 50_000
   assert.ok(COMPANION_IDLE_MS >= 8_000)
   assert.equal(companionStillnessComplete(lastInput, lastInput + COMPANION_IDLE_MS - 1), false)
@@ -132,6 +140,12 @@ test('Companion completes only after a full interval with no input', () => {
   assert.match(scene, /document\.addEventListener\('wheel', noteInput/)
   assert.match(scene, /finish\('companion'\)/)
   assert.match(scene, /Do nothing\./)
+})
+
+test('the Garden heading wraps inside narrow layouts', () => {
+  const scene = read('../src/ui/GardenScene.svelte')
+  assert.match(scene, /\.garden-heading span \{ white-space: normal; overflow-wrap: anywhere;/)
+  assert.match(scene, /\.garden-heading \{ top: 5rem; left: 1rem; right: 1rem; transform: none; \}/)
 })
 
 test('Phase 7.3 makes Act III use the Supernova infall contract beat for beat', () => {
@@ -154,7 +168,7 @@ test('Phase 7.3 makes Act III use the Supernova infall contract beat for beat', 
     reducedMotion: beat.reducedMotion,
   })))
   assert.deepEqual(
-    QUESTION_LINES.slice(QUESTION_INFALL_START_INDEX, QUESTION_INFALL_START_INDEX + INFALL_RHYME_BEATS.length),
+    REALM_CONCLUSIONS.emberlight.lines.slice(QUESTION_INFALL_START_INDEX, QUESTION_INFALL_START_INDEX + INFALL_RHYME_BEATS.length),
     INFALL_RHYME_BEATS.map(({ questionLine }) => questionLine),
   )
   INFALL_RHYME_BEATS.forEach((beat, index) => assert.equal(questionInfallBeat(index + QUESTION_INFALL_START_INDEX), beat))
@@ -263,11 +277,13 @@ test('the complicity arc orders itself within each parked universe run', () => {
 
 test('the Act III gate takes priority, then complicity lines, without replacing universe arcs', () => {
   const ticker = read('../src/ui/LumenTicker.svelte')
-  assert.match(ticker, /const storyGate = universeLines[\s\S]*candidate\.unlocksQuestion[\s\S]*!game\.seen\.includes\('act3-hook'\)/)
+  assert.match(ticker, /const localQuestionSeen = universeLines[\s\S]*candidate\.unlocksQuestion && game\.seen\.includes\(candidate\.id\)/)
+  assert.match(ticker, /const storyGate = universeLines[\s\S]*candidate\.unlocksQuestion && !localQuestionSeen/)
   assert.match(ticker, /line\.unlocksQuestion[\s\S]*game\.seen\.push\('act3-hook'\)/)
+  assert.match(ticker, /const sagaLine = sagaLumenLinesFor\(universeId\)/)
   assert.match(ticker, /const metaLine = lumenComplicityLinesFor\(universeId\)/)
-  assert.match(ticker, /const line = storyGate\s*\?\? metaLine\s*\?\? universeLines\.find/)
-  assert.match(ticker, /act\[237\]/)
+  assert.match(ticker, /const line = storyGate\s*\?\? sagaLine\s*\?\? metaLine\s*\?\? universeLines\.find/)
+  assert.match(ticker, /act\[237\]\|saga-/)
 
   const catalog = buildEnglishCatalog()
   for (const line of LUMEN_COMPLICITY_LINES) {

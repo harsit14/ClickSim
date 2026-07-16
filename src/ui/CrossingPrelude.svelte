@@ -15,6 +15,7 @@
     crossingMemoryTransfers,
     realmLawStatement,
   } from '../experience/cross-realm-continuity'
+  import { latestRealmAnswer } from '../content/endings'
 
   let { destination, onfinished }: { destination: string; onfinished: (universeId: string) => void } = $props()
 
@@ -23,6 +24,7 @@
   const sourceV2 = $derived(universeV2ById(source.id))
   const targetV2 = $derived(universeV2ById(target.id))
   const targetLaw = $derived(realmLawStatement(target.id as UniverseId))
+  const sourceAnswer = $derived(latestRealmAnswer(game.realmAnswers, source.id as UniverseId))
   const firstArrival = $derived(crossingArrivalState.active?.destinationId === destination
     ? crossingArrivalState.active.firstArrival
     : game.universeRuns[destination] === undefined)
@@ -138,13 +140,21 @@
     <div class="wrong-foot-mark"><span>{sourceV2?.identity.primaryVerb ?? 'kindle'}</span><b>{targetV2?.identity.primaryVerb ?? 'kindle'}</b></div>
   </div>
 
-  <div class="crossing-copy" class:with-memory={ready && memories.length > 0}>
+  <div class="crossing-copy" class:with-memory={ready && (memories.length > 0 || !!sourceAnswer)}>
     {#if phase.id === 'arrival' || phase.id === 'ready'}
       <small class="law-label">the new law · in player verbs</small>
     {/if}
     {#key phase.id}
       <p class="crossing-line story-type" role="status" aria-live="polite">{line}</p>
     {/key}
+
+    {#if ready && sourceAnswer}
+      <aside class="answer-cargo" aria-label={`Answer carried from ${source.shortName}`}>
+        <small>the Vessel also remembers</small>
+        <strong>{sourceAnswer.label}</strong>
+        <p>{sourceAnswer.vesselEcho}</p>
+      </aside>
+    {/if}
 
     {#if ready && memories.length > 0}
       <section class="memory-ledger" aria-labelledby="crossing-memory-title">
@@ -233,6 +243,10 @@
   .law-label { color:hsla(var(--cross-hue),82%,78%,.8);font:720 .56rem/1.2 var(--font-interface,ui-sans-serif,system-ui);letter-spacing:.14em;text-transform:uppercase; }
   .crossing-line { position: relative; max-width: min(80vw, 38rem); margin: 0 auto; padding: 0.45rem 1rem; font-size: 1.08rem; font-style: italic; line-height: 1.5; text-align: center; color: rgba(214, 230, 255, 0.86); background: radial-gradient(ellipse, rgba(3, 4, 12, 0.82), transparent 72%); animation: line-in 0.8s ease both; }
   .memory-ledger { display:grid;gap:.38rem;margin-top:.1rem;padding:.58rem .65rem;border:1px solid hsla(var(--cross-hue),72%,72%,.2);border-radius:.8rem;background:rgba(2,5,13,.78);box-shadow:0 .8rem 2rem rgba(0,0,0,.25);text-align:left;animation:line-in .65s ease both; }
+  .answer-cargo { display:grid;grid-template-columns:auto 1fr;gap:.08rem .55rem;align-items:baseline;margin:.1rem auto 0;padding:.45rem .65rem;max-width:34rem;border-left:2px solid hsla(var(--cross-hue),78%,76%,.45);background:rgba(2,5,13,.7);text-align:left;animation:line-in .65s ease both; }
+  .answer-cargo small { grid-row:1 / span 2;color:hsla(var(--cross-hue),75%,78%,.68);font:720 .48rem/1.2 var(--font-interface,ui-sans-serif,system-ui);letter-spacing:.12em;text-transform:uppercase; }
+  .answer-cargo strong { color:rgba(231,245,250,.92);font-size:.65rem; }
+  .answer-cargo p { grid-column:2;margin:0;color:rgba(184,207,218,.72);font:italic .55rem/1.3 var(--font-story,Georgia,serif); }
   .memory-ledger > header { display:flex;align-items:baseline;justify-content:space-between;gap:.8rem; }
   .memory-ledger > header small,.memory-ledger article small { color:hsla(var(--cross-hue),75%,78%,.68);font:720 .48rem/1.2 var(--font-interface,ui-sans-serif,system-ui);letter-spacing:.12em;text-transform:uppercase; }
   .memory-ledger > header strong { color:rgba(226,242,248,.86);font:560 .68rem/1.2 var(--font-story,Georgia,serif); }

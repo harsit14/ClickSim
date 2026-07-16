@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { GUIDE_CHAPTERS, type GuideChapter } from '../content/guide'
   import { UI_UNLOCKS } from '../content/ui-unlocks'
-  import { UNIVERSES, universeById, universeV2ById } from '../content/universes'
+  import { UNIVERSES, universeById, universeV2ById, type UniverseId } from '../content/universes'
   import { CONSTELLATION } from '../content/constellation'
   import { DEEP_UPGRADES } from '../content/deep'
   import { STARDUST_WORKS, DEEP_WORKS } from '../content/repeatables'
@@ -21,7 +21,7 @@
   import { WAYFINDER_NODES } from '../content/wayfinder'
   import { THEMES, themeVarsForUniverse } from '../content/themes'
   import { ACHIEVEMENTS } from '../content/achievements'
-  import { ENDING_BONUS, ENDING_CHOICES } from '../content/endings'
+  import { ENDING_BONUS, REALM_CONCLUSIONS, latestRealmAnswer } from '../content/endings'
   import { describeEffect } from '../content/upgrades'
   import { game } from '../engine/game.svelte'
   import { format } from '../core/format'
@@ -42,6 +42,8 @@
   const epochMatterGlyph = $derived(localPrestige?.rewardCurrency.glyph ?? '✧')
   const epochMatterName = $derived(localPrestige?.rewardCurrency.localName ?? 'Stardust')
   const epochTurnName = $derived(localPrestige?.localName ?? 'Supernova')
+  const activeConclusion = $derived(REALM_CONCLUSIONS[pack.id as UniverseId])
+  const activeAnswer = $derived(latestRealmAnswer(game.realmAnswers, pack.id as UniverseId))
   const normalizedQuery = $derived(query.trim().toLowerCase())
   const chapters = $derived.by(() => {
     if (!normalizedQuery) return GUIDE_CHAPTERS
@@ -49,7 +51,7 @@
   })
 
   const progress = $derived.by(() => {
-    if (game.ending) return { label: 'Answer recorded', detail: `${ENDING_CHOICES.find((choice) => choice.id === game.ending)?.label ?? 'An ending'} shapes this remembrance.`, chapter: 'story' }
+    if (game.ending) return { label: 'Answer recorded', detail: `${activeAnswer?.label ?? 'A legacy answer'} shapes ${pack.shortName} and the Vessel it sends onward.`, chapter: 'story' }
     if (game.beacons.length > 0 && !vesselComplete(game)) return { label: localVessel.name, detail: `${localVesselPartIds.length}/5 local parts activated; the Wayfinder remains sealed in ${pack.shortName}.`, chapter: 'multiverse' }
     if (game.beacons.length > 0) return { label: 'Between universes', detail: `${game.beacons.length} Beacon${game.beacons.length === 1 ? '' : 's'} lit; Wayfinder laws now join every world.`, chapter: 'multiverse' }
     if (localVesselPartIds.length > 0) return { label: localVessel.name, detail: `${localVesselPartIds.length}/5 local parts activated.`, chapter: 'multiverse' }
@@ -101,7 +103,11 @@
         return [copy.name, copy.flavor, copy.rules, copy.goalText, copy.rewardDesc]
       })),
       multiverse: [...UNIVERSES.flatMap((universe) => vesselBlueprint(universe.id).parts.flatMap((part) => Object.values(vesselPartCopy(part, universe.id)))), ...WAYFINDER_NODES.flatMap((node) => [node.name, node.effect, node.flavor])],
-      story: ENDING_CHOICES.flatMap((ending) => [ending.label, ending.doctrine, ending.line]),
+      story: Object.values(REALM_CONCLUSIONS).flatMap((conclusion) => [
+        conclusion.title,
+        conclusion.question,
+        ...conclusion.choices.flatMap((answer) => [answer.label, answer.stance, answer.line, answer.benefit, answer.cost]),
+      ]),
       progress: THEMES.flatMap((theme) => [theme.name, theme.flavor, theme.unlockText]),
     }
     return [...prose, ...(dynamic[chapter.id] ?? [])].join(' ').toLowerCase()
@@ -345,7 +351,7 @@
                 <details>
                   <summary>Reveal mechanical ending details</summary>
                   <div class="ending-list">
-                    {#each ENDING_CHOICES as ending (ending.id)}<article><span>{ending.glyph}</span><div><small>{ending.secret ? 'archive answer' : 'visible answer'}</small><strong>{ending.label}</strong><p>{ending.doctrine}</p><mark>{ENDING_BONUS[ending.id]}</mark></div></article>{/each}
+                    {#each activeConclusion.choices as ending (ending.id)}<article><span>{ending.glyph}</span><div><small>{ending.secret ? 'archive answer' : 'visible answer'}</small><strong>{ending.label}</strong><p>{ending.stance}</p><mark>{ENDING_BONUS[ending.doctrine]}</mark></div></article>{/each}
                   </div>
                 </details>
               </section>

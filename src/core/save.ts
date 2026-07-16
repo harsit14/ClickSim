@@ -113,6 +113,9 @@ function snapshot(): SaveDataV23 {
     theme: game.theme,
     remembrances: game.remembrances,
     pastEndings: [...game.pastEndings],
+    realmAnswers: Object.fromEntries(
+      Object.entries(game.realmAnswers).map(([id, history]) => [id, [...history]]),
+    ),
     curiosities: [...game.curiosities],
     keeperFedUntil: game.keeperFedUntil,
     snailLastGiftAt: game.snailLastGiftAt,
@@ -199,6 +202,9 @@ function apply(d: SaveDataV23) {
   game.theme = d.theme
   game.remembrances = d.remembrances
   game.pastEndings = [...d.pastEndings]
+  game.realmAnswers = Object.fromEntries(
+    Object.entries(d.realmAnswers).map(([id, history]) => [id, [...history]]),
+  )
   game.curiosities = [...d.curiosities]
   game.keeperFedUntil = d.keeperFedUntil
   game.snailLastGiftAt = d.snailLastGiftAt

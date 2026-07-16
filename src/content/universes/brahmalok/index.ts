@@ -37,7 +37,7 @@ export const BRAHMALOK_SPEC: FutureUniverseSpec = {
   epithet: 'The Unfolding Lotus',
   premise: 'Approach a realm of creation, knowledge, measure, and form where every finished answer must leave room for another beginning.',
   primaryVerb: 'unfold',
-  question: 'Can creation remain open to what it did not foresee?',
+  question: 'When a creation revises its purpose, what remains the creator’s?',
   currency: 'Possibility',
   currencyGlyph: '✦',
   currencyMaterial: 'uncommitted form carried as seed-light, ink, proportion, and clay',

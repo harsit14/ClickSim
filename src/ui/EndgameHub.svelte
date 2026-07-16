@@ -33,10 +33,12 @@
   } from '../endgame/chronicle'
   import {
     availableGardenClosures,
+    gardenAnswerEchoes,
     gardenCredits,
+    gardenNodesForAnswers,
+    gardenSynthesis,
     gardenUnlocked,
     GARDEN_LINKS,
-    GARDEN_NODES,
     livedAnswers,
   } from '../endgame/garden'
   import type { AutomationProfile, LawLoadout } from '../endgame/types'
@@ -79,7 +81,10 @@
   const routeFragment = $derived(ATLAS_FRAGMENTS.find((fragment) => fragment.id === route.fragmentId))
   const routeMastery = $derived(ATLAS_MASTERIES.find((mastery) => mastery.id === route.masteryId))
   const closures = $derived(availableGardenClosures(game.beacons, game.pastEndings, game.ending))
-  const credits = $derived(game.gardenEnding ? gardenCredits(game.gardenEnding) : [])
+  const gardenNodes = $derived(gardenNodesForAnswers(game.realmAnswers))
+  const gardenEchoes = $derived(gardenAnswerEchoes(game.realmAnswers))
+  const synthesis = $derived(gardenSynthesis(game.realmAnswers))
+  const credits = $derived(game.gardenEnding ? gardenCredits(game.gardenEnding, game.realmAnswers) : [])
   const answers = $derived(livedAnswers(game.pastEndings, game.ending))
   const daily = $derived(dailyAtlasRoute(openedAt, game.activeUniverse as UniverseId))
   const dailyComplete = $derived(game.atlasCompletions.some((completion) => completion.routeCode === daily.route.code))
@@ -441,8 +446,10 @@
     {:else}
       <span class="garden-status" aria-live="polite">{game.gardenEnding ? 'The Garden has received your answer.' : ''}</span>
       <GardenScene
-        nodes={GARDEN_NODES}
+        nodes={gardenNodes}
         links={GARDEN_LINKS}
+        answerEchoes={gardenEchoes}
+        {synthesis}
         {closures}
         {answers}
         ending={game.gardenEnding}

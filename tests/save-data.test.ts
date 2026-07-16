@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createDevScenario } from '../src/core/dev-scenarios'
-import { migrateAndSanitizeSave } from '../src/core/save-data'
+import { migrateAndSanitizeSave, serializeSaveDataV23 } from '../src/core/save-data'
 import { serializeAmount } from '../src/core/numeric/amount'
 
 test('rejects missing, future, and non-numeric save versions', () => {
@@ -171,6 +171,121 @@ test('sanitizes parked universe runs against their own content packs', () => {
   assert.equal(clean.universeRuns.fake, undefined)
 })
 
+test('legacy global and parked conclusions migrate into realm-local answer IDs', () => {
+  const clean = migrateAndSanitizeSave({
+    version: 12,
+    activeUniverse: 'tidefall',
+    ending: 'hunger',
+    universeRuns: {
+      emberlight: { ending: 'companion' },
+      verdance: { ending: 'warden' },
+    },
+  })
+
+  assert.ok(clean)
+  assert.deepEqual(clean.realmAnswers.tidefall, ['tidefall-trust-current'])
+  assert.deepEqual(clean.realmAnswers.emberlight, ['emberlight-pass-spark'])
+  assert.deepEqual(clean.realmAnswers.verdance, ['verdance-prune-witnesses'])
+})
+
+test('realm answer histories round-trip, stay local, and reject forged IDs', () => {
+  const scenario = createDevScenario('garden', 10_000)
+  assert.ok(scenario)
+  const realmAnswers = {
+    emberlight: ['emberlight-bank-fire', 'tidefall-carry-names'],
+    tidefall: ['tidefall-survivors-choose'],
+    verdance: ['verdance-graft-inheritance'],
+    clockwork: ['clockwork-unscheduled-hour'],
+    brahmalok: ['brahmalok-many-hands'],
+    vishnulok: ['vishnulok-returned-name'],
+    kailash: ['kailash-leave-path', 'forged-final-answer'],
+    invented: ['emberlight-bank-fire'],
+  }
+  const clean = migrateAndSanitizeSave({
+    ...serializeSaveDataV23(scenario),
+    realmAnswers,
+  })
+
+  assert.ok(clean)
+  assert.deepEqual(clean.realmAnswers, {
+    emberlight: ['emberlight-bank-fire'],
+    tidefall: ['tidefall-survivors-choose'],
+    verdance: ['verdance-graft-inheritance'],
+    clockwork: ['clockwork-unscheduled-hour'],
+    brahmalok: ['brahmalok-many-hands'],
+    vishnulok: ['vishnulok-returned-name'],
+    kailash: ['kailash-leave-path'],
+  })
+  const wire = serializeSaveDataV23(clean)
+  assert.deepEqual(serializeSaveDataV23(migrateAndSanitizeSave(wire)!), wire)
+})
+
+test('realm answer histories retain every valid Remembrance beyond 32 entries', () => {
+  const scenario = createDevScenario('garden', 10_000)
+  assert.ok(scenario)
+  const choices = [
+    'emberlight-bank-fire',
+    'emberlight-spend-ember',
+    'emberlight-pass-spark',
+  ] as const
+  const history = Array.from({ length: 40 }, (_, index) => choices[index % choices.length])
+  const clean = migrateAndSanitizeSave({
+    ...serializeSaveDataV23(scenario),
+    realmAnswers: { ...scenario.realmAnswers, emberlight: history },
+  })
+
+  assert.ok(clean)
+  assert.deepEqual(clean.realmAnswers.emberlight, history)
+})
+
+test('legacy Chronicle answers recover in order before a non-duplicate ending fallback', () => {
+  const base = migrateAndSanitizeSave({
+    version: 12,
+    activeUniverse: 'tidefall',
+    ending: 'hunger',
+    universeRuns: {
+      emberlight: { ending: 'companion' },
+      verdance: { ending: null },
+    },
+  })
+  assert.ok(base)
+  const legacy = {
+    ...serializeSaveDataV23(base),
+    realmAnswers: undefined,
+  }
+  legacy.endgame.chronicleEvents = [
+    { id: 'chronicle-tide-hunger', universeId: 'tidefall', milestone: 'answer', at: 20, detail: 'Answered hunger.' },
+    { id: 'chronicle-ember-warden', universeId: 'emberlight', milestone: 'answer', at: 5, detail: 'Answered warden.' },
+    { id: 'chronicle-tide-warden', universeId: 'tidefall', milestone: 'answer', at: 10, detail: 'Answered warden.' },
+    { id: 'chronicle-verdance-companion', universeId: 'verdance', milestone: 'answer', at: 30, detail: 'Answered companion.' },
+    { id: 'chronicle-new-copy', universeId: 'tidefall', milestone: 'answer', at: 40, detail: 'The Shore We Carry: Trust the Current.' },
+  ]
+
+  const clean = migrateAndSanitizeSave(legacy)
+  assert.ok(clean)
+  assert.deepEqual(clean.realmAnswers.tidefall, [
+    'tidefall-carry-names',
+    'tidefall-trust-current',
+  ])
+  assert.deepEqual(clean.realmAnswers.emberlight, [
+    'emberlight-bank-fire',
+    'emberlight-pass-spark',
+  ])
+  assert.deepEqual(clean.realmAnswers.verdance, ['verdance-graft-inheritance'])
+})
+
+test('the Question alias survives inside non-Ember parked runs', () => {
+  const clean = migrateAndSanitizeSave({
+    version: 12,
+    activeUniverse: 'emberlight',
+    universeRuns: {
+      tidefall: { seen: ['tide-arrival', 'act3-hook'] },
+    },
+  })
+  assert.ok(clean)
+  assert.deepEqual(clean.universeRuns.tidefall.seen, ['tide-arrival', 'act3-hook'])
+})
+
 test('dev endgame scenario is deterministic and valid', () => {
   const scenario = createDevScenario('endgame', 10_000)
   assert.ok(scenario)
@@ -180,6 +295,13 @@ test('dev endgame scenario is deterministic and valid', () => {
   assert.equal(scenario.curiosities.length, 12)
   assert.equal(scenario.autoKindler, true)
   assert.deepEqual(scenario.singUpgrades, ['deep-resonance'])
+})
+
+test('Garden QA scenario carries one reviewable conclusion from every realm', () => {
+  const garden = createDevScenario('garden', 10_000)
+  assert.ok(garden)
+  assert.equal(Object.keys(garden.realmAnswers).length, 7)
+  assert.ok(Object.values(garden.realmAnswers).every((history) => history?.length === 1))
 })
 
 test('opening scenario preserves the untouched Heart-only state', () => {

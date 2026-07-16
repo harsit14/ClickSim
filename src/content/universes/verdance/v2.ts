@@ -243,7 +243,7 @@ export const VERDANCE_V2_SUPPLEMENT: UniversePackV2Supplement = {
     epithet: 'The Patient World',
     premise: 'Grow a dead seed into a planetary organism whose networks remember every careful pruning.',
     primaryVerb: 'cultivate',
-    civilizationQuestion: 'Is preservation still life if nothing is allowed to change?',
+    civilizationQuestion: 'What must a living inheritance be allowed to lose?',
   },
   economy: {
     currency: { id: 'verdance-sap', canonicalName: 'World Currency', localName: 'Sap', singular: 'Sap', plural: 'Sap', glyph: '❧', material: 'luminous living sap carried through a vascular network', scope: 'world' },
@@ -296,7 +296,7 @@ export const VERDANCE_V2_SUPPLEMENT: UniversePackV2Supplement = {
     { id: 'verdance-trial-deliberate-loss', name: 'Deliberate Loss', historicalFailure: 'The civilization confused every ending with harm.', rules: { pruningRequired: true }, goal: { metricId: 'memory-seeds', target: 20, description: 'Prune mature growth deliberately and recover twenty Memory Seeds.' }, rewardEffects: [{ kind: 'globalMult', value: 1.08 }], accessibilityDescription: 'The exact pruned and retained categories are previewed before every action.' },
   ],
   story: {
-    civilizationQuestion: 'Is preservation still life if nothing is allowed to change?',
+    civilizationQuestion: 'What must a living inheritance be allowed to lose?',
     scenes: [
       { id: 'verdance-scene-arrival', kind: 'arrival', skippableAfterFirstView: true, replayable: true },
       { id: 'verdance-scene-pruning', kind: 'epoch', skippableAfterFirstView: true, replayable: true },
