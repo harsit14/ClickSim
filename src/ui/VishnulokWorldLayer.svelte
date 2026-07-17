@@ -83,4 +83,5 @@
   @keyframes return-dash { to { stroke-dashoffset:-10; } }
   @keyframes return-travel { to { offset-distance:100%; } }
   :global(html[data-contrast='high']) .ocean-shelter,:global(html[data-contrast='high']) .strain-marker { border-color:white;color:white; }
+  .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
 </style>
