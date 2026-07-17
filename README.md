@@ -2,6 +2,8 @@
 
 > A story-driven incremental game about rebuilding a dead universe—and deciding what the next one should become.
 
+> **License:** Source-available for non-commercial use only. EMBER is owned and created by **Harsit Upadhya**, who must be credited when the game or its source is used or shared. See [License and ownership](#license-and-ownership).
+
 This README is the single canonical project document. It describes the game as it exists now; older design proposals, rebuild plans, audits, and phase reports have been retired. The implementation, manifests, and automated tests remain the final authority when this overview and code ever disagree.
 
 ## Status at a glance
@@ -176,3 +178,16 @@ npm run sim      # Headless balance simulation
 ```
 
 Every presentation change should be exercised in the running game, tested at both supported desktop viewports, and checked in the combined accessibility mode. Economy, balance, mechanics, and content meaning must not change during visual-only work. World-manifest changes go through their validators rather than bypassing them.
+
+## License and ownership
+
+EMBER is owned and created by **Harsit Upadhya**. Copyright © 2026 Harsit Upadhya.
+
+The original game code, game content, artwork, audio design, and documentation in this repository are made available under the [PolyForm Noncommercial License 1.0.0](LICENSE), unless a file states otherwise. In summary:
+
+- Non-commercial use, modification, and sharing are permitted under the license terms.
+- Commercial use is not permitted without separate written permission from Harsit Upadhya.
+- Any use or sharing must credit the project as **“EMBER — created by Harsit Upadhya”** and preserve the copyright, required notice, and license.
+- Third-party packages and other third-party material remain subject to their own license terms.
+
+This is a source-available license with a non-commercial restriction; it is not an open-source license as defined by the Open Source Initiative.
